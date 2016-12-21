@@ -1,0 +1,62 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package cpu_instructions;
+
+// Represents a CPU type defined by a pair of family/model numbers.
+// It is 6 and 60 respectively for a desktop Haswell processor.
+message CpuTypeProto {
+  // The family number returned by the CPUID instruction.
+  // It is usually 6 for Intel x86 CPUs.
+  // See https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
+  // for a more complete explanation.
+  int32 family = 1;
+
+  // The model number returned by the CPUID instruction.
+  int32 model = 2;
+
+  // The code name for the architecture. For example "Haswell" or "Skylake".
+  // It is a mapping from the pair (family, model) to code_name.
+  string code_name = 3;
+
+  // The vendor name string as returned by the CPUID instrunction.
+  // See https://en.wikipedia.org/wiki/CPUID#EAX.3D0:_Get_vendor_ID.
+  string vendor_name = 4;
+
+  // The commercial names by which these CPUs are sold. This is mostly useful
+  // for debugging or for building a CPU database.
+  repeated string commercial_names = 5;
+
+
+  // Describes the protected mode for the CPU.
+  message ProtectedMode {
+    // List of protected/user modes. Only one of these must be set.
+    // If protected_modes is empty, then instructions are protected by default,
+    // and only the instructions whose protection mode is in user_modes are
+    // considered to be user instructions (and vice versa).
+    // For example, for the following proto:
+    //   protected_mode {
+    //     protected_modes: 0
+    //     protected_modes: 1
+    //   }
+    // Instructions with protection mode 0 and 1 are considered protected.
+    // All others are user instructions.
+    repeated int32 protected_modes = 1;
+    repeated int32 user_modes = 2;
+  }
+  ProtectedMode protected_mode = 7;
+}
+

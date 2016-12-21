@@ -1,0 +1,273 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The protocol buffers below are used to store information about instructions.
+
+syntax = "proto2";
+
+package cpu_instructions;
+
+import "cpu_instructions/proto/cpu_info.proto";
+
+// The Intel documentation referred to here can be found at:
+// http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf
+
+// Contains information about a single operand of a function.
+//
+// Note that all of the enums defined in this class form a hierarchy in terms of
+// the InCategory function defined in
+// cpu_instructions/utils/proto_utils.h.
+message InstructionOperand {
+  // The name of the operand, as listed by the vendor.
+  optional string name = 4;
+
+  // Defines the possible addressing modes of an operand.
+  // clang-format off
+  enum AddressingMode {
+    // The operand can be using any addressing mode.
+    ANY_ADDRESSING_MODE = 0x0;
+
+      // The operand is an immediate value, and its value is stored directly
+      // in the encoded instruction.
+      NO_ADDRESSING = 0x1;
+
+      // The operand uses direct addressing. The operand is the register whose
+      // index is encoded in the instruction.
+      DIRECT_ADDRESSING = 0x2;
+
+      // The operand uses indirect addressing. The operand is the memory
+      // location addressed by zero or more registers.
+      INDIRECT_ADDRESSING = 0x3;
+
+        // The memory is addressed using a base register.
+        INDIRECT_ADDRESSING_WITH_BASE = 0x31;
+
+        // The memory is addressed using only a displacement (the address of the
+        // memory location is hard-coded in the instruction).
+        INDIRECT_ADDRESSING_WITH_DISPLACEMENT = 0x32;
+
+        // The memory is addressed using a base register and a displacement.
+        INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT = 0x33;
+
+        // The memory is addressed using a base register, an index register and
+        // a displacement.
+        INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX = 0x34;
+
+        // The memory is addressed using the source index register RSI.
+        INDIRECT_ADDRESSING_BY_RSI = 0x35;
+
+        // The memory is addressed using the destination index register RDI.
+        INDIRECT_ADDRESSING_BY_RDI = 0x36;
+  }
+  // clang-format on
+
+  // Defines the possible ways of encoding an operand.
+  // clang-format off
+  enum Encoding {
+    // The operand can be using any encoding. This value must not never be used
+    // in practice.
+    /* ABSTRACT */ ANY_ENCODING = 0;
+      // The operand is a register operand of an x86-64 instruction.
+      /* ABSTRACT */ X86_REGISTER_ENCODING = 0x1;
+        // The operand is encoded in the opcode of the instruction.
+        OPCODE_ENCODING = 0x11;
+
+        // The operand is encoded using the ModR/M byte.
+        /* ABSTRACT */ MODRM_ENCODING = 0x12;
+
+          // The operand is encoded in the modrm.reg bits.
+          MODRM_REG_ENCODING = 0x121;
+
+          // The operand is encoded in the modrm.rm bits, and optionally also in
+          // the SIB byte.
+          MODRM_RM_ENCODING = 0x122;
+
+        // The operand is an operand of a VEX/EVEX instruction, and it is
+        // encoded in one of the ways introduced with VEX encoding.
+        /* ABSTRACT */ VEX_ENCODING = 0x13;
+
+          // The operand is encoded in the vex.vvvv bits of the VEX/EVEX prefix.
+          VEX_V_ENCODING = 0x131;
+
+          // The operand is encoded in the VEX operand suffix.
+          VEX_SUFFIX_ENCODING = 0x132;
+
+        // The operand is a part of an EVEX instruction, and it is encoded in
+        // one of the ways introduced with the EVEX encoding.
+        /* ABSTRACT */ EVEX_ENCODING = 0x14;
+
+          // The operand is the masking register and it is encoded in the
+          // evex.aaa bits of the EVEX prefix.
+          EVEX_MASK_OPERAND_ENCODING = 0x141;
+
+      // The operand is an implicit operand of the instruction.
+      IMPLICIT_ENCODING = 0x2;
+
+      // The operand is an immediate value. Its value is stored as a part of the
+      // instruction encoding.
+      IMMEDIATE_VALUE_ENCODING = 0x3;
+
+      // The operand is encoded using the VSIB scheme.
+      VSIB_ENCODING = 0x4;
+  }
+  // clang-format on
+
+  // The addressing mode used (allowed) by the operand.
+  optional AddressingMode addressing_mode = 1;
+
+  // The encoding of the operand.
+  optional Encoding encoding = 2;
+
+  // The size of the value in bits.
+  optional int32 value_size_bits = 3;
+
+  // This represents tags to mark masking (e.g. {k1}{z} or {k}), or specific
+  // support (e.g. {er} or {sae}).
+  message Tag {
+    // Name, e.g. "k1", "er", ...
+    optional string name = 1;
+  }
+  repeated Tag tags = 5;
+
+  // How the operand is used: read, write, or both.
+  enum Usage {
+    USAGE_UNKNOWN = 0;
+    USAGE_READ = 1;
+    USAGE_WRITE = 2;
+    USAGE_READ_WRITE = 3;
+  }
+  optional Usage usage = 6;
+}
+
+
+message InstructionFormat {
+  // This is the key field for an instruction as there can be several
+  // instructions with the same name, but differing opcodes, depending on the
+  // addressing. There can also be instructions with different names and the
+  // same opcode.
+  optional string mnemonic = 1;
+
+  // The information about the operands of the instructions. The operands are
+  // listed in the order in which they appear in the vendor syntax
+  // specification.
+  repeated InstructionOperand operands = 3;
+}
+
+message InstructionProto {
+  // A human-readable instruction of what the instruction actually does.
+  // See the abovementioned Intel document, sections 3.1 and later.
+  optional string description = 1;
+
+  // This is the key field for an instruction as there can be several
+  // instructions with the same name, but differing opcodes, depending on the
+  // addressing. There can also be instructions with different names and the
+  // same opcode.
+  optional string llvm_mnemonic = 2;
+
+  // The instruction as defined in the manuals of the chip vendor. Note that
+  // this field serves as a documentation/comment rather than for practical use,
+  // and it might not compile with LLVM. To emit this instruction with LLVM, use
+  // the data from 'syntax' instead.
+  optional InstructionFormat vendor_syntax = 3;
+
+  // The instruction in the LLVM variant of the assembly syntax used by the
+  // chip vendor.
+  optional InstructionFormat syntax = 4;
+
+  // The instruction in the AT&T syntax of LLVM.
+  optional InstructionFormat att_syntax = 5;
+
+  // Contains the name of the instruction set extension the instruction belongs
+  // to, for example "SSE2" or "AVX". Note that this is a string and not an enum
+  // because we don't want this proto to depend on a particular CPU
+  // infrastructure.
+  // This can also hold combinations for feature names: "A && B" and "A || B"
+  // respectively denote that the instruction requires both or any of features
+  // A and B.
+  optional string feature_name = 17;
+
+  // Whether the instruction is available in 64-bit mode. This is not the
+  // case for example for AAA.
+  // TODO(user): use an enum to encode the reason why the instruction is not
+  // available in 64-bit mode.
+  optional bool available_in_64_bit = 18 [default = true];
+
+  // True if the instruction is usable in "legacy" mode.
+  // TODO(user): use an enum to encode the reason why the instruction is not
+  // usable in legacy mode.
+  optional bool legacy_instruction = 19 [default = true];
+
+  // The encoding scheme for the instruction, as defined in the hereabove
+  // mentioned Intel manual, section 2.1.5.
+  optional string encoding_scheme = 20;
+
+  // The minimum required protected mode. The exact meaning depends on the
+  // architecture (e.g. x86-64 has 4 levels [0-3] and ARM has 8). The default is
+  // to assume the least priviledged mode.
+  optional int32 protection_mode = 29 [default = -1];
+
+  // The size of the binary encoding of the instruction, in bytes.
+  // TODO(user): The encoding size might or might not depend on the operands
+  //                 of the instruction. We're already differentiating between
+  //                 value sizes for registers and immediate values (these are
+  //                 encoded in the instruction mnemonic). When working with
+  //                 memory operands, the address might be composed of up to
+  //                 three registers. We need to verify whether the size of the
+  //                 encoding depends on the encoding and if it does, compute
+  //                 the encoding size correctly.
+  optional int32 binary_encoding_size_bytes = 21;
+
+  // The binary encoding of the instruction. See the abovementioned Intel
+  // document, sections 3.1 and later.
+  optional string binary_encoding = 22;
+
+  // Names of the register operands that are read by the instruction even if
+  // they are not explicitly listed in the encoded form or the assembly code.
+  repeated string implicit_input_operand = 23;
+
+  // Names of the register operands that are written by the instruction even if
+  // they are not explicitly listed in the encoded form or the assembly code.
+  repeated string implicit_output_operand = 24;
+
+}
+
+// Stores information about the source of an instruction set, for debugging.
+message InstructionSetSourceInfo {
+  // The source used to create the instruction set.
+  optional string source_name = 1;
+
+  // Key/Value entries for metadata.
+  message MetadataEntry {
+    optional string key = 1;
+    optional string value = 2;
+  }
+  repeated MetadataEntry metadata = 2;
+}
+
+message InstructionSetProto {
+  // The name of the instruction set, for example "Arithmetic" or "Logical".
+  optional string name = 1;
+
+  // The CPU Info for the cpu that generated this.
+  optional CpuInfoProto cpu_info = 2;
+
+  // There might be several sources. For example historically the intel SDM was
+  // distributed as two files with instructions A-M in Volume 2A and
+  // instructions N-Z in volume 2B. When merging instruction sets, make sure
+  // that there are no duplicate instructions.
+  repeated InstructionSetSourceInfo source_info = 3;
+
+  repeated InstructionProto instructions = 4;
+}
+

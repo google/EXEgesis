@@ -1,0 +1,601 @@
+instruction_sections: {
+  id: "BT-BitTest"
+  sub_sections: {
+    type: INSTRUCTION_TABLE
+    rows: {
+      blocks: {
+        text: "Opcode"
+      }
+      blocks: {
+        text: "Instruction"
+      }
+      blocks: {
+        text: "Op/ \nEn"
+      }
+      blocks: {
+        text: "64-bit \nMode"
+      }
+      blocks: {
+        text: "Compat/\nLeg Mode"
+      }
+      blocks: {
+        text: "Description"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "0F A3 /r"
+      }
+      blocks: {
+        text: "BT r/m16, r16"
+      }
+      blocks: {
+        text: "MR"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Store selected bit in CF flag."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "0F A3 /r"
+      }
+      blocks: {
+        text: "BT r/m32, r32"
+      }
+      blocks: {
+        text: "MR"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Store selected bit in CF flag."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "REX.W + 0F A3 /r"
+      }
+      blocks: {
+        text: "BT r/m64, r64"
+      }
+      blocks: {
+        text: "MR"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "N.E."
+      }
+      blocks: {
+        text: "Store selected bit in CF flag."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "0F BA /4 ib"
+      }
+      blocks: {
+        text: "BT r/m16, imm8"
+      }
+      blocks: {
+        text: "MI"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Store selected bit in CF flag."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "0F BA /4 ib"
+      }
+      blocks: {
+        text: "BT r/m32, imm8"
+      }
+      blocks: {
+        text: "MI"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "Store selected bit in CF flag."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "REX.W + 0F BA /4 ib"
+      }
+      blocks: {
+        text: "BT r/m64, imm8"
+      }
+      blocks: {
+        text: "MI"
+      }
+      blocks: {
+        text: "Valid"
+      }
+      blocks: {
+        text: "N.E."
+      }
+      blocks: {
+        text: "Store selected bit in CF flag."
+      }
+    }
+  }
+  sub_sections: {
+    type: INSTRUCTION_OPERAND_ENCODING
+    rows: {
+      blocks: {
+        text: "Op/En"
+      }
+      blocks: {
+        text: "Operand 1"
+      }
+      blocks: {
+        text: "Operand 2"
+      }
+      blocks: {
+        text: "Operand 3"
+      }
+      blocks: {
+        text: "Operand 4"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "MR"
+      }
+      blocks: {
+        text: "ModRM:r/m (r)"
+      }
+      blocks: {
+        text: "ModRM:reg (r)"
+      }
+      blocks: {
+        text: "NA"
+      }
+      blocks: {
+        text: "NA"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "MI"
+      }
+      blocks: {
+        text: "ModRM:r/m (r)"
+      }
+      blocks: {
+        text: "imm8"
+      }
+      blocks: {
+        text: "NA"
+      }
+      blocks: {
+        text: "NA"
+      }
+    }
+  }
+  sub_sections: {
+    type: DESCRIPTION
+    rows: {
+      blocks: {
+        text: "Selects the bit in a bit string (specified with the first operand, called the bit base) at the bit-position designated by \nthe bit offset (specified by the second operand) and stores the value of the bit in the CF flag. The bit base operand \ncan be a register or a memory location; the bit offset operand can be a register or an im\nmediate value:"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "•"
+      }
+      blocks: {
+        text: "If the bit base operand specifies a register, the instruction takes the modulo 16, 32, or 64 of the bit offset \noperand (modulo size depends on the mode and register size; 64-bit operands are available only in 64-bit \nmode)."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "•"
+      }
+      blocks: {
+        text: "If the bit base operand specifies a memory location, the operand represents the address of the byte in memory \nthat contains the bit base (bit 0 of the specified byte) of the bit string. The range of the bit position that can be \nreferenced by the offset operand depends on the operand size."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "See also: Bit(BitBase, BitOffset) on page 3-10."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "Some assemblers support im\nmediate bit offsets larger than 31 by using the im\nmediate bit offset field in combina-\ntion with the displacement field of the memory operand. In this case, the low-order 3 or 5 bits (3 for 16-bit oper-\nands, 5 for 32-bit operands) of the im\nmediate bit offset are stored in the im\nmediate bit offset field, and the high-\norder bits are shifted and combined with the byte displacement in the addressing mode by the assembler. The \nprocessor will ignore the high order bits if they are not zero."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "When accessing a bit in memory, the processor may access 4 bytes starting from the memory address for a 32-bit \noperand size, using by the following relationship:"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "Effective Address + (4 ∗ (BitOffset DIV 32))"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "Or, it may access 2 bytes starting from the memory address for a 16-bit operand, using this relationship:"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "Effective Address + (2 ∗ (BitOffset DIV 16))"
+      }
+    }
+    rows: {
+      blocks: {
+        text: "It may do so even when only a single byte needs to be accessed to reach the given bit. When using this bit \naddressing mechanism, software should avoid referencing areas of memory close to address space holes. In partic-\nular, it should avoid references to memory-mapped I/O registers. Instead, software should use the MOV instruc-\ntions to load from or store to these addresses, and use the register form of these instructions to manipulate the \ndata."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "In 64-bit mode, the instruction’s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits \naccess to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bit oper-\nands. See the sum\nmary chart at the beginning of this section for encoding data and limits."
+      }
+    }
+  }
+  sub_sections: {
+    type: OPERATION
+    rows: {
+      blocks: {
+        text: "CF ← Bit(BitBase, BitOffset);"
+      }
+    }
+  }
+  sub_sections: {
+    type: FLAGS_AFFECTED
+    rows: {
+      blocks: {
+        text: "The CF flag contains the value of the selected bit. The ZF flag is unaffected. The OF, SF, AF, and PF flags are \nundefined."
+      }
+    }
+  }
+  sub_sections: {
+    type: EXCEPTIONS_PROTECTED_MODE
+    rows: {
+      blocks: {
+        text: "#GP(0)"
+      }
+      blocks: {
+        text: "If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.\nIf the DS, ES, FS, or GS register contains a NULL segment selector."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#SS(0)"
+      }
+      blocks: {
+        text: "If a memory operand effective address is outside the SS segment limit."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#PF(fault-code)"
+      }
+      blocks: {
+        text: "If a page fault occurs."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#AC(0)"
+      }
+      blocks: {
+        text: "If alignment checking is enabled and an unaligned memory reference is made while the \ncurrent privilege level is 3."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#UD"
+      }
+      blocks: {
+        text: "If the LOCK prefix is used."
+      }
+    }
+  }
+  sub_sections: {
+    type: EXCEPTIONS_REAL_ADDRESS_MODE
+    rows: {
+      blocks: {
+        text: "#GP"
+      }
+      blocks: {
+        text: "If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#SS"
+      }
+      blocks: {
+        text: "If a memory operand effective address is outside the SS segment limit."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#UD"
+      }
+      blocks: {
+        text: "If the LOCK prefix is used."
+      }
+    }
+  }
+  sub_sections: {
+    type: EXCEPTIONS_VIRTUAL_8086_MODE
+    rows: {
+      blocks: {
+        text: "#GP(0)"
+      }
+      blocks: {
+        text: "If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#SS(0)"
+      }
+      blocks: {
+        text: "If a memory operand effective address is outside the SS segment limit."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#PF(fault-code)"
+      }
+      blocks: {
+        text: "If a page fault occurs."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#AC(0)"
+      }
+      blocks: {
+        text: "If alignment checking is enabled and an unaligned memory reference is made."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#UD"
+      }
+      blocks: {
+        text: "If the LOCK prefix is used."
+      }
+    }
+  }
+  sub_sections: {
+    type: EXCEPTIONS_COMPATIBILITY_MODE
+    rows: {
+      blocks: {
+        text: "Same exceptions as in protected mode."
+      }
+    }
+  }
+  sub_sections: {
+    type: EXCEPTIONS_64BITS_MODE
+    rows: {
+      blocks: {
+        text: "#SS(0)"
+      }
+      blocks: {
+        text: "If a memory address referencing the SS segment is in a non-canonical form."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#GP(0)"
+      }
+      blocks: {
+        text: "If the memory address is in a non-canonical form."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#PF(fault-code)"
+      }
+      blocks: {
+        text: "If a page fault occurs."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#AC(0)"
+      }
+      blocks: {
+        text: "If alignment checking is enabled and an unaligned memory reference is made while the \ncurrent privilege level is 3."
+      }
+    }
+    rows: {
+      blocks: {
+        text: "#UD"
+      }
+      blocks: {
+        text: "If the LOCK prefix is used."
+      }
+    }
+  }
+  instruction_table: {
+    columns: [ IT_OPCODE, IT_INSTRUCTION, IT_OP_EN, IT_MODE_SUPPORT_64BIT, IT_MODE_COMPAT_LEG, IT_DESCRIPTION ]
+    instructions: {
+      description: "Store selected bit in CF flag."
+      vendor_syntax: {
+        mnemonic: "BT"
+        operands: {
+          encoding: MODRM_RM_ENCODING
+          name: "r/m16"
+          usage: USAGE_READ
+        }
+        operands: {
+          encoding: MODRM_REG_ENCODING
+          name: "r16"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "MR"
+      binary_encoding: "0F A3 /r"
+    }
+    instructions: {
+      description: "Store selected bit in CF flag."
+      vendor_syntax: {
+        mnemonic: "BT"
+        operands: {
+          encoding: MODRM_RM_ENCODING
+          name: "r/m32"
+          usage: USAGE_READ
+        }
+        operands: {
+          encoding: MODRM_REG_ENCODING
+          name: "r32"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "MR"
+      binary_encoding: "0F A3 /r"
+    }
+    instructions: {
+      description: "Store selected bit in CF flag."
+      vendor_syntax: {
+        mnemonic: "BT"
+        operands: {
+          encoding: MODRM_RM_ENCODING
+          name: "r/m64"
+          usage: USAGE_READ
+        }
+        operands: {
+          encoding: MODRM_REG_ENCODING
+          name: "r64"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: false
+      encoding_scheme: "MR"
+      binary_encoding: "REX.W + 0F A3 /r"
+    }
+    instructions: {
+      description: "Store selected bit in CF flag."
+      vendor_syntax: {
+        mnemonic: "BT"
+        operands: {
+          encoding: MODRM_RM_ENCODING
+          name: "r/m16"
+          usage: USAGE_READ
+        }
+        operands: {
+          encoding: IMMEDIATE_VALUE_ENCODING
+          name: "imm8"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "MI"
+      binary_encoding: "0F BA /4 ib"
+    }
+    instructions: {
+      description: "Store selected bit in CF flag."
+      vendor_syntax: {
+        mnemonic: "BT"
+        operands: {
+          encoding: MODRM_RM_ENCODING
+          name: "r/m32"
+          usage: USAGE_READ
+        }
+        operands: {
+          encoding: IMMEDIATE_VALUE_ENCODING
+          name: "imm8"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "MI"
+      binary_encoding: "0F BA /4 ib"
+    }
+    instructions: {
+      description: "Store selected bit in CF flag."
+      vendor_syntax: {
+        mnemonic: "BT"
+        operands: {
+          encoding: MODRM_RM_ENCODING
+          name: "r/m64"
+          usage: USAGE_READ
+        }
+        operands: {
+          encoding: IMMEDIATE_VALUE_ENCODING
+          name: "imm8"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: false
+      encoding_scheme: "MI"
+      binary_encoding: "REX.W + 0F BA /4 ib"
+    }
+    operand_encoding_crossrefs: {
+      crossreference_name: "MR"
+      operand_encodings {
+        spec: OE_MOD_RM
+        usage: USAGE_READ
+      }
+      operand_encodings {
+        spec: OE_MOD_REG
+        usage: USAGE_READ
+      }
+      operand_encodings {
+        spec: OE_NA
+      }
+      operand_encodings {
+        spec: OE_NA
+      }
+    }
+    operand_encoding_crossrefs: {
+      crossreference_name: "MI"
+      operand_encodings {
+        spec: OE_MOD_RM
+        usage: USAGE_READ
+      }
+      operand_encodings {
+        spec: OE_IMMEDIATE
+        usage: USAGE_READ
+      }
+      operand_encodings {
+        spec: OE_NA
+      }
+      operand_encodings {
+        spec: OE_NA
+      }
+    }
+  }
+}

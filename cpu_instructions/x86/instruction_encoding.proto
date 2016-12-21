@@ -1,0 +1,99 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains definitions of enums and constants describing the possible
+// variants of x86-64 instruction encoding.
+//
+// For more details on the binary format of the x86 and x86-64 instructions see
+// http://wiki.osdev.org/X86-64_Instruction_Encoding or the Intel 64 and IA-32
+// Architectures Software Developer's Manual.
+
+syntax = "proto3";
+
+package cpu_instructions.x86;
+
+// Contains definitions of enums for VEX and EVEX prefixes.
+message VexEncoding {
+  // Possible values of the mandatory prefix field of the VEX prefix. Note
+  // that the values assigned to the constants correspond to the actual values
+  // used in the binary encoding.
+  enum MandatoryPrefix {
+    NO_MANDATORY_PREFIX = 0;
+    MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE = 1;
+    MANDATORY_PREFIX_REPE = 2;
+    MANDATORY_PREFIX_REPNE = 3;
+  }
+
+  // Possible values of the map select bits. Note that the values assigned to
+  // the constants correspond to the actual values used in the binary encoding.
+  // The names of the constants are based on the prefixes added to the opcode of
+  // the instruction when the given map select is used.
+  enum MapSelect {
+    UNDEFINED_OPERAND_MAP = 0;
+    MAP_SELECT_0F = 1;
+    MAP_SELECT_0F38 = 2;
+    MAP_SELECT_0F3A = 3;
+  }
+}
+
+// Contains definitions of enums for legacy prefixes.
+message LegacyEncoding {
+  // Possible states of the lock/repeat prefix. Note that the values of the
+  // prefix do not correspond to the possible values of the lock/repeat prefix
+  // byte.
+  enum LockOrRepPrefix {
+    // The instruction does not have a lock/repeat prefix.
+    NO_LOCK_OR_REP_PREFIX = 0;
+    // The instruction uses a lock prefix.
+    LOCK_PREFIX = 1;
+    // The instruction uses a REP/REPE/REPZ prefix.
+    REP_PREFIX = 2;
+    // The instruction uses a REPNE/REPNZ prefix.
+    REPNE_PREFIX = 3;
+  }
+
+  // Possible values of the segment override prefix. For branch instructions,
+  // this prefix may also encode the branch taken/not taken hint, but these
+  // hints are (supposedly) ignored by all Intel CPUs except for Pentium 4.
+  enum SegmentOverridePrefix {
+    // No segment override is used.
+    NO_SEGMENT_OVERRIDE = 0;
+    // CS segment override or branch not taken hint.
+    CS_OVERRIDE_OR_BRANCH_NOT_TAKEN = 1;
+    // SS segment override.
+    SS_OVERRIDE = 2;
+    // DS segment override or branch taken hint.
+    DS_OVERRIDE_OR_BRANCH_TAKEN = 3;
+    // ES segment override.
+    ES_OVERRIDE = 4;
+    // FS segment override.
+    FS_OVERRIDE = 5;
+    // GS segment override.
+    GS_OVERRIDE = 6;
+  }
+
+  // Possible states of the operand size override prefix. Note that the values
+  // of the prefix do not correspond to the values of the prefix byte.
+  enum OperandSizeOverridePrefix {
+    NO_OPERAND_SIZE_OVERRIDE = 0;
+    OPERAND_SIZE_OVERRIDE = 1;
+  }
+
+  // Possible states of the address size override prefix. Note that the values
+  // of the enum do not correspond to the values of the prefix byte.
+  enum AddressSizeOverridePrefix {
+    NO_ADDRESS_SIZE_OVERRIDE = 0;
+    ADDRESS_SIZE_OVERRIDE = 1;
+  }
+}

@@ -1,0 +1,176 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package cpu_instructions.x86.pdf;
+
+// A unique identifer for a PDF document.
+message PdfDocumentId {
+  string title = 1;
+  string creation_date = 2;
+  string modification_date = 3;
+}
+
+// The proto representing a PDF file.
+message PdfDocument {
+  PdfDocumentId document_id = 1;
+  repeated PdfPage pages = 2;
+}
+
+// Coordinate system of a page: (0,0) is the point at the top-left of the page.
+// x axis is oriented from left to right.
+// y axis is oriented from top to bottom.
+//      _
+//     / \  | |__   ___
+//    / _ \ | '_ \ / __|
+//   / ___ \| |_) | (__
+//  /_/   \_\_.__/ \___|
+//  +------> x
+//  |
+//  |
+//  | y
+//  v
+//
+// (x,y) are coordinates of the bottom left of a letter in reading order.
+// For instance, if the text is in Bottom Up order (x,y) is the Bottom Right
+// corner.
+
+message PdfPage {
+  int32 number = 1;                      // 1-based index of the page.
+  int32 width = 2;                       // In display coordinates.
+  int32 height = 3;                      // In display coordinates.
+  repeated PdfCharacter characters = 4;  // In stream order.
+  repeated PdfTextSegment segments = 5;  // Built from characters.
+  repeated PdfTextBlock blocks = 6;      // Built from segments.
+  repeated PdfTextTableRow rows = 7;     // Built from blocks.
+}
+
+// Gives reading order of a text.
+// "e.g. NORTH means text is printed from bottom to top of the page, and EAST is
+// the typical reading order.
+enum Orientation {
+  NORTH = 0;
+  EAST = 1;
+  SOUTH = 2;
+  WEST = 3;
+}
+
+message PdfCharacter {
+  uint32 codepoint = 1;
+  string utf8 = 2;      // The string corresponding to codepoint.
+  float font_size = 3;  // In display coordinates.
+  Orientation orientation = 4;
+  BoundingBox bounding_box = 5;  // Whole character bounding box.
+  uint32 fill_color_hash = 6;    // Not a real color but a hash of it.
+}
+
+// A range of characters in stream order appearing next to each other.
+message PdfTextSegment {
+  BoundingBox bounding_box = 1;
+  Orientation orientation = 2;
+  float font_size = 3;
+  uint32 fill_color_hash = 4;  // Note that all characters have the same color.
+  string text = 5;             // UTF-8 text.
+  repeated uint32 character_indices = 6;  // Indices from the page characters.
+}
+
+// A range of consecutive segments that forms a logical block such as:
+// multilines, table cells, paragraphs...
+//
+// e.g. In the table below the first and second cell are both PdfTextBlocks.
+// +-----------------------+---------------+
+// |  First line           |  Single line  |
+// |  Second line          |               |
+// |  are all part of the  |               |
+// |  same PdfTextBlock    |               |
+// +-----------------------+---------------+
+//
+// e.g. Lines of a paragraph also form a PdfTextBlock:
+// "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+// tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+// quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+// consequat."
+message PdfTextBlock {
+  BoundingBox bounding_box = 2;
+  Orientation orientation = 3;
+  float font_size = 4;
+  string text = 5;  // UTF-8 text without the subscripts / superscripts.
+}
+
+// Consists in several horizontaly aligned PdfTextBlocks.
+// Rows are guaranteed to be sorted in reading order: left to right and top to
+// bottom.
+//
+// - A single paragraph would be a row with a single cell:
+// "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+// tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+// quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+// consequat."
+// - A paragraph title would most probably be two cells:
+// "1.2.3", "Lorem ipsum dolor sit amet"
+// - A table row would be as many blocks as cells.
+// "cell A", "cell B", "cell C", "cell D"
+message PdfTextTableRow {
+  repeated PdfTextBlock blocks = 1;
+  BoundingBox bounding_box = 2;
+}
+
+// A simple bounding box for characters and text spans (segment or blocks).
+message BoundingBox {
+  float left = 1;    // Inclusive, in display coordinates.
+  float top = 2;     // Inclusive, in display coordinates.
+  float right = 3;   // Inclusive, in display coordinates.
+  float bottom = 4;  // Inclusive, in display coordinates.
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// The next section define protos to patch a PdfDocument and fix typos before
+// processing.
+////////////////////////////////////////////////////////////////////////////////
+
+// A patch to apply to a specific document page.
+message PdfPagePatch {
+  int32 row = 1;  // 0-based index of the page's row to apply the patch to.
+  int32 col = 2;  // 0-based index of the row's column to apply the patch to.
+
+  string expected = 3;     // The value to be found at [row, col] in the page.
+  string replacement = 4;  // The new value.
+}
+
+// It is not always obvious (based on the bounding boxes) if two segments should
+// be joined into a block. This message instruct to never join two specific
+// segments.
+message PdfPagePreventSegmentBinding {
+  string first = 1;
+  string second = 2;
+}
+
+// A set of changes to apply to a specific document page.
+message PdfPageChanges {
+  int32 page_number = 1;
+  repeated PdfPagePatch patches = 2;
+  repeated PdfPagePreventSegmentBinding prevent_segment_bindings = 3;
+}
+
+// A set of changes to apply to a specify document.
+message PdfDocumentChanges {
+  PdfDocumentId document_id = 1;  // The document to apply the patch to.
+  repeated PdfPageChanges pages = 2;
+}
+
+// A collection of per document changes.
+message PdfDocumentsChanges {
+  repeated PdfDocumentChanges documents = 1;
+}

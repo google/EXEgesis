@@ -1,0 +1,207 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains definition of data structures for representing the
+// instruction encoding specification used in the Intel manual.
+// For more details on the specification language see the Intel 64 and IA-32
+// Architecture Software Developer's Manual, mainly section 3.1.
+
+syntax = "proto3";
+
+import 'cpu_instructions/x86/instruction_encoding.proto';
+
+package cpu_instructions.x86;
+
+message LegacyPrefixEncodingSpecification {
+  // The instruction has a mandatory REX prefix where the REX.W bit is set. This
+  // is the case mainly for instructions using 64-bit operands. Note that even
+  // if this value is false, the instruction can still use a REX prefix with
+  // other REX bits set to one.
+  bool has_mandatory_rex_w_prefix = 1;
+  // The instruction has a mandatory REPE prefix.
+  bool has_mandatory_repe_prefix = 2;
+  // The instruction has a mandatory REPNE prefix.
+  bool has_mandatory_repne_prefix = 3;
+  // The instruction has a mandatory operand size override prefix.
+  bool has_mandatory_operand_size_override_prefix = 4;
+  // The instruction has a mandatory address size override prefix.
+  bool has_mandatory_address_size_override_prefix = 5;
+}
+
+// Specifies how the VEX/EVEX prefix of the instruction is encoded. From the
+// perspective of the instruction encoding specification, the VEX prefix is a
+// subset of the EVEX prefix. Unless noted in the comment on a field or a type,
+// the features are available in both types of prefix.
+message VexPrefixEncodingSpecification {
+  // Specifies whether the prefix is a VEX prefix or an EVEX prefix.
+  enum VexPrefixType {
+    // The type of the prefix was not specified. It is an error to use this
+    // value in a "real" encoding specification.
+    UNDEFINED_PREFIX = 0;
+    // The prefix is a VEX prefix.
+    VEX_PREFIX = 1;
+    // The prefix is an EVEX prefix.
+    EVEX_PREFIX = 2;
+  }
+
+  // Specifies how the instruction uses the register index that is encoded in
+  // the VEX/EVEX prefix (in the vvvv and V bits of the VEX/EVEX prefix).
+  enum VexOperandUsage {
+    // The register index bits are not used.
+    NO_VEX_OPERAND_USAGE = 0;
+    // The register is the first source operand of a three-operand instruction.
+    VEX_OPERAND_IS_FIRST_SOURCE_REGISTER = 1;
+    // The register is the second source operand of a three-operand instruction.
+    VEX_OPERAND_IS_SECOND_SOURCE_REGISTER = 2;
+    // The register is the destination register that could not be encoded in the
+    // ModRM.reg bits.
+    VEX_OPERAND_IS_DESTINATION_REGISTER = 3;
+  }
+
+  // The size of the vector used by the instruction (the value of the L and L'
+  // bits of the VEX/EVEX prefixe). Note that there are five possible states for
+  // one or two bits. This is because the values of the enum refer not only
+  // to the value of the bits, but also to the way how the bit is interpreted by
+  // the CPU.
+  enum VectorSize {
+    // The instruction is not a vector instruction, and the value of the vector
+    // length bits is ignored.
+    VECTOR_SIZE_IS_IGNORED = 0;
+    // The instruction is not a vector instruction, and the value of the vector
+    // length bits must be zero (resp. 1). Setting it to the other value would
+    // trigger the undefined instruction exception).
+    VECTOR_SIZE_BIT_IS_ZERO = 1;
+    VECTOR_SIZE_BIT_IS_ONE = 2;
+    // The instruction uses 128-bit vector operands.
+    VECTOR_SIZE_128_BIT = 3;
+    // The instruction uses 256-bit vector operands.
+    VECTOR_SIZE_256_BIT = 4;
+    // The instruction uses 512-bit vector operands. This value can be used only
+    // with the EVEX prefix.
+    VECTOR_SIZE_512_BIT = 5;
+  }
+
+  // Specifies how the W bit of the VEX/EVEX prefix is used by the instruction.
+  enum VexWUsage {
+    // The value of the W bit is not specified.
+    VEX_W_IS_IGNORED = 0;
+    // The value of the W bit must be zero.
+    VEX_W_IS_ZERO = 1;
+    // The value of the W bit must be one.
+    VEX_W_IS_ONE = 2;
+  }
+
+  // Specifies how the SIB byte is used (VSIB).
+  enum VSibUsage {
+    // The instruction doe snot use VSIB.
+    VSIB_UNUSED = 0;
+    // The instruction uses VSIB for one of its operands. When this value is
+    // used for an instruction, EncodingSpecification.modrm_usage for this
+    // instruction must not be NO_MODRM_USAGE, and the concrete instructions may
+    // use only addressing modes with base and index registers.
+    VSIB_USED = 1;
+  }
+
+  // Specifies whether this is a VEX prefix or an EVEX prefix.
+  VexPrefixType prefix_type = 1;
+
+  // Specifies how the instruction uses the register index that is encoded in
+  // the VEX/EVEX prefix.
+  VexOperandUsage vex_operand_usage = 2;
+
+  // Specifies how the instruction uses the vector size bits.
+  VectorSize vector_size = 3;
+
+  // Specifies the mandatory prefix used by the instruction.
+  VexEncoding.MandatoryPrefix mandatory_prefix = 4;
+
+  // The value of the map select field used by the instruction. Note that while
+  // the VEX prefix allows using up to 5 bits for map select, none of the
+  // existing instructions uses more than two bits.
+  VexEncoding.MapSelect map_select = 5;
+
+  // Specifies how the instructions uses the W bit of the VEX/EVEX prefix.
+  VexWUsage vex_w_usage = 6;
+
+  // Set to true if the instruction uses a VEX/EVEX operand suffix.
+  bool has_vex_operand_suffix = 7;
+
+  VSibUsage vsib_usage = 8;
+}
+
+// Contains the specification of how the binary encoding of the instruction is
+// created.
+message EncodingSpecification {
+  // Specifies possible uses of the ModR/M byte. Note that this value also
+  // controls the use of the SIB byte. Instructions that allow memory operand
+  // always have a ModR/M byte; if the bits modrm.rm are equal to 0b100, the
+  // instruction also has a SIB or a VSIB byte. See the documentation on
+  // VexPrefixEncodingSpecification::VSibUsage for more details on the
+  // difference between SIB and VSIB.
+  enum ModRmUsage {
+    // The instruction does not use the ModR/M byte.
+    NO_MODRM_USAGE = 0;
+    // The instruction uses the ModR/M byte to encode two operands: one register
+    // and one register/memory reference.
+    FULL_MODRM = 1;
+    // The instruction stores an opcode extension in the reg field of the ModR/M
+    // byte.
+    OPCODE_EXTENSION_IN_MODRM = 2;
+  }
+
+  // Specifies whether the instruction encodes one of the operands in its opcode
+  // (i.e. its opcode has the form "base opcode + register index").
+  enum OperandInOpcode {
+    // The instruction does not encode an operand in the opcode.
+    NO_OPERAND_IN_OPCODE = 0;
+    // The instruction encodes a general purpose register operand in the opcode.
+    GENERAL_PURPOSE_REGISTER_IN_OPCODE = 1;
+    // The instruction encodes a floating point register ST(i) in the opcode.
+    FP_STACK_REGISTER_IN_OPCODE = 2;
+  }
+
+  // The opcode of the instruction. The opcode contains only the opcode bytes,
+  // but not the mandatory prefixes that might be required by the instruction.
+  uint32 opcode = 1;
+
+  // Specifies whether there is an operand encoded in the opcode.
+  OperandInOpcode operand_in_opcode = 2;
+
+  // Specifies how the instruction uses the ModR/M byte.
+  ModRmUsage modrm_usage = 3;
+
+  // If modrm_usage == OPCODE_EXTENSION_IN_MODRM, this field contains the value
+  // of opcode extension used by the instruction.
+  uint32 modrm_opcode_extension = 4;
+
+  oneof prefix {
+    // The specification of the use of legacy prefixes.
+    LegacyPrefixEncodingSpecification legacy_prefixes = 5;
+
+    // The specification of the use of the VEX prefix.
+    VexPrefixEncodingSpecification vex_prefix = 6;
+  }
+
+  // The size in bytes of the immediate value used by the instruction. Note that
+  // one instruction may have multiple immediate values; in such a case, their
+  // sizes are recorded in this field in the order in which they appear in the
+  // binary encoding.
+  repeated uint32 immediate_value_bytes = 7;
+
+  // The size in bytes of the code offset values used by the instruction. Even
+  // though the code offset is effectively an immediate value, the
+  // specifications in the Intel SDM distinguish these two, and so we preserve
+  // this notion too.
+  uint32 code_offset_bytes = 8;
+}

@@ -1,0 +1,1 @@
+build --copt=-Wno-parentheses --copt=-Wno-sign-compare  --copt=-D_XOPEN_SOURCE
