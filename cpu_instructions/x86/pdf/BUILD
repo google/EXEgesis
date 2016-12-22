@@ -78,6 +78,7 @@ cc_test(
         "//external:protobuf_clib",
         "//cpu_instructions/testing:googletest",
         "//cpu_instructions/testing:googletest_main",
+        "//strings",
     ],
 )
 

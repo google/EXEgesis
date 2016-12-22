@@ -15,12 +15,14 @@
 #include "cpu_instructions/x86/pdf/proto_util.h"
 
 #include <cstdio>
+#include "strings/string.h"
 
 #include "glog/logging.h"
 #include "src/google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
 #include "gtest/gtest.h"
+#include "strings/str_cat.h"
 #include "cpu_instructions/x86/pdf/pdf_document.pb.h"
 
 namespace cpu_instructions {
@@ -34,7 +36,7 @@ TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
     width: 612
     height: 792)";
   const PdfPage page = ParseProtoFromStringOrDie<PdfPage>(kExpected);
-  const char* filename = std::tmpnam(nullptr);
+  const string filename = StrCat(getenv("TEST_TMPDIR"), "/test.pbtxt");
   WriteTextProtoOrDie(filename, page);
   const PdfPage read_page = ReadTextProtoOrDie<PdfPage>(filename);
   EXPECT_THAT(read_page, ::cpu_instructions::testing::EqualsProto(kExpected));
