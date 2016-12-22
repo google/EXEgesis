@@ -21,6 +21,7 @@
 
 #include "gflags/gflags.h"
 #include "glog/logging.h"
+#include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "src/google/protobuf/descriptor.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
@@ -39,6 +40,7 @@ DEFINE_bool(cpu_instructions_print_transform_diffs_to_log, false,
 namespace cpu_instructions {
 
 using ::google::protobuf::FieldDescriptor;
+using ::google::protobuf::Message;
 using ::google::protobuf::util::MessageDifferencer;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
@@ -143,6 +145,34 @@ Status RunTransformPipeline(
   return Status::OK;
 }
 
+// A message difference reporter that reports the differences to a string, and
+// ignores all matched & moved items.
+class ConciseDifferenceReporter : public MessageDifferencer::Reporter {
+ public:
+  explicit ConciseDifferenceReporter(string* output_string)
+      : stream_(output_string), base_reporter_(&stream_) {}
+
+  void ReportAdded(const Message& message1, const Message& message2,
+                   const std::vector<MessageDifferencer::SpecificField>&
+                       field_path) override {
+    base_reporter_.ReportAdded(message1, message2, field_path);
+  }
+  void ReportDeleted(const Message& message1, const Message& message2,
+                     const std::vector<MessageDifferencer::SpecificField>&
+                         field_path) override {
+    base_reporter_.ReportDeleted(message1, message2, field_path);
+  }
+  void ReportModified(const Message& message1, const Message& message2,
+                      const std::vector<MessageDifferencer::SpecificField>&
+                          field_path) override {
+    base_reporter_.ReportModified(message1, message2, field_path);
+  }
+
+ private:
+  ::google::protobuf::io::StringOutputStream stream_;
+  MessageDifferencer::StreamReporter base_reporter_;
+};
+
 StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
                                       InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -151,17 +181,26 @@ StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
   RETURN_IF_ERROR(transform(instruction_set));
 
   string differences;
-  MessageDifferencer differencer;
-  differencer.ReportDifferencesToString(&differences);
+  {
+    // NOTE(user): The block here is necessary because the differencer and
+    // the reporter must be destroyed before the return value is constructed.
+    // Otherwise, the compiler would use move semantics and move the contents of
+    // 'differences' of it before the reporter flushes the remaining changes in
+    // the destructor. The only way to force this flush is to force the
+    // destruction of the objects before the return value is constructed.
+    MessageDifferencer differencer;
+    ConciseDifferenceReporter reporter(&differences);
+    differencer.ReportDifferencesTo(&reporter);
 
-  const FieldDescriptor* const instructions_field =
-      instruction_set->GetDescriptor()->FindFieldByName("instructions");
-  CHECK(instructions_field != nullptr);
-  differencer.TreatAsSet(instructions_field);
+    const FieldDescriptor* const instructions_field =
+        instruction_set->GetDescriptor()->FindFieldByName("instructions");
+    CHECK(instructions_field != nullptr);
+    differencer.TreatAsSet(instructions_field);
 
-  // NOTE(user): We are only interested in the string diff; we can safely
-  // ignore the return value saying whether the two are equivalent or not.
-  differencer.Compare(original_instruction_set, *instruction_set);
+    // NOTE(user): We are only interested in the string diff; we can safely
+    // ignore the return value saying whether the two are equivalent or not.
+    differencer.Compare(original_instruction_set, *instruction_set);
+  }
 
   return differences;
 }

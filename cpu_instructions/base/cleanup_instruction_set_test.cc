@@ -31,6 +31,7 @@ using ::cpu_instructions::InstructionFormat;
 using ::cpu_instructions::InstructionOperand;
 using ::cpu_instructions::InstructionProto;
 using ::cpu_instructions::InstructionSetProto;
+using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
 using ::cpu_instructions::testing::EqualsProto;
 using ::cpu_instructions::util::InvalidArgumentError;
@@ -67,36 +68,39 @@ TEST(RunTransformWithDiffTest, NoDifference) {
   EXPECT_EQ(diff_or_status.ValueOrDie(), "");
 }
 
-// A dummy transform that clears the binary encoding of the instruction, and
-// returns Status::OK, used for testing the diff.
-Status ClearBinaryEncoding(InstructionSetProto* instruction_set) {
+// A dummy transform that deletes the second instruction in the instruction set,
+// and returns Status::OK. Used for testing the diff.
+Status DeleteSecondInstruction(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  for (InstructionProto& instruction :
-       *instruction_set->mutable_instructions()) {
-    instruction.set_binary_encoding("");
-  }
+  RepeatedPtrField<InstructionProto>* const instructions =
+      instruction_set->mutable_instructions();
+  instructions->erase(instructions->begin() + 1);
   return Status::OK;
 }
 
 TEST(RunTransformWithDiffTest, WithDifference) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
-        vendor_syntax {
-          mnemonic: 'FMUL'
-          operands { name: 'ST(0)' } operands { name: 'ST(i)' }}
-        feature_name: 'X87'
-        binary_encoding: 'D8 C8+i' })";
+        vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
+        encoding_scheme: 'NP'
+        binary_encoding: 'AE' }
+      instructions {
+        vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
+                        operands { name: 'DX' }}
+        encoding_scheme: 'NP' binary_encoding: '6C' }
+      instructions {
+        vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
+                        operands { name: 'DX' }}
+        encoding_scheme: 'NP' binary_encoding: '6D' })";
   constexpr char kExpectedDiff[] =
-      "added: instructions[0]: { vendor_syntax { mnemonic: \"FMUL\" operands { "
-      "name: \"ST(0)\" } operands { name: \"ST(i)\" } } feature_name: \"X87\" "
-      "binary_encoding: \"\" }\ndeleted: instructions[0]: { vendor_syntax { "
-      "mnemonic: \"FMUL\" operands { name: \"ST(0)\" } operands { name: "
-      "\"ST(i)\" } } feature_name: \"X87\" binary_encoding: \"D8 C8+i\" }\n";
+      "deleted: instructions[1]: { vendor_syntax { mnemonic: \"INS\" operands "
+      "{ name: \"m8\" } operands { name: \"DX\" } } encoding_scheme: \"NP\" "
+      "binary_encoding: \"6C\" }\n";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
   const StatusOr<string> diff_or_status =
-      RunTransformWithDiff(ClearBinaryEncoding, &instruction_set);
+      RunTransformWithDiff(DeleteSecondInstruction, &instruction_set);
   ASSERT_OK(diff_or_status.status());
   EXPECT_EQ(diff_or_status.ValueOrDie(), kExpectedDiff);
 }

@@ -3,7 +3,6 @@
 
 package(default_visibility = ["//cpu_instructions:__subpackages__"])
 
-
 # Framework for writing procedural clean-ups of an instruction set.
 cc_library(
     name = "cleanup_instruction_set",
@@ -11,6 +10,7 @@ cc_library(
     hdrs = ["cleanup_instruction_set.h"],
     deps = [
         "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        
         "//external:protobuf_clib",
         
         "//util/gtl:map_util",
