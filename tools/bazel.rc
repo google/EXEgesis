@@ -1,1 +1,2 @@
-build --copt=-Wno-parentheses --copt=-Wno-sign-compare  --copt=-D_XOPEN_SOURCE
+build --copt=-Wno-parentheses --copt=-Wno-sign-compare  --copt=-D_XOPEN_SOURCE \
+  --copt=-Wno-misleading-indentation
