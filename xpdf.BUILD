@@ -236,7 +236,7 @@ cc_library(
         ":splash",
     ],
     copts = [
-      "-Wunused-but-set-variable",
+      "-Wno-unused-but-set-variable",
     ],
     visibility = ["//visibility:public"],
 )
