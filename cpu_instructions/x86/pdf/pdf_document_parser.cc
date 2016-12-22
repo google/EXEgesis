@@ -145,7 +145,7 @@ void ClusterCharacters(const Characters& all, PdfTextSegments* segments) {
   // For each character, adds an edge between it and the closest one.
   for (size_t i = 0; i < all.size(); ++i) {
     float min_distance = FLT_MAX;
-    size_t candidate_index;
+    size_t candidate_index = 0;
     for (size_t j : all.GetCandidates(i)) {
       const float distance = GetCharacterDistance(i, j);
       if (distance < min_distance) {

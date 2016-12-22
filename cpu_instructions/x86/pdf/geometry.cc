@@ -82,6 +82,7 @@ bool QuadTree::Insert(size_t index, const Point& position) {
   if (quadrant_se_->Insert(index, position)) return true;
   if (quadrant_sw_->Insert(index, position)) return true;
   CHECK(false);
+  return false;
 }
 
 void QuadTree::QueryRange(const BoundingBox& bounding_box,
@@ -154,10 +155,12 @@ Vec2F GetDirectionVector(Orientation orientation) {
       return Vec2F(0, 1);
     case WEST:
       return Vec2F(-1, 0);
-    default:
+    case Orientation_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case Orientation_INT_MAX_SENTINEL_DO_NOT_USE_:
       break;
   }
   CHECK(false);
+  return Vec2F(0, 0);
 }
 
 Orientation RotateClockwise90(Orientation orientation) {
@@ -170,10 +173,12 @@ Orientation RotateClockwise90(Orientation orientation) {
       return WEST;
     case WEST:
       return NORTH;
-    default:
+    case Orientation_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case Orientation_INT_MAX_SENTINEL_DO_NOT_USE_:
       break;
   }
   CHECK(false);
+  return NORTH;
 }
 }  // namespace pdf
 }  // namespace x86
