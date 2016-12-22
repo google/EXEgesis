@@ -16,7 +16,7 @@ bind(
 git_repository(
     name = "protobuf_git",
     remote = "https://github.com/google/protobuf.git",
-    tag = "v3.0.0-beta-3",
+    tag = "v3.0.0-beta-4",
 )
 
 bind(
