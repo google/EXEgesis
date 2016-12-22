@@ -24,6 +24,25 @@ You don't need to worry about dependencies since bazel will download and build
 them for you. The exact list of dependencies can be found in the
 [`WORKSPACE` file](WORKSPACE).
 
+### Known Issues
+
+#### libunwind linking errors
+
+In case you have libunwind installed on your system and compilation fails with undefined references:
+
+```
+undefined reference to `_ULx86_64_init_local'
+undefined reference to `_Ux86_64_getcontext'
+undefined reference to `_ULx86_64_get_reg'
+undefined reference to `_ULx86_64_step'
+```
+
+Just add `--define libunwind=true` to the build like so:
+
+```
+bazel build //cpu_instructions/tools:parse_sdm --define libunwind=true
+```
+
 
 ## Usage
 

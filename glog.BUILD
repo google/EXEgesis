@@ -28,11 +28,21 @@ cc_library(
         "-U_XOPEN_SOURCE",
     ],
     includes = ["./src"],
-    linkopts = ["-lpthread"],
+    linkopts = ["-lpthread"] + select({
+        ":libunwind": ["-lunwind"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         "//external:gflags",
     ],
+)
+
+config_setting(
+    name = "libunwind",
+    values = {
+        "define": "libunwind=true",
+    },
 )
 
 genrule(
