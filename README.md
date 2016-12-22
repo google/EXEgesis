@@ -37,12 +37,17 @@ undefined reference to `_ULx86_64_get_reg'
 undefined reference to `_ULx86_64_step'
 ```
 
-Just add `--define libunwind=true` to the build like so:
+Just add `--define libunwind=true` to the command line like so:
 
 ```
+# Building
 bazel build //cpu_instructions/tools:parse_sdm --define libunwind=true
-```
 
+# Executing
+bazel run cpu_instructions/tools:parse_sdm --define libunwind=true -- \
+  --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
+  --cpu_instructions_output_file_base=/tmp/instructions
+```
 
 ## Usage
 
