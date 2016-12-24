@@ -58,11 +58,10 @@ Status RemoveInstructionsWaitingForFpuSync(
   // NOTE(user): The space after the opcode is important, because with it,
   // the prefix does not match the stand-alone FWAIT instructions that is
   // encoded as "9B".
-  const char kFWaitPrefix[] = "9B ";
+  static constexpr char kFWaitPrefix[] = "9B ";
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
-  const auto uses_fwait_for_sync = [&kFWaitPrefix](
-      const InstructionProto& instruction) {
+  const auto uses_fwait_for_sync = [](const InstructionProto& instruction) {
     return StringPiece(instruction.binary_encoding()).starts_with(kFWaitPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
@@ -92,7 +91,7 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   // This will match also the REPE and REPNE prefixes. On the other hand, there
   // are no instructions that would use REP in their mnemonic, so optimizing
   // the matching this way is safe.
-  static const char kRepPrefix[] = "REP";
+  static constexpr char kRepPrefix[] = "REP";
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_rep_or_repne = [](const InstructionProto& instruction) {

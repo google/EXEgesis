@@ -128,7 +128,7 @@ TEST(RunTransformWithDiffTest, WithError) {
 }
 
 TEST(SortByVendorSyntaxTest, Sort) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
            encoding_scheme: 'NP'
@@ -141,7 +141,7 @@ TEST(SortByVendorSyntaxTest, Sort) {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
                            operands { name: 'DX' }}
            encoding_scheme: 'NP' binary_encoding: '6D' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
                            operands { name: 'DX' }}

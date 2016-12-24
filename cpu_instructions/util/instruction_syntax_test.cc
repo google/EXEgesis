@@ -24,7 +24,7 @@ namespace cpu_instructions {
 namespace {
 
 TEST(InstructionSyntaxTest, BuildFromStrings) {
-  static const struct {
+  constexpr struct {
     const char* input;
     const char* expected_proto;
     const char* expected_output;

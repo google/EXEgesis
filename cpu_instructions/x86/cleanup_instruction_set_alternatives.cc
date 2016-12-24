@@ -52,9 +52,9 @@ using OperandAlternativeMap =
 // Returns the list of operand alternatives indexed by the name of the operand.
 const OperandAlternativeMap& GetOperandAlternativesByName() {
   static const OperandAlternativeMap* const kAlternatives = []() {
-    static const InstructionOperand::AddressingMode DIRECT_ADDRESSING =
+    constexpr InstructionOperand::AddressingMode DIRECT_ADDRESSING =
         InstructionOperand::DIRECT_ADDRESSING;
-    static const InstructionOperand::AddressingMode INDIRECT_ADDRESSING =
+    constexpr InstructionOperand::AddressingMode INDIRECT_ADDRESSING =
         InstructionOperand::INDIRECT_ADDRESSING;
     return new OperandAlternativeMap({
         {"mm/m32",

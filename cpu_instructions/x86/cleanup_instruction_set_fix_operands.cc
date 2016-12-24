@@ -93,7 +93,7 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
     // (destination is the right operand, as expected in the Intel syntax),
     // while for CMPS LLVM only supports CMPSB BYTE PTR [RSI],BYTE PTR [RDI].
     // The following handles this.
-    static const char* const kIndexings[] = {"[RDI]", "[RSI]"};
+    constexpr const char* const kIndexings[] = {"[RDI]", "[RSI]"};
     const int dest = vendor_syntax->mnemonic() == "MOVS" ? 0 : 1;
     const int src = 1 - dest;
     vendor_syntax->mutable_operands(0)->set_name(
@@ -111,8 +111,8 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfCmpsAndMovs, 2000);
 
 Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
-  static const char kIns[] = "INS";
-  static const char kOuts[] = "OUTS";
+  constexpr char kIns[] = "INS";
+  constexpr char kOuts[] = "OUTS";
   const std::unordered_map<string, string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   Status status = Status::OK;
@@ -172,9 +172,9 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
   // Note that we're matching only the versions with operands. These versions
   // use the mnemonics without the size suffix. By matching exactly these names,
   // we can easily avoid the operand-less versions.
-  static const char kLods[] = "LODS";
-  static const char kScas[] = "SCAS";
-  static const char kStos[] = "STOS";
+  constexpr char kLods[] = "LODS";
+  constexpr char kScas[] = "SCAS";
+  constexpr char kStos[] = "STOS";
   const std::unordered_map<string, string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   const std::unordered_map<string, string> kOperandToRegister = {
@@ -239,8 +239,8 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLodsScasAndStos, 2000);
 
 Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kVMovQEncoding[] = "VEX.128.F3.0F.WIG 7E /r";
-  static const char kRegisterOrMemoryOperand[] = "xmm2/m64";
+  constexpr char kVMovQEncoding[] = "VEX.128.F3.0F.WIG 7E /r";
+  constexpr char kRegisterOrMemoryOperand[] = "xmm2/m64";
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   for (InstructionProto& instruction : *instructions) {
@@ -261,11 +261,11 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfVMovq, 2000);
 
 Status FixRegOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kR8Operand[] = "r8";
-  static const char kR16Operand[] = "r16";
-  static const char kR32Operand[] = "r32";
-  static const char kR64Operand[] = "r64";
-  static const char kRegOperand[] = "reg";
+  constexpr char kR8Operand[] = "r8";
+  constexpr char kR16Operand[] = "r16";
+  constexpr char kR32Operand[] = "r32";
+  constexpr char kR64Operand[] = "r64";
+  constexpr char kRegOperand[] = "reg";
   // The mnemonics for which we add new entries.
   const std::unordered_set<string> kExpandToAllSizes = {"LAR"};
   // The mnemonics for which we just replace reg with r8/r16/r32.
@@ -354,7 +354,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RenameOperands, 2000);
 
 Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kImplicitST0Operand[] = "ST(0)";
+  static constexpr char kImplicitST0Operand[] = "ST(0)";
   const std::unordered_set<string> kUpdatedInstructionEncodings = {
       "D8 C0+i", "D8 C8+i", "D8 E0+i", "D8 E8+i", "D8 F0+i", "D8 F8+i",
       "DB E8+i", "DB F0+i", "DE C0+i", "DE C8+i", "DE E0+i", "DE E8+i",
@@ -381,7 +381,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitST0Operand, 2000);
 
 Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kImplicitXmm0Operand[] = "<XMM0>";
+  static constexpr char kImplicitXmm0Operand[] = "<XMM0>";
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     RepeatedPtrField<InstructionOperand>* const operands =

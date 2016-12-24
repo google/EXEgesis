@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'VPCMPEQQ'
@@ -59,7 +59,7 @@ TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
            feature_name: 'AVX2'
            encoding_scheme: 'RVM'
            binary_encoding: 'VEX.NDS.256.66.0F38.WIG 29 /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'VPCMPEQQ'
@@ -83,7 +83,7 @@ TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
 }
 
 TEST(RemoveDuplicateVPCmpEqQTest, NoRemoval) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'VPCMPEQQ'
@@ -102,7 +102,7 @@ TEST(RemoveDuplicateVPCmpEqQTest, NoRemoval) {
            feature_name: 'AVX'
            encoding_scheme: 'RVM'
            binary_encoding: 'VEX.NDS.128.66.0F38.WIG 29 /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'VPCMPEQQ'
@@ -126,7 +126,7 @@ TEST(RemoveDuplicateVPCmpEqQTest, NoRemoval) {
 }
 
 TEST(RemoveInstructionsWaitingForFpuSyncTest, RemoveSomeInstructions) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'FCHS' }
            feature_name: 'X87'
@@ -143,7 +143,7 @@ TEST(RemoveInstructionsWaitingForFpuSyncTest, RemoveSomeInstructions) {
            vendor_syntax { mnemonic: 'FNSAVE' operands { name: 'm108byte' }}
            feature_name: 'X87'
            binary_encoding: 'DD /6' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'FCHS' }
            feature_name: 'X87'
@@ -161,7 +161,7 @@ TEST(RemoveInstructionsWaitingForFpuSyncTest, RemoveSomeInstructions) {
 }
 
 TEST(RemoveRepAndRepneInstructionsTest, RemoveSomeInstructions) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'REP STOS' operands { name: 'm8' }}
            encoding_scheme: 'NP'
@@ -190,7 +190,7 @@ TEST(RemoveRepAndRepneInstructionsTest, RemoveSomeInstructions) {
            vendor_syntax { mnemonic: 'CMPSB' }
            encoding_scheme: 'NP'
            binary_encoding: 'A6' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
            encoding_scheme: 'NP'
@@ -208,7 +208,7 @@ TEST(RemoveRepAndRepneInstructionsTest, RemoveSomeInstructions) {
 }
 
 TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'AAS' }
            available_in_64_bit: false
@@ -228,7 +228,7 @@ TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
            available_in_64_bit: false
            encoding_scheme: 'O'
            binary_encoding: '66 48+rw' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'CALL' operands { name: 'm16:32' }}
            encoding_scheme: 'M'
@@ -243,7 +243,7 @@ TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
 }
 
 TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'FUCOM' operands { name: 'ST(i)' }}
            feature_name: 'X87'
@@ -271,7 +271,7 @@ TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
            vendor_syntax { mnemonic: 'FADDP' }
            feature_name: 'X87'
            binary_encoding: 'DE C1' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'FUCOM' operands { name: 'ST(i)' }}
            feature_name: 'X87'

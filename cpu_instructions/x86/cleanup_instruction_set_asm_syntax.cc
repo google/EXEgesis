@@ -35,8 +35,9 @@ using ::cpu_instructions::util::Status;
 
 char GetSuffixFromPointerType(StringPiece operand) {
   string result;
-  static const char* const kPointerTypes[] = {"BYTE", "WORD", "DWORD", "QWORD"};
-  for (const string& pointer_type : kPointerTypes) {
+  constexpr const char* const kPointerTypes[] = {"BYTE", "WORD", "DWORD",
+                                                 "QWORD"};
+  for (const char* const pointer_type : kPointerTypes) {
     if (operand.starts_with(pointer_type)) {
       return pointer_type[0];
     }

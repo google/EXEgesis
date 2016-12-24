@@ -39,9 +39,9 @@ using ::cpu_instructions::util::Status;
 
 Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kAddressSizeOverridePrefix[] = "67 ";
-  static const char k32BitImmediateValueSuffix[] = " id";
-  static const char k64BitImmediateValueSuffix[] = " io";
+  constexpr char kAddressSizeOverridePrefix[] = "67 ";
+  constexpr char k32BitImmediateValueSuffix[] = " id";
+  constexpr char k64BitImmediateValueSuffix[] = " io";
   const std::unordered_set<string> kEncodingSpecifications = {
       "A0", "REX.W + A0", "A1", "REX.W + A1",
       "A2", "REX.W + A2", "A3", "REX.W + A3"};
@@ -77,7 +77,7 @@ namespace {
 // added and a warning is printed to the log.
 void AddRexWPrefixToInstructionProto(InstructionProto* instruction) {
   CHECK(instruction != nullptr);
-  static const char kRexWPrefix[] = "REX.W";
+  constexpr char kRexWPrefix[] = "REX.W";
   const string& binary_encoding = instruction->binary_encoding();
   if (binary_encoding.find(kRexWPrefix) == string::npos) {
     instruction->set_binary_encoding(StrCat(kRexWPrefix, " ", binary_encoding));
@@ -92,9 +92,9 @@ void AddRexWPrefixToInstructionProto(InstructionProto* instruction) {
 Status FixBinaryEncodingSpecificationOfPopFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kPopInstruction[] = "POP";
-  static const char k16Bits[] = "16 bits";
-  static const char k64Bits[] = "64 bits";
+  constexpr char kPopInstruction[] = "POP";
+  constexpr char k16Bits[] = "16 bits";
+  constexpr char k64Bits[] = "64 bits";
   const std::unordered_set<string> kFsAndGsOperands = {"FS", "GS"};
 
   // First find all occurences of the POP FS and GS instructions.
@@ -137,7 +137,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecificationOfPopFsAndGs,
 Status FixBinaryEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kPushInstruction[] = "PUSH";
+  constexpr char kPushInstruction[] = "PUSH";
   const std::unordered_set<string> kFsAndGsOperands = {"FS", "GS"};
 
   // Find the existing PUSH instructions for FS and GS, and create the remaining
@@ -171,7 +171,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecificationOfPushFsAndGs,
 
 Status FixAndCleanUpBinaryEncodingSpecificationsOfSetInstructions(
     InstructionSetProto* instruction_set) {
-  static const char* const kBinaryEncodings[] = {
+  constexpr const char* const kBinaryEncodings[] = {
       "0F 90", "0F 91", "0F 92", "0F 93", "0F 93", "0F 94",
       "0F 95", "0F 96", "0F 97", "0F 98", "0F 99", "0F 9A",
       "0F 9B", "0F 9C", "0F 9D", "0F 9E", "0F 9F",
@@ -211,7 +211,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(
 Status FixBinaryEncodingSpecificationOfXBegin(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kXBeginBinaryEncoding[] = "C7 F8";
+  constexpr char kXBeginBinaryEncoding[] = "C7 F8";
   const std::unordered_map<string, string> kOperandToBinaryEncoding = {
       {"rel16", "66 C7 F8 cw"}, {"rel32", "C7 F8 cd"}};
   Status status = Status::OK;
@@ -259,16 +259,16 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecifications, 1000);
 Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static const char kFullModRmSuffix[] = "/r";
+  constexpr char kFullModRmSuffix[] = "/r";
   const std::unordered_set<string> kMissingModRMInstructionMnemonics = {
       "CVTDQ2PD", "VMOVD"};
-  static const char kImmediateByteSuffix[] = "ib";
+  constexpr char kImmediateByteSuffix[] = "ib";
   const std::unordered_set<string> kMissingImmediateInstructionMnemonics = {
       "KSHIFTLB", "KSHIFTLW", "KSHIFTLD",  "KSHIFTLQ",    "KSHIFTRB",
       "KSHIFTRW", "KSHIFTRD", "KSHIFTRQ",  "VFIXUPIMMPS", "VFPCLASSSS",
       "VRANGESD", "VRANGESS", "VREDUCESD",
   };
-  static const char kVSibSuffix[] = "/vsib";
+  constexpr char kVSibSuffix[] = "/vsib";
   const std::unordered_set<string> kMissingVSibInstructionMnemonics = {
       "VGATHERDPD", "VGATHERQPD", "VGATHERDPS", "VGATHERQPS",
       "VPGATHERDD", "VPGATHERDQ", "VPGATHERQD", "VPGATHERQQ",

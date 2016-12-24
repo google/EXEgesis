@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'STOSQ' }
            legacy_instruction: false
@@ -32,7 +32,7 @@ TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
            vendor_syntax { mnemonic: 'STOSW' }
            encoding_scheme: 'NA'
            binary_encoding: 'AB' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'STOSQ' }
            legacy_instruction: false
@@ -47,7 +47,7 @@ TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
 }
 
 TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
@@ -109,7 +109,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         value_size_bits: 32 }}
            encoding_scheme: 'RM'
            binary_encoding: 'F2 0F 38 F1 /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
@@ -176,7 +176,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
 }
 
 TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -255,7 +255,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         value_size_bits: 32 }}
            encoding_scheme: 'NP'
            binary_encoding: 'EF' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'ADC'

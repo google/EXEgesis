@@ -187,7 +187,9 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   // The parser matches all the possible prefixes and removes them from the
   // specification. When the string does not match anymore, it assues that this
   // is the beginning of the opcode and switches to parsing the opcode.
-  static const char kLegacyPrefixRegex[] =
+  // NOTE(user): kLegacyPrefixRegex must be static - removing it causes an
+  // internal compiler error on gcc 4.8.
+  static constexpr char kLegacyPrefixRegex[] =
       " *(?:"                  // Optional whitespace before the prefix.
       "(66)|"                  // The operand size override prefix.
       "(67)|"                  // THe address size override prefix.
@@ -246,7 +248,9 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   // NOTE(user): Note that some of the fields do not affect the size of the
   // instruction encoding, so we just check that they have a valid value, but we
   // do not extract this value out of the regexp.
-  static const char kVexPrefixRegexp[] =
+  // NOTE(user): kVexPrefixRegexp must be static - removing it causes an
+  // internal compiler error on gcc 4.8.
+  static constexpr char kVexPrefixRegexp[] =
       "(E?VEX)"                    // The VEX prefix.
       "(?: *\\. *(NDS|NDD|DDS))?"  // The directionality of the operand(s).
       "(?: *\\. *(LIG|LZ|L0|L1|LIG\\.128|128|256|512))?"  // Interpretation of

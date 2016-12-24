@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddMissingCpuFlagsTest, AddsMissing) {
-  static const char kInstructionSetProto[] = R"(
+  constexpr char kInstructionSetProto[] = R"(
       instructions {
         vendor_syntax { mnemonic: 'CLFLUSH' }
       }
@@ -31,7 +31,7 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
         encoding_scheme: 'NP'
         binary_encoding: '6C'
       })";
-  static const char kExpectedInstructionSetProto[] = R"(
+  constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         vendor_syntax { mnemonic: 'CLFLUSH' }
         feature_name: 'CLFSH'
@@ -46,7 +46,7 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
 }
 
 TEST(AddRestrictedModesTest, AddsProtectionModes) {
-  static const char kInstructionSetProto[] = R"(
+  constexpr char kInstructionSetProto[] = R"(
       instructions {
         vendor_syntax { mnemonic: 'HLT' }
       }
@@ -57,7 +57,7 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
           operands { name: 'imm64' }
         }
       })";
-  static const char kExpectedInstructionSetProto[] = R"(
+  constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         vendor_syntax { mnemonic: 'HLT' }
         protection_mode: 0

@@ -22,13 +22,13 @@ namespace x86 {
 namespace {
 
 TEST(AddIntelAsmSyntaxTest, StringMnemonic) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'CMPS'
              operands { name: 'BYTE PTR [RSI]' }
              operands { name: 'BYTE PTR [RDI]' }}})";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'CMPS'
@@ -43,13 +43,13 @@ TEST(AddIntelAsmSyntaxTest, StringMnemonic) {
 }
 
 TEST(AddIntelAsmSyntaxTest, MovImm64) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'MOV'
              operands { name: 'r64' }
              operands { name: 'imm64' }}})";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'MOV'
@@ -64,13 +64,13 @@ TEST(AddIntelAsmSyntaxTest, MovImm64) {
 }
 
 TEST(AddIntelAsmSyntaxTest, LSLR64) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'LSL'
              operands { name: 'r64' }
              operands { name: 'r32/m16' }}})";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'LSL'

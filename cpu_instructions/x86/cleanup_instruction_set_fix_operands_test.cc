@@ -28,7 +28,7 @@ using ::cpu_instructions::util::IsInvalidArgument;
 using ::cpu_instructions::util::Status;
 
 TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'MOVS'
@@ -54,7 +54,7 @@ TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
              operands { name: 'm64' }}
            legacy_instruction: false
            encoding_scheme: 'NP' binary_encoding: 'REX.W + A7' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'MOVS'
@@ -90,7 +90,7 @@ TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
 }
 
 TEST(FixOperandsOfInsAndOutsTest, Ins) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
                            operands { name: 'DX' }}
@@ -99,7 +99,7 @@ TEST(FixOperandsOfInsAndOutsTest, Ins) {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
                            operands { name: 'DX' }}
            encoding_scheme: 'NP' binary_encoding: '6D' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'INS'
@@ -117,7 +117,7 @@ TEST(FixOperandsOfInsAndOutsTest, Ins) {
 }
 
 TEST(FixOperandsOfInsAndOutsTest, Outs) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'OUTS'
@@ -130,7 +130,7 @@ TEST(FixOperandsOfInsAndOutsTest, Outs) {
              operands { name: 'DX' usage: USAGE_READ }
              operands { name: 'm32' usage: USAGE_READ }}
            encoding_scheme: 'NP' binary_encoding: '6F' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'OUTS'
@@ -148,12 +148,12 @@ TEST(FixOperandsOfInsAndOutsTest, Outs) {
 }
 
 TEST(FixOperandsOfLodsScasAndStosTest, Scas) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
            encoding_scheme: 'NP'
            binary_encoding: 'AE' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'SCAS'
@@ -169,7 +169,7 @@ TEST(FixOperandsOfLodsScasAndStosTest, Scas) {
 }
 
 TEST(FixOperandsOfLodsScasAndStosTest, Stos) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'STOS' operands { name: 'm8' }}
            encoding_scheme: 'NA'
@@ -191,7 +191,7 @@ TEST(FixOperandsOfLodsScasAndStosTest, Stos) {
            vendor_syntax { mnemonic: 'STOSB' }
            encoding_scheme: 'NA'
            binary_encoding: 'AA' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'STOS'
@@ -242,7 +242,7 @@ TEST(FixOperandsOfLodsScasAndStosTest, Stos) {
 }
 
 TEST(FixOperandsOfLodsAndStosTest, Lods) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'LODS' operands { name: 'm8' }}
            encoding_scheme: 'NA'
@@ -264,7 +264,7 @@ TEST(FixOperandsOfLodsAndStosTest, Lods) {
            vendor_syntax { mnemonic: 'LODSB' }
            encoding_scheme: 'NA'
            binary_encoding: 'AC' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'LODS'
@@ -315,7 +315,7 @@ TEST(FixOperandsOfLodsAndStosTest, Lods) {
 }
 
 TEST(FixOperandsOfVMovqTest, FixOperand) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'VMOVQ'
@@ -338,7 +338,7 @@ TEST(FixOperandsOfVMovqTest, FixOperand) {
            feature_name: 'AVX'
            encoding_scheme: 'RM'
            binary_encoding: 'VEX.128.F3.0F.WIG 7E /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'VMOVQ' operands { name: 'xmm1' }
                            operands { name: 'xmm2/m64' }}
@@ -364,7 +364,7 @@ TEST(FixOperandsOfVMovqTest, FixOperand) {
 }
 
 TEST(FixRegOperandsTest, FixOperand) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'LAR' operands { name: 'r16' }
                            operands { name: 'r16' }}
@@ -389,7 +389,7 @@ TEST(FixRegOperandsTest, FixOperand) {
            legacy_instruction: false
            encoding_scheme: 'MR'
            binary_encoding: 'REX.W + 0F 7E /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'LAR' operands { name: 'r16' }
                            operands { name: 'r16' }}
@@ -424,7 +424,7 @@ TEST(FixRegOperandsTest, FixOperand) {
 }
 
 TEST(FixRegOperandsTest, UnexpectedMnemonic) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'LARfoo'
@@ -439,7 +439,7 @@ TEST(FixRegOperandsTest, UnexpectedMnemonic) {
 }
 
 TEST(RemoveImplicitST0OperandTest, NoRemoval) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FCMOVE'
@@ -456,7 +456,7 @@ TEST(RemoveImplicitST0OperandTest, NoRemoval) {
 }
 
 TEST(RemoveImplicitST0OperandTest, RemoveSomeOperands) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FCMOVE'
@@ -475,7 +475,7 @@ TEST(RemoveImplicitST0OperandTest, RemoveSomeOperands) {
            vendor_syntax { mnemonic: 'FCOM' }
            feature_name: 'X87'
            binary_encoding: 'D8 D1' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FCMOVE'
@@ -496,7 +496,7 @@ TEST(RemoveImplicitST0OperandTest, RemoveSomeOperands) {
 }
 
 TEST(RemoveImplicitXmm0OperandTest, NoRemoval) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'VFMADD132PD'
@@ -513,7 +513,7 @@ TEST(RemoveImplicitXmm0OperandTest, NoRemoval) {
 // NOTE(user): All instructions using the implicit XMM0 use it as the last
 // operand. Thus, we do not test any other case.
 TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'BLENDVPS'
@@ -523,7 +523,7 @@ TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
            feature_name: 'SSE4_1'
            encoding_scheme: 'RM0'
            binary_encoding: '66 0F 38 14 /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'BLENDVPS'
@@ -537,7 +537,7 @@ TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
 }
 
 TEST(RenameOperandsTest, NoRenaming) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FADD'
@@ -555,7 +555,7 @@ TEST(RenameOperandsTest, NoRenaming) {
 }
 
 TEST(RenameOperandsTest, InstructionWithST) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FADD'
@@ -563,7 +563,7 @@ TEST(RenameOperandsTest, InstructionWithST) {
              operands { name: 'ST' }}
            feature_name: 'X87'
            binary_encoding: 'DE C0+i' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FADD'
@@ -576,14 +576,14 @@ TEST(RenameOperandsTest, InstructionWithST) {
 }
 
 TEST(RenameOperandsTest, InstructionWithM80Dec) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FBLD'
              operands { name: 'm80dec' }}
            feature_name: 'X87'
            binary_encoding: 'DF /4' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FBLD'

@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddOperandInfoTest, AddInfo) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'STOS'
@@ -43,7 +43,7 @@ TEST(AddOperandInfoTest, AddInfo) {
            feature_name: 'AVX'
            encoding_scheme: 'RM'
            binary_encoding: 'VEX.128.66.0F.W0 6E /r' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'STOS'
@@ -84,7 +84,7 @@ TEST(AddOperandInfoTest, AddInfo) {
 }
 
 TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
-  static const char kInstructionSetProto[] = R"(
+  constexpr char kInstructionSetProto[] = R"(
       instructions {
         vendor_syntax {
           mnemonic: 'STUFF'
@@ -115,7 +115,7 @@ TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
           }
         }
       })";
-  static const char kExpectedInstructionSetProto[] = R"(
+  constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         vendor_syntax {
           mnemonic: 'STUFF'

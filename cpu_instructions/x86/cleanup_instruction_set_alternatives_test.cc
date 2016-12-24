@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddAlternativesTest, InstructionWithRM8) {
-  static const char kInstructionSetProto[] = R"(
+  constexpr char kInstructionSetProto[] = R"(
       instructions {
         description: "Add with carry r/m8 to byte register."
         vendor_syntax {
@@ -39,7 +39,7 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
         legacy_instruction: true
         encoding_scheme: "RM"
         binary_encoding: "12 /r" })";
-  static const char kExpectedInstructionSetProto[] = R"(
+  constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         description: "Add with carry r/m8 to byte register."
         vendor_syntax {
@@ -77,7 +77,7 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
 }
 
 TEST(AddAlternativesTest, DifferentSizes) {
-  static const char kInstructionSetProto[] = R"(
+  constexpr char kInstructionSetProto[] = R"(
       instructions {
         description: "Insert a byte integer value from r32/m8 into xmm1 at the "
                      "destination element in xmm1 specified by imm8."
@@ -100,7 +100,7 @@ TEST(AddAlternativesTest, DifferentSizes) {
         legacy_instruction: true
         encoding_scheme: "RMI"
         binary_encoding: "66 0F 3A 20 /r ib" })";
-  static const char kExpectedInstructionSetProto[] = R"(
+  constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         description: "Insert a byte integer value from r32/m8 into xmm1 at the "
                      "destination element in xmm1 specified by imm8."
@@ -150,14 +150,14 @@ TEST(AddAlternativesTest, DifferentSizes) {
 }
 
 TEST(AddAlternativesTest, NoRenaming) {
-  static const char kInstructionSetProto[] =
+  constexpr char kInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FBLD'
              operands { name: 'm80bcd' }}
            feature_name: 'X87'
            binary_encoding: 'DF /4' })";
-  static const char kExpectedInstructionSetProto[] =
+  constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FBLD'
