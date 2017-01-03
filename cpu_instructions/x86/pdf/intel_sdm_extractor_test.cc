@@ -44,13 +44,12 @@ TEST(IntelSdmExtractorTest, BitSetPage) {
     Cluster(&page);
   }
 
-  SdmDocument sdm_document;
-  ProcessIntelPdfDocument(&pdf_document, &sdm_document);
+  const SdmDocument sdm_document = ProcessIntelPdfDocument(pdf_document);
   EXPECT_THAT(sdm_document,
               EqualsProto(GetProto<SdmDocument>("253666_p170_p171_sdmdoc")));
 
-  InstructionSetProto instruction_set;
-  ProcessIntelSdmDocument(&sdm_document, &instruction_set);
+  const InstructionSetProto instruction_set =
+      ProcessIntelSdmDocument(sdm_document);
   EXPECT_THAT(instruction_set, EqualsProto(GetProto<InstructionSetProto>(
                                    "253666_p170_p171_instructionset")));
 }

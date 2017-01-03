@@ -25,10 +25,9 @@ namespace cpu_instructions {
 namespace x86 {
 namespace pdf {
 
-void ProcessIntelPdfDocument(PdfDocument* document, SdmDocument* sdm_document);
+SdmDocument ProcessIntelPdfDocument(const PdfDocument& document);
 
-void ProcessIntelSdmDocument(SdmDocument* sdm_document,
-                             InstructionSetProto* instruction_set);
+InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document);
 
 // Parses the contents of an operand encoding cell.
 InstructionTable::OperandEncodingCrossref::OperandEncoding

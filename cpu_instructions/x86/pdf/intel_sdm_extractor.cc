@@ -219,8 +219,8 @@ GetInstructionModeMatchers() {
   return *kModes;
 }
 
-const std::set<StringPiece>& GetValidFeatureSet() {
-  static const auto* kValidFeatures = new std::set<StringPiece>{
+const std::set<string>& GetValidFeatureSet() {
+  static const auto* kValidFeatures = new std::set<string>{
       "3DNOW",      "ADX",      "AES",        "AVX",      "AVX2",
       "AVX512BW",   "AVX512CD", "AVX512DQ",   "AVX512ER", "AVX512F",
       "AVX512IFMA", "AVX512PF", "AVX512VBMI", "AVX512VL", "BMI1",
@@ -405,11 +405,12 @@ void ParseCell(const InstructionTable::Column column, string text,
       // is one of the valid feature values.
       const string cleaned = FixFeature(text);
       string* feature_name = instruction->mutable_feature_name();
-      for (StringPiece piece : strings::Split(cleaned, " ")) {  // NOLINT
+      for (StringPiece raw_piece : strings::Split(cleaned, " ")) {  // NOLINT
+        const string piece = raw_piece.ToString();
         if (!feature_name->empty()) feature_name->append(" ");
         const bool is_logic_operator = piece == "&&" || piece == "||";
         if (is_logic_operator || ContainsKey(GetValidFeatureSet(), piece)) {
-          piece.AppendToString(feature_name);
+          StrAppend(feature_name, piece);
         } else {
           feature_name->append(kUnknown);
           LOG(ERROR) << "Invalid Feature : " << piece
@@ -770,15 +771,15 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
   return encoding;
 }
 
-void ProcessIntelPdfDocument(PdfDocument* document, SdmDocument* sdm_document) {
-  const PdfDocument& pdf = *document;
+SdmDocument ProcessIntelPdfDocument(const PdfDocument& pdf) {
   // Find all instruction pages.
+  SdmDocument sdm_document;
   std::map<string, Pages> instruction_to_pages;
   for (int i = 0; i < pdf.pages_size(); ++i) {
     const string instruction_name = GetInstructionId(pdf.pages(i));
     if (instruction_name.empty()) continue;
     instruction_to_pages[instruction_name] =
-        GetInstructionsPages(*document, i, instruction_name);
+        GetInstructionsPages(pdf, i, instruction_name);
   }
   // Now processing instruction pages
   for (const auto& id_pages_pair : instruction_to_pages) {
@@ -789,17 +790,19 @@ void ProcessIntelPdfDocument(PdfDocument* document, SdmDocument* sdm_document) {
               << pages.front()->number() << "-" << pages.back()->number();
     section.set_id(id);
     ProcessSubSections(ExtractSubSectionRows(pages), &section);
-    section.Swap(sdm_document->add_instruction_sections());
+    section.Swap(sdm_document.add_instruction_sections());
   }
+  return sdm_document;
 }
 
-void ProcessIntelSdmDocument(SdmDocument* sdm_document,
-                             InstructionSetProto* instruction_set) {
-  for (const auto& section : sdm_document->instruction_sections()) {
+InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document) {
+  InstructionSetProto instruction_set;
+  for (const auto& section : sdm_document.instruction_sections()) {
     for (const auto& instruction : section.instruction_table().instructions()) {
-      *instruction_set->add_instructions() = instruction;
+      *instruction_set.add_instructions() = instruction;
     }
   }
+  return instruction_set;
 }
 
 }  // namespace pdf

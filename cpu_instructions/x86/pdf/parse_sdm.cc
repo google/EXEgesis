@@ -201,9 +201,6 @@ InstructionSetProto ParseSdmOrDie(const string& input_spec,
     const auto* config = GetConfigOrNull(patch_sets, pdf_document_id);
     CHECK(config) << "Unsupported version. Metadata:\n"
                   << pdf_document_id.DebugString();
-    InstructionSetProto instruction_set;
-    *instruction_set.add_source_info() =
-        CreateInstructionSetSourceInfo(metadata);
 
     LOG(INFO) << "Reading PDF file";
     ProtobufOutputDevice output_device(*config, &pdf_document);
@@ -218,12 +215,13 @@ InstructionSetProto ParseSdmOrDie(const string& input_spec,
     WriteBinaryProtoOrDie(pb_filename, pdf_document);
 
     LOG(INFO) << "Extracting instruction set";
-    SdmDocument sdm_document;
-    ProcessIntelPdfDocument(&pdf_document, &sdm_document);
+    const SdmDocument sdm_document = ProcessIntelPdfDocument(pdf_document);
     const string sdm_pb_filename = StrCat(output_base, "_", spec_id, ".sdm.pb");
     LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
     WriteBinaryProtoOrDie(sdm_pb_filename, sdm_document);
-    ProcessIntelSdmDocument(&sdm_document, &instruction_set);
+    InstructionSetProto instruction_set = ProcessIntelSdmDocument(sdm_document);
+    *instruction_set.add_source_info() =
+        CreateInstructionSetSourceInfo(metadata);
     full_instruction_set.MergeFrom(instruction_set);
   }
 
