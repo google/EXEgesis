@@ -36,7 +36,7 @@ message InstructionSection {
 }
 
 // A SubSection of an InstructionSection.
-// It represents a paragraph suchas "Instruction Operand Encoding", "Flags
+// It represents a paragraph such as "Instruction Operand Encoding", "Flags
 // affected", "Description", ...
 message SubSection {
   enum Type {

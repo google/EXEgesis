@@ -51,11 +51,21 @@ bazel run cpu_instructions/tools:parse_sdm --define libunwind=true -- \
 
 ## Usage
 
-To use this code, you will need to download the Intel SDM.
+To use this code, you will need to download the Intel SDM. This parser supports
+at least the following versions of the manual:
 
-This version of the code targets the September 2016 version of the SDM, which
-can be found [in the Internet Archive](https://web.archive.org/web/20161029005713/http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf).
-The most recent version of the SDM can be downloaded from the [Intel Developer Zone](http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf).
+*   December 2016: Intel® 64 and IA-32 architectures software developer’s manual
+    combined volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, and 3D
+*   September 2016: Intel® 64 and IA-32 Architectures Software Developer’s
+    Manual Volume 2 (2A, 2B, 2C & 2D): Instruction Set Reference, A-Z
+
+For the complete list of supported and tested versions, see the file
+[`pdf_document_patches.pbtxt`](cpu_instructions/x86/pdf/pdf_document_patches.pbtxt).
+
+The most recent version of the SDM can be downloaded from the [Intel Developer
+Zone](https://software.intel.com/en-us/articles/intel-sdm). The September 2016
+and earlier versions can be found [in the Internet
+Archive](https://web.archive.org/web/20161029005713/http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf).
 
 Here's a sample command line to parse all instructions, assuming that the manual
 has been downloaded as `/path/to/intel-sdm.pdf`.
@@ -124,14 +134,13 @@ information.
 
 ### PDF Formatting Issues And Typos:
 
-#### Sept2016
+#### September 2016
 
 This is a non-exhaustive list of additional issues with this version of the PDF:
 
 *   Vendor syntax is missing for some instructions, e.g. `PACKUSDW`
 
-
-#### June2016
+#### June 2016
 
 This is a non-exhaustive list of additional issues with this version of the PDF:
 
@@ -144,8 +153,7 @@ This is a non-exhaustive list of additional issues with this version of the PDF:
 *   Page titles are not consistent between pages for multi-page intructions
     (e.g. `VEXP2PD`).
 
-
-#### April2016
+#### April 2016
 
 *   Tables don't have a structure, they are just text. The content of each cell
     can be split on several lines. So we have to recreate the structure with
