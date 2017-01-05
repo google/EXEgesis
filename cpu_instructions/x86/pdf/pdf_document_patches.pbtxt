@@ -1747,11 +1747,55 @@ documents {
     }
   }
   pages {
+    page_number: 692
+    patches {
+      row: 3 col: 2
+      expected:    "M"
+      replacement: "D"
+    }
+    patches {
+      row: 4 col: 2
+      expected:    "M"
+      replacement: "D"
+    }
+  }
+  pages {
     page_number: 877
     patches {
       row: 3 col: 2
       expected:    "VV"
       replacement: "V/V"
+    }
+  }
+  pages {
+    page_number: 1017
+    patches {
+      row: 11 col: 1
+      expected:    "imm8"
+      replacement: "NA"
+    }
+    patches {
+      row: 11 col: 2
+      expected:    "NA"
+      replacement: "imm8"
+    }
+  }
+  pages {
+    page_number: 1058
+    patches {
+      row: 11 col: 2
+      expected:    "D"
+      replacement: "M"
+    }
+    patches {
+      row: 12 col: 2
+      expected:    "D"
+      replacement: "M"
+    }
+    patches {
+      row: 13 col: 2
+      expected:    "D"
+      replacement: "M"
     }
   }
   pages {
@@ -1881,6 +1925,14 @@ documents {
       row: 11 col: 0
       expected:    "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
       replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
+    }
+  }
+  pages {
+    page_number: 1204
+    patches {
+      row: 12 col: 1
+      expected:    "ModRM:r/m (r)"
+      replacement: "ModRM:reg (r)"
     }
   }
   pages {
