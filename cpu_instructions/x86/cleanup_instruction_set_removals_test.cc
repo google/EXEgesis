@@ -289,6 +289,40 @@ TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
                 kExpectedInstructionSetProto);
 }
 
+TEST(RemoveUndefinedInstructionsTest, RemoveSomeInstructions) {
+  constexpr char kInstructionSetProto[] =
+      R"(instructions {
+           vendor_syntax { mnemonic: 'FUCOM' operands { name: 'ST(i)' }}
+           feature_name: 'X87'
+           binary_encoding: 'DD E0+i' }
+         instructions {
+           vendor_syntax { mnemonic: "UD0" }
+           binary_encoding: "0F FF" }
+         instructions {
+           vendor_syntax { mnemonic: 'FFREE' operands { name: 'ST(i)' }}
+           feature_name: 'X87'
+           binary_encoding: 'DD C0+i' }
+         instructions {
+           vendor_syntax { mnemonic: 'FADDP' }
+           feature_name: 'X87'
+           binary_encoding: 'DE C1' })";
+  constexpr char kExpectedInstructionSetProto[] =
+      R"(instructions {
+           vendor_syntax { mnemonic: 'FUCOM' operands { name: 'ST(i)' }}
+           feature_name: 'X87'
+           binary_encoding: 'DD E0+i' }
+         instructions {
+           vendor_syntax { mnemonic: 'FFREE' operands { name: 'ST(i)' }}
+           feature_name: 'X87'
+           binary_encoding: 'DD C0+i' }
+         instructions {
+           vendor_syntax { mnemonic: 'FADDP' }
+           feature_name: 'X87'
+           binary_encoding: 'DE C1' })";
+  TestTransform(RemoveUndefinedInstructions, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace cpu_instructions

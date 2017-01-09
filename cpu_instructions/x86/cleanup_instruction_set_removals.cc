@@ -21,6 +21,7 @@
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "strings/string_view.h"
+#include "util/gtl/container_algorithm.h"
 #include "util/gtl/map_util.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/proto/instructions.pb.h"
@@ -29,6 +30,7 @@
 namespace cpu_instructions {
 namespace x86 {
 
+using ::cpu_instructions::gtl::c_linear_search;
 using ::cpu_instructions::util::Status;
 
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
@@ -158,6 +160,22 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   return Status::OK;
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveSpecialCaseInstructions, 0);
+
+Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set) {
+  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+      instruction_set->mutable_instructions();
+  const auto is_undefined_instruction =
+      [](const InstructionProto& instruction) {
+        constexpr const char* const kRemovedInstructions[] = {"UD0", "UD1"};
+        return c_linear_search(kRemovedInstructions,
+                               instruction.vendor_syntax().mnemonic());
+      };
+  instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
+                                     is_undefined_instruction),
+                      instructions->end());
+  return Status::OK;
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveUndefinedInstructions, 0);
 
 }  // namespace x86
 }  // namespace cpu_instructions

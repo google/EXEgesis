@@ -4,6 +4,11 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "container_algorithm",
+    hdrs = ["container_algorithm.h"],
+)
+
+cc_library(
     name = "map_util",
     hdrs = ["map_util.h"],
     deps = [

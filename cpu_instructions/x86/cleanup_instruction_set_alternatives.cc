@@ -127,11 +127,21 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
         {"ymm3/m256",
          {{"ymm3", DIRECT_ADDRESSING, 256},
           {"m256", INDIRECT_ADDRESSING, 256}}},
+        {"xmm3/m128/m32bcst",
+         {
+             {"xmm3", DIRECT_ADDRESSING, 128},
+             {"m128", INDIRECT_ADDRESSING, 128},
+             // TODO(user): Re-enable broadcasted arguments when we have a
+             // way to represent them in the proto.
+             // {"m64bcst", INDIRECT_ADDRESSING, 128},
+         }},
         {"xmm3/m128/m64bcst",
          {
              {"xmm3", DIRECT_ADDRESSING, 128},
              {"m128", INDIRECT_ADDRESSING, 128},
-             {"m64bcst", INDIRECT_ADDRESSING, 128},
+             // TODO(user): Re-enable broadcasted arguments when we have a
+             // way to represent them in the proto.
+             // {"m64bcst", INDIRECT_ADDRESSING, 128},
          }},
         {"bnd1/m128",
          {{"bnd1", DIRECT_ADDRESSING, 128},
@@ -183,7 +193,7 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
       // only kind of alternatives that can be expressed through operand
       // encoding.
       if (operand->addressing_mode() !=
-          InstructionOperand::ANY_ADDRESSING_MODE) {
+          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS) {
         return InvalidArgumentError(StrCat(
             "The addressing mode does not allow splitting: ",
             InstructionOperand::AddressingMode_Name(operand->addressing_mode()),

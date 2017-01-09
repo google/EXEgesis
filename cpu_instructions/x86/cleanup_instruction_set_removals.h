@@ -62,6 +62,11 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set);
 // and ST(i), and encodes to the same sequence of bytes when used with ST(1).
 Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set);
 
+// Removes the UD0 and UD1 instructions introduced in the December 2016 version
+// of the SDM. These instructions are not "real" instructions - they raise the
+// "undefined opcode" exception, by using an undefined opcode.
+Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace cpu_instructions
 

@@ -31,7 +31,7 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
                      encoding: MODRM_REG_ENCODING
                      value_size_bits: 8
                      name: "r8" }
-          operands { addressing_mode: ANY_ADDRESSING_MODE
+          operands { addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                      encoding: MODRM_RM_ENCODING
                      value_size_bits: 8
                      name: "r/m8" }}
@@ -87,7 +87,7 @@ TEST(AddAlternativesTest, DifferentSizes) {
                      encoding: MODRM_REG_ENCODING
                      value_size_bits: 128
                      name: "xmm1" }
-          operands { addressing_mode: ANY_ADDRESSING_MODE
+          operands { addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                      encoding: MODRM_RM_ENCODING
                      value_size_bits: 8
                      name: "r32/m8" }

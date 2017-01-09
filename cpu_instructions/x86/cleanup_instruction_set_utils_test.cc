@@ -30,7 +30,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
   constexpr char kInstructionProto[] = R"(
       vendor_syntax {
         mnemonic: 'ADC'
-        operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+        operands { name: 'r/m16'
+                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                    encoding: MODRM_RM_ENCODING
                    value_size_bits: 16 }
         operands { name: 'imm16' addressing_mode: NO_ADDRESSING
@@ -41,7 +42,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
   constexpr char kExpectedInstructionProto[] = R"(
         vendor_syntax {
         mnemonic: 'ADC'
-        operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+        operands { name: 'r/m16'
+                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                    encoding: MODRM_RM_ENCODING
                    value_size_bits: 16 }
         operands { name: 'imm16' addressing_mode: NO_ADDRESSING
@@ -60,7 +62,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
   constexpr char kInstructionProto[] = R"(
       vendor_syntax {
         mnemonic: 'ADC'
-        operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+        operands { name: 'r/m16'
+                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                    encoding: MODRM_RM_ENCODING
                    value_size_bits: 16 }
         operands { name: 'imm16' addressing_mode: NO_ADDRESSING

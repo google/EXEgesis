@@ -261,6 +261,7 @@ cc_library(
         "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
         "//external:protobuf_clib",
         "//strings",
+        "//util/gtl:container_algorithm",
         "//util/gtl:map_util",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",

@@ -51,7 +51,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
       R"(instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
@@ -59,7 +60,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
-             operands { name: 'r32/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r32/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
@@ -67,7 +69,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
-             operands { name: 'r64/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r64/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
@@ -94,7 +97,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
                         encoding: MODRM_REG_ENCODING
                         value_size_bits: 32 }
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'RM'
@@ -104,7 +108,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
                         encoding: MODRM_REG_ENCODING
                         value_size_bits: 32 }
-             operands { name: 'r/m32' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m32'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'RM'
@@ -113,7 +118,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
       R"(instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
@@ -121,7 +127,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
-             operands { name: 'r32/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r32/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
@@ -129,7 +136,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
-             operands { name: 'r64/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r64/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
@@ -156,7 +164,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
                         encoding: MODRM_REG_ENCODING
                         value_size_bits: 32 }
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'RM'
@@ -166,7 +175,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
                         encoding: MODRM_REG_ENCODING
                         value_size_bits: 32 }
-             operands { name: 'r/m32' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m32'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'RM'
@@ -180,7 +190,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
       R"(instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }
              operands { name: 'imm16' addressing_mode: NO_ADDRESSING
@@ -191,7 +202,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m32' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m32'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }
              operands { name: 'imm32' addressing_mode: NO_ADDRESSING
@@ -202,7 +214,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }
              operands { name: 'imm8' addressing_mode: NO_ADDRESSING
@@ -213,7 +226,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m32' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m32'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }
              operands { name: 'imm8' addressing_mode: NO_ADDRESSING
@@ -224,7 +238,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m64' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m64'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 64 }
              operands { name: 'imm32' addressing_mode: NO_ADDRESSING
@@ -259,7 +274,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
       R"(instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }
              operands { name: 'imm16' addressing_mode: NO_ADDRESSING
@@ -270,7 +286,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m32' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m32'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }
              operands { name: 'imm32' addressing_mode: NO_ADDRESSING
@@ -281,7 +298,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m16' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m16'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }
              operands { name: 'imm8' addressing_mode: NO_ADDRESSING
@@ -292,7 +310,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m32' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m32'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }
              operands { name: 'imm8' addressing_mode: NO_ADDRESSING
@@ -303,7 +322,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
-             operands { name: 'r/m64' addressing_mode: ANY_ADDRESSING_MODE
+             operands { name: 'r/m64'
+                        addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 64 }
              operands { name: 'imm32' addressing_mode: NO_ADDRESSING
