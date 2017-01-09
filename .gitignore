@@ -1,0 +1,2 @@
+# Ignore all temporary directories created by Bazel.
+bazel-*
