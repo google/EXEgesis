@@ -42,33 +42,45 @@ message InstructionOperand {
       // in the encoded instruction.
       NO_ADDRESSING = 0x1;
 
-      // The operand uses direct addressing. The operand is the register whose
-      // index is encoded in the instruction.
-      DIRECT_ADDRESSING = 0x2;
+      // The operand can use either direct or indirect addressing using one or
+      // more registers whose indices are explicitly encoded in the instruction.
+      ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS = 0x2;
 
-      // The operand uses indirect addressing. The operand is the memory
-      // location addressed by zero or more registers.
-      INDIRECT_ADDRESSING = 0x3;
+        // The operand uses direct addressing. The operand is the register whose
+        // index is encoded in the instruction.
+        DIRECT_ADDRESSING = 0x21;
 
-        // The memory is addressed using a base register.
-        INDIRECT_ADDRESSING_WITH_BASE = 0x31;
+        // The operand uses indirect addressing. The operand is the memory
+        // location addressed by zero or more registers.
+        INDIRECT_ADDRESSING = 0x22;
 
-        // The memory is addressed using only a displacement (the address of the
-        // memory location is hard-coded in the instruction).
-        INDIRECT_ADDRESSING_WITH_DISPLACEMENT = 0x32;
+          // The memory is addressed using a base register.
+          INDIRECT_ADDRESSING_WITH_BASE = 0x221;
 
-        // The memory is addressed using a base register and a displacement.
-        INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT = 0x33;
+          // The memory is addressed using only a displacement (the address of the
+          // memory location is hard-coded in the instruction).
+          INDIRECT_ADDRESSING_WITH_DISPLACEMENT = 0x222;
 
-        // The memory is addressed using a base register, an index register and
-        // a displacement.
-        INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX = 0x34;
+          // The memory is addressed using a base register and a displacement.
+          INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT = 0x223;
+
+          // The memory is addressed using a base register, an index register
+          // and a displacement.
+          INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX = 0x224;
+
+          // The memory is addressed using the x86-64 VSIB addressing scheme.
+          INDIRECT_ADDRESSING_WITH_VSIB = 0x225;
+
+      // The operand uses either direct or indirect addressing using a register
+      // that is fixed for the given instruction class, and it can't be changed
+      // in the encoding.
+      ANY_ADDRESSING_WITH_FIXED_REGISTERS = 0x3;
 
         // The memory is addressed using the source index register RSI.
-        INDIRECT_ADDRESSING_BY_RSI = 0x35;
+        INDIRECT_ADDRESSING_BY_RSI = 0x31;
 
         // The memory is addressed using the destination index register RDI.
-        INDIRECT_ADDRESSING_BY_RDI = 0x36;
+        INDIRECT_ADDRESSING_BY_RDI = 0x32;
   }
   // clang-format on
 
