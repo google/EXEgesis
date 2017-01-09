@@ -12,17 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/x86/pdf/protobuf_output_device.h"
+#include "cpu_instructions/x86/pdf/xpdf_util.h"
 
 #include "src/google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"
-#include "xpdf-3.04/xpdf/GlobalParams.h"
-#include "xpdf-3.04/xpdf/PDFDoc.h"
-#include "xpdf-3.04/xpdf/PDFDocEncoding.h"
-#include "xpdf-3.04/xpdf/UnicodeMap.h"
 #include "util/gtl/ptr_util.h"
 
 namespace cpu_instructions {
@@ -36,24 +32,16 @@ constexpr const int kHorizontalDPI = 72;
 constexpr const int kVerticalDPI = 72;
 
 string GetPdfFilename(const string& name) {
-  return StrCat(getenv("TEST_SRCDIR"), kTestDataPath, name, ".pdf");
+  return StrCat(getenv("TEST_SRCDIR"), kTestDataPath, name);
 }
 
 TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
-  const auto global_params = gtl::MakeUnique<GlobalParams>(nullptr);
-  global_params->setTextEncoding(const_cast<char*>("UTF-8"));
-  globalParams = global_params.get();
-  PDFDoc doc(new GString(GetPdfFilename("simple").c_str()), nullptr, nullptr);
-  ASSERT_TRUE(doc.isOk());
-  ASSERT_GT(doc.getNumPages(), 0);
-  PdfDocument pdf_document;
-  PdfDocumentChanges changes;
-  ProtobufOutputDevice output_device(changes, &pdf_document);
-  doc.displayPages(&output_device, 1 /*first_page*/,
-                   doc.getNumPages() /*last_page*/, kHorizontalDPI,
-                   kVerticalDPI, /* rotate= */ 0,
-                   /* useMediaBox= */ gTrue, /* crop= */ gTrue,
-                   /* printing= */ gTrue);
+  const auto doc = XPDFDoc::OpenOrDie(GetPdfFilename("simple.pdf"));
+
+  EXPECT_THAT(doc->GetDocumentId(), ::cpu_instructions::testing::EqualsProto(""));
+
+  PdfDocument pdf_document =
+      doc->Parse(1 /*first_page*/, -1 /*last_page*/, PdfDocumentChanges());
   pdf_document.PrintDebugString();
   // We don't care about the hash; it can vary depending on the compiler.
   for (PdfPage& page : *pdf_document.mutable_pages()) {

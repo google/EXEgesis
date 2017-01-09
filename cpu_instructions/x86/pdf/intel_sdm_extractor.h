@@ -25,7 +25,7 @@ namespace cpu_instructions {
 namespace x86 {
 namespace pdf {
 
-SdmDocument ProcessIntelPdfDocument(const PdfDocument& document);
+SdmDocument ConvertPdfDocumentToSdmDocument(const PdfDocument& document);
 
 InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document);
 

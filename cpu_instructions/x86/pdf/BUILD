@@ -83,39 +83,6 @@ cc_test(
 )
 
 cc_library(
-    name = "protobuf_output_device",
-    srcs = ["protobuf_output_device.cc"],
-    hdrs = ["protobuf_output_device.h"],
-    deps = [
-        ":geometry",
-        ":pdf_document_parser",
-        ":pdf_document_proto",
-        ":pdf_document_utils",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
-        "//external:utf",
-        "//external:xpdf",
-        "//util/gtl:map_util",
-    ],
-)
-
-cc_test(
-    name = "protobuf_output_device_test",
-    srcs = ["protobuf_output_device_test.cc"],
-    data = [
-        "testdata/simple.pdf",
-    ],
-    deps = [
-        ":protobuf_output_device",
-        "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest_main",
-        "//strings",
-        "//external:xpdf",
-        "//util/gtl:ptr_util",
-    ],
-)
-
-cc_library(
     name = "pdf_document_parser",
     srcs = ["pdf_document_parser.cc"],
     hdrs = ["pdf_document_parser.h"],
@@ -228,15 +195,48 @@ cc_library(
         ":intel_sdm_extractor",
         ":pdf_document_utils",
         ":proto_util",
-        ":protobuf_output_device",
+        ":xpdf_util",
         "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
         "//external:protobuf_clib",
         "//strings",
-        "//external:xpdf",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
         "//cpu_instructions/proto:cpu_info_proto",
         "//cpu_instructions/proto:instructions_proto",
         "//external:re2",
+    ],
+)
+
+cc_library(
+    name = "xpdf_util",
+    srcs = ["xpdf_util.cc"],
+    hdrs = ["xpdf_util.h"],
+    deps = [
+        ":geometry",
+        ":pdf_document_parser",
+        ":pdf_document_proto",
+        ":pdf_document_utils",
+        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//strings",
+        "//external:utf",
+        "//external:xpdf",
+        "//util/gtl:map_util",
+        "//util/gtl:ptr_util",
+    ],
+)
+
+cc_test(
+    name = "xpdf_util_test",
+    srcs = ["xpdf_util_test.cc"],
+    data = [
+        "testdata/simple.pdf",
+    ],
+    deps = [
+        ":xpdf_util",
+        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//external:protobuf_clib",
+        "//cpu_instructions/testing:googletest_main",
+        "//strings",
+        "//util/gtl:ptr_util",
     ],
 )

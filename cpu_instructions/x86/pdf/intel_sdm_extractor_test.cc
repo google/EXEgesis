@@ -44,7 +44,8 @@ TEST(IntelSdmExtractorTest, BitSetPage) {
     Cluster(&page);
   }
 
-  const SdmDocument sdm_document = ProcessIntelPdfDocument(pdf_document);
+  const SdmDocument sdm_document =
+      ConvertPdfDocumentToSdmDocument(pdf_document);
   EXPECT_THAT(sdm_document,
               EqualsProto(GetProto<SdmDocument>("253666_p170_p171_sdmdoc")));
 
@@ -59,6 +60,9 @@ TEST(IntelSdmExtractorTest, ParseOperandEncodingTableCell) {
 
   EXPECT_THAT(ParseOperandEncodingTableCell("imm8"),
               EqualsProto("spec: OE_IMMEDIATE usage: USAGE_READ"));
+
+  EXPECT_THAT(ParseOperandEncodingTableCell("imm8[7:4]"),
+              EqualsProto("spec: OE_VEX_SUFFIX"));
 
   EXPECT_THAT(ParseOperandEncodingTableCell("3"),
               EqualsProto("spec: OE_CONSTANT usage: USAGE_READ"));

@@ -19,6 +19,7 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "glog/logging.h"
@@ -28,6 +29,7 @@
 #include "strings/str_split.h"
 #include "strings/string_view_utils.h"
 #include "strings/strip.h"
+#include "strings/util.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
@@ -46,27 +48,35 @@ using re2::StringPiece;
 // The top/bottom page margin, in pixels.
 constexpr const float kPageMargin = 50.0f;
 
-// Returns the value associated to the first matching regexp in the map.
-template <typename E>
-bool TryParse(const std::map<E, const RE2*>& map, const string& text,
-              E* output) {
-  CHECK(output) << "must not be nullptr";
-  for (const auto& pair : map) {
+// Returns the value associated to the first matching regexp. If there is a
+// match, the function returns the first matching RE2 object from 'matchers';
+// otherwise, it returns nullptr.
+//
+// The value type of the container must be std::pair<value, matcher> or other
+// type that behaves the same way. Note that the following two containers
+// satisfy the requirements: std::map<ValueType, RE2*> and
+// std::vector<std::pair<ValueType, RE2*>>.
+template <typename ValueType, typename Container>
+const RE2* TryParse(const Container& matchers, const string& text,
+                    ValueType* output) {
+  CHECK(output != nullptr) << "must not be nullptr";
+  for (const auto& pair : matchers) {
     if (RE2::FullMatch(text, *pair.second)) {
       *output = pair.first;
-      return true;
+      return pair.second;
     }
   }
-  return false;
+  return nullptr;
 }
 
 // Returns the value associated to the first matching regexp in the map or the
 // provided default value.
-template <typename E>
-E ParseWithDefault(const std::map<E, const RE2*>& map, const string& text,
-                   const E default_value) {
-  for (const auto& pair : map)
+template <typename ValueType, typename Container>
+ValueType ParseWithDefault(const Container& matchers, const string& text,
+                           const ValueType& default_value) {
+  for (const auto& pair : matchers) {
     if (RE2::FullMatch(text, *pair.second)) return pair.first;
+  }
   return default_value;
 }
 
@@ -235,13 +245,14 @@ const std::set<string>& GetValidFeatureSet() {
 
 using OperandEncoding =
     InstructionTable::OperandEncodingCrossref::OperandEncoding;
+using OperandEncodingMatchers =
+    std::vector<std::pair<OperandEncoding::OperandEncodingSpec, RE2*>>;
 
-const std::map<OperandEncoding::OperandEncodingSpec, const RE2*>&
-GetOperandEncodingSpecMatchers() {
+const OperandEncodingMatchers& GetOperandEncodingSpecMatchers() {
   // See unit tests for examples.
-  static const auto* kOperandEncodingSpec = new std::map<
-      OperandEncoding::OperandEncodingSpec, const RE2*>{{
+  static const auto* kOperandEncodingSpec = new OperandEncodingMatchers{{
       {OperandEncoding::OE_NA, new RE2("NA")},
+      {OperandEncoding::OE_VEX_SUFFIX, new RE2(R"(imm8\[7:4\])")},
       {OperandEncoding::OE_IMMEDIATE,
        new RE2(
            R"((?:(?:[iI]mm(?:\/?(?:8|16|26|32|64)){1,4})(?:\[[0-9]:[0-9]\])?|Offset|Moffs|iw)(?:\s+\(([wW, rR]+)\))?)")},
@@ -279,7 +290,7 @@ void Cleanup(string* text) {
 
 bool IsValidMode(const string& text) {
   InstructionTable::Mode mode;
-  if (TryParse(GetInstructionModeMatchers(), text, &mode)) {
+  if (TryParse(GetInstructionModeMatchers(), text, &mode) != nullptr) {
     return mode == InstructionTable::MODE_V;
   }
   return false;
@@ -440,7 +451,8 @@ void ParseInstructionTable(const SubSection& sub_section,
                "current subsection : "
             << sub_section.DebugString();
         InstructionTable::Column column;
-        if (TryParse(GetInstructionColumnMatchers(), block.text(), &column)) {
+        if (TryParse(GetInstructionColumnMatchers(), block.text(), &column) !=
+            nullptr) {
           table->add_columns(column);
         } else {
           table->add_columns(InstructionTable::IT_UNKNOWN);
@@ -641,7 +653,12 @@ void PairOperandEncodings(InstructionSection* section) {
                             : encoding->operand_encodings(i).spec();
       switch (spec) {
         case OperandEncoding::OE_NA:
-          operand->set_encoding(InstructionOperand::ANY_ENCODING);
+          // Do not set the encoding if we can't detect it properly from the
+          // data in the manual. It will be filled in the cleanup phase by
+          // AddOperandInfo() based on what encoding "slots" are provided by the
+          // encoding of the instruction, and what slots are used by the other
+          // operands.
+          operand->clear_encoding();
           break;
         case OperandEncoding::OE_IMMEDIATE:
           operand->set_encoding(InstructionOperand::IMMEDIATE_VALUE_ENCODING);
@@ -650,7 +667,6 @@ void PairOperandEncodings(InstructionSection* section) {
           operand->set_encoding(InstructionOperand::OPCODE_ENCODING);
           break;
         case OperandEncoding::OE_SIB:
-        case OperandEncoding::OE_VSIB:
         case OperandEncoding::OE_MOD_RM:
           operand->set_encoding(InstructionOperand::MODRM_RM_ENCODING);
           break;
@@ -666,6 +682,12 @@ void PairOperandEncodings(InstructionSection* section) {
         case OperandEncoding::OE_VEX:
         case OperandEncoding::OE_EVEX_V:
           operand->set_encoding(InstructionOperand::VEX_V_ENCODING);
+          break;
+        case OperandEncoding::OE_VSIB:
+          operand->set_encoding(InstructionOperand::VSIB_ENCODING);
+          break;
+        case OperandEncoding::OE_VEX_SUFFIX:
+          operand->set_encoding(InstructionOperand::VEX_SUFFIX_ENCODING);
           break;
         default:
           LOG(FATAL) << "Don't know how to handle "
@@ -723,8 +745,10 @@ void ProcessSubSections(std::vector<SubSection> sub_sections,
 
 OperandEncoding ParseOperandEncodingTableCell(const string& content) {
   OperandEncoding::OperandEncodingSpec spec = OperandEncoding::OE_NA;
-  if (!content.empty() &&
-      !TryParse(GetOperandEncodingSpecMatchers(), content, &spec)) {
+  const RE2* const regexp =
+      content.empty() ? nullptr : TryParse(GetOperandEncodingSpecMatchers(),
+                                           content, &spec);
+  if (regexp == nullptr) {
     LOG(INFO) << "Cannot match '" << content << "', falling back to default";
   }
   OperandEncoding encoding;
@@ -746,9 +770,9 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
     case OperandEncoding::OE_IMPLICIT:
     case OperandEncoding::OE_REGISTERS:
     case OperandEncoding::OE_REGISTERS2: {
-      const RE2& regexp = *FindOrDie(GetOperandEncodingSpecMatchers(), spec);
+      CHECK(regexp != nullptr);
       string usage;
-      if (RE2::FullMatch(content, regexp, &usage) && !usage.empty()) {
+      if (RE2::FullMatch(content, *regexp, &usage) && !usage.empty()) {
         LowerString(&usage);
         strrmm(&usage, " ,");
         if (usage == "r") {
@@ -771,7 +795,7 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
   return encoding;
 }
 
-SdmDocument ProcessIntelPdfDocument(const PdfDocument& pdf) {
+SdmDocument ConvertPdfDocumentToSdmDocument(const PdfDocument& pdf) {
   // Find all instruction pages.
   SdmDocument sdm_document;
   std::map<string, Pages> instruction_to_pages;

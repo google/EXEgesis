@@ -119,6 +119,7 @@ message InstructionTable {
         OE_SIB = 10;
         OE_VSIB = 11;
         OE_EVEX_V = 12;
+        OE_VEX_SUFFIX = 13;
       }
       OperandEncodingSpec spec = 1;
       // How the operand is used: read, write, or both.
