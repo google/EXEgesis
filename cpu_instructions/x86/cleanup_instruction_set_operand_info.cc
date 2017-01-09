@@ -39,7 +39,6 @@ namespace cpu_instructions {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::InternalError;
 using ::cpu_instructions::util::InvalidArgumentError;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
@@ -718,6 +717,31 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
 
 namespace {
 
+// Tries to remove one occurence of the operand encoding of 'operand' from
+// 'available_encodings'. If it is removed, returns Status::OK. If
+// 'available_encodings' does not contain such an encoding, returns an error
+// status with an appropriate error message.
+Status EraseOperandEncoding(
+    const InstructionProto& instruction, const InstructionOperand& operand,
+    InstructionOperandEncodingMultiset* available_encodings) {
+  const InstructionOperand::Encoding encoding = operand.encoding();
+  Status status = Status::OK;
+  if (encoding != InstructionOperand::IMPLICIT_ENCODING) {
+    const auto iterator = available_encodings->find(encoding);
+    if (iterator == available_encodings->end()) {
+      status = InvalidArgumentError(
+          StrCat("Operand '", operand.name(), "' encoded using ",
+                 InstructionOperand::Encoding_Name(encoding),
+                 " is not specified in the encoding specification: ",
+                 instruction.binary_encoding()));
+      LOG(WARNING) << status;
+    } else {
+      available_encodings->erase(iterator);
+    }
+  }
+  return status;
+}
+
 // Assigns addressing mode to all operands of the instruction, and encoding and
 // value size to operands where the encoding is uniquely determined by the
 // operand. This is the case for example for operands that can be a memory
@@ -746,44 +770,39 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     InstructionOperand* const operand =
         vendor_syntax->mutable_operands(operand_index);
 
-    InstructionOperand::AddressingMode addressing_mode;
-    if (!FindCopy(addressing_mode_map, operand->name(), &addressing_mode)) {
-      status = InvalidArgumentError(
-          StrCat("Could not determine addressing mode of operand: ",
-                 operand->name(), ", instruction ", vendor_syntax->mnemonic()));
-      LOG(ERROR) << status;
-      continue;
+    if (!operand->has_addressing_mode()) {
+      InstructionOperand::AddressingMode addressing_mode;
+      if (!FindCopy(addressing_mode_map, operand->name(), &addressing_mode)) {
+        status = InvalidArgumentError(StrCat(
+            "Could not determine addressing mode of operand: ", operand->name(),
+            ", instruction ", vendor_syntax->mnemonic()));
+        LOG(ERROR) << status;
+        continue;
+      }
+      operand->set_addressing_mode(addressing_mode);
     }
-    operand->set_addressing_mode(addressing_mode);
 
     uint32_t value_size_bits = 0;
     if (FindCopy(value_size_map, operand->name(), &value_size_bits)) {
       operand->set_value_size_bits(value_size_bits);
     }
 
-    // If there is only one way how an operand can be encoded, we assign this
-    // encoding to the operand and remove it from the list of available
-    // encodings. Then we'll need to assign encodings to the remaining
-    // operands only from those "remaining" encodings.
-    InstructionOperand::Encoding operand_encoding;
-    if (FindCopy(encoding_map, operand->name(), &operand_encoding)) {
-      operand->set_encoding(operand_encoding);
-      if (operand_encoding == InstructionOperand::IMPLICIT_ENCODING) {
-        continue;
-      }
-      const auto encoding = available_encodings->find(operand_encoding);
-      if (encoding == available_encodings->end()) {
-        status = InternalError(
-            StrCat("Operand '", operand->name(), "' encoded using ",
-                   InstructionOperand::Encoding_Name(operand_encoding),
-                   " is not specified in the encoding specification: ",
-                   instruction->binary_encoding()));
-        LOG(ERROR) << status;
-        continue;
-      }
-      available_encodings->erase(encoding);
+    if (operand->has_encoding()) {
+      status.Update(
+          EraseOperandEncoding(*instruction, *operand, available_encodings));
     } else {
-      operands_with_no_encoding->push_back(operand_index);
+      // If there is only one way how an operand can be encoded, we assign this
+      // encoding to the operand and remove it from the list of available
+      // encodings. Then we'll need to assign encodings to the remaining
+      // operands only from those "remaining" encodings.
+      InstructionOperand::Encoding operand_encoding;
+      if (FindCopy(encoding_map, operand->name(), &operand_encoding)) {
+        operand->set_encoding(operand_encoding);
+        status.Update(
+            EraseOperandEncoding(*instruction, *operand, available_encodings));
+      } else {
+        operands_with_no_encoding->push_back(operand_index);
+      }
     }
   }
   return status;

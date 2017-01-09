@@ -191,9 +191,11 @@ cc_test(
     srcs = ["cleanup_instruction_set_operand_info_test.cc"],
     deps = [
         ":cleanup_instruction_set_operand_info",
+        "//external:protobuf_clib",
         "//cpu_instructions/testing:googletest",
         "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//util/task:status",
     ],
 )
 
