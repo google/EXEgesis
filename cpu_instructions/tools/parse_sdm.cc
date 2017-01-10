@@ -32,10 +32,10 @@ DEFINE_string(cpu_instructions_input_spec, "",
               "the entire PDF is processed.");
 DEFINE_string(cpu_instructions_output_file_base, "",
               "Where to dump instructions");
-DEFINE_string(
-    cpu_instructions_patch_sets_file,
-    "cpu_instructions/x86/pdf/pdf_document_patches.pbtxt",
-    "A set of patches to original documents");
+DEFINE_string(cpu_instructions_patch_sets_file,
+              "cpu_instructions/x86/pdf/sdm_patches.pbtxt",
+              "A set of patches to original documents");
+
 
 namespace cpu_instructions {
 namespace {
@@ -57,6 +57,7 @@ void Main() {
   CHECK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
                              &instruction_set)
             .ok());
+
 
   // Write transformed intruction set.
   const string instructions_filename =

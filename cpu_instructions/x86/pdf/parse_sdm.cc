@@ -78,19 +78,6 @@ std::vector<InputSpec> ParseInputSpec(const string& input_spec) {
   return parsed_specs;
 }
 
-const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
-                                          const PdfDocumentId& document_id) {
-  for (const auto& document : patch_sets.documents()) {
-    const auto& current_id = document.document_id();
-    if (current_id.title() == document_id.title() &&
-        current_id.creation_date() == document_id.creation_date() &&
-        current_id.modification_date() == document_id.modification_date()) {
-      return &document;
-    }
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 InstructionSetProto ParseSdmOrDie(const string& input_spec,

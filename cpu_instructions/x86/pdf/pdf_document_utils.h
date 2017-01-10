@@ -51,6 +51,10 @@ void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page);
 std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
                                                     float margin);
 
+// Returns the changes corresponding to the given document id, or nullptr if not
+// found.
+const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
+                                          const PdfDocumentId& document_id);
 }  // namespace pdf
 }  // namespace x86
 }  // namespace cpu_instructions

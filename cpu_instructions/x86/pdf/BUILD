@@ -187,7 +187,7 @@ cc_library(
     name = "parse_sdm",
     srcs = ["parse_sdm.cc"],
     hdrs = ["parse_sdm.h"],
-    data = [":pdf_document_patches.pbtxt"],
+    data = [":sdm_patches.pbtxt"],
     visibility = [
         "//cpu_instructions/tools:__subpackages__",
     ],

@@ -84,6 +84,19 @@ std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
   }
   return result;
 }
+
+const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
+                                          const PdfDocumentId& document_id) {
+  for (const auto& document : patch_sets.documents()) {
+    const auto& current_id = document.document_id();
+    if (current_id.title() == document_id.title() &&
+        current_id.creation_date() == document_id.creation_date() &&
+        current_id.modification_date() == document_id.modification_date()) {
+      return &document;
+    }
+  }
+  return nullptr;
+}
 }  // namespace pdf
 }  // namespace x86
 }  // namespace cpu_instructions

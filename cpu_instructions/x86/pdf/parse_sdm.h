@@ -28,7 +28,7 @@ namespace pdf {
 //   - Two raw protos per input file for debug, with the contents
 //     of the PDF (raw parsed input) and SDM (interpreted input) respectively,
 //     as <output_base>_<input_id>.{pdf,sdm}.pb
-// The patches contained in patch_sets_file are applied before interpresting the
+// The patches contained in patch_sets_file are applied before interpreting the
 // SDM.
 InstructionSetProto ParseSdmOrDie(const string& input_spec,
                                   const string& patch_sets_file,
