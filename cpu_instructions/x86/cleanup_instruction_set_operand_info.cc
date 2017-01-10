@@ -717,6 +717,13 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
 
 namespace {
 
+// Updates the value of 'status': if 'status' was not OK, its old value is kept.
+// Otherwise, it is replaced with the value of 'new_status'.
+void UpdateStatus(Status* status, const Status& new_status) {
+  CHECK(status != nullptr);
+  if (status->ok() && !new_status.ok()) *status = new_status;
+}
+
 // Tries to remove one occurence of the operand encoding of 'operand' from
 // 'available_encodings'. If it is removed, returns Status::OK. If
 // 'available_encodings' does not contain such an encoding, returns an error
@@ -788,8 +795,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     }
 
     if (operand->has_encoding()) {
-      status.Update(
-          EraseOperandEncoding(*instruction, *operand, available_encodings));
+      UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
+                                                 available_encodings));
     } else {
       // If there is only one way how an operand can be encoded, we assign this
       // encoding to the operand and remove it from the list of available
@@ -798,8 +805,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       InstructionOperand::Encoding operand_encoding;
       if (FindCopy(encoding_map, operand->name(), &operand_encoding)) {
         operand->set_encoding(operand_encoding);
-        status.Update(
-            EraseOperandEncoding(*instruction, *operand, available_encodings));
+        UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
+                                                   available_encodings));
       } else {
         operands_with_no_encoding->push_back(operand_index);
       }
