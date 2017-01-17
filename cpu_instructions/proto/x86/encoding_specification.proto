@@ -113,6 +113,44 @@ message VexPrefixEncodingSpecification {
     VSIB_USED = 1;
   }
 
+  // Specifies the interpretation of the EVEX.b bit (broadcast, static rounding,
+  // suppress all exceptions; do not confuse with EVEX.B which is an extension
+  // of the SIB.base bits). This bit is available only in the EVEX encoding, and
+  // the value of this enum must be EVEX_B_IS_NOT_USED for VEX instructions.
+  enum EvexBInterpretation {
+    // The EVEX.b bit is not used, and it must be set to zero.
+    EVEX_B_IS_NOT_USED = 0;
+    // When EVEX.b is set to 1, the instruction reads a single 32-bit value from
+    // the memory location specified in the modrm.rm operand, and broadcasts it
+    // to all elements of the destination vector register.
+    // Note that this value can be used only if all the following conditions
+    // hold:
+    // 1. The instruction operates on vectors of 32-bit values.
+    // 2. The instruction has a modrm.rm operand, and this operand is a read
+    //    operand of the instruction.
+    // 3. The modrm.rm operand uses an indirerct addressing mode.
+    // 4. The destination is a vector register.
+    EVEX_B_ENABLES_32_BIT_BROADCAST = 1;
+    // When EVEX.b is set to 1, the instruction reads a single 64-bit value from
+    // the memory location specified in the modrm.rm operand, and broadcasts it
+    // to all elements of the destination vector register.
+    // Note that this value can be used only if all the following conditions
+    // hold:
+    // 1. The instruction operates on vectors of 64-bit values.
+    // 2. The instruction has a modrm.rm operand, and this operand is a read
+    //    operand of the instruction.
+    // 3. The modrm.rm operand uses an indirerct addressing mode.
+    // 4. The destination is a vector register.
+    EVEX_B_ENABLES_64_BIT_BROADCAST = 2;
+    // When EVEX.b is set to 1, the EVEX.L and EVEX.L' bits control the rounding
+    // mode of the floating point operation performed by the instruction.
+    // Otherwise, the system-wide rounding mode specified in MXCSR.RC is used.
+    EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL = 3;
+    // When EVEX.b is set to 1, all exceptions are suppressed for the
+    // instruction.
+    EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS = 4;
+  }
+
   // Specifies whether this is a VEX prefix or an EVEX prefix.
   VexPrefixType prefix_type = 1;
 
@@ -138,6 +176,9 @@ message VexPrefixEncodingSpecification {
   bool has_vex_operand_suffix = 7;
 
   VSibUsage vsib_usage = 8;
+
+  // Specifies how the EVEX.b bit is interpreted.
+  EvexBInterpretation evex_b_interpretation = 9;
 }
 
 // Contains the specification of how the binary encoding of the instruction is
