@@ -19,7 +19,7 @@
 
 syntax = "proto3";
 
-import 'cpu_instructions/x86/instruction_encoding.proto';
+import 'cpu_instructions/proto/x86/instruction_encoding.proto';
 
 package cpu_instructions.x86;
 

@@ -173,12 +173,12 @@ cc_library(
     hdrs = ["cleanup_instruction_set_operand_info.h"],
     deps = [
         ":encoding_specification",
-        ":encoding_specification_proto",
         "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto/x86:encoding_specification_proto",
         "//util/task:status",
         "//util/task:statusor",
     ],
@@ -285,35 +285,19 @@ cc_test(
 )
 
 
-# Protocol buffer library with the definitions of enums and constants for the
-# x86-64 binary encoding.
-cpu_instructions_proto_library(
-    name = "instruction_encoding_proto",
-    srcs = ["instruction_encoding.proto"],
-    cc_api_version = 2,
-)
-
-
 # A library for working with the instruction encoding specification used in the
 # Intel x86-64 reference manual.
-cpu_instructions_proto_library(
-    name = "encoding_specification_proto",
-    srcs = ["encoding_specification.proto"],
-    cc_api_version = 2,
-    deps = [":instruction_encoding_proto"],
-)
-
 cc_library(
     name = "encoding_specification",
     srcs = ["encoding_specification.cc"],
     hdrs = ["encoding_specification.h"],
     deps = [
-        ":encoding_specification_proto",
-        ":instruction_encoding_proto",
         "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto/x86:encoding_specification_proto",
+        "//cpu_instructions/proto/x86:instruction_encoding_proto",
         "//external:re2",
         "//util/task:status",
         "//util/task:statusor",
