@@ -78,7 +78,8 @@ inline ::testing::PolymorphicMatcher<EqualsProtoMatcher> EqualsProto(
 inline ::testing::PolymorphicMatcher<EqualsProtoMatcher> EqualsProto(
     const google::protobuf::Message& expected_proto) {
   string expected_proto_str;
-  CHECK(google::protobuf::TextFormat::PrintToString(expected_proto, &expected_proto_str));
+  using ::google::protobuf::TextFormat;
+  CHECK(TextFormat::PrintToString(expected_proto, &expected_proto_str));
   return ::testing::MakePolymorphicMatcher(
       EqualsProtoMatcher(std::move(expected_proto_str)));
 }
@@ -114,14 +115,15 @@ namespace internal {
 template <typename ProtoType>
 bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
                 ::testing::MatchResultListener* listener) {
+  using ::google::protobuf::TextFormat;
+  using ::google::protobuf::util::MessageDifferencer;
   ProtoType expected_proto;
-  if (!::google::protobuf::TextFormat::ParseFromString(expected_proto_str,
-                                             &expected_proto)) {
+  if (!TextFormat::ParseFromString(expected_proto_str, &expected_proto)) {
     *listener << "could not parse proto: <" << expected_proto_str << ">";
     return false;
   }
 
-  ::google::protobuf::util::MessageDifferencer differencer;
+  MessageDifferencer differencer;
   string differences;
   differencer.ReportDifferencesToString(&differences);
   if (!differencer.Compare(expected_proto, actual_proto)) {
