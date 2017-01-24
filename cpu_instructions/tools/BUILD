@@ -3,6 +3,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+licenses(["notice"])  # Apache 2.0
+
 
 # A tool that parses the Intel Software Development Manual.
 

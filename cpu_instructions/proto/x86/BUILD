@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+licenses(["notice"])  # Apache 2.0
+
 load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
 
 
@@ -13,6 +15,7 @@ cpu_instructions_proto_library(
     name = "instruction_encoding_proto",
     srcs = ["instruction_encoding.proto"],
     cc_api_version = 2,
+    js_api_version = 2,
 )
 
 # The binary encoding specification of an instruction.
@@ -20,5 +23,6 @@ cpu_instructions_proto_library(
     name = "encoding_specification_proto",
     srcs = ["encoding_specification.proto"],
     cc_api_version = 2,
+    js_api_version = 2,
     deps = [":instruction_encoding_proto"],
 )

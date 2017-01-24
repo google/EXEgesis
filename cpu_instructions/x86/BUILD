@@ -3,7 +3,7 @@
 
 package(default_visibility = ["//cpu_instructions:__subpackages__"])
 
-load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
+licenses(["notice"])  # Apache 2.0
 
 # A collection of utilities used by the instruction set cleanup library.
 cc_library(
@@ -284,7 +284,6 @@ cc_test(
     ],
 )
 
-
 # A library for working with the instruction encoding specification used in the
 # Intel x86-64 reference manual.
 cc_library(
@@ -319,4 +318,3 @@ cc_test(
         "//util/task:statusor",
     ],
 )
-

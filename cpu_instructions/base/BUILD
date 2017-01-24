@@ -3,6 +3,8 @@
 
 package(default_visibility = ["//cpu_instructions:__subpackages__"])
 
+licenses(["notice"])  # Apache 2.0
+
 # Framework for writing procedural clean-ups of an instruction set.
 cc_library(
     name = "cleanup_instruction_set",

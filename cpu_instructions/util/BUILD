@@ -1,8 +1,11 @@
 # Description:
 #   Generic utility libraries.
+
 package(
     default_visibility = ["//cpu_instructions:__subpackages__"],
 )
+
+licenses(["notice"])  # Apache 2.0
 
 
 cc_library(

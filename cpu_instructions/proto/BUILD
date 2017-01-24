@@ -3,6 +3,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+licenses(["notice"])  # Apache 2.0
+
 load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
 
 # Represents the pair (family, model) for a given CPU.
@@ -32,7 +34,6 @@ cpu_instructions_proto_library(
     srcs = ["instructions.proto"],
     cc_api_version = 2,
     js_api_version = 2,
-    visibility = ["//visibility:public"],
     deps = [
         ":cpu_info_proto",
         ":cpu_type_proto",
