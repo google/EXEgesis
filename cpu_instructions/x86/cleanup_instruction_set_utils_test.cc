@@ -16,9 +16,9 @@
 
 #include "src/google/protobuf/text_format.h"
 #include "gmock/gmock.h"
-#include "cpu_instructions/testing/test_util.h"
 #include "gtest/gtest.h"
 #include "cpu_instructions/proto/instructions.pb.h"
+#include "cpu_instructions/testing/test_util.h"
 
 namespace cpu_instructions {
 namespace x86 {
@@ -38,7 +38,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
                    encoding: IMMEDIATE_VALUE_ENCODING
                    value_size_bits: 16 }}
       encoding_scheme: 'MI'
-      binary_encoding: '81 /2 iw')";
+      raw_encoding_specification: '81 /2 iw')";
   constexpr char kExpectedInstructionProto[] = R"(
         vendor_syntax {
         mnemonic: 'ADC'
@@ -50,7 +50,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
                    encoding: IMMEDIATE_VALUE_ENCODING
                    value_size_bits: 16 }}
       encoding_scheme: 'MI'
-      binary_encoding: '66 81 /2 iw')";
+      raw_encoding_specification: '66 81 /2 iw')";
   InstructionProto instruction;
   ASSERT_TRUE(
       ::google::protobuf::TextFormat::ParseFromString(kInstructionProto, &instruction));
@@ -70,7 +70,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
                    encoding: IMMEDIATE_VALUE_ENCODING
                    value_size_bits: 16 }}
       encoding_scheme: 'MI'
-      binary_encoding: '66 81 /2 iw')";
+      raw_encoding_specification: '66 81 /2 iw')";
   InstructionProto instruction;
   ASSERT_TRUE(
       ::google::protobuf::TextFormat::ParseFromString(kInstructionProto, &instruction));

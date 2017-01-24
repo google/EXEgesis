@@ -33,13 +33,13 @@ TEST(AddOperandInfoTest, AddInfo) {
              mnemonic: 'STOS'
              operands { name: 'BYTE PTR [RDI]' } operands { name: 'AL' }}
            encoding_scheme: 'NA'
-           binary_encoding: 'AA' }
+           raw_encoding_specification: 'AA' }
          instructions {
            vendor_syntax {
              mnemonic: 'FMUL'
              operands { name: 'ST(0)' } operands { name: 'ST(i)' }}
            feature_name: 'X87'
-           binary_encoding: 'D8 C8+i' }
+           raw_encoding_specification: 'D8 C8+i' }
          instructions {
            vendor_syntax {
              mnemonic: 'VMOVD'
@@ -47,7 +47,7 @@ TEST(AddOperandInfoTest, AddInfo) {
              operands { name: 'r32' }}
            feature_name: 'AVX'
            encoding_scheme: 'RM'
-           binary_encoding: 'VEX.128.66.0F.W0 6E /r' })";
+           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r' })";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
@@ -60,7 +60,7 @@ TEST(AddOperandInfoTest, AddInfo) {
                         encoding: IMPLICIT_ENCODING
                         value_size_bits: 8 }}
            encoding_scheme: 'NA'
-           binary_encoding: 'AA' }
+           raw_encoding_specification: 'AA' }
          instructions {
            vendor_syntax {
              mnemonic: 'FMUL'
@@ -71,7 +71,7 @@ TEST(AddOperandInfoTest, AddInfo) {
                         encoding: OPCODE_ENCODING
                         value_size_bits: 80 }}
            feature_name: 'X87'
-           binary_encoding: 'D8 C8+i' }
+           raw_encoding_specification: 'D8 C8+i' }
          instructions {
            vendor_syntax {
              mnemonic: 'VMOVD'
@@ -83,7 +83,7 @@ TEST(AddOperandInfoTest, AddInfo) {
                         value_size_bits: 32 }}
            feature_name: 'AVX'
            encoding_scheme: 'RM'
-           binary_encoding: 'VEX.128.66.0F.W0 6E /r' })";
+           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r' })";
   TestTransform(AddOperandInfo, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -98,7 +98,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
              operands { name: 'BYTE PTR [RDI]' encoding: MODRM_RM_ENCODING }
              operands { name: 'AL' }}
            encoding_scheme: 'NA'
-           binary_encoding: 'AA' })",
+           raw_encoding_specification: 'AA' })",
       // Only one operand can be encoded in the opcode.
       R"(instructions {
            vendor_syntax {
@@ -106,7 +106,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
              operands { name: 'ST(0)' encoding: OPCODE_ENCODING }
              operands { name: 'ST(i)' encoding: OPCODE_ENCODING }}
            feature_name: 'X87'
-           binary_encoding: 'D8 C8+i' })"};
+           raw_encoding_specification: 'D8 C8+i' })"};
   for (const char* const instruction_set_proto : kInstructionSetProtos) {
     InstructionSetProto instruction_set;
     ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(instruction_set_proto,

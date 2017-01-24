@@ -27,21 +27,21 @@ TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
            vendor_syntax { mnemonic: 'STOSQ' }
            legacy_instruction: false
            encoding_scheme: 'NA'
-           binary_encoding: 'REX.W + AB' }
+           raw_encoding_specification: 'REX.W + AB' }
          instructions {
            vendor_syntax { mnemonic: 'STOSW' }
            encoding_scheme: 'NA'
-           binary_encoding: 'AB' })";
+           raw_encoding_specification: 'AB' })";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'STOSQ' }
            legacy_instruction: false
            encoding_scheme: 'NA'
-           binary_encoding: 'REX.W + AB' }
+           raw_encoding_specification: 'REX.W + AB' }
          instructions {
            vendor_syntax { mnemonic: 'STOSW' }
            encoding_scheme: 'NA'
-           binary_encoding: '66 AB' })";
+           raw_encoding_specification: '66 AB' })";
   TestTransform(AddOperandSizeOverrideToInstructionsWithImplicitOperands,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
@@ -56,7 +56,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
-           binary_encoding: '0F 01 /4' }
+           raw_encoding_specification: '0F 01 /4' }
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
@@ -65,7 +65,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
-           binary_encoding: '0F 01 /4' }
+           raw_encoding_specification: '0F 01 /4' }
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
@@ -74,7 +74,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
-           binary_encoding: 'REX.W + 0F 01 /4' }
+           raw_encoding_specification: 'REX.W + 0F 01 /4' }
          instructions {
            vendor_syntax {
              mnemonic: 'POP'
@@ -82,7 +82,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: OPCODE_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'O'
-           binary_encoding: '58+ rw' }
+           raw_encoding_specification: '58+ rw' }
          instructions {
            vendor_syntax {
              mnemonic: 'POP'
@@ -91,7 +91,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         value_size_bits: 64 }}
            legacy_instruction: false
            encoding_scheme: 'O'
-           binary_encoding: '58+ rd' }
+           raw_encoding_specification: '58+ rd' }
          instructions {
            vendor_syntax { mnemonic: 'CRC32'
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
@@ -102,7 +102,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'RM'
-           binary_encoding: 'F2 0F 38 F1 /r' }
+           raw_encoding_specification: 'F2 0F 38 F1 /r' }
          instructions {
            vendor_syntax { mnemonic: 'CRC32'
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
@@ -113,7 +113,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'RM'
-           binary_encoding: 'F2 0F 38 F1 /r' })";
+           raw_encoding_specification: 'F2 0F 38 F1 /r' })";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
@@ -123,7 +123,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
-           binary_encoding: '66 0F 01 /4' }
+           raw_encoding_specification: '66 0F 01 /4' }
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
@@ -132,7 +132,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
-           binary_encoding: '0F 01 /4' }
+           raw_encoding_specification: '0F 01 /4' }
          instructions {
            vendor_syntax {
              mnemonic: 'SMSW'
@@ -141,7 +141,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'M'
-           binary_encoding: 'REX.W + 0F 01 /4' }
+           raw_encoding_specification: 'REX.W + 0F 01 /4' }
          instructions {
            vendor_syntax {
              mnemonic: 'POP'
@@ -149,7 +149,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: OPCODE_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'O'
-           binary_encoding: '66 58+ rw' }
+           raw_encoding_specification: '66 58+ rw' }
          instructions {
            vendor_syntax {
              mnemonic: 'POP'
@@ -158,7 +158,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         value_size_bits: 64 }}
            legacy_instruction: false
            encoding_scheme: 'O'
-           binary_encoding: '58+ rd' }
+           raw_encoding_specification: '58+ rd' }
          instructions {
            vendor_syntax { mnemonic: 'CRC32'
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
@@ -169,7 +169,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'RM'
-           binary_encoding: '66 F2 0F 38 F1 /r' }
+           raw_encoding_specification: '66 F2 0F 38 F1 /r' }
          instructions {
            vendor_syntax { mnemonic: 'CRC32'
              operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
@@ -180,7 +180,7 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
                         encoding: MODRM_RM_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'RM'
-           binary_encoding: 'F2 0F 38 F1 /r' })";
+           raw_encoding_specification: 'F2 0F 38 F1 /r' })";
   TestTransform(AddOperandSizeOverrideToSpecialCaseInstructions,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
@@ -198,7 +198,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'MI'
-           binary_encoding: '81 /2 iw' }
+           raw_encoding_specification: '81 /2 iw' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -210,7 +210,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'MI'
-           binary_encoding: '81 /2 id' }
+           raw_encoding_specification: '81 /2 id' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -222,7 +222,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 8 }}
            encoding_scheme: 'MI'
-           binary_encoding: '83 /2 ib' }
+           raw_encoding_specification: '83 /2 ib' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -234,7 +234,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 8 }}
            encoding_scheme: 'MI'
-           binary_encoding: '83 /2 ib' }
+           raw_encoding_specification: '83 /2 ib' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -247,7 +247,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         value_size_bits: 32 }}
            legacy_instruction: false
            encoding_scheme: 'MI'
-           binary_encoding: 'REX.W + 81 /2 id' }
+           raw_encoding_specification: 'REX.W + 81 /2 id' }
          instructions {
            vendor_syntax {
              mnemonic: 'OUT'
@@ -258,7 +258,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMPLICIT_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'NP'
-           binary_encoding: 'EF' }
+           raw_encoding_specification: 'EF' }
          instructions {
            vendor_syntax {
              mnemonic: 'OUT'
@@ -269,7 +269,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMPLICIT_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'NP'
-           binary_encoding: 'EF' })";
+           raw_encoding_specification: 'EF' })";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
@@ -282,7 +282,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'MI'
-           binary_encoding: '66 81 /2 iw' }
+           raw_encoding_specification: '66 81 /2 iw' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -294,7 +294,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'MI'
-           binary_encoding: '81 /2 id' }
+           raw_encoding_specification: '81 /2 id' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -306,7 +306,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 8 }}
            encoding_scheme: 'MI'
-           binary_encoding: '66 83 /2 ib' }
+           raw_encoding_specification: '66 83 /2 ib' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -318,7 +318,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMMEDIATE_VALUE_ENCODING
                         value_size_bits: 8 }}
            encoding_scheme: 'MI'
-           binary_encoding: '83 /2 ib' }
+           raw_encoding_specification: '83 /2 ib' }
          instructions {
            vendor_syntax {
              mnemonic: 'ADC'
@@ -331,7 +331,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         value_size_bits: 32 }}
            legacy_instruction: false
            encoding_scheme: 'MI'
-           binary_encoding: 'REX.W + 81 /2 id' }
+           raw_encoding_specification: 'REX.W + 81 /2 id' }
          instructions {
            vendor_syntax {
              mnemonic: 'OUT'
@@ -342,7 +342,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMPLICIT_ENCODING
                         value_size_bits: 16 }}
            encoding_scheme: 'NP'
-           binary_encoding: '66 EF' }
+           raw_encoding_specification: '66 EF' }
          instructions {
            vendor_syntax {
              mnemonic: 'OUT'
@@ -353,7 +353,7 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
                         encoding: IMPLICIT_ENCODING
                         value_size_bits: 32 }}
            encoding_scheme: 'NP'
-           binary_encoding: 'EF' })";
+           raw_encoding_specification: 'EF' })";
   TestTransform(AddOperandSizeOverridePrefix, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

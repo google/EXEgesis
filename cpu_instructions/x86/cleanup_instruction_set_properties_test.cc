@@ -29,7 +29,7 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
       instructions {
         vendor_syntax { mnemonic: 'INS' operands { name: 'm8' } }
         encoding_scheme: 'NP'
-        binary_encoding: '6C'
+        raw_encoding_specification: '6C'
       })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
@@ -39,7 +39,7 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
       instructions {
         vendor_syntax { mnemonic: 'INS' operands { name: 'm8' } }
         encoding_scheme: 'NP'
-        binary_encoding: '6C'
+        raw_encoding_specification: '6C'
       })";
   TestTransform(AddMissingCpuFlags, kInstructionSetProto,
                 kExpectedInstructionSetProto);

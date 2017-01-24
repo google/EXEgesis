@@ -54,7 +54,7 @@ Status AddMissingModRmAndImmediateSpecification(
 //    is used only for the register index extension bits.
 // This transform adds the /0 specification (because the modrm.reg bits are not
 // used for anything), and it removes the REX versions of the instructions.
-Status FixAndCleanUpBinaryEncodingSpecificationsOfSetInstructions(
+Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
     InstructionSetProto* instruction_set);
 
 // Fixes the binary encodings of POP FS and POP GS instructions. These
@@ -74,32 +74,31 @@ Status FixAndCleanUpBinaryEncodingSpecificationsOfSetInstructions(
 // non-encodable anyway), keeps the 64-bit version as is (this will be kept as
 // the default, since we're focusing on the 64-bit protected mode), and adds a
 // new version of the 64-bit version that uses the REX.W prefix.
-Status FixBinaryEncodingSpecificationOfPopFsAndGs(
+Status FixEncodingSpecificationOfPopFsAndGs(
     InstructionSetProto* instruction_set);
 
 // Fixes the binary encodings of PUSH FS and PUSH GS instructions. These
 // instructions exist in three versions symmetrical to the POP FS and POP GS
-// instructions (see the comment on FixBinaryEncodingSpecificationOfPopFsAndGs
+// instructions (see the comment on FixEncodingSpecificationOfPopFsAndGs
 // for more details).
 // The Intel manual lists only one version of each. This transform adds the
 // missing versions and extends them with the necessary operand size override
 // and REX.W prefixes.
-Status FixBinaryEncodingSpecificationOfPushFsAndGs(
+Status FixEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set);
 
 // Fixes the binary encoding specification of the instruction XBEGIN. The
 // specifications in the Intel manual have only the opcode, but there is also a
 // code offset passed as an immediate value, and the 16-bit version of the
 // instruction requires an operand-size override prefix.
-Status FixBinaryEncodingSpecificationOfXBegin(
-    InstructionSetProto* instruction_set);
+Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set);
 
 // Fixes common errors in the binary encoding specification that were carried
 // from the Intel reference manuals. Errors fixed by this transform are:
 // 1. Replaces 0f with 0F,
 // 2. Replaces imm8 with ib,
 // 3. Replaces .0 at the end of a VEX prefix with .W0.
-Status FixBinaryEncodingSpecifications(InstructionSetProto* instruction_set);
+Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace cpu_instructions

@@ -25,11 +25,11 @@
 
 #include "glog/logging.h"
 #include "strings/str_cat.h"
-#include "util/gtl/map_util.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/proto/x86/encoding_specification.pb.h"
 #include "cpu_instructions/x86/encoding_specification.h"
+#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 #include "util/task/status_macros.h"
@@ -740,7 +740,7 @@ Status EraseOperandEncoding(
           StrCat("Operand '", operand.name(), "' encoded using ",
                  InstructionOperand::Encoding_Name(encoding),
                  " is not specified in the encoding specification: ",
-                 instruction.binary_encoding()));
+                 instruction.raw_encoding_specification()));
       LOG(WARNING) << status;
     } else {
       available_encodings->erase(iterator);
@@ -932,7 +932,7 @@ Status AddOperandInfo(InstructionSetProto* instruction_set) {
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
     const StatusOr<EncodingSpecification> encoding_specification_or_status =
-        ParseEncodingSpecification(instruction.binary_encoding());
+        ParseEncodingSpecification(instruction.raw_encoding_specification());
     RETURN_IF_ERROR(encoding_specification_or_status.status());
     const EncodingSpecification& encoding_specification =
         encoding_specification_or_status.ValueOrDie();

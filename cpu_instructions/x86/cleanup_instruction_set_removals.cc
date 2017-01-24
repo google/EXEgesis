@@ -21,10 +21,10 @@
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "strings/string_view.h"
-#include "util/gtl/container_algorithm.h"
-#include "util/gtl/map_util.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/proto/instructions.pb.h"
+#include "util/gtl/container_algorithm.h"
+#include "util/gtl/map_util.h"
 #include "util/task/status.h"
 
 namespace cpu_instructions {
@@ -64,7 +64,8 @@ Status RemoveInstructionsWaitingForFpuSync(
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_fwait_for_sync = [](const InstructionProto& instruction) {
-    return StringPiece(instruction.binary_encoding()).starts_with(kFWaitPrefix);
+    return StringPiece(instruction.raw_encoding_specification())
+        .starts_with(kFWaitPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_fwait_for_sync),
@@ -109,7 +110,7 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
 // saying whether the REP/REPE/REPNE prefix is allowed.
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveRepAndRepneInstructions, 0);
 
-const std::unordered_set<string>* const kRemovedBinaryEncodings =
+const std::unordered_set<string>* const kRemovedEncodingSpecifications =
     new std::unordered_set<string>(
         {// Specializations of the ENTER instruction that create stack frame
          // pointer. There is a more generic encoding scheme C8 iw ib that
@@ -149,8 +150,8 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
       instruction_set->mutable_instructions();
   const auto is_special_case_instruction =
       [](const InstructionProto& instruction) {
-        return ContainsKey(*kRemovedBinaryEncodings,
-                           instruction.binary_encoding()) ||
+        return ContainsKey(*kRemovedEncodingSpecifications,
+                           instruction.raw_encoding_specification()) ||
                ContainsKey(*kRemovedMnemonics,
                            instruction.vendor_syntax().mnemonic());
       };

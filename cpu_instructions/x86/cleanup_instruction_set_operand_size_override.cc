@@ -27,11 +27,11 @@
 #include "glog/logging.h"
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
-#include "util/gtl/map_util.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/util/instruction_syntax.h"
 #include "cpu_instructions/x86/cleanup_instruction_set_utils.h"
 #include "cpu_instructions/x86/encoding_specification.h"
+#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 #include "util/task/status_macros.h"
@@ -47,7 +47,6 @@ using ::cpu_instructions::util::Status;
 const char* const k16BitInstructionsWithImplicitOperands[] = {
     "CMPSW", "CBW",   "CWD",  "INSW",  "IRET",  "LODSW",
     "MOVSW", "OUTSW", "POPF", "PUSHF", "SCASW", "STOSW"};
-
 
 }  // namespace
 
@@ -95,13 +94,13 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     int32_t operand_index = std::numeric_limits<int32_t>::max();
-    if (FindCopy(kOperandIndex, instruction.binary_encoding(),
+    if (FindCopy(kOperandIndex, instruction.raw_encoding_specification(),
                  &operand_index)) {
       const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
       if (operand_index >= vendor_syntax.operands_size()) {
         return InvalidArgumentError(
             StrCat("Unexpected number of operands of instruction: ",
-                   instruction.binary_encoding()));
+                   instruction.raw_encoding_specification()));
       }
       // We can't rely just on the information in value_size_bits, because
       // technically, even the 32 or 64-bit versions of the instruction often
@@ -148,15 +147,16 @@ string FormatAllInstructions(
 Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   std::unordered_map<string, std::vector<InstructionProto*>>
-      instructions_by_binary_encoding;
+      instructions_by_raw_encoding_specification;
 
   // First we cluster instructions by their binary encoding. We ignore the
   // size(s) of immediate values, because their sizes often differ, even though
   // they do not have a relation to the 16/32-bit dichotomy.
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const string& binary_encoding = instruction.binary_encoding();
-    if (binary_encoding.empty()) {
+    const string& raw_encoding_specification =
+        instruction.raw_encoding_specification();
+    if (raw_encoding_specification.empty()) {
       return InvalidArgumentError(
           StrCat("No binary encoding specification for instruction ",
                  instruction.vendor_syntax().mnemonic()));
@@ -164,7 +164,7 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
 
     EncodingSpecification specification;
     ASSIGN_OR_RETURN(specification,
-                     ParseEncodingSpecification(binary_encoding));
+                     ParseEncodingSpecification(raw_encoding_specification));
 
     // The instruction has a code offset operand. The size of this offset is
     // controlled by the address size override, not the operand size override.
@@ -181,13 +181,13 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
     // index the instructions by the serialized version of the proto.
     specification.clear_immediate_value_bytes();
     const string serialized_specification = specification.SerializeAsString();
-    instructions_by_binary_encoding[serialized_specification].push_back(
-        &instruction);
+    instructions_by_raw_encoding_specification[serialized_specification]
+        .push_back(&instruction);
   }
 
   // Inspect all instruction groups and add the operand size override prefix if
   // needed.
-  for (const auto& bucket : instructions_by_binary_encoding) {
+  for (const auto& bucket : instructions_by_raw_encoding_specification) {
     const std::vector<InstructionProto*>& instructions = bucket.second;
 
     // If there is only one instruction in the group, it probably means that it
@@ -217,13 +217,14 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
         VLOG(1)
             << "Instruction has multiple versions, but they are not 16- and "
                "32-bit: "
-            << instructions[0]->binary_encoding() << " ("
+            << instructions[0]->raw_encoding_specification() << " ("
             << FormatAllInstructions(instructions) << ")";
       }
       continue;
     }
-    VLOG(1) << "Updating instruction: " << instructions[0]->binary_encoding()
-            << " (" << FormatAllInstructions(instructions) << ")";
+    VLOG(1) << "Updating instruction: "
+            << instructions[0]->raw_encoding_specification() << " ("
+            << FormatAllInstructions(instructions) << ")";
     for (InstructionProto* const instruction : instructions_16bit) {
       AddOperandSizeOverrideToInstructionProto(instruction);
     }

@@ -16,7 +16,8 @@ instructions: {
   available_in_64_bit    : true
   legacy_instruction     : true
   encoding_scheme: "MR"
-  binary_encoding: "0F A3 /r"
+  raw_encoding_specification: "0F A3 /r"
+  group_id: "BT-Bit Test"
 }
 instructions: {
   description    : "Store selected bit in CF flag."
@@ -36,7 +37,8 @@ instructions: {
   available_in_64_bit    : true
   legacy_instruction     : true
   encoding_scheme: "MR"
-  binary_encoding: "0F A3 /r"
+  raw_encoding_specification: "0F A3 /r"
+  group_id: "BT-Bit Test"
 }
 instructions: {
   description    : "Store selected bit in CF flag."
@@ -56,7 +58,8 @@ instructions: {
   available_in_64_bit    : true
   legacy_instruction     : false
   encoding_scheme: "MR"
-  binary_encoding: "REX.W + 0F A3 /r"
+  raw_encoding_specification: "REX.W + 0F A3 /r"
+  group_id: "BT-Bit Test"
 }
 instructions: {
   description    : "Store selected bit in CF flag."
@@ -76,7 +79,8 @@ instructions: {
   available_in_64_bit    : true
   legacy_instruction     : true
   encoding_scheme: "MI"
-  binary_encoding: "0F BA /4 ib"
+  raw_encoding_specification: "0F BA /4 ib"
+  group_id: "BT-Bit Test"
 }
 instructions: {
   description    : "Store selected bit in CF flag."
@@ -96,7 +100,8 @@ instructions: {
   available_in_64_bit    : true
   legacy_instruction     : true
   encoding_scheme: "MI"
-  binary_encoding: "0F BA /4 ib"
+  raw_encoding_specification: "0F BA /4 ib"
+  group_id: "BT-Bit Test"
 }
 instructions: {
   description    : "Store selected bit in CF flag."
@@ -116,5 +121,6 @@ instructions: {
   available_in_64_bit    : true
   legacy_instruction     : false
   encoding_scheme: "MI"
-  binary_encoding: "REX.W + 0F BA /4 ib"
+  raw_encoding_specification: "REX.W + 0F BA /4 ib"
+  group_id: "BT-Bit Test"
 }

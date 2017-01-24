@@ -23,10 +23,10 @@
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "strings/str_cat.h"
-#include "util/gtl/map_util.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/x86/cleanup_instruction_set_utils.h"
+#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
@@ -244,7 +244,7 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   for (InstructionProto& instruction : *instructions) {
-    if (instruction.binary_encoding() != kVMovQEncoding) continue;
+    if (instruction.raw_encoding_specification() != kVMovQEncoding) continue;
 
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
@@ -298,8 +298,8 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
           operand.set_name(kR32Operand);
           new_instruction_protos.push_back(instruction);
           operand.set_name(kR64Operand);
-          instruction.set_binary_encoding("REX.W + " +
-                                          instruction.binary_encoding());
+          instruction.set_raw_encoding_specification(
+              "REX.W + " + instruction.raw_encoding_specification());
         } else if (ContainsKey(kRenameToReg8, mnemonic)) {
           operand.set_name(kR8Operand);
         } else if (ContainsKey(kRenameToReg16, mnemonic)) {
@@ -363,7 +363,7 @@ Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     if (!ContainsKey(kUpdatedInstructionEncodings,
-                     instruction.binary_encoding())) {
+                     instruction.raw_encoding_specification())) {
       continue;
     }
     RepeatedPtrField<InstructionOperand>* const operands =

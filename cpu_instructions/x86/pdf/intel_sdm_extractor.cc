@@ -30,10 +30,10 @@
 #include "strings/string_view_utils.h"
 #include "strings/strip.h"
 #include "strings/util.h"
-#include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 #include "cpu_instructions/x86/pdf/vendor_syntax.h"
+#include "util/gtl/map_util.h"
+#include "util/gtl/ptr_util.h"
 #include "re2/re2.h"
 
 namespace cpu_instructions {
@@ -110,30 +110,32 @@ const string& GetFooterSectionName(const PdfPage& page) {
 
 // If 'page' is the first page of an instruction, returns a unique identifier
 // for this instruction. Otherwise return empty string.
-string GetInstructionId(const PdfPage& page) {
+string GetInstructionGroupId(const PdfPage& page) {
   if (!strings::StartsWith(GetCellTextOrEmpty(page, 0, 0), kInstructionSetRef))
     return {};
   const string maybe_instruction = Normalize(GetCellTextOrEmpty(page, 1, 0));
-  const string footer_section_name = Normalize(GetFooterSectionName(page));
-  if (maybe_instruction == footer_section_name) {
+  const string& footer_section_name = GetFooterSectionName(page);
+  if (maybe_instruction == Normalize(footer_section_name)) {
     return footer_section_name;
   }
   return {};
 }
 
 // True if page footer's corresponds to the same instruction_id.
-bool IsPageInstruction(const PdfPage& page, const string& instruction_id) {
-  return Normalize(GetFooterSectionName(page)) == instruction_id;
+bool IsPageInstruction(const PdfPage& page,
+                       const string& instruction_group_id) {
+  return Normalize(GetFooterSectionName(page)) ==
+         Normalize(instruction_group_id);
 }
 
 // Returns the list of pages an instruction spans.
-std::vector<const PdfPage*> GetInstructionsPages(const PdfDocument& document,
-                                                 const int first_page,
-                                                 const string& instruction_id) {
+std::vector<const PdfPage*> GetInstructionsPages(
+    const PdfDocument& document, const int first_page,
+    const string& instruction_group_id) {
   std::vector<const PdfPage*> result;
   for (int i = first_page; i < document.pages_size(); ++i) {
     const auto& page = document.pages(i);
-    if (!IsPageInstruction(page, instruction_id)) break;
+    if (!IsPageInstruction(page, instruction_group_id)) break;
     result.push_back(&page);
   }
   return result;
@@ -340,7 +342,7 @@ string FixFeature(string feature) {
 
 // Applies transformations to normalize binary encoding.
 // TODO(user): Move this to document specific configuration.
-string FixBinaryEncoding(string feature) {
+string FixEncodingSpecification(string feature) {
   StripWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([,\n])", " ");  // remove commas and LF
   RE2::GlobalReplace(&feature, R"([ ]+)", " ");   // collapse multiple spaces
@@ -364,7 +366,8 @@ void ParseCell(const InstructionTable::Column column, string text,
   StripWhitespace(&text);
   switch (column) {
     case InstructionTable::IT_OPCODE:
-      instruction->set_binary_encoding(FixBinaryEncoding(text));
+      instruction->set_raw_encoding_specification(
+          FixEncodingSpecification(text));
       break;
     case InstructionTable::IT_INSTRUCTION:
       ParseVendorSyntax(text, instruction->mutable_vendor_syntax());
@@ -378,11 +381,12 @@ void ParseCell(const InstructionTable::Column column, string text,
         const string instruction_text = text.substr(index_of_mnemonic);
         ParseVendorSyntax(instruction_text,
                           instruction->mutable_vendor_syntax());
-        instruction->set_binary_encoding(FixBinaryEncoding(opcode_text));
+        instruction->set_raw_encoding_specification(
+            FixEncodingSpecification(opcode_text));
       } else {
         LOG(ERROR) << "Unable to separate opcode from instruction in " << text
                    << ", setting to " << kUnknown;
-        instruction->set_binary_encoding(kUnknown);
+        instruction->set_raw_encoding_specification(kUnknown);
       }
       break;
     }
@@ -798,21 +802,21 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
 SdmDocument ConvertPdfDocumentToSdmDocument(const PdfDocument& pdf) {
   // Find all instruction pages.
   SdmDocument sdm_document;
-  std::map<string, Pages> instruction_to_pages;
+  std::map<string, Pages> instruction_group_id_to_pages;
   for (int i = 0; i < pdf.pages_size(); ++i) {
-    const string instruction_name = GetInstructionId(pdf.pages(i));
-    if (instruction_name.empty()) continue;
-    instruction_to_pages[instruction_name] =
-        GetInstructionsPages(pdf, i, instruction_name);
+    const string instruction_group_id = GetInstructionGroupId(pdf.pages(i));
+    if (instruction_group_id.empty()) continue;
+    instruction_group_id_to_pages[instruction_group_id] =
+        GetInstructionsPages(pdf, i, instruction_group_id);
   }
   // Now processing instruction pages
-  for (const auto& id_pages_pair : instruction_to_pages) {
+  for (const auto& id_pages_pair : instruction_group_id_to_pages) {
     InstructionSection section;
-    const auto& id = id_pages_pair.first;
+    const auto& group_id = id_pages_pair.first;
     const auto& pages = id_pages_pair.second;
-    LOG(INFO) << "Processing section id " << id_pages_pair.first << " pages "
+    LOG(INFO) << "Processing section id " << group_id << " pages "
               << pages.front()->number() << "-" << pages.back()->number();
-    section.set_id(id);
+    section.set_id(group_id);
     ProcessSubSections(ExtractSubSectionRows(pages), &section);
     section.Swap(sdm_document.add_instruction_sections());
   }
@@ -823,7 +827,10 @@ InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document) {
   InstructionSetProto instruction_set;
   for (const auto& section : sdm_document.instruction_sections()) {
     for (const auto& instruction : section.instruction_table().instructions()) {
-      *instruction_set.add_instructions() = instruction;
+      InstructionProto* const new_instruction =
+          instruction_set.add_instructions();
+      *new_instruction = instruction;
+      new_instruction->set_group_id(section.id());
     }
   }
   return instruction_set;

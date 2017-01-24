@@ -37,6 +37,7 @@ cpu_instructions_proto_library(
     deps = [
         ":cpu_info_proto",
         ":cpu_type_proto",
+        "//cpu_instructions/proto/x86:encoding_specification_proto",
     ],
 )
 

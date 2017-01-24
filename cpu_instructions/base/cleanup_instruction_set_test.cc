@@ -16,9 +16,9 @@
 
 #include <functional>
 
+#include "glog/logging.h"
 #include "src/google/protobuf/text_format.h"
 #include "gmock/gmock.h"
-#include "cpu_instructions/testing/test_util.h"
 #include "gtest/gtest.h"
 #include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
 #include "util/task/canonical_errors.h"
@@ -33,7 +33,6 @@ using ::cpu_instructions::InstructionProto;
 using ::cpu_instructions::InstructionSetProto;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
-using ::cpu_instructions::testing::EqualsProto;
 using ::cpu_instructions::util::InvalidArgumentError;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::error::INVALID_ARGUMENT;
@@ -56,7 +55,7 @@ TEST(RunTransformWithDiffTest, NoDifference) {
           mnemonic: 'FMUL'
           operands { name: 'ST(0)' } operands { name: 'ST(i)' }}
         feature_name: 'X87'
-        binary_encoding: 'D8 C8+i' })";
+        raw_encoding_specification: 'D8 C8+i' })";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -83,19 +82,19 @@ TEST(RunTransformWithDiffTest, WithDifference) {
       instructions {
         vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
         encoding_scheme: 'NP'
-        binary_encoding: 'AE' }
+        raw_encoding_specification: 'AE' }
       instructions {
         vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
                         operands { name: 'DX' }}
-        encoding_scheme: 'NP' binary_encoding: '6C' }
+        encoding_scheme: 'NP' raw_encoding_specification: '6C' }
       instructions {
         vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
                         operands { name: 'DX' }}
-        encoding_scheme: 'NP' binary_encoding: '6D' })";
+        encoding_scheme: 'NP' raw_encoding_specification: '6D' })";
   constexpr char kExpectedDiff[] =
       "deleted: instructions[1]: { vendor_syntax { mnemonic: \"INS\" operands "
       "{ name: \"m8\" } operands { name: \"DX\" } } encoding_scheme: \"NP\" "
-      "binary_encoding: \"6C\" }\n";
+      "raw_encoding_specification: \"6C\" }\n";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -117,7 +116,7 @@ TEST(RunTransformWithDiffTest, WithError) {
           mnemonic: 'FMUL'
           operands { name: 'ST(0)' } operands { name: 'ST(i)' }}
         feature_name: 'X87'
-        binary_encoding: 'D8 C8+i' })";
+        raw_encoding_specification: 'D8 C8+i' })";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -132,28 +131,28 @@ TEST(SortByVendorSyntaxTest, Sort) {
       R"(instructions {
            vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
            encoding_scheme: 'NP'
-           binary_encoding: 'AE' }
+           raw_encoding_specification: 'AE' }
          instructions {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
                            operands { name: 'DX' }}
-           encoding_scheme: 'NP' binary_encoding: '6C' }
+           encoding_scheme: 'NP' raw_encoding_specification: '6C' }
          instructions {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
                            operands { name: 'DX' }}
-           encoding_scheme: 'NP' binary_encoding: '6D' })";
+           encoding_scheme: 'NP' raw_encoding_specification: '6D' })";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
                            operands { name: 'DX' }}
-           encoding_scheme: 'NP' binary_encoding: '6D' }
+           encoding_scheme: 'NP' raw_encoding_specification: '6D' }
          instructions {
            vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
                            operands { name: 'DX' }}
-           encoding_scheme: 'NP' binary_encoding: '6C' }
+           encoding_scheme: 'NP' raw_encoding_specification: '6C' }
          instructions {
            vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
            encoding_scheme: 'NP'
-           binary_encoding: 'AE' })";
+           raw_encoding_specification: 'AE' })";
   TestTransform(SortByVendorSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

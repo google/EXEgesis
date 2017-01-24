@@ -23,9 +23,9 @@
 #include "src/google/protobuf/repeated_field.h"
 #include "strings/str_cat.h"
 #include "strings/util.h"
-#include "util/gtl/map_util.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/x86/cleanup_instruction_set_utils.h"
+#include "util/gtl/map_util.h"
 #include "re2/re2.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -48,19 +48,19 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
   std::vector<InstructionProto> new_instructions;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const string& binary_encoding = instruction.binary_encoding();
-    if (ContainsKey(kEncodingSpecifications, binary_encoding)) {
+    const string& specification = instruction.raw_encoding_specification();
+    if (ContainsKey(kEncodingSpecifications, specification)) {
       new_instructions.push_back(instruction);
       InstructionProto& new_instruction = new_instructions.back();
-      new_instruction.set_binary_encoding(StrCat(kAddressSizeOverridePrefix,
-                                                 binary_encoding,
-                                                 k32BitImmediateValueSuffix));
+      new_instruction.set_raw_encoding_specification(
+          StrCat(kAddressSizeOverridePrefix, specification,
+                 k32BitImmediateValueSuffix));
       // NOTE(user): Changing the binary encoding of the original proto will
-      // either invalidate or change the value of the variable binary_encoding.
+      // either invalidate or change the value of the variable specification.
       // We must thus be careful to not use this variable after it is changed by
-      // instruction.set_binary_encoding.
-      instruction.set_binary_encoding(
-          StrCat(binary_encoding, k64BitImmediateValueSuffix));
+      // instruction.set_raw_encoding_specification.
+      instruction.set_raw_encoding_specification(
+          StrCat(specification, k64BitImmediateValueSuffix));
     }
   }
   for (InstructionProto& new_instruction : new_instructions) {
@@ -78,18 +78,19 @@ namespace {
 void AddRexWPrefixToInstructionProto(InstructionProto* instruction) {
   CHECK(instruction != nullptr);
   constexpr char kRexWPrefix[] = "REX.W";
-  const string& binary_encoding = instruction->binary_encoding();
-  if (binary_encoding.find(kRexWPrefix) == string::npos) {
-    instruction->set_binary_encoding(StrCat(kRexWPrefix, " ", binary_encoding));
+  const string& specification = instruction->raw_encoding_specification();
+  if (specification.find(kRexWPrefix) == string::npos) {
+    instruction->set_raw_encoding_specification(
+        StrCat(kRexWPrefix, " ", specification));
   } else {
     LOG(WARNING) << "The instruction already has a REX.W prefix: "
-                 << binary_encoding;
+                 << specification;
   }
 }
 
 }  // namespace
 
-Status FixBinaryEncodingSpecificationOfPopFsAndGs(
+Status FixEncodingSpecificationOfPopFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kPopInstruction[] = "POP";
@@ -131,10 +132,9 @@ Status FixBinaryEncodingSpecificationOfPopFsAndGs(
 
   return Status::OK;
 }
-REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecificationOfPopFsAndGs,
-                                   1000);
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfPopFsAndGs, 1000);
 
-Status FixBinaryEncodingSpecificationOfPushFsAndGs(
+Status FixEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kPushInstruction[] = "PUSH";
@@ -166,21 +166,20 @@ Status FixBinaryEncodingSpecificationOfPushFsAndGs(
   }
   return Status::OK;
 }
-REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecificationOfPushFsAndGs,
-                                   1000);
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfPushFsAndGs, 1000);
 
-Status FixAndCleanUpBinaryEncodingSpecificationsOfSetInstructions(
+Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
     InstructionSetProto* instruction_set) {
-  constexpr const char* const kBinaryEncodings[] = {
+  constexpr const char* const kEncodingSpecifications[] = {
       "0F 90", "0F 91", "0F 92", "0F 93", "0F 93", "0F 94",
       "0F 95", "0F 96", "0F 97", "0F 98", "0F 99", "0F 9A",
       "0F 9B", "0F 9C", "0F 9D", "0F 9E", "0F 9F",
   };
-  std::unordered_set<string> replaced_encodings;
-  std::unordered_set<string> removed_encodings;
-  for (const char* const binary_encoding : kBinaryEncodings) {
-    replaced_encodings.insert(binary_encoding);
-    removed_encodings.insert(StrCat("REX + ", binary_encoding));
+  std::unordered_set<string> replaced_specifications;
+  std::unordered_set<string> removed_specifications;
+  for (const char* const specification : kEncodingSpecifications) {
+    replaced_specifications.insert(specification);
+    removed_specifications.insert(StrCat("REX + ", specification));
   }
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -188,36 +187,37 @@ Status FixAndCleanUpBinaryEncodingSpecificationsOfSetInstructions(
   // Remove the REX versions of the instruction, because the REX prefix doesn't
   // change anything (it is there only for the register index extension bits).
   instructions->erase(
-      std::remove_if(instructions->begin(), instructions->end(),
-                     [&removed_encodings](const InstructionProto& instruction) {
-                       return ContainsKey(removed_encodings,
-                                          instruction.binary_encoding());
-                     }),
+      std::remove_if(
+          instructions->begin(), instructions->end(),
+          [&removed_specifications](const InstructionProto& instruction) {
+            return ContainsKey(removed_specifications,
+                               instruction.raw_encoding_specification());
+          }),
       instructions->end());
 
   // Fix the binary encoding of the non-REX versions.
   for (InstructionProto& instruction : *instructions) {
-    const string& binary_encoding = instruction.binary_encoding();
-    if (ContainsKey(replaced_encodings, binary_encoding)) {
-      instruction.set_binary_encoding(StrCat(binary_encoding, " /0"));
+    const string& specification = instruction.raw_encoding_specification();
+    if (ContainsKey(replaced_specifications, specification)) {
+      instruction.set_raw_encoding_specification(StrCat(specification, " /0"));
     }
   }
 
   return Status::OK;
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
-    FixAndCleanUpBinaryEncodingSpecificationsOfSetInstructions, 1000);
+    FixAndCleanUpEncodingSpecificationsOfSetInstructions, 1000);
 
-Status FixBinaryEncodingSpecificationOfXBegin(
-    InstructionSetProto* instruction_set) {
+Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  constexpr char kXBeginBinaryEncoding[] = "C7 F8";
-  const std::unordered_map<string, string> kOperandToBinaryEncoding = {
+  constexpr char kXBeginEncodingSpecification[] = "C7 F8";
+  const std::unordered_map<string, string> kOperandToEncodingSpecification = {
       {"rel16", "66 C7 F8 cw"}, {"rel32", "C7 F8 cd"}};
   Status status = Status::OK;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    if (instruction.binary_encoding() == kXBeginBinaryEncoding) {
+    if (instruction.raw_encoding_specification() ==
+        kXBeginEncodingSpecification) {
       const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
       if (vendor_syntax.operands_size() != 1) {
         status = util::InvalidArgumentError(
@@ -225,8 +225,9 @@ Status FixBinaryEncodingSpecificationOfXBegin(
         LOG(ERROR) << status;
         continue;
       }
-      if (!FindCopy(kOperandToBinaryEncoding, vendor_syntax.operands(0).name(),
-                    instruction.mutable_binary_encoding())) {
+      if (!FindCopy(kOperandToEncodingSpecification,
+                    vendor_syntax.operands(0).name(),
+                    instruction.mutable_raw_encoding_specification())) {
         status = InvalidArgumentError(
             StrCat("Unexpected argument of a XBEGIN instruction: ",
                    vendor_syntax.operands(0).name()));
@@ -237,24 +238,23 @@ Status FixBinaryEncodingSpecificationOfXBegin(
   }
   return status;
 }
-REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecificationOfXBegin,
-                                   1000);
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfXBegin, 1000);
 
-Status FixBinaryEncodingSpecifications(InstructionSetProto* instruction_set) {
+Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
   const RE2 fix_w0_regexp("^(VEX[^ ]*\\.)0 ");
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    string binary_encoding = instruction.binary_encoding();
+    string specification = instruction.raw_encoding_specification();
 
-    GlobalReplaceSubstring("0f", "0F", &binary_encoding);
-    GlobalReplaceSubstring("imm8", "ib", &binary_encoding);
-    RE2::Replace(&binary_encoding, fix_w0_regexp, "\\1W0 ");
+    GlobalReplaceSubstring("0f", "0F", &specification);
+    GlobalReplaceSubstring("imm8", "ib", &specification);
+    RE2::Replace(&specification, fix_w0_regexp, "\\1W0 ");
 
-    instruction.set_binary_encoding(binary_encoding);
+    instruction.set_raw_encoding_specification(specification);
   }
   return Status::OK;
 }
-REGISTER_INSTRUCTION_SET_TRANSFORM(FixBinaryEncodingSpecifications, 1000);
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecifications, 1000);
 
 Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set) {
@@ -282,16 +282,17 @@ Status AddMissingModRmAndImmediateSpecification(
     const string& mnemonic = instruction->vendor_syntax().mnemonic();
     Status status = Status::OK;
     if (ContainsKey(mnemonics, mnemonic)) {
-      if (instruction->binary_encoding().empty()) {
+      if (instruction->raw_encoding_specification().empty()) {
         status = InvalidArgumentError(StrCat(
             "The instruction does not have binary encoding specification: ",
             mnemonic));
       }
 
-      const StringPiece binary_encoding_spec = instruction->binary_encoding();
-      if (!binary_encoding_spec.ends_with(suffix)) {
-        instruction->set_binary_encoding(
-            StrCat(instruction->binary_encoding(), " ", suffix));
+      const StringPiece specification =
+          instruction->raw_encoding_specification();
+      if (!specification.ends_with(suffix)) {
+        instruction->set_raw_encoding_specification(
+            StrCat(instruction->raw_encoding_specification(), " ", suffix));
       }
     }
     return status;

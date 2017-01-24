@@ -236,9 +236,9 @@ bool LessOrEqual(const InstructionProto& instruction_a,
 
   // 4. Compare binary encodings.
   if (comparison == 0) {
-    const string& binary_encoding_a = instruction_a.binary_encoding();
-    const string& binary_encoding_b = instruction_b.binary_encoding();
-    comparison = binary_encoding_a.compare(binary_encoding_b);
+    const string& specification_a = instruction_a.raw_encoding_specification();
+    const string& specification_b = instruction_b.raw_encoding_specification();
+    comparison = specification_a.compare(specification_b);
   }
 
   return comparison < 0;

@@ -38,7 +38,7 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
         available_in_64_bit: true
         legacy_instruction: true
         encoding_scheme: "RM"
-        binary_encoding: "12 /r" })";
+        raw_encoding_specification: "12 /r" })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         description: "Add with carry r/m8 to byte register."
@@ -55,7 +55,7 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
         available_in_64_bit: true
         legacy_instruction: true
         encoding_scheme: "RM"
-        binary_encoding: "12 /r" }
+        raw_encoding_specification: "12 /r" }
       instructions {
         description: "Add with carry r/m8 to byte register."
         vendor_syntax {
@@ -71,7 +71,7 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
         available_in_64_bit: true
         legacy_instruction: true
         encoding_scheme: "RM"
-        binary_encoding: "12 /r" })";
+        raw_encoding_specification: "12 /r" })";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -99,7 +99,7 @@ TEST(AddAlternativesTest, DifferentSizes) {
         available_in_64_bit: true
         legacy_instruction: true
         encoding_scheme: "RMI"
-        binary_encoding: "66 0F 3A 20 /r ib" })";
+        raw_encoding_specification: "66 0F 3A 20 /r ib" })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         description: "Insert a byte integer value from r32/m8 into xmm1 at the "
@@ -122,7 +122,7 @@ TEST(AddAlternativesTest, DifferentSizes) {
         available_in_64_bit: true
         legacy_instruction: true
         encoding_scheme: "RMI"
-        binary_encoding: "66 0F 3A 20 /r ib" }
+        raw_encoding_specification: "66 0F 3A 20 /r ib" }
       instructions {
         description: "Insert a byte integer value from r32/m8 into xmm1 at the "
                      "destination element in xmm1 specified by imm8."
@@ -144,7 +144,7 @@ TEST(AddAlternativesTest, DifferentSizes) {
         available_in_64_bit: true
         legacy_instruction: true
         encoding_scheme: "RMI"
-        binary_encoding: "66 0F 3A 20 /r ib" })";
+        raw_encoding_specification: "66 0F 3A 20 /r ib" })";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -156,14 +156,14 @@ TEST(AddAlternativesTest, NoRenaming) {
              mnemonic: 'FBLD'
              operands { name: 'm80bcd' }}
            feature_name: 'X87'
-           binary_encoding: 'DF /4' })";
+           raw_encoding_specification: 'DF /4' })";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
              mnemonic: 'FBLD'
              operands { name: 'm80bcd' }}
            feature_name: 'X87'
-           binary_encoding: 'DF /4' })";
+           raw_encoding_specification: 'DF /4' })";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

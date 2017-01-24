@@ -34,14 +34,16 @@ const char kOperandSizeOverridePrefix[] = "66 ";
 // not added and a warning is printed to the log.
 void AddOperandSizeOverrideToInstructionProto(InstructionProto* instruction) {
   CHECK(instruction != nullptr);
-  const string& binary_encoding = instruction->binary_encoding();
-  if (binary_encoding.find(kOperandSizeOverridePrefix) == string::npos) {
-    instruction->set_binary_encoding(
-        StrCat(kOperandSizeOverridePrefix, binary_encoding));
+  const string& raw_encoding_specification =
+      instruction->raw_encoding_specification();
+  if (raw_encoding_specification.find(kOperandSizeOverridePrefix) ==
+      string::npos) {
+    instruction->set_raw_encoding_specification(
+        StrCat(kOperandSizeOverridePrefix, raw_encoding_specification));
   } else {
     LOG(WARNING)
         << "The instruction already has an operand size override prefix: "
-        << instruction->binary_encoding();
+        << instruction->raw_encoding_specification();
   }
 }
 
