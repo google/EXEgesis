@@ -19,18 +19,18 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include "strings/string.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include "strings/string.h"
 
-#include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/util/instruction_syntax.h"
 #include "cpu_instructions/x86/cleanup_instruction_set_utils.h"
 #include "cpu_instructions/x86/encoding_specification.h"
+#include "glog/logging.h"
+#include "strings/str_cat.h"
+#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"

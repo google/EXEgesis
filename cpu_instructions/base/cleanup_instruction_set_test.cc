@@ -16,11 +16,11 @@
 
 #include <functional>
 
+#include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
 #include "glog/logging.h"
-#include "src/google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
+#include "src/google/protobuf/text_format.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 

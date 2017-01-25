@@ -14,9 +14,9 @@
 
 #include "cpu_instructions/x86/cleanup_instruction_set_fix_operands.h"
 
-#include "src/google/protobuf/text_format.h"
-#include "gtest/gtest.h"
 #include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
+#include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
@@ -432,8 +432,8 @@ TEST(FixRegOperandsTest, UnexpectedMnemonic) {
            encoding_scheme: 'RM'
            raw_encoding_specification: '0F 02 /r' })";
   InstructionSetProto instruction_set;
-  ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionSetProto,
-                                                    &instruction_set));
+  ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
+      kInstructionSetProto, &instruction_set));
   const Status transform_status = FixRegOperands(&instruction_set);
   EXPECT_TRUE(IsInvalidArgument(transform_status)) << transform_status;
 }

@@ -14,8 +14,8 @@
 
 #include "cpu_instructions/x86/pdf/vendor_syntax.h"
 
-#include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace cpu_instructions {

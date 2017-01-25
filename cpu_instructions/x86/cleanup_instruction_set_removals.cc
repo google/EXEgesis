@@ -15,14 +15,14 @@
 #include "cpu_instructions/x86/cleanup_instruction_set_removals.h"
 
 #include <algorithm>
-#include "strings/string.h"
 #include <unordered_set>
+#include "strings/string.h"
 
+#include "cpu_instructions/base/cleanup_instruction_set.h"
+#include "cpu_instructions/proto/instructions.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "strings/string_view.h"
-#include "cpu_instructions/base/cleanup_instruction_set.h"
-#include "cpu_instructions/proto/instructions.pb.h"
 #include "util/gtl/container_algorithm.h"
 #include "util/gtl/map_util.h"
 #include "util/task/status.h"

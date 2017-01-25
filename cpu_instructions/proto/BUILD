@@ -40,4 +40,3 @@ cpu_instructions_proto_library(
         "//cpu_instructions/proto/x86:encoding_specification_proto",
     ],
 )
-

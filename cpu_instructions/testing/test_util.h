@@ -23,14 +23,14 @@
 #ifndef CPU_INSTRUCTIONS_TESTING_TEST_UTIL_H_
 #define CPU_INSTRUCTIONS_TESTING_TEST_UTIL_H_
 
-#include "strings/string.h"
 #include <utility>
+#include "strings/string.h"
 
+#include "cpu_instructions/testing/test_util.h"
 #include "glog/logging.h"
+#include "gmock/gmock.h"
 #include "src/google/protobuf/text_format.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "gmock/gmock.h"
-#include "cpu_instructions/testing/test_util.h"
 
 namespace cpu_instructions {
 namespace testing {

@@ -18,11 +18,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "cpu_instructions/proto/instructions.pb.h"
 #include "glog/logging.h"
 #include "strings/str_cat.h"
 #include "strings/string_view.h"
 #include "strings/strip.h"
-#include "cpu_instructions/proto/instructions.pb.h"
 
 namespace cpu_instructions {
 

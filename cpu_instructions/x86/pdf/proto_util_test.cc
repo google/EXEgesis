@@ -17,18 +17,20 @@
 #include <cstdio>
 #include "strings/string.h"
 
-#include "glog/logging.h"
-#include "src/google/protobuf/text_format.h"
-#include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
-#include "gtest/gtest.h"
-#include "strings/str_cat.h"
 #include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "glog/logging.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
+#include "strings/str_cat.h"
 
 namespace cpu_instructions {
 namespace x86 {
 namespace pdf {
 namespace {
+
+using ::cpu_instructions::testing::EqualsProto;
 
 TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   constexpr char kExpected[] = R"(
@@ -39,12 +41,12 @@ TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   const string filename = StrCat(getenv("TEST_TMPDIR"), "/test.pbtxt");
   WriteTextProtoOrDie(filename, page);
   const PdfPage read_page = ReadTextProtoOrDie<PdfPage>(filename);
-  EXPECT_THAT(read_page, ::cpu_instructions::testing::EqualsProto(kExpected));
+  EXPECT_THAT(read_page, EqualsProto(kExpected));
 }
 
 TEST(ProtoUtilTest, ParseProtoFromStringOrDie) {
   EXPECT_THAT(ParseProtoFromStringOrDie<PdfPage>("number: 1"),
-              ::cpu_instructions::testing::EqualsProto("number: 1"));
+              EqualsProto("number: 1"));
 }
 
 TEST(ProtoUtilDeathTest, ParseProtoFromStringOrDie) {

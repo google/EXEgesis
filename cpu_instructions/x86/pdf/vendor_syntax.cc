@@ -19,10 +19,10 @@
 #include <vector>
 
 #include "glog/logging.h"
+#include "re2/re2.h"
 #include "strings/str_split.h"
 #include "strings/strip.h"
 #include "util/gtl/map_util.h"
-#include "re2/re2.h"
 
 namespace cpu_instructions {
 namespace x86 {
@@ -31,7 +31,6 @@ namespace pdf {
 namespace {
 
 using re2::StringPiece;
-
 
 // The list of operand names from the Intel encoding specification that are
 // accepted by the converter.

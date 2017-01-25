@@ -14,8 +14,8 @@
 
 #include "cpu_instructions/x86/cleanup_instruction_set_properties.h"
 
-#include "gtest/gtest.h"
 #include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
+#include "gtest/gtest.h"
 
 namespace cpu_instructions {
 namespace x86 {

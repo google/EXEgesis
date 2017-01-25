@@ -19,8 +19,8 @@
 
 #include <vector>
 
-#include "gflags/gflags.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
+#include "gflags/gflags.h"
 
 DECLARE_string(cpu_instructions_transforms);
 

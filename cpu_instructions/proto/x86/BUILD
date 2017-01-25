@@ -8,7 +8,6 @@ licenses(["notice"])  # Apache 2.0
 
 load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
 
-
 # Protocol buffer library with the definitions of enums and constants for the
 # x86-64 binary encoding.
 cpu_instructions_proto_library(

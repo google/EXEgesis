@@ -27,8 +27,8 @@
 #ifndef CPU_INSTRUCTIONS_X86_ENCODING_SPECIFICATION_H_
 #define CPU_INSTRUCTIONS_X86_ENCODING_SPECIFICATION_H_
 
-#include "strings/string.h"
 #include <unordered_set>
+#include "strings/string.h"
 
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/proto/x86/encoding_specification.pb.h"

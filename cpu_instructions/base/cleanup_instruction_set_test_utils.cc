@@ -14,11 +14,11 @@
 
 #include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
 
-#include "src/google/protobuf/text_format.h"
-#include "gmock/gmock.h"
-#include "cpu_instructions/testing/test_util.h"
-#include "gtest/gtest.h"
 #include "cpu_instructions/proto/instructions.pb.h"
+#include "cpu_instructions/testing/test_util.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
 
 namespace cpu_instructions {
 
@@ -27,8 +27,8 @@ using ::cpu_instructions::testing::EqualsProto;
 void TestTransform(const InstructionSetTransform& transform,
                    const string& input_proto, const string& expected_output) {
   InstructionSetProto instruction_set;
-  ASSERT_TRUE(
-      ::google::protobuf::TextFormat::ParseFromString(input_proto, &instruction_set));
+  ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
+      input_proto, &instruction_set));
   ASSERT_OK(transform(&instruction_set));
   EXPECT_THAT(instruction_set, EqualsProto(expected_output));
 }

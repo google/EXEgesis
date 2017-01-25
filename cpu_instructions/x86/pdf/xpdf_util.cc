@@ -21,21 +21,21 @@
 #include <unordered_map>
 #include <vector>
 
+#include "cpu_instructions/x86/pdf/geometry.h"
+#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "cpu_instructions/x86/pdf/pdf_document_parser.h"
+#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 #include "glog/logging.h"
-#include "strings/string_view_utils.h"
 #include "libutf/utf.h"
+#include "strings/string_view_utils.h"
+#include "util/gtl/map_util.h"
+#include "util/gtl/ptr_util.h"
 #include "xpdf-3.04/xpdf/GfxState.h"
 #include "xpdf-3.04/xpdf/GlobalParams.h"
 #include "xpdf-3.04/xpdf/OutputDev.h"
 #include "xpdf-3.04/xpdf/PDFDoc.h"
 #include "xpdf-3.04/xpdf/PDFDocEncoding.h"
 #include "xpdf-3.04/xpdf/UnicodeMap.h"
-#include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
-#include "cpu_instructions/x86/pdf/geometry.h"
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
-#include "cpu_instructions/x86/pdf/pdf_document_parser.h"
-#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 
 namespace cpu_instructions {
 namespace x86 {

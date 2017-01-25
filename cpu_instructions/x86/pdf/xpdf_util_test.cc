@@ -14,10 +14,10 @@
 
 #include "cpu_instructions/x86/pdf/xpdf_util.h"
 
-#include "src/google/protobuf/text_format.h"
-#include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
 #include "strings/str_cat.h"
 #include "util/gtl/ptr_util.h"
 
@@ -26,8 +26,9 @@ namespace x86 {
 namespace pdf {
 namespace {
 
-const char kTestDataPath[] =
-    "/__main__/cpu_instructions/x86/pdf/testdata/";
+using ::cpu_instructions::testing::EqualsProto;
+
+const char kTestDataPath[] = "/__main__/cpu_instructions/x86/pdf/testdata/";
 constexpr const int kHorizontalDPI = 72;
 constexpr const int kVerticalDPI = 72;
 
@@ -38,7 +39,7 @@ string GetPdfFilename(const string& name) {
 TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
   const auto doc = XPDFDoc::OpenOrDie(GetPdfFilename("simple.pdf"));
 
-  EXPECT_THAT(doc->GetDocumentId(), ::cpu_instructions::testing::EqualsProto(""));
+  EXPECT_THAT(doc->GetDocumentId(), EqualsProto(""));
 
   PdfDocument pdf_document =
       doc->Parse(1 /*first_page*/, -1 /*last_page*/, PdfDocumentChanges());
@@ -487,7 +488,7 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
       }
     }
   )";
-  EXPECT_THAT(pdf_document, ::cpu_instructions::testing::EqualsProto(kExpected));
+  EXPECT_THAT(pdf_document, EqualsProto(kExpected));
 }
 
 }  // namespace

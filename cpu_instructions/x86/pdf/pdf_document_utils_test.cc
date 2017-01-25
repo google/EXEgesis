@@ -14,10 +14,10 @@
 
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 
-#include "glog/logging.h"
-#include "src/google/protobuf/text_format.h"
-#include "gtest/gtest.h"
 #include "cpu_instructions/x86/pdf/proto_util.h"
+#include "glog/logging.h"
+#include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
 
 namespace cpu_instructions {
 namespace x86 {

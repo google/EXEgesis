@@ -41,8 +41,8 @@ std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags() {
                         default_transforms.end());
     } else {
       auto* transform = FindOrNull(transforms_by_name, transform_name);
-      CHECK(transform != nullptr) << "Transform was not found: "
-                                  << transform_name;
+      CHECK(transform != nullptr)
+          << "Transform was not found: " << transform_name;
       transforms.push_back(*transform);
     }
   }

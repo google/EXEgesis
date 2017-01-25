@@ -20,9 +20,9 @@
 
 #include <functional>
 #include <limits>
-#include "strings/string.h"
 #include <unordered_map>
 #include <vector>
+#include "strings/string.h"
 
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "util/task/status.h"

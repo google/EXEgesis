@@ -14,12 +14,12 @@
 
 #include "cpu_instructions/x86/cleanup_instruction_set_properties.h"
 
-#include "strings/string.h"
 #include <unordered_map>
+#include "strings/string.h"
 
+#include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "cpu_instructions/base/cleanup_instruction_set.h"
 
 namespace cpu_instructions {
 namespace x86 {

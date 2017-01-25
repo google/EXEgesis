@@ -1,6 +1,8 @@
 # Description:
 #   Intel Software Development Manual (SDM) Parser. See README.md.
 
+package(default_visibility = ["//:internal_users"])
+
 load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
 
 licenses(["notice"])  # Apache 2.0
@@ -17,7 +19,10 @@ cc_library(
     hdrs = ["geometry.h"],
     deps = [
         ":pdf_document_proto",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
     ],
 )
 
@@ -26,8 +31,8 @@ cc_test(
     srcs = ["geometry_test.cc"],
     deps = [
         ":geometry",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -36,11 +41,14 @@ cc_library(
     srcs = ["vendor_syntax.cc"],
     hdrs = ["vendor_syntax.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
-        "//cpu_instructions/proto:instructions_proto",
-        "//external:re2",
     ],
 )
 
@@ -49,8 +57,9 @@ cc_test(
     srcs = ["vendor_syntax_test.cc"],
     deps = [
         ":vendor_syntax",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
+        "//cpu_instructions/testing:test_util",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -58,13 +67,12 @@ cc_library(
     name = "proto_util",
     srcs = ["proto_util.cc"],
     hdrs = ["proto_util.h"],
-    visibility = [
-        "//cpu_instructions/tools:__subpackages__",
-    ],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        
+        "//base",
+        "//external:gflags",
+        "//external:glog",
         "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
         "//strings",
     ],
 )
@@ -75,10 +83,14 @@ cc_test(
     deps = [
         ":pdf_document_proto",
         ":proto_util",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//cpu_instructions/testing:test_util",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
         "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
+        "//external:protobuf_clib_for_base",
         "//strings",
     ],
 )
@@ -90,7 +102,10 @@ cc_library(
     deps = [
         ":geometry",
         ":pdf_document_proto",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/graph:connected_components",
         "//util/gtl:map_util",
@@ -103,8 +118,8 @@ cc_test(
     deps = [
         ":pdf_document_parser",
         ":proto_util",
+        "//external:googletest_main",
         "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest_main",
     ],
 )
 
@@ -114,7 +129,10 @@ cc_library(
     hdrs = ["pdf_document_utils.h"],
     deps = [
         ":pdf_document_proto",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
     ],
@@ -126,10 +144,13 @@ cc_test(
     deps = [
         ":pdf_document_utils",
         ":proto_util",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
         "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
+        "//external:protobuf_clib_for_base",
         "//strings",
     ],
 )
@@ -155,13 +176,16 @@ cc_library(
         ":pdf_document_proto",
         ":pdf_document_utils",
         ":vendor_syntax",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
         "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
+        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
-        "//cpu_instructions/proto:instructions_proto",
-        "//external:re2",
     ],
 )
 
@@ -177,8 +201,9 @@ cc_test(
         ":intel_sdm_extractor",
         ":pdf_document_parser",
         ":proto_util",
+        "//cpu_instructions/testing:test_util",
+        "//external:googletest_main",
         "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest_main",
         "//strings",
     ],
 )
@@ -189,22 +214,22 @@ cc_library(
     srcs = ["parse_sdm.cc"],
     hdrs = ["parse_sdm.h"],
     data = [":sdm_patches.pbtxt"],
-    visibility = [
-        "//cpu_instructions/tools:__subpackages__",
-    ],
     deps = [
         ":intel_sdm_extractor",
         ":pdf_document_utils",
         ":proto_util",
         ":xpdf_util",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//cpu_instructions/proto:cpu_info_proto",
+        "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
         "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
+        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
-        "//cpu_instructions/proto:cpu_info_proto",
-        "//cpu_instructions/proto:instructions_proto",
-        "//external:re2",
     ],
 )
 
@@ -217,10 +242,13 @@ cc_library(
         ":pdf_document_parser",
         ":pdf_document_proto",
         ":pdf_document_utils",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
         "//external:utf",
         "//external:xpdf",
+        "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
     ],
@@ -234,9 +262,13 @@ cc_test(
     ],
     deps = [
         ":xpdf_util",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//cpu_instructions/testing:test_util",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest_main",
         "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest_main",
+        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:ptr_util",
     ],

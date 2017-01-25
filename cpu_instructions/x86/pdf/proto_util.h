@@ -24,7 +24,8 @@ namespace x86 {
 namespace pdf {
 
 // Reads a proto in text format from a file.
-void ReadTextProtoOrDie(const string& filename, google::protobuf::Message* message);
+void ReadTextProtoOrDie(const string& filename,
+                        google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>
@@ -35,7 +36,8 @@ Proto ReadTextProtoOrDie(const string& filename) {
 }
 
 // Reads a proto in text format from a string.
-void ParseProtoFromStringOrDie(const string& text, google::protobuf::Message* message);
+void ParseProtoFromStringOrDie(const string& text,
+                               google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>

@@ -20,12 +20,12 @@
 #include <functional>
 #include <initializer_list>
 #include <memory>
-#include "strings/string.h"
 #include <unordered_set>
+#include "strings/string.h"
 
 #include "base/macros.h"
-#include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"
 #include "strings/string_view.h"
@@ -38,7 +38,6 @@ namespace {
 
 using ::cpu_instructions::testing::EqualsProto;
 using ::testing::UnorderedElementsAreArray;
-using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
 
 void CheckParser(const string& specification_str,
@@ -63,8 +62,7 @@ TEST(EncodingSpecificationParserTest, FooBarDoesNotParse) {
   CheckParserFailure("foo? bar!");
 }
 
-TEST(EncodingSpecificationParserTest,
-     InstructionWithoutOpcodeDoesNotParse) {
+TEST(EncodingSpecificationParserTest, InstructionWithoutOpcodeDoesNotParse) {
   CheckParserFailure("REX.W");
   CheckParserFailure("REX.W 66");
   CheckParserFailure("REX.W /r");
@@ -349,7 +347,6 @@ TEST(EncodingSpecificationParserTest, EvexLig512) {
                 opcode: 0x0f29
                 modrm_usage: FULL_MODRM)");
 }
-
 
 TEST(GetAvailableEncodingsTest, GetEncodings) {
   static const struct {

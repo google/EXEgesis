@@ -14,10 +14,9 @@
 
 #include "cpu_instructions/base/transform_factory.h"
 
-#include "gmock/gmock.h"
-#include "cpu_instructions/testing/test_util.h"
-#include "gtest/gtest.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace cpu_instructions {
 namespace {

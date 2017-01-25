@@ -16,13 +16,13 @@
 
 #include <algorithm>
 #include <map>
-#include "strings/string.h"
 #include <vector>
+#include "strings/string.h"
 
 #include "gflags/gflags.h"
 #include "glog/logging.h"
-#include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "src/google/protobuf/descriptor.h"
+#include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
 #include "util/gtl/map_util.h"

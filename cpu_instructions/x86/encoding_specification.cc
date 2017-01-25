@@ -20,17 +20,17 @@
 #include <cstdint>
 #include <functional>
 #include <iterator>
-#include "strings/string.h"
 #include <unordered_map>
 #include <utility>
+#include "strings/string.h"
 
+#include "cpu_instructions/proto/x86/encoding_specification.pb.h"
+#include "cpu_instructions/proto/x86/instruction_encoding.pb.h"
 #include "glog/logging.h"
+#include "re2/re2.h"
 #include "strings/str_cat.h"
 #include "strings/string_view.h"
 #include "util/gtl/map_util.h"
-#include "cpu_instructions/proto/x86/encoding_specification.pb.h"
-#include "cpu_instructions/proto/x86/instruction_encoding.pb.h"
-#include "re2/re2.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status_macros.h"
 
@@ -115,8 +115,9 @@ const std::pair<const char*, VexPrefixEncodingSpecification::VexOperandUsage>
          VexPrefixEncodingSpecification::VEX_OPERAND_IS_FIRST_SOURCE_REGISTER},
         {"NDD",
          VexPrefixEncodingSpecification::VEX_OPERAND_IS_DESTINATION_REGISTER},
-        {"DDS", VexPrefixEncodingSpecification::
-                    VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
+        {"DDS",
+         VexPrefixEncodingSpecification::
+             VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
 const std::pair<const char*, VexPrefixEncodingSpecification::VectorSize>
     kVectorSizeTokens[] = {
         {"LZ", VexPrefixEncodingSpecification::VECTOR_SIZE_BIT_IS_ZERO},

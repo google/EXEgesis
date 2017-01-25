@@ -1,7 +1,7 @@
 # Contains classes, functions and data structures that are platform independent.
 # Code in this directory is only allowed to depend on proto/ and util/.
 
-package(default_visibility = ["//cpu_instructions:__subpackages__"])
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -11,12 +11,13 @@ cc_library(
     srcs = ["cleanup_instruction_set.cc"],
     hdrs = ["cleanup_instruction_set.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        
-        "//external:protobuf_clib",
-        
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
+        "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
     ],
@@ -30,9 +31,10 @@ cc_library(
     hdrs = ["cleanup_instruction_set_test_utils.h"],
     deps = [
         ":cleanup_instruction_set",
-        "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
         "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/testing:test_util",
+        "//external:googletest",
+        "//external:protobuf_clib",
     ],
 )
 
@@ -43,9 +45,13 @@ cc_test(
     deps = [
         ":cleanup_instruction_set",
         ":cleanup_instruction_set_test_utils",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
         "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
+        "//external:protobuf_clib_for_base",
         "//util/task:status",
     ],
 )
@@ -56,7 +62,10 @@ cc_library(
     hdrs = ["transform_factory.h"],
     deps = [
         ":cleanup_instruction_set",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
     ],
@@ -68,8 +77,11 @@ cc_test(
     deps = [
         ":cleanup_instruction_set",
         ":transform_factory",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
     ],
 )

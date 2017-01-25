@@ -22,7 +22,8 @@ namespace cpu_instructions {
 namespace x86 {
 namespace pdf {
 
-void ReadTextProtoOrDie(const string& filename, google::protobuf::Message* message) {
+void ReadTextProtoOrDie(const string& filename,
+                        google::protobuf::Message* message) {
   CHECK(!filename.empty());
   FILE* const input_file = fopen(filename.c_str(), "rb");
   CHECK(input_file) << "Could not open '" << filename << "'";
@@ -35,7 +36,8 @@ void ReadTextProtoOrDie(const string& filename, google::protobuf::Message* messa
   fclose(input_file);
 }
 
-void ParseProtoFromStringOrDie(const string& text, google::protobuf::Message* message) {
+void ParseProtoFromStringOrDie(const string& text,
+                               google::protobuf::Message* message) {
   CHECK(google::protobuf::TextFormat::ParseFromString(text, message));
 }
 

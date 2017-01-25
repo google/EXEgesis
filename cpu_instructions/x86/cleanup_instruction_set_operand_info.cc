@@ -18,17 +18,17 @@
 #include <functional>
 #include <iterator>
 #include <memory>
-#include "strings/string.h"
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include "strings/string.h"
 
-#include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/proto/x86/encoding_specification.pb.h"
 #include "cpu_instructions/x86/encoding_specification.h"
+#include "glog/logging.h"
+#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -795,8 +795,9 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     }
 
     if (operand->has_encoding()) {
-      UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
-                                                 available_encodings));
+      UpdateStatus(
+          &status,
+          EraseOperandEncoding(*instruction, *operand, available_encodings));
     } else {
       // If there is only one way how an operand can be encoded, we assign this
       // encoding to the operand and remove it from the list of available
@@ -805,8 +806,9 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       InstructionOperand::Encoding operand_encoding;
       if (FindCopy(encoding_map, operand->name(), &operand_encoding)) {
         operand->set_encoding(operand_encoding);
-        UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
-                                                   available_encodings));
+        UpdateStatus(
+            &status,
+            EraseOperandEncoding(*instruction, *operand, available_encodings));
       } else {
         operands_with_no_encoding->push_back(operand_index);
       }

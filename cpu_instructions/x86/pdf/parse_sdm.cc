@@ -21,17 +21,17 @@
 #include <memory>
 #include "strings/string.h"
 
-#include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_split.h"
-#include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 #include "cpu_instructions/proto/cpu_info.pb.h"
 #include "cpu_instructions/x86/pdf/intel_sdm_extractor.h"
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 #include "cpu_instructions/x86/pdf/proto_util.h"
 #include "cpu_instructions/x86/pdf/xpdf_util.h"
+#include "glog/logging.h"
 #include "re2/re2.h"
+#include "strings/str_cat.h"
+#include "strings/str_split.h"
+#include "util/gtl/map_util.h"
+#include "util/gtl/ptr_util.h"
 
 namespace cpu_instructions {
 namespace x86 {

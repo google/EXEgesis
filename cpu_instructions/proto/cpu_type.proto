@@ -21,7 +21,8 @@ package cpu_instructions;
 message CpuTypeProto {
   // The family number returned by the CPUID instruction.
   // It is usually 6 for Intel x86 CPUs.
-  // See https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
+  // See
+  // https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
   // for a more complete explanation.
   int32 family = 1;
 

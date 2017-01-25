@@ -16,11 +16,11 @@
 
 #include "gflags/gflags.h"
 
-#include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "cpu_instructions/base/transform_factory.h"
 #include "cpu_instructions/x86/pdf/parse_sdm.h"
 #include "cpu_instructions/x86/pdf/proto_util.h"
+#include "glog/logging.h"
+#include "strings/str_cat.h"
 #include "util/task/status.h"
 
 DEFINE_string(cpu_instructions_input_spec, "",
@@ -35,7 +35,6 @@ DEFINE_string(cpu_instructions_output_file_base, "",
 DEFINE_string(cpu_instructions_patch_sets_file,
               "cpu_instructions/x86/pdf/sdm_patches.pbtxt",
               "A set of patches to original documents");
-
 
 namespace cpu_instructions {
 namespace {
@@ -57,7 +56,6 @@ void Main() {
   CHECK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
                              &instruction_set)
             .ok());
-
 
   // Write transformed intruction set.
   const string instructions_filename =

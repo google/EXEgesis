@@ -17,16 +17,16 @@
 #include <algorithm>
 #include <cfloat>
 #include <map>
-#include "strings/string.h"
 #include <unordered_map>
 #include <vector>
+#include "strings/string.h"
 
+#include "cpu_instructions/x86/pdf/geometry.h"
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
 #include "strings/string_view.h"
 #include "util/graph/connected_components.h"
 #include "util/gtl/map_util.h"
-#include "cpu_instructions/x86/pdf/geometry.h"
 
 namespace cpu_instructions {
 namespace x86 {

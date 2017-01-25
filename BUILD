@@ -6,3 +6,10 @@ package(default_visibility = ["//visibility:private"])
 licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
+
+package_group(
+    name = "internal_users",
+    packages = [
+        "//cpu_instructions/...",
+    ],
+)

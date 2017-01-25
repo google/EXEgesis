@@ -14,9 +14,9 @@
 
 #include "cpu_instructions/testing/test_util.h"
 
+#include "cpu_instructions/testing/test.pb.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "cpu_instructions/testing/test.pb.h"
 
 namespace cpu_instructions {
 namespace testing {

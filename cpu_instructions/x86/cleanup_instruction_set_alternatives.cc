@@ -15,15 +15,15 @@
 #include "cpu_instructions/x86/cleanup_instruction_set_alternatives.h"
 
 #include <cstdint>
-#include "strings/string.h"
 #include <unordered_map>
 #include <vector>
+#include "strings/string.h"
 
+#include "cpu_instructions/base/cleanup_instruction_set.h"
+#include "cpu_instructions/proto/instructions.pb.h"
 #include "glog/logging.h"
 #include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
-#include "cpu_instructions/base/cleanup_instruction_set.h"
-#include "cpu_instructions/proto/instructions.pb.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 

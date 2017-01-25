@@ -15,8 +15,8 @@
 #ifndef STRINGS_STR_JOIN_H_
 #define STRINGS_STR_JOIN_H_
 
-#include "strings/string.h"
 #include <vector>
+#include "strings/string.h"
 
 #include "src/google/protobuf/stubs/strutil.h"
 

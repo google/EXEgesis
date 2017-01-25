@@ -14,23 +14,21 @@
 
 #include "cpu_instructions/x86/pdf/intel_sdm_extractor.h"
 
-#include "gmock/gmock.h"
 #include "cpu_instructions/testing/test_util.h"
-#include "gtest/gtest.h"
-#include "strings/str_cat.h"
 #include "cpu_instructions/x86/pdf/pdf_document_parser.h"
 #include "cpu_instructions/x86/pdf/proto_util.h"
-
-using ::cpu_instructions::testing::EqualsProto;
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "strings/str_cat.h"
 
 namespace cpu_instructions {
 namespace x86 {
 namespace pdf {
-
 namespace {
 
-const char kTestDataPath[] =
-    "/__main__/cpu_instructions/x86/pdf/testdata/";
+using ::cpu_instructions::testing::EqualsProto;
+
+const char kTestDataPath[] = "/__main__/cpu_instructions/x86/pdf/testdata/";
 
 template <typename Proto>
 Proto GetProto(const string& name) {
@@ -51,8 +49,9 @@ TEST(IntelSdmExtractorTest, BitSetPage) {
 
   const InstructionSetProto instruction_set =
       ProcessIntelSdmDocument(sdm_document);
-  EXPECT_THAT(instruction_set, EqualsProto(GetProto<InstructionSetProto>(
-                                   "253666_p170_p171_instructionset")));
+  EXPECT_THAT(instruction_set,
+              EqualsProto(GetProto<InstructionSetProto>(
+                  "253666_p170_p171_instructionset")));
 }
 
 TEST(IntelSdmExtractorTest, ParseOperandEncodingTableCell) {

@@ -14,11 +14,11 @@
 
 #include "cpu_instructions/x86/cleanup_instruction_set_utils.h"
 
-#include "src/google/protobuf/text_format.h"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/testing/test_util.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
 
 namespace cpu_instructions {
 namespace x86 {
@@ -52,8 +52,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
       encoding_scheme: 'MI'
       raw_encoding_specification: '66 81 /2 iw')";
   InstructionProto instruction;
-  ASSERT_TRUE(
-      ::google::protobuf::TextFormat::ParseFromString(kInstructionProto, &instruction));
+  ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
+                                                              &instruction));
   AddOperandSizeOverrideToInstructionProto(&instruction);
   EXPECT_THAT(instruction, EqualsProto(kExpectedInstructionProto));
 }
@@ -72,8 +72,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
       encoding_scheme: 'MI'
       raw_encoding_specification: '66 81 /2 iw')";
   InstructionProto instruction;
-  ASSERT_TRUE(
-      ::google::protobuf::TextFormat::ParseFromString(kInstructionProto, &instruction));
+  ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
+                                                              &instruction));
   AddOperandSizeOverrideToInstructionProto(&instruction);
   EXPECT_THAT(instruction, EqualsProto(kInstructionProto));
 }

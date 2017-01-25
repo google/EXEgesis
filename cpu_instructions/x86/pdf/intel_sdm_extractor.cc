@@ -22,7 +22,10 @@
 #include <utility>
 #include <vector>
 
+#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
+#include "cpu_instructions/x86/pdf/vendor_syntax.h"
 #include "glog/logging.h"
+#include "re2/re2.h"
 #include "strings/case.h"
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
@@ -30,11 +33,8 @@
 #include "strings/string_view_utils.h"
 #include "strings/strip.h"
 #include "strings/util.h"
-#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
-#include "cpu_instructions/x86/pdf/vendor_syntax.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
-#include "re2/re2.h"
 
 namespace cpu_instructions {
 namespace x86 {
@@ -43,7 +43,6 @@ namespace pdf {
 namespace {
 
 using re2::StringPiece;
-
 
 // The top/bottom page margin, in pixels.
 constexpr const float kPageMargin = 50.0f;
@@ -750,8 +749,9 @@ void ProcessSubSections(std::vector<SubSection> sub_sections,
 OperandEncoding ParseOperandEncodingTableCell(const string& content) {
   OperandEncoding::OperandEncodingSpec spec = OperandEncoding::OE_NA;
   const RE2* const regexp =
-      content.empty() ? nullptr : TryParse(GetOperandEncodingSpecMatchers(),
-                                           content, &spec);
+      content.empty()
+          ? nullptr
+          : TryParse(GetOperandEncodingSpecMatchers(), content, &spec);
   if (regexp == nullptr) {
     LOG(INFO) << "Cannot match '" << content << "', falling back to default";
   }

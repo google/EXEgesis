@@ -1,7 +1,7 @@
 # Contains functions and data structures that concern specifically the
 # x86 and x86-64 platforms.
 
-package(default_visibility = ["//cpu_instructions:__subpackages__"])
+package(default_visibility = ["//:internal_users"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -11,10 +11,13 @@ cc_library(
     srcs = ["cleanup_instruction_set_utils.cc"],
     hdrs = ["cleanup_instruction_set_utils.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
     ],
 )
 
@@ -24,10 +27,11 @@ cc_test(
     srcs = ["cleanup_instruction_set_utils_test.cc"],
     deps = [
         ":cleanup_instruction_set_utils",
-        "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/testing:test_util",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib",
     ],
 )
 
@@ -38,6 +42,7 @@ cc_test(
 # into a single target.
 cc_library(
     name = "cleanup_instruction_set_all",
+    visibility = ["//visibility:public"],
     deps = [
         ":cleanup_instruction_set_alternatives",
         ":cleanup_instruction_set_asm_syntax",
@@ -57,11 +62,14 @@ cc_library(
     srcs = ["cleanup_instruction_set_alternatives.cc"],
     hdrs = ["cleanup_instruction_set_alternatives.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -73,9 +81,9 @@ cc_test(
     srcs = ["cleanup_instruction_set_alternatives_test.cc"],
     deps = [
         ":cleanup_instruction_set_alternatives",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -84,11 +92,14 @@ cc_library(
     srcs = ["cleanup_instruction_set_asm_syntax.cc"],
     hdrs = ["cleanup_instruction_set_asm_syntax.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -100,9 +111,9 @@ cc_test(
     srcs = ["cleanup_instruction_set_asm_syntax_test.cc"],
     deps = [
         ":cleanup_instruction_set_asm_syntax",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -112,13 +123,16 @@ cc_library(
     hdrs = ["cleanup_instruction_set_encoding.h"],
     deps = [
         ":cleanup_instruction_set_utils",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//external:protobuf_clib",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
         "//external:re2",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -130,9 +144,9 @@ cc_test(
     srcs = ["cleanup_instruction_set_encoding_test.cc"],
     deps = [
         ":cleanup_instruction_set_encoding",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -142,12 +156,15 @@ cc_library(
     hdrs = ["cleanup_instruction_set_fix_operands.h"],
     deps = [
         ":cleanup_instruction_set_utils",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//external:protobuf_clib",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -159,10 +176,10 @@ cc_test(
     srcs = ["cleanup_instruction_set_fix_operands_test.cc"],
     deps = [
         ":cleanup_instruction_set_fix_operands",
-        "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib",
         "//util/task:status",
     ],
 )
@@ -173,12 +190,15 @@ cc_library(
     hdrs = ["cleanup_instruction_set_operand_info.h"],
     deps = [
         ":encoding_specification",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/proto/x86:encoding_specification_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
     ],
@@ -191,10 +211,10 @@ cc_test(
     srcs = ["cleanup_instruction_set_operand_info_test.cc"],
     deps = [
         ":cleanup_instruction_set_operand_info",
-        "//external:protobuf_clib",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib",
         "//util/task:status",
     ],
 )
@@ -206,12 +226,15 @@ cc_library(
     deps = [
         ":cleanup_instruction_set_utils",
         ":encoding_specification",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/util:instruction_syntax",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -223,9 +246,9 @@ cc_test(
     srcs = ["cleanup_instruction_set_operand_size_override_test.cc"],
     deps = [
         ":cleanup_instruction_set_operand_size_override",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -234,10 +257,13 @@ cc_library(
     srcs = ["cleanup_instruction_set_properties.cc"],
     hdrs = ["cleanup_instruction_set_properties.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -249,9 +275,9 @@ cc_test(
     srcs = ["cleanup_instruction_set_properties_test.cc"],
     deps = [
         ":cleanup_instruction_set_properties",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -260,13 +286,16 @@ cc_library(
     srcs = ["cleanup_instruction_set_removals.cc"],
     hdrs = ["cleanup_instruction_set_removals.h"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
+        "//base",
+        "//cpu_instructions/base:cleanup_instruction_set",
+        "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
         "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:container_algorithm",
         "//util/gtl:map_util",
-        "//cpu_instructions/base:cleanup_instruction_set",
-        "//cpu_instructions/proto:instructions_proto",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -278,9 +307,9 @@ cc_test(
     srcs = ["cleanup_instruction_set_removals_test.cc"],
     deps = [
         ":cleanup_instruction_set_removals",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:googletest",
+        "//external:googletest_main",
     ],
 )
 
@@ -290,14 +319,18 @@ cc_library(
     name = "encoding_specification",
     srcs = ["encoding_specification.cc"],
     hdrs = ["encoding_specification.h"],
+    visibility = ["//visibility:public"],
     deps = [
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//strings",
-        "//util/gtl:map_util",
+        "//base",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/proto/x86:encoding_specification_proto",
         "//cpu_instructions/proto/x86:instruction_encoding_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
         "//external:re2",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
     ],
@@ -309,11 +342,15 @@ cc_test(
     srcs = ["encoding_specification_test.cc"],
     deps = [
         ":encoding_specification",
-        "//base", "//external:glog", "//external:gflags", "//external:protobuf_clib_for_base",
-        "//cpu_instructions/testing:googletest",
-        "//cpu_instructions/testing:googletest_main",
-        "//strings",
+        "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
+        "//cpu_instructions/testing:test_util",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
+        "//strings",
         "//util/task:status",
         "//util/task:statusor",
     ],

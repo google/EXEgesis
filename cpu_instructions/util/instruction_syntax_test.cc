@@ -15,13 +15,15 @@
 #include "cpu_instructions/util/instruction_syntax.h"
 
 #include "base/macros.h"
-#include "gmock/gmock.h"
-#include "cpu_instructions/testing/test_util.h"
-#include "gtest/gtest.h"
 #include "cpu_instructions/proto/instructions.pb.h"
+#include "cpu_instructions/testing/test_util.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace cpu_instructions {
 namespace {
+
+using ::cpu_instructions::testing::EqualsProto;
 
 TEST(InstructionSyntaxTest, BuildFromStrings) {
   constexpr struct {
@@ -62,7 +64,7 @@ TEST(InstructionSyntaxTest, BuildFromStrings) {
        "vpgatherqq %ymm2,(%rsp,%ymm12,8),%ymm1"}};
   for (const auto& test_case : kTestCases) {
     const InstructionFormat proto = ParseAssemblyStringOrDie(test_case.input);
-    EXPECT_THAT(proto, testing::EqualsProto(test_case.expected_proto));
+    EXPECT_THAT(proto, EqualsProto(test_case.expected_proto));
     EXPECT_EQ(ConvertToCodeString(proto), test_case.expected_output);
   }
 }

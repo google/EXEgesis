@@ -18,8 +18,8 @@
 
 #include "strings/string.h"
 
-#include "strings/string_view.h"
 #include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "strings/string_view.h"
 
 namespace cpu_instructions {
 namespace x86 {
