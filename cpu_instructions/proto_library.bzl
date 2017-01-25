@@ -1,20 +1,16 @@
 """Custom build rules."""
 
-
-def cpu_instructions_proto_library(name, srcs, cc_api_version=None, js_api_version=None, deps=[],
-                  visibility=None):
+def cpu_instructions_proto_library(name, srcs, cc_api_version=None,
+                                   js_api_version=None, deps=[],
+                                   visibility=None):
   """Rule for building proto libraries.
-
-  Bazel does not currently have a proto_library rule. Note that this is expanded
-  to cpu_instructions_proto_library by MOE to avoid name conflicts.
-  TODO(user): Remove when bazel has proto_library.
 
   Args:
       name: name of the proto library
       srcs: proto sources
       cc_api_version: unused
       js_api_version: unused
-      deps: other cpu_instructions_proto_library(s) that this target depends on.
+      deps: other proto_library(s) that this target depends on.
       visibility: target visibility
   """
   _ = cc_api_version  # Unused
@@ -47,6 +43,6 @@ def cpu_instructions_proto_library(name, srcs, cc_api_version=None, js_api_versi
   # Make the proto files available to deps for inclusion.
   native.filegroup(
       name = name + "_proto_files",
-      srcs = srcs,
+      srcs = srcs + deps_proto_files,
       visibility = visibility,
   )
