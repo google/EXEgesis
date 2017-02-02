@@ -4,7 +4,7 @@
 
 # Configuration
 PERF=perf
-COMPUTATION_EVENTS_1=uops_executed:u,uops_executed_port:port_4:u
+COMPUTATION_EVENTS_1=uops_executed:u,uops_executed_port:port_4:u,ild_stall.lcp:u
 COMPUTATION_EVENTS_2=uops_executed_port:port_2:u,uops_executed_port:port_3:u,uops_executed_port:port_7:u
 COMPUTATION_EVENTS_3=uops_executed_port:port_0:u,uops_executed_port:port_1:u,uops_executed_port:port_5:u,uops_executed_port:port_6:u
 # Number of outer loop iterations.
