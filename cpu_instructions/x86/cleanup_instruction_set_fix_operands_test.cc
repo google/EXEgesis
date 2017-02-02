@@ -510,7 +510,7 @@ TEST(RemoveImplicitXmm0OperandTest, NoRemoval) {
                 kInstructionSetProto);
 }
 
-// NOTE(user): All instructions using the implicit XMM0 use it as the last
+// NOTE(ondrasej): All instructions using the implicit XMM0 use it as the last
 // operand. Thus, we do not test any other case.
 TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
   constexpr char kInstructionSetProto[] =

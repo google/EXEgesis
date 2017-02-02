@@ -21,7 +21,7 @@ import "cpu_instructions/proto/cpu_type.proto";
 // Represents information about a CPU.
 message CpuInfoProto {
   // The CPU types for which this CpuInfo is valid.
-  repeated CpuTypeProto cpu_type = 1;
+  repeated CpuTypeProto cpu_types = 1;
 
   // Architecture, e.g. "x86".
   string architecture = 2;

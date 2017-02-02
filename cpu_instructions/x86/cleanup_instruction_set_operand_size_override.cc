@@ -40,6 +40,7 @@ namespace cpu_instructions {
 namespace x86 {
 namespace {
 
+using ::cpu_instructions::util::FailedPreconditionError;
 using ::cpu_instructions::util::InvalidArgumentError;
 using ::cpu_instructions::util::Status;
 
@@ -161,10 +162,13 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
           StrCat("No binary encoding specification for instruction ",
                  instruction.vendor_syntax().mnemonic()));
     }
-
-    EncodingSpecification specification;
-    ASSIGN_OR_RETURN(specification,
-                     ParseEncodingSpecification(raw_encoding_specification));
+    if (!instruction.has_x86_encoding_specification()) {
+      return FailedPreconditionError(
+          StrCat("Instruction does not have a parsed encoding spcification: ",
+                 instruction.DebugString()));
+    }
+    EncodingSpecification specification =
+        instruction.x86_encoding_specification();
 
     // The instruction has a code offset operand. The size of this offset is
     // controlled by the address size override, not the operand size override.

@@ -118,7 +118,7 @@ InstructionSetProto ParseSdmOrDie(const string& input_spec,
     LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
     WriteBinaryProtoOrDie(sdm_pb_filename, sdm_document);
     InstructionSetProto instruction_set = ProcessIntelSdmDocument(sdm_document);
-    *instruction_set.add_source_info() =
+    *instruction_set.add_source_infos() =
         CreateInstructionSetSourceInfo(doc->GetMetadata());
     full_instruction_set.MergeFrom(instruction_set);
   }

@@ -19,7 +19,7 @@ namespace cpu_instructions {
 namespace gtl {
 
 // A replacement for std::make_unique, which is not available in C++11.
-// TODO(user): Remove this function when we switch to C++14 and
+// TODO(courbet): Remove this function when we switch to C++14 and
 // std:make_unique becomes available.
 template <typename T, typename... Args>
 typename std::unique_ptr<T> MakeUnique(Args&&... args) {

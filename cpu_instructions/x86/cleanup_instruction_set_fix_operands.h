@@ -95,7 +95,7 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set);
 // two new entries, for r32 and r64.
 // For all other instructions from the current version of the manual, it just
 // renames reg to r32.
-// TODO(user): Assemblers actually support the 64-bit version of all
+// TODO(ondrasej): Assemblers actually support the 64-bit version of all
 // instructions fixed by this transform. Instead of making them 32-bit only, we
 // might want to add a 64-bit entries to be compatible with what the assemblers
 // do.

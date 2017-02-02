@@ -79,7 +79,7 @@ Status RunSingleTransform(
         RunTransformWithDiff(transform_function, instruction_set);
     if (diff_or_status.ok()) {
       const string& diff = diff_or_status.ValueOrDie();
-      // TODO(user): Consider trimming the output, so that we don't flood
+      // TODO(ondrasej): Consider trimming the output, so that we don't flood
       // the output when there are too many diffs.
       if (!diff.empty()) {
         LOG(INFO) << "Difference:\n" << diff;
@@ -182,7 +182,7 @@ StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
 
   string differences;
   {
-    // NOTE(user): The block here is necessary because the differencer and
+    // NOTE(ondrasej): The block here is necessary because the differencer and
     // the reporter must be destroyed before the return value is constructed.
     // Otherwise, the compiler would use move semantics and move the contents of
     // 'differences' of it before the reporter flushes the remaining changes in
@@ -197,7 +197,7 @@ StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
     CHECK(instructions_field != nullptr);
     differencer.TreatAsSet(instructions_field);
 
-    // NOTE(user): We are only interested in the string diff; we can safely
+    // NOTE(ondrasej): We are only interested in the string diff; we can safely
     // ignore the return value saying whether the two are equivalent or not.
     differencer.Compare(original_instruction_set, *instruction_set);
   }

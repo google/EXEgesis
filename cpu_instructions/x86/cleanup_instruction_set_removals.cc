@@ -57,7 +57,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructions, 4000);
 Status RemoveInstructionsWaitingForFpuSync(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  // NOTE(user): The space after the opcode is important, because with it,
+  // NOTE(ondrasej): The space after the opcode is important, because with it,
   // the prefix does not match the stand-alone FWAIT instructions that is
   // encoded as "9B".
   static constexpr char kFWaitPrefix[] = "9B ";
@@ -90,7 +90,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveNonEncodableInstructions, 0);
 
 Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  // NOTE(user): We're comparing the REP prefix without the space after it.
+  // NOTE(ondrasej): We're comparing the REP prefix without the space after it.
   // This will match also the REPE and REPNE prefixes. On the other hand, there
   // are no instructions that would use REP in their mnemonic, so optimizing
   // the matching this way is safe.
@@ -106,7 +106,7 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
                       instructions->end());
   return Status::OK;
 }
-// TODO(user): In addition to removing them, we should also add an attribute
+// TODO(ondrasej): In addition to removing them, we should also add an attribute
 // saying whether the REP/REPE/REPNE prefix is allowed.
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveRepAndRepneInstructions, 0);
 
@@ -139,7 +139,7 @@ const std::unordered_set<string>* const kRemovedEncodingSpecifications =
          // set, we believe that it is there simply to say that the instruction
          // may use it to access extended registers.
          "F2 REX 0F 38 F0 /r"});
-// NOTE(user): XLAT is not recognized by the LLVM assembler (unlike its
+// NOTE(ondrasej): XLAT is not recognized by the LLVM assembler (unlike its
 // no-operand version XLATB).
 const std::unordered_set<string>* const kRemovedMnemonics =
     new std::unordered_set<string>({"XLAT"});

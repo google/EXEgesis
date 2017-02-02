@@ -20,7 +20,10 @@
 #include "strings/string.h"
 
 #include "cpu_instructions/base/cleanup_instruction_set.h"
+#include "cpu_instructions/proto/x86/encoding_specification.pb.h"
+#include "cpu_instructions/util/status_util.h"
 #include "cpu_instructions/x86/cleanup_instruction_set_utils.h"
+#include "cpu_instructions/x86/encoding_specification.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
@@ -55,7 +58,7 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
       new_instruction.set_raw_encoding_specification(
           StrCat(kAddressSizeOverridePrefix, specification,
                  k32BitImmediateValueSuffix));
-      // NOTE(user): Changing the binary encoding of the original proto will
+      // NOTE(ondrasej): Changing the binary encoding of the original proto will
       // either invalidate or change the value of the variable specification.
       // We must thus be careful to not use this variable after it is changed by
       // instruction.set_raw_encoding_specification.
@@ -311,6 +314,28 @@ Status AddMissingModRmAndImmediateSpecification(
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingModRmAndImmediateSpecification,
                                    1000);
+
+Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  Status status = Status::OK;
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    const StatusOr<EncodingSpecification> encoding_specification_or_status =
+        ParseEncodingSpecification(instruction.raw_encoding_specification());
+    if (encoding_specification_or_status.ok()) {
+      *instruction.mutable_x86_encoding_specification() =
+          encoding_specification_or_status.ValueOrDie();
+    } else {
+      UpdateStatus(&status, encoding_specification_or_status.status());
+      LOG(WARNING) << "Could not parse encoding specification: "
+                   << instruction.raw_encoding_specification();
+    }
+  }
+  return status;
+}
+// We must parse the encoding specifications after running all other encoding
+// specification cleanups, but before running any other transform.
+REGISTER_INSTRUCTION_SET_TRANSFORM(ParseEncodingSpecifications, 1010);
 
 }  // namespace x86
 }  // namespace cpu_instructions

@@ -36,7 +36,7 @@ Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set);
 // Removes all instructions that use the pseudo-prefix "9B" (wait for pending
 // FPU exceptions). The byte "9B" actually is a stand-alone instruction, and
 // the disassembler treats it as such.
-// TODO(user): We need to verify how the instruction is treated by the CPU,
+// TODO(ondrasej): We need to verify how the instruction is treated by the CPU,
 // e.g. if it is fused into a single micro-operation, or if the CPU does some
 // kind of synchronization to prevent other exceptions from happening.
 Status RemoveInstructionsWaitingForFpuSync(
@@ -49,7 +49,7 @@ Status RemoveNonEncodableInstructions(InstructionSetProto* instruction_set);
 // encoding and that use the REP/REPNE prefix in the assembly code. These are
 // instructions that we already represent in the form without the prefix, and
 // we do not need the special case.
-// TODO(user): We should keep the information that these instructions can
+// TODO(ondrasej): We should keep the information that these instructions can
 // have the REP/REPNE prefix, ideally in a separate field of the instruction
 // proto.
 Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set);

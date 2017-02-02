@@ -314,7 +314,7 @@ string CleanupDescription(string input) {
 
 // We want to normalize features to the set defined by GetValidFeatureSet or
 // logical composition of them (several features separated by '&&' or '||')
-// TODO(user): Move this to configuration file.
+// TODO(gchatelet): Move this to configuration file.
 string FixFeature(string feature) {
   StripWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
@@ -340,7 +340,7 @@ string FixFeature(string feature) {
 }
 
 // Applies transformations to normalize binary encoding.
-// TODO(user): Move this to document specific configuration.
+// TODO(gchatelet): Move this to document specific configuration.
 string FixEncodingSpecification(string feature) {
   StripWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([,\n])", " ");  // remove commas and LF

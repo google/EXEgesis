@@ -26,6 +26,7 @@
 #include "cpu_instructions/base/cleanup_instruction_set.h"
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/proto/x86/encoding_specification.pb.h"
+#include "cpu_instructions/util/status_util.h"
 #include "cpu_instructions/x86/encoding_specification.h"
 #include "glog/logging.h"
 #include "strings/str_cat.h"
@@ -39,6 +40,7 @@ namespace cpu_instructions {
 namespace x86 {
 namespace {
 
+using ::cpu_instructions::util::FailedPreconditionError;
 using ::cpu_instructions::util::InvalidArgumentError;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
@@ -66,7 +68,7 @@ const std::pair<const char*, InstructionOperand::Encoding> kEncodingMap[] = {
     {"EAX", InstructionOperand::IMPLICIT_ENCODING},
     {"RAX", InstructionOperand::IMPLICIT_ENCODING},
     {"CL", InstructionOperand::IMPLICIT_ENCODING},
-    // NOTE(user): In the 2015-09 version of the manual, the control
+    // NOTE(ondrasej): In the 2015-09 version of the manual, the control
     // registers CR0-CR8 and DR0-DR7 are always encoded in modrm.reg.
     {"CR0-CR7", InstructionOperand::MODRM_REG_ENCODING},
     {"CR8", InstructionOperand::MODRM_REG_ENCODING},
@@ -117,7 +119,7 @@ const std::pair<const char*, InstructionOperand::Encoding> kEncodingMap[] = {
     {"m32int", InstructionOperand::MODRM_RM_ENCODING},
     {"moffs64", InstructionOperand::IMMEDIATE_VALUE_ENCODING},
     {"mem", InstructionOperand::MODRM_RM_ENCODING},
-    // NOTE(user): Apart from string instructions, there are a couple of
+    // NOTE(ondrasej): Apart from string instructions, there are a couple of
     // "scalar" instructions that do accept an operand from modrm.rm, but they
     // do not allow it to be a register operand. Since we replace the operands
     // of the string instructions with different strings, we can depend on the
@@ -125,7 +127,7 @@ const std::pair<const char*, InstructionOperand::Encoding> kEncodingMap[] = {
     {"m64", InstructionOperand::MODRM_RM_ENCODING},
     {"m64fp", InstructionOperand::MODRM_RM_ENCODING},
     {"m64int", InstructionOperand::MODRM_RM_ENCODING},
-    // NOTE(user): After removing operands of string instructions, all other
+    // NOTE(ondrasej): After removing operands of string instructions, all other
     // uses of m8 (as opposed to r/m8) are CLFLUSH and the PREFETCH*
     // instructions. All of these use modrm.rm encoding for the operand, and
     // they allow any addressing mode.
@@ -159,11 +161,11 @@ const std::pair<const char*, InstructionOperand::Encoding> kEncodingMap[] = {
     {"reg/m16", InstructionOperand::MODRM_RM_ENCODING},
     {"reg/m32", InstructionOperand::MODRM_RM_ENCODING},
     {"reg/m8", InstructionOperand::MODRM_RM_ENCODING},
-    // NOTE(user): In the 2015-09 version of the manual, segment registers
+    // NOTE(ondrasej): In the 2015-09 version of the manual, segment registers
     // are always encoded using modrm.reg.
     {"Sreg", InstructionOperand::MODRM_REG_ENCODING},
     {"ST(0)", InstructionOperand::IMPLICIT_ENCODING},
-    // NOTE(user): In the 2015-09 version of the manual, ST(i) registers
+    // NOTE(ondrasej): In the 2015-09 version of the manual, ST(i) registers
     // are always encoded in the opcode of the instruction.
     {"ST(i)", InstructionOperand::OPCODE_ENCODING},
     {"vm32x", InstructionOperand::VSIB_ENCODING},
@@ -717,13 +719,6 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
 
 namespace {
 
-// Updates the value of 'status': if 'status' was not OK, its old value is kept.
-// Otherwise, it is replaced with the value of 'new_status'.
-void UpdateStatus(Status* status, const Status& new_status) {
-  CHECK(status != nullptr);
-  if (status->ok() && !new_status.ok()) *status = new_status;
-}
-
 // Tries to remove one occurence of the operand encoding of 'operand' from
 // 'available_encodings'. If it is removed, returns Status::OK. If
 // 'available_encodings' does not contain such an encoding, returns an error
@@ -847,7 +842,7 @@ inline bool AssignEncodingIfAvailable(
 // V - vex.vvvv.
 // X - modrm.reg (a special case, used only for VMOVSS and VMOVSD).
 //
-// TODO(user): The manual actually contains a more detailed definition of
+// TODO(ondrasej): The manual actually contains a more detailed definition of
 // each encoding scheme, but they are instruction specific and we do not have
 // this information available in a machine-readable format. Ideally, our
 // assignments should be based on this information. However, for now it looks
@@ -933,14 +928,13 @@ Status AddOperandInfo(InstructionSetProto* instruction_set) {
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
-    const StatusOr<EncodingSpecification> encoding_specification_or_status =
-        ParseEncodingSpecification(instruction.raw_encoding_specification());
-    RETURN_IF_ERROR(encoding_specification_or_status.status());
-    const EncodingSpecification& encoding_specification =
-        encoding_specification_or_status.ValueOrDie();
-
+    if (!instruction.has_x86_encoding_specification()) {
+      return FailedPreconditionError(
+          StrCat("Instruction does not have a parsed encoding specification: ",
+                 instruction.DebugString()));
+    }
     InstructionOperandEncodingMultiset available_encodings =
-        GetAvailableEncodings(encoding_specification);
+        GetAvailableEncodings(instruction.x86_encoding_specification());
 
     // First assign the addressing modes and the encodings that can be
     // determined from the operand itself.
@@ -1034,7 +1028,7 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
           operand->set_usage(InstructionOperand::USAGE_READ);
         }
       }
-      // TODO(user): Add usage information for X87.
+      // TODO(courbet): Add usage information for X87.
     }
   }
   return Status::OK;

@@ -188,7 +188,7 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   // The parser matches all the possible prefixes and removes them from the
   // specification. When the string does not match anymore, it assues that this
   // is the beginning of the opcode and switches to parsing the opcode.
-  // NOTE(user): kLegacyPrefixRegex must be static - removing it causes an
+  // NOTE(ondrasej): kLegacyPrefixRegex must be static - removing it causes an
   // internal compiler error on gcc 4.8.
   static constexpr char kLegacyPrefixRegex[] =
       " *(?:"                  // Optional whitespace before the prefix.
@@ -246,10 +246,10 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   // A regexp for parsing the VEX prefix specification. For more details on the
   // format see Intel 64 and IA-32 Architectures Software Developer's Manual,
   // Volume 2: Instruction Set Reference, A-Z, Section 3.1.1.2 (page 3.3).
-  // NOTE(user): Note that some of the fields do not affect the size of the
+  // NOTE(ondrasej): Note that some of the fields do not affect the size of the
   // instruction encoding, so we just check that they have a valid value, but we
   // do not extract this value out of the regexp.
-  // NOTE(user): kVexPrefixRegexp must be static - removing it causes an
+  // NOTE(ondrasej): kVexPrefixRegexp must be static - removing it causes an
   // internal compiler error on gcc 4.8.
   static constexpr char kVexPrefixRegexp[] =
       "(E?VEX)"                    // The VEX prefix.
@@ -300,7 +300,7 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   vex_prefix->set_vex_w_usage(FindOrDie(vex_w_usage_tokens_, vex_w_str));
   vex_prefix->set_map_select(FindOrDie(map_select_tokens_, opcode_map));
 
-  // NOTE(user): The string specification of the opcode map is an equivalent
+  // NOTE(ondrasej): The string specification of the opcode map is an equivalent
   // of opcode prefixes in the legacy encoding, and not the actual value used in
   // the VEX.mmmmm bits. This works to our advantage here, because we can simply
   // add it to the opcode.

@@ -214,7 +214,7 @@ string GetUtf8String(Unicode* u, int uLen) {
   char buffer[UTFmax];
   const int length = runetochar(buffer, reinterpret_cast<Rune*>(u));
   const string output(buffer, length);
-  // TODO(user): Moves this in the parser configuration.
+  // TODO(gchatelet): Moves this in the parser configuration.
   if (output == "—") return "-";
   if (output == "–") return "-";
   return output;

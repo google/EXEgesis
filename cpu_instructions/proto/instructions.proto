@@ -210,12 +210,12 @@ message InstructionProto {
 
   // Whether the instruction is available in 64-bit mode. This is not the
   // case for example for AAA.
-  // TODO(user): use an enum to encode the reason why the instruction is not
+  // TODO(bdb): use an enum to encode the reason why the instruction is not
   // available in 64-bit mode.
   optional bool available_in_64_bit = 18 [default = true];
 
   // True if the instruction is usable in "legacy" mode.
-  // TODO(user): use an enum to encode the reason why the instruction is not
+  // TODO(bdb): use an enum to encode the reason why the instruction is not
   // usable in legacy mode.
   optional bool legacy_instruction = 19 [default = true];
 
@@ -229,7 +229,7 @@ message InstructionProto {
   optional int32 protection_mode = 29 [default = -1];
 
   // The size of the binary encoding of the instruction, in bytes.
-  // TODO(user): The encoding size might or might not depend on the operands
+  // TODO(ondrasej): The encoding size might or might not depend on the operands
   //                 of the instruction. We're already differentiating between
   //                 value sizes for registers and immediate values (these are
   //                 encoded in the instruction mnemonic). When working with
@@ -248,11 +248,11 @@ message InstructionProto {
 
   // Names of the register operands that are read by the instruction even if
   // they are not explicitly listed in the encoded form or the assembly code.
-  repeated string implicit_input_operand = 23;
+  repeated string implicit_input_operands = 23;
 
   // Names of the register operands that are written by the instruction even if
   // they are not explicitly listed in the encoded form or the assembly code.
-  repeated string implicit_output_operand = 24;
+  repeated string implicit_output_operands = 24;
 
   // The parsed binary encoding specification. Which field is used depends on
   // the platform to which the instruction belongs.
@@ -279,9 +279,6 @@ message InstructionSetSourceInfo {
 }
 
 message InstructionSetProto {
-  // The name of the instruction set, for example "Arithmetic" or "Logical".
-  optional string name = 1;
-
   // The CPU Info for the cpu that generated this.
   optional CpuInfoProto cpu_info = 2;
 
@@ -289,7 +286,7 @@ message InstructionSetProto {
   // distributed as two files with instructions A-M in Volume 2A and
   // instructions N-Z in volume 2B. When merging instruction sets, make sure
   // that there are no duplicate instructions.
-  repeated InstructionSetSourceInfo source_info = 3;
+  repeated InstructionSetSourceInfo source_infos = 3;
 
   repeated InstructionProto instructions = 4;
 }

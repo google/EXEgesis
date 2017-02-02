@@ -34,7 +34,7 @@ using re2::StringPiece;
 
 // The list of operand names from the Intel encoding specification that are
 // accepted by the converter.
-// TODO(user): Generate these automatically.
+// TODO(courbet): Generate these automatically.
 const char* const kValidOperandTypes[] = {
     // Implicit values, used for shifts and interrupts.
     "0", "1", "3",

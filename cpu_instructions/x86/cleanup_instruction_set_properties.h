@@ -31,7 +31,7 @@ using ::cpu_instructions::util::Status;
 Status AddMissingCpuFlags(InstructionSetProto* instruction_set);
 
 // Adds the minimum required protection mode for instructions that require it.
-// TODO(user): Ideally this would be parsed from the SDM, but the information
+// TODO(courbet): Ideally this would be parsed from the SDM, but the information
 // is not stored in a consistent format (and sometimes not at given all).
 Status AddProtectionModes(InstructionSetProto* instruction_set);
 

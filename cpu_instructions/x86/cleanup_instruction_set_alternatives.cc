@@ -131,7 +131,7 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
          {
              {"xmm3", DIRECT_ADDRESSING, 128},
              {"m128", INDIRECT_ADDRESSING, 128},
-             // TODO(user): Re-enable broadcasted arguments when we have a
+             // TODO(ondrasej): Re-enable broadcasted arguments when we have a
              // way to represent them in the proto.
              // {"m64bcst", INDIRECT_ADDRESSING, 128},
          }},
@@ -139,7 +139,7 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
          {
              {"xmm3", DIRECT_ADDRESSING, 128},
              {"m128", INDIRECT_ADDRESSING, 128},
-             // TODO(user): Re-enable broadcasted arguments when we have a
+             // TODO(ondrasej): Re-enable broadcasted arguments when we have a
              // way to represent them in the proto.
              // {"m64bcst", INDIRECT_ADDRESSING, 128},
          }},

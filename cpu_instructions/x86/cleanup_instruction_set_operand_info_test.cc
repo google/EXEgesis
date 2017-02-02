@@ -33,13 +33,17 @@ TEST(AddOperandInfoTest, AddInfo) {
              mnemonic: 'STOS'
              operands { name: 'BYTE PTR [RDI]' } operands { name: 'AL' }}
            encoding_scheme: 'NA'
-           raw_encoding_specification: 'AA' }
+           raw_encoding_specification: 'AA'
+           x86_encoding_specification { legacy_prefixes {} opcode: 0xAA }}
          instructions {
            vendor_syntax {
              mnemonic: 'FMUL'
              operands { name: 'ST(0)' } operands { name: 'ST(i)' }}
            feature_name: 'X87'
-           raw_encoding_specification: 'D8 C8+i' }
+           raw_encoding_specification: 'D8 C8+i'
+           x86_encoding_specification {
+             legacy_prefixes {} opcode: 0xD8C8
+             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE }}
          instructions {
            vendor_syntax {
              mnemonic: 'VMOVD'
@@ -47,7 +51,16 @@ TEST(AddOperandInfoTest, AddInfo) {
              operands { name: 'r32' }}
            feature_name: 'AVX'
            encoding_scheme: 'RM'
-           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r' })";
+           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
+           x86_encoding_specification {
+             vex_prefix {
+               prefix_type: VEX_PREFIX
+               vector_size: VECTOR_SIZE_128_BIT
+               mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+               map_select: MAP_SELECT_0F
+               vex_w_usage: VEX_W_IS_ZERO }
+             opcode: 0x0F66
+             modrm_usage: FULL_MODRM }})";
   constexpr char kExpectedInstructionSetProto[] =
       R"(instructions {
            vendor_syntax {
@@ -60,7 +73,8 @@ TEST(AddOperandInfoTest, AddInfo) {
                         encoding: IMPLICIT_ENCODING
                         value_size_bits: 8 }}
            encoding_scheme: 'NA'
-           raw_encoding_specification: 'AA' }
+           raw_encoding_specification: 'AA'
+           x86_encoding_specification { legacy_prefixes {} opcode: 0xAA }}
          instructions {
            vendor_syntax {
              mnemonic: 'FMUL'
@@ -71,7 +85,10 @@ TEST(AddOperandInfoTest, AddInfo) {
                         encoding: OPCODE_ENCODING
                         value_size_bits: 80 }}
            feature_name: 'X87'
-           raw_encoding_specification: 'D8 C8+i' }
+           raw_encoding_specification: 'D8 C8+i'
+           x86_encoding_specification {
+             legacy_prefixes {} opcode: 0xD8C8
+             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE }}
          instructions {
            vendor_syntax {
              mnemonic: 'VMOVD'
@@ -83,7 +100,16 @@ TEST(AddOperandInfoTest, AddInfo) {
                         value_size_bits: 32 }}
            feature_name: 'AVX'
            encoding_scheme: 'RM'
-           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r' })";
+           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
+           x86_encoding_specification {
+             vex_prefix {
+               prefix_type: VEX_PREFIX
+               vector_size: VECTOR_SIZE_128_BIT
+               mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+               map_select: MAP_SELECT_0F
+               vex_w_usage: VEX_W_IS_ZERO }
+             opcode: 0x0F66
+             modrm_usage: FULL_MODRM }})";
   TestTransform(AddOperandInfo, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -98,7 +124,8 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
              operands { name: 'BYTE PTR [RDI]' encoding: MODRM_RM_ENCODING }
              operands { name: 'AL' }}
            encoding_scheme: 'NA'
-           raw_encoding_specification: 'AA' })",
+           raw_encoding_specification: 'AA'
+           x86_encoding_specification { legacy_prefixes {} opcode: 0xAA }})",
       // Only one operand can be encoded in the opcode.
       R"(instructions {
            vendor_syntax {
@@ -106,7 +133,10 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
              operands { name: 'ST(0)' encoding: OPCODE_ENCODING }
              operands { name: 'ST(i)' encoding: OPCODE_ENCODING }}
            feature_name: 'X87'
-           raw_encoding_specification: 'D8 C8+i' })"};
+           raw_encoding_specification: 'D8 C8+i'
+           x86_encoding_specification {
+             legacy_prefixes {} opcode: 0xD8C8
+             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE }})"};
   for (const char* const instruction_set_proto : kInstructionSetProtos) {
     InstructionSetProto instruction_set;
     ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(

@@ -23,8 +23,8 @@ namespace cpu_instructions {
 
 // Parses a code string in assembly format and returns a corresponding
 // InstructionFormat.
-// NOTE(user): This only handles x86 prefixes.
-// TODO(user): Make this x86-independent.
+// NOTE(bdb): This only handles x86 prefixes.
+// TODO(bdb): Make this x86-independent.
 InstructionFormat ParseAssemblyStringOrDie(const string& code);
 
 // Returns an assembler-ready string corresponding to the InstructionFormat

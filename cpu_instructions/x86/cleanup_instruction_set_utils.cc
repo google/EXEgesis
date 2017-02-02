@@ -16,6 +16,7 @@
 
 #include "strings/string.h"
 
+#include "cpu_instructions/proto/x86/encoding_specification.pb.h"
 #include "glog/logging.h"
 #include "strings/str_cat.h"
 
@@ -34,6 +35,14 @@ const char kOperandSizeOverridePrefix[] = "66 ";
 // not added and a warning is printed to the log.
 void AddOperandSizeOverrideToInstructionProto(InstructionProto* instruction) {
   CHECK(instruction != nullptr);
+  if (instruction->has_x86_encoding_specification()) {
+    // If the x86 encoding specification was not parsed yet, ignore it; it would
+    // be overwritten later anyway.
+    EncodingSpecification* const encoding_specification =
+        instruction->mutable_x86_encoding_specification();
+    encoding_specification->mutable_legacy_prefixes()
+        ->set_has_mandatory_operand_size_override_prefix(true);
+  }
   const string& raw_encoding_specification =
       instruction->raw_encoding_specification();
   if (raw_encoding_specification.find(kOperandSizeOverridePrefix) ==

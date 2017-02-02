@@ -56,6 +56,7 @@ cc_test(
     ],
 )
 
+# Factory functions for obtaining the list of instruction set transforms.
 cc_library(
     name = "transform_factory",
     srcs = ["transform_factory.cc"],

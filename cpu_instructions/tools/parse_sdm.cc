@@ -52,7 +52,7 @@ void Main() {
           FLAGS_cpu_instructions_output_file_base);
 
   // Optionally apply transforms in --cpu_instructions_transforms.
-  // TODO(user): Add CHECK_OK to stubs.
+  // TODO(ondrasej): Add CHECK_OK to stubs.
   CHECK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
                              &instruction_set)
             .ok());

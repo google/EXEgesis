@@ -34,6 +34,10 @@ message LegacyPrefixEncodingSpecification {
   // The instruction has a mandatory REPNE prefix.
   bool has_mandatory_repne_prefix = 3;
   // The instruction has a mandatory operand size override prefix.
+  // TODO(ondrasej): We need to take a note whether the prefix is mandatory or
+  // it is required to disambiguate the 16- and 32-bit versions of the
+  // instruction, because these two cases have different performance
+  // characteristics.
   bool has_mandatory_operand_size_override_prefix = 4;
   // The instruction has a mandatory address size override prefix.
   bool has_mandatory_address_size_override_prefix = 5;

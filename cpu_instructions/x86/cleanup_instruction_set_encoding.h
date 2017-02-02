@@ -100,6 +100,13 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set);
 // 3. Replaces .0 at the end of a VEX prefix with .W0.
 Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
 
+// Parses the raw encoding specification of each instruction in the
+// instruction set, and stores the parsed proto in the specialized x86 encoding
+// specification field. Assumes that instruction.raw_encoding_specification
+// contains the encoding specification in the format used in the Intel SDM.
+// Returns an error if parsing of any of the encoding specifications fails.
+Status ParseEncodingSpecifications(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace cpu_instructions
 

@@ -16,10 +16,15 @@
 
 #include "cpu_instructions/base/cleanup_instruction_set_test_utils.h"
 #include "gtest/gtest.h"
+#include "src/google/protobuf/text_format.h"
+#include "util/task/status.h"
 
 namespace cpu_instructions {
 namespace x86 {
 namespace {
+
+using ::google::protobuf::TextFormat;
+using ::cpu_instructions::util::error::INVALID_ARGUMENT;
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
   constexpr char kInstructionSetProto[] = R"(
@@ -415,6 +420,69 @@ TEST(FixEncodingSpecificationsTest, SomeInstructions) {
            raw_encoding_specification: '66 0F 38 20 /r' })";
   TestTransform(FixEncodingSpecifications, kInstructionSetProto,
                 kExpectedInstructionSetProto);
+}
+
+TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax { mnemonic: 'VFMSUB231PS' operands { name: 'xmm0' }
+                        operands { name: 'xmm1' } operands { name: 'm128' }}
+        feature_name: 'FMA' encoding_scheme: 'A'
+        raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r' }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'PMOVSXBW'
+          operands { name: 'xmm1' } operands { name: 'xmm2' }}
+        feature_name: 'SSE4_1' encoding_scheme: 'RM'
+        raw_encoding_specification: '66 0F 38 20 /r' })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax { mnemonic: 'VFMSUB231PS' operands { name: 'xmm0' }
+                        operands { name: 'xmm1' } operands { name: 'm128' }}
+        feature_name: 'FMA' encoding_scheme: 'A'
+        raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+        x86_encoding_specification {
+          opcode: 997562
+          modrm_usage: FULL_MODRM
+          vex_prefix {
+            prefix_type: VEX_PREFIX
+            vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+            vector_size: VECTOR_SIZE_128_BIT
+            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+            map_select: MAP_SELECT_0F38
+            vex_w_usage: VEX_W_IS_ZERO }}}
+      instructions {
+        vendor_syntax {
+          mnemonic: 'PMOVSXBW'
+          operands { name: 'xmm1' } operands { name: 'xmm2' }}
+        feature_name: 'SSE4_1' encoding_scheme: 'RM'
+        raw_encoding_specification: '66 0F 38 20 /r'
+        x86_encoding_specification {
+          opcode: 997408 modrm_usage: FULL_MODRM
+          legacy_prefixes {
+            has_mandatory_operand_size_override_prefix: true }}})";
+  TestTransform(ParseEncodingSpecifications, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(ParseEncodingSpecificationsTest, ParseErrors) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax { mnemonic: 'VFMSUB231PS' operands { name: 'xmm0' }
+                        operands { name: 'xmm1' } operands { name: 'm128' }}
+        feature_name: 'FMA' encoding_scheme: 'A'
+        raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r' }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'PMOVSXBW'
+          operands { name: 'xmm1' } operands { name: 'xmm2' }}
+        feature_name: 'SSE4_1' encoding_scheme: 'RM'
+        raw_encoding_specification: '66 0F 38 20 /r' })";
+  InstructionSetProto instruction_set;
+  ASSERT_TRUE(
+      TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
+  const Status status = ParseEncodingSpecifications(&instruction_set);
+  EXPECT_EQ(status.error_code(), INVALID_ARGUMENT);
 }
 
 }  // namespace

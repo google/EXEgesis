@@ -38,7 +38,10 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
                    encoding: IMMEDIATE_VALUE_ENCODING
                    value_size_bits: 16 }}
       encoding_scheme: 'MI'
-      raw_encoding_specification: '81 /2 iw')";
+      raw_encoding_specification: '81 /2 iw'
+      x86_encoding_specification {
+        legacy_prefixes {} opcode: 0x81 modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 2 immediate_value_bytes: 2 })";
   constexpr char kExpectedInstructionProto[] = R"(
         vendor_syntax {
         mnemonic: 'ADC'
@@ -50,7 +53,11 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
                    encoding: IMMEDIATE_VALUE_ENCODING
                    value_size_bits: 16 }}
       encoding_scheme: 'MI'
-      raw_encoding_specification: '66 81 /2 iw')";
+      raw_encoding_specification: '66 81 /2 iw'
+      x86_encoding_specification {
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        opcode: 0x81 modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 2 immediate_value_bytes: 2 })";
   InstructionProto instruction;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
                                                               &instruction));
@@ -70,12 +77,49 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
                    encoding: IMMEDIATE_VALUE_ENCODING
                    value_size_bits: 16 }}
       encoding_scheme: 'MI'
-      raw_encoding_specification: '66 81 /2 iw')";
+      raw_encoding_specification: '66 81 /2 iw'
+      x86_encoding_specification {
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        opcode: 0x81 modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 2 immediate_value_bytes: 2 })";
   InstructionProto instruction;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
                                                               &instruction));
   AddOperandSizeOverrideToInstructionProto(&instruction);
   EXPECT_THAT(instruction, EqualsProto(kInstructionProto));
+}
+
+TEST(AddOperandSizeOverrideToInstructionProtoTest,
+     DoesNotUpdateSpecificationIfNotParsed) {
+  constexpr char kInstructionProto[] = R"(
+      vendor_syntax {
+        mnemonic: 'ADC'
+        operands { name: 'r/m16'
+                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+                   encoding: MODRM_RM_ENCODING
+                   value_size_bits: 16 }
+        operands { name: 'imm16' addressing_mode: NO_ADDRESSING
+                   encoding: IMMEDIATE_VALUE_ENCODING
+                   value_size_bits: 16 }}
+      encoding_scheme: 'MI'
+      raw_encoding_specification: '81 /2 iw')";
+  constexpr char kExpectedInstructionProto[] = R"(
+        vendor_syntax {
+        mnemonic: 'ADC'
+        operands { name: 'r/m16'
+                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+                   encoding: MODRM_RM_ENCODING
+                   value_size_bits: 16 }
+        operands { name: 'imm16' addressing_mode: NO_ADDRESSING
+                   encoding: IMMEDIATE_VALUE_ENCODING
+                   value_size_bits: 16 }}
+      encoding_scheme: 'MI'
+      raw_encoding_specification: '66 81 /2 iw')";
+  InstructionProto instruction;
+  ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
+                                                              &instruction));
+  AddOperandSizeOverrideToInstructionProto(&instruction);
+  EXPECT_THAT(instruction, EqualsProto(kExpectedInstructionProto));
 }
 
 }  // namespace
