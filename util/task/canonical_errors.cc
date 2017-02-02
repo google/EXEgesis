@@ -18,6 +18,10 @@
 namespace cpu_instructions {
 namespace util {
 
+Status FailedPreconditionError(StringPiece error_message) {
+  return Status(error::FAILED_PRECONDITION, error_message);
+}
+
 Status InternalError(StringPiece error_message) {
   return Status(error::INTERNAL, error_message);
 }
