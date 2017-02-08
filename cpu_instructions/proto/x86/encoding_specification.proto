@@ -181,8 +181,15 @@ message VexPrefixEncodingSpecification {
 
   VSibUsage vsib_usage = 8;
 
-  // Specifies how the EVEX.b bit is interpreted.
-  EvexBInterpretation evex_b_interpretation = 9;
+  // Specifies how the EVEX.b bit is interpreted. Note that for some
+  // instructions, the interpretation depends on the addressing mode of the
+  // modrm.rm operand - for memory locations, setting EVEX.b to one enables
+  // broadcast while for register operands it enables static rounding control
+  // or suppresses all exceptions. In such case, this field contains all
+  // possible interpretation.
+  // TODO(ondrasej): Pick the correct interpretation when adding alternatives
+  // of the instruction.
+  repeated EvexBInterpretation evex_b_interpretation = 9;
 }
 
 // Contains the specification of how the binary encoding of the instruction is

@@ -48,6 +48,7 @@ cc_library(
         ":cleanup_instruction_set_alternatives",
         ":cleanup_instruction_set_asm_syntax",
         ":cleanup_instruction_set_encoding",
+        ":cleanup_instruction_set_evex",
         ":cleanup_instruction_set_fix_operands",
         ":cleanup_instruction_set_operand_info",
         ":cleanup_instruction_set_operand_size_override",
@@ -153,6 +154,39 @@ cc_test(
         "//external:googletest_main",
         "//external:protobuf_clib",
         "//util/task:status",
+    ],
+)
+
+cc_library(
+    name = "cleanup_instruction_set_evex",
+    srcs = ["cleanup_instruction_set_evex.cc"],
+    hdrs = ["cleanup_instruction_set_evex.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/base:cleanup_instruction_set",
+        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto/x86:encoding_specification_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//util/task:status",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "cleanup_instruction_set_evex_test",
+    size = "small",
+    srcs = ["cleanup_instruction_set_evex_test.cc"],
+    deps = [
+        ":cleanup_instruction_set_evex",
+        "//base",
+        "//cpu_instructions/base:cleanup_instruction_set_test_utils",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
     ],
 )
 
