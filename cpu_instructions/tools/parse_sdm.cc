@@ -45,24 +45,23 @@ void Main() {
   CHECK(!FLAGS_cpu_instructions_output_file_base.empty())
       << "missing --cpu_instructions_output_file_base";
 
-  InstructionSetProto instruction_set =
-      ::cpu_instructions::x86::pdf::ParseSdmOrDie(
-          FLAGS_cpu_instructions_input_spec,
-          FLAGS_cpu_instructions_patch_sets_file,
-          FLAGS_cpu_instructions_output_file_base);
+  InstructionSetProto instruction_set = x86::pdf::ParseSdmOrDie(
+      FLAGS_cpu_instructions_input_spec, FLAGS_cpu_instructions_patch_sets_file,
+      FLAGS_cpu_instructions_output_file_base);
 
   // Optionally apply transforms in --cpu_instructions_transforms.
-  // TODO(ondrasej): Add CHECK_OK to stubs.
-  CHECK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
-                             &instruction_set)
-            .ok());
+  CHECK_OK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
+                                &instruction_set));
+
+  // TODO(courbet): Split in two separate tools.
+  InstructionSetsProto instruction_sets;
+  *instruction_sets.add_instruction_sets() = instruction_set;
 
   // Write transformed intruction set.
   const string instructions_filename =
       StrCat(FLAGS_cpu_instructions_output_file_base, "_transformed.pbtxt");
   LOG(INFO) << "Saving instruction database as: " << instructions_filename;
-  ::cpu_instructions::x86::pdf::WriteTextProtoOrDie(instructions_filename,
-                                                    instruction_set);
+  x86::pdf::WriteTextProtoOrDie(instructions_filename, instruction_sets);
 }
 
 }  // namespace

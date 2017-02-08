@@ -291,3 +291,7 @@ message InstructionSetProto {
   repeated InstructionProto instructions = 4;
 }
 
+message InstructionSetsProto {
+  repeated InstructionSetProto instruction_sets = 1;
+}
+

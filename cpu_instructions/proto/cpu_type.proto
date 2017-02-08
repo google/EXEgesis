@@ -16,8 +16,7 @@ syntax = "proto3";
 
 package cpu_instructions;
 
-// Represents a CPU type defined by a pair of family/model numbers.
-// It is 6 and 60 respectively for a desktop Haswell processor.
+// Represents a CPU type defined by its id.
 message CpuTypeProto {
   // The model identifier.
   // For intel, this is "intel:<family>_<model>", where <family> and <model> are
