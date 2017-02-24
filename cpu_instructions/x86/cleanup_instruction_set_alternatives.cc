@@ -32,6 +32,7 @@ namespace x86 {
 namespace {
 
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 // Information about an operand that need to be modified when adding an
@@ -50,6 +51,8 @@ using OperandAlternativeMap =
     std::unordered_map<string, std::vector<OperandAlternative>>;
 
 // Returns the list of operand alternatives indexed by the name of the operand.
+// TODO(ondrasej): Re-enable broadcasted arguments when we have a way to
+// represent them in the proto.
 const OperandAlternativeMap& GetOperandAlternativesByName() {
   static const OperandAlternativeMap* const kAlternatives = []() {
     constexpr InstructionOperand::AddressingMode DIRECT_ADDRESSING =
@@ -127,21 +130,59 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
         {"ymm3/m256",
          {{"ymm3", DIRECT_ADDRESSING, 256},
           {"m256", INDIRECT_ADDRESSING, 256}}},
+        {"xmm2/m128/m32bcst",
+         {
+             {"xmm2", DIRECT_ADDRESSING, 128},
+             {"m128", INDIRECT_ADDRESSING, 128},
+             // {"m32bcst", INDIRECT_ADDRESSING, 128},
+         }},
         {"xmm3/m128/m32bcst",
          {
              {"xmm3", DIRECT_ADDRESSING, 128},
              {"m128", INDIRECT_ADDRESSING, 128},
-             // TODO(ondrasej): Re-enable broadcasted arguments when we have a
-             // way to represent them in the proto.
-             // {"m64bcst", INDIRECT_ADDRESSING, 128},
+             // {"m32bcst", INDIRECT_ADDRESSING, 128},
          }},
         {"xmm3/m128/m64bcst",
          {
              {"xmm3", DIRECT_ADDRESSING, 128},
              {"m128", INDIRECT_ADDRESSING, 128},
-             // TODO(ondrasej): Re-enable broadcasted arguments when we have a
-             // way to represent them in the proto.
              // {"m64bcst", INDIRECT_ADDRESSING, 128},
+         }},
+        {"ymm2/m256/m32bcst",
+         {
+             {"ymm2", DIRECT_ADDRESSING, 256},
+             {"m256", INDIRECT_ADDRESSING, 256},
+             // {"m32bcst", INDIRECT_ADDRESSING, 256},
+         }},
+        {"ymm3/m256/m32bcst",
+         {
+             {"ymm3", DIRECT_ADDRESSING, 256},
+             {"m256", INDIRECT_ADDRESSING, 256},
+             // {"m32bcst", INDIRECT_ADDRESSING, 256},
+         }},
+        {"ymm3/m256/m64bcst",
+         {
+             {"ymm3", DIRECT_ADDRESSING, 256},
+             {"m256", INDIRECT_ADDRESSING, 256},
+             // {"m64bcst", INDIRECT_ADDRESSING, 256},
+         }},
+        {"zmm2/m512/m32bcst",
+         {
+             {"zmm2", DIRECT_ADDRESSING, 512},
+             {"m512", INDIRECT_ADDRESSING, 512},
+             // {"m32bcst", INDIRECT_ADDRESSING, 512},
+         }},
+        {"zmm3/m512/m32bcst",
+         {
+             {"zmm3", DIRECT_ADDRESSING, 512},
+             {"m512", INDIRECT_ADDRESSING, 512},
+             // {"m32bcst", INDIRECT_ADDRESSING, 512},
+         }},
+        {"zmm3/m512/m64bcst",
+         {
+             {"zmm3", DIRECT_ADDRESSING, 512},
+             {"m512", INDIRECT_ADDRESSING, 512},
+             // {"m642bcst", INDIRECT_ADDRESSING, 512},
          }},
         {"bnd1/m128",
          {{"bnd1", DIRECT_ADDRESSING, 128},
@@ -166,7 +207,7 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
 
 Status AddAlternatives(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  Status status = Status::OK;
+  Status status = OkStatus();
   const OperandAlternativeMap& alternatives_by_name =
       GetOperandAlternativesByName();
   std::vector<InstructionProto> new_instructions;
