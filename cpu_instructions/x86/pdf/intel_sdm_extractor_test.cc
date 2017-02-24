@@ -49,9 +49,8 @@ TEST(IntelSdmExtractorTest, BitSetPage) {
 
   const InstructionSetProto instruction_set =
       ProcessIntelSdmDocument(sdm_document);
-  EXPECT_THAT(instruction_set,
-              EqualsProto(GetProto<InstructionSetProto>(
-                  "253666_p170_p171_instructionset")));
+  EXPECT_THAT(instruction_set, EqualsProto(GetProto<InstructionSetProto>(
+                                   "253666_p170_p171_instructionset")));
 }
 
 TEST(IntelSdmExtractorTest, ParseOperandEncodingTableCell) {
