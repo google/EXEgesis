@@ -23,6 +23,7 @@ namespace cpu_instructions {
 namespace x86 {
 
 using ::cpu_instructions::util::Status;
+using ::cpu_instructions::util::OkStatus;
 
 constexpr auto EVEX_B_IS_NOT_USED =
     VexPrefixEncodingSpecification::EVEX_B_IS_NOT_USED;
@@ -83,7 +84,7 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return ::util::OkStatus();
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexBInterpretation, 5500);
 
