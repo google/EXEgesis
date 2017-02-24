@@ -13,6 +13,7 @@ cc_binary(
     deps = [
         "//base",
         "//cpu_instructions/base:transform_factory",
+        "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/x86/pdf:parse_sdm",
         "//cpu_instructions/x86/pdf:proto_util",
         "//external:gflags",

@@ -17,6 +17,7 @@
 #include "gflags/gflags.h"
 
 #include "cpu_instructions/base/transform_factory.h"
+#include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/x86/pdf/parse_sdm.h"
 #include "cpu_instructions/x86/pdf/proto_util.h"
 #include "glog/logging.h"
@@ -53,15 +54,11 @@ void Main() {
   CHECK_OK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
                                 &instruction_set));
 
-  // TODO(courbet): Split in two separate tools.
-  InstructionSetsProto instruction_sets;
-  *instruction_sets.add_instruction_sets() = instruction_set;
-
   // Write transformed intruction set.
   const string instructions_filename =
       StrCat(FLAGS_cpu_instructions_output_file_base, "_transformed.pbtxt");
   LOG(INFO) << "Saving instruction database as: " << instructions_filename;
-  x86::pdf::WriteTextProtoOrDie(instructions_filename, instruction_sets);
+  x86::pdf::WriteTextProtoOrDie(instructions_filename, instruction_set);
 }
 
 }  // namespace
