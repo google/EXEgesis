@@ -42,6 +42,7 @@ namespace cpu_instructions {
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::Message;
 using ::google::protobuf::util::MessageDifferencer;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
 
@@ -73,7 +74,7 @@ Status RunSingleTransform(
       FLAGS_cpu_instructions_print_transform_diffs_to_log) {
     LOG(INFO) << "Running: " << transform_name;
   }
-  Status transform_status = Status::OK;
+  Status transform_status = OkStatus();
   if (FLAGS_cpu_instructions_print_transform_diffs_to_log) {
     const StatusOr<string> diff_or_status =
         RunTransformWithDiff(transform_function, instruction_set);
@@ -142,7 +143,7 @@ Status RunTransformPipeline(
     CHECK(transform != nullptr);
     RETURN_IF_ERROR(transform(instruction_set));
   }
-  return Status::OK;
+  return OkStatus();
 }
 
 // A message difference reporter that reports the differences to a string, and
@@ -251,7 +252,7 @@ Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   std::sort(instructions->begin(), instructions->end(), LessOrEqual);
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(SortByVendorSyntax, 7000);
 

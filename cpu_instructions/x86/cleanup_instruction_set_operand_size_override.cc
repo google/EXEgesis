@@ -42,6 +42,7 @@ namespace {
 
 using ::cpu_instructions::util::FailedPreconditionError;
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 // Mnemonics of 16-bit string instructions that take no operands.
@@ -64,7 +65,7 @@ Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
       AddOperandSizeOverrideToInstructionProto(&instruction);
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     AddOperandSizeOverrideToInstructionsWithImplicitOperands, 3000);
@@ -114,7 +115,7 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
       }
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     AddOperandSizeOverrideToSpecialCaseInstructions, 3000);
@@ -234,7 +235,7 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
     }
   }
 
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefix, 5000);
 

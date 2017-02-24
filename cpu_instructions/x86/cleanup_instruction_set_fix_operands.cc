@@ -36,6 +36,7 @@ namespace {
 
 using ::google::protobuf::RepeatedPtrField;
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 // Mapping from memory operands to their sizes as used in the Intel assembly
@@ -62,7 +63,7 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
       std::begin(kRDIIndexes), std::begin(kRDIIndexes));
   const std::unordered_map<string, string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -115,7 +116,7 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
   constexpr char kOuts[] = "OUTS";
   const std::unordered_map<string, string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -179,7 +180,7 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   const std::unordered_map<string, string> kOperandToRegister = {
       {"m8", "AL"}, {"m16", "AX"}, {"m32", "EAX"}, {"m64", "RAX"}};
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -255,7 +256,7 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
     }
     vendor_syntax->mutable_operands(1)->set_name(kRegisterOrMemoryOperand);
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfVMovq, 2000);
 
@@ -280,7 +281,7 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
   std::vector<InstructionProto> new_instruction_protos;
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction : *instructions) {
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
@@ -348,7 +349,7 @@ Status RenameOperands(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RenameOperands, 2000);
 
@@ -375,7 +376,7 @@ Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
                                    }),
                     operands->end());
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitST0Operand, 2000);
 
@@ -393,7 +394,7 @@ Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
                                    }),
                     operands->end());
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitXmm0Operand, 2000);
 

@@ -21,10 +21,12 @@
 namespace cpu_instructions {
 namespace {
 
-Status TestTransform1(InstructionSetProto*) { return Status::OK; }
+using ::cpu_instructions::util::OkStatus;
+
+Status TestTransform1(InstructionSetProto*) { return OkStatus(); }
 REGISTER_INSTRUCTION_SET_TRANSFORM(TestTransform1, kNotInDefaultPipeline);
 
-Status TestTransform2(InstructionSetProto*) { return Status::OK; }
+Status TestTransform2(InstructionSetProto*) { return OkStatus(); }
 REGISTER_INSTRUCTION_SET_TRANSFORM(TestTransform2, kNotInDefaultPipeline);
 
 TEST(TransformFactoryTest, GetTransformsFromCommandLineFlags) {

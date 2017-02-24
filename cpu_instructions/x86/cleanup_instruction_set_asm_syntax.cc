@@ -31,6 +31,7 @@ namespace x86 {
 namespace {
 
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 char GetSuffixFromPointerType(StringPiece operand) {
@@ -50,7 +51,7 @@ char GetSuffixFromPointerType(StringPiece operand) {
 Status AddIntelAsmSyntax(InstructionSetProto* instruction_set) {
   const std::unordered_set<string> kStringMnemonics = {
       "CMPS", "INS", "LODS", "MOVS", "OUTS", "SCAS", "STOS"};
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const syntax = instruction.mutable_syntax();

@@ -25,6 +25,7 @@ namespace cpu_instructions {
 namespace x86 {
 namespace {
 
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 const std::unordered_map<string, string>& GetMissingCpuFlags() {
@@ -50,7 +51,7 @@ Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
       instruction.set_feature_name(*feature_name);
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingCpuFlags, 1000);
 
@@ -121,7 +122,7 @@ Status AddProtectionModes(InstructionSetProto* instruction_set) {
       instruction.set_protection_mode(*mode);
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddProtectionModes, 1000);
 

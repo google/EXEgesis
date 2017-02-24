@@ -31,6 +31,8 @@ using ::google::protobuf::util::error::FAILED_PRECONDITION;
 using ::google::protobuf::util::Status;
 using ::google::protobuf::util::operator<<;
 
+inline Status OkStatus() { return Status(); }
+
 #ifndef CHECK_OK
 #define CHECK_OK(status_expr)                                      \
   do {                                                             \

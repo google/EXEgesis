@@ -31,6 +31,7 @@ namespace cpu_instructions {
 namespace x86 {
 
 using ::cpu_instructions::gtl::c_linear_search;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
@@ -50,7 +51,7 @@ Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      remove_instruction_if_visited),
                       instructions->end());
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructions, 4000);
 
@@ -70,7 +71,7 @@ Status RemoveInstructionsWaitingForFpuSync(
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_fwait_for_sync),
                       instructions->end());
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveInstructionsWaitingForFpuSync, 0);
 
@@ -84,7 +85,7 @@ Status RemoveNonEncodableInstructions(InstructionSetProto* instruction_set) {
                        return !instruction.available_in_64_bit();
                      }),
       instructions->end());
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveNonEncodableInstructions, 0);
 
@@ -104,7 +105,7 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_rep_or_repne),
                       instructions->end());
-  return Status::OK;
+  return OkStatus();
 }
 // TODO(ondrasej): In addition to removing them, we should also add an attribute
 // saying whether the REP/REPE/REPNE prefix is allowed.
@@ -158,7 +159,7 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      is_special_case_instruction),
                       instructions->end());
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveSpecialCaseInstructions, 0);
 
@@ -174,7 +175,7 @@ Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      is_undefined_instruction),
                       instructions->end());
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveUndefinedInstructions, 0);
 

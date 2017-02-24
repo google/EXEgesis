@@ -24,13 +24,14 @@ namespace {
 
 using ::cpu_instructions::util::InvalidArgumentError;
 using ::cpu_instructions::util::FailedPreconditionError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::error::INVALID_ARGUMENT;
 using ::cpu_instructions::util::error::FAILED_PRECONDITION;
+using ::cpu_instructions::util::error::INVALID_ARGUMENT;
 
 TEST(UpdateStatusTest, UpdateOkWithOk) {
   Status overall_status;
-  UpdateStatus(&overall_status, Status::OK);
+  UpdateStatus(&overall_status, OkStatus());
   EXPECT_OK(overall_status);
 }
 
@@ -45,7 +46,7 @@ TEST(UpdateStatusTest, UpdateOkWithError) {
 TEST(UpdateStatusTest, UpdateErrorWithOk) {
   constexpr char kErrorMessage[] = "There was already an error";
   Status overall_status = FailedPreconditionError(kErrorMessage);
-  UpdateStatus(&overall_status, Status::OK);
+  UpdateStatus(&overall_status, OkStatus());
   EXPECT_EQ(overall_status.error_code(), FAILED_PRECONDITION);
   EXPECT_EQ(overall_status.error_message(), kErrorMessage);
 }

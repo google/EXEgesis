@@ -83,7 +83,7 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return Status::OK;
+  return ::util::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexBInterpretation, 5500);
 

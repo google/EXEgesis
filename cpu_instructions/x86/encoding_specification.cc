@@ -39,6 +39,7 @@ namespace x86 {
 namespace {
 
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
 
@@ -115,9 +116,8 @@ const std::pair<const char*, VexPrefixEncodingSpecification::VexOperandUsage>
          VexPrefixEncodingSpecification::VEX_OPERAND_IS_FIRST_SOURCE_REGISTER},
         {"NDD",
          VexPrefixEncodingSpecification::VEX_OPERAND_IS_DESTINATION_REGISTER},
-        {"DDS",
-         VexPrefixEncodingSpecification::
-             VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
+        {"DDS", VexPrefixEncodingSpecification::
+                    VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
 const std::pair<const char*, VexPrefixEncodingSpecification::VectorSize>
     kVectorSizeTokens[] = {
         {"LZ", VexPrefixEncodingSpecification::VECTOR_SIZE_BIT_IS_ZERO},
@@ -237,7 +237,7 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   legacy_prefixes->set_has_mandatory_repe_prefix(has_mandatory_repe_prefix);
   legacy_prefixes->set_has_mandatory_repne_prefix(has_mandatory_repne_prefix);
   legacy_prefixes->set_has_mandatory_rex_w_prefix(has_mandatory_rex_prefix);
-  return Status::OK;
+  return OkStatus();
 }
 
 Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
@@ -306,7 +306,7 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   // add it to the opcode.
   specification_.set_opcode(opcode_map);
 
-  return Status::OK;
+  return OkStatus();
 }
 
 Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
@@ -350,7 +350,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
 
   if (specification.empty()) {
     // There is neither ModR/M byte nor an immediate value.
-    return Status::OK;
+    return OkStatus();
   }
 
   VLOG(1) << "Parsing suffixes: " << specification;
@@ -467,7 +467,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
   }
 
   ConsumeWhitespace(&specification);
-  return specification.empty() ? Status::OK
+  return specification.empty() ? OkStatus()
                                : InvalidArgumentError(StrCat(
                                      "The specification was not fully parsed: ",
                                      specification.ToString()));

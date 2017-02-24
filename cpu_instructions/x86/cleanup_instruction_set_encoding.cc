@@ -38,6 +38,7 @@ namespace cpu_instructions {
 namespace x86 {
 
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 
 Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
@@ -69,7 +70,7 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
   for (InstructionProto& new_instruction : new_instructions) {
     instruction_set->add_instructions()->Swap(&new_instruction);
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingMemoryOffsetEncoding, 1000);
 
@@ -133,7 +134,7 @@ Status FixEncodingSpecificationOfPopFsAndGs(
     new_pop_instruction.Swap(instruction_set->add_instructions());
   }
 
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfPopFsAndGs, 1000);
 
@@ -167,7 +168,7 @@ Status FixEncodingSpecificationOfPushFsAndGs(
   for (InstructionProto& new_push_instruction : new_push_instructions) {
     new_push_instruction.Swap(instruction_set->add_instructions());
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfPushFsAndGs, 1000);
 
@@ -206,7 +207,7 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
     }
   }
 
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     FixAndCleanUpEncodingSpecificationsOfSetInstructions, 1000);
@@ -216,7 +217,7 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
   constexpr char kXBeginEncodingSpecification[] = "C7 F8";
   const std::unordered_map<string, string> kOperandToEncodingSpecification = {
       {"rel16", "66 C7 F8 cw"}, {"rel32", "C7 F8 cd"}};
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     if (instruction.raw_encoding_specification() ==
@@ -255,7 +256,7 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
 
     instruction.set_raw_encoding_specification(specification);
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecifications, 1000);
 
@@ -283,7 +284,7 @@ Status AddMissingModRmAndImmediateSpecification(
                             const StringPiece suffix,
                             InstructionProto* instruction) {
     const string& mnemonic = instruction->vendor_syntax().mnemonic();
-    Status status = Status::OK;
+    Status status = OkStatus();
     if (ContainsKey(mnemonics, mnemonic)) {
       if (instruction->raw_encoding_specification().empty()) {
         status = InvalidArgumentError(StrCat(
@@ -310,14 +311,14 @@ Status AddMissingModRmAndImmediateSpecification(
     RETURN_IF_ERROR(
         maybe_fix(kMissingVSibInstructionMnemonics, kVSibSuffix, &instruction));
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingModRmAndImmediateSpecification,
                                    1000);
 
 Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     const StatusOr<EncodingSpecification> encoding_specification_or_status =

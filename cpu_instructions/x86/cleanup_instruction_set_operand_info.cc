@@ -42,6 +42,7 @@ namespace {
 
 using ::cpu_instructions::util::FailedPreconditionError;
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::StatusOr;
 
@@ -727,7 +728,7 @@ Status EraseOperandEncoding(
     const InstructionProto& instruction, const InstructionOperand& operand,
     InstructionOperandEncodingMultiset* available_encodings) {
   const InstructionOperand::Encoding encoding = operand.encoding();
-  Status status = Status::OK;
+  Status status = OkStatus();
   if (encoding != InstructionOperand::IMPLICIT_ENCODING) {
     const auto iterator = available_encodings->find(encoding);
     if (iterator == available_encodings->end()) {
@@ -766,7 +767,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
   CHECK(available_encodings != nullptr);
   CHECK(operands_with_no_encoding != nullptr);
   InstructionFormat* const vendor_syntax = instruction->mutable_vendor_syntax();
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (int operand_index = 0; operand_index < vendor_syntax->operands_size();
        ++operand_index) {
     InstructionOperand* const operand =
@@ -790,9 +791,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     }
 
     if (operand->has_encoding()) {
-      UpdateStatus(
-          &status,
-          EraseOperandEncoding(*instruction, *operand, available_encodings));
+      UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
+                                                 available_encodings));
     } else {
       // If there is only one way how an operand can be encoded, we assign this
       // encoding to the operand and remove it from the list of available
@@ -801,9 +801,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       InstructionOperand::Encoding operand_encoding;
       if (FindCopy(encoding_map, operand->name(), &operand_encoding)) {
         operand->set_encoding(operand_encoding);
-        UpdateStatus(
-            &status,
-            EraseOperandEncoding(*instruction, *operand, available_encodings));
+        UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
+                                                   available_encodings));
       } else {
         operands_with_no_encoding->push_back(operand_index);
       }
@@ -889,7 +888,7 @@ Status AssignEncodingByEncodingScheme(
       }
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 
 // Assigns the remaining available encodings to the remaining unassigned
@@ -910,7 +909,7 @@ Status AssignEncodingRandomlyFromAvailableEncodings(
       available_encodings->erase(available_encodings->begin());
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 
 }  // namespace
@@ -923,7 +922,7 @@ Status AddOperandInfo(InstructionSetProto* instruction_set) {
                                  std::end(kEncodingMap));
   const ValueSizeMap value_size_map(std::begin(kOperandValueSizeBitsMap),
                                     std::end(kOperandValueSizeBitsMap));
-  Status status = Status::OK;
+  Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -1031,7 +1030,7 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
       // TODO(courbet): Add usage information for X87.
     }
   }
-  return Status::OK;
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsage, 8000);
 

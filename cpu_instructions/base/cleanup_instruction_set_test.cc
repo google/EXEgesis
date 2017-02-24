@@ -34,6 +34,7 @@ using ::cpu_instructions::InstructionSetProto;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
 using ::cpu_instructions::util::InvalidArgumentError;
+using ::cpu_instructions::util::OkStatus;
 using ::cpu_instructions::util::Status;
 using ::cpu_instructions::util::error::INVALID_ARGUMENT;
 
@@ -74,7 +75,7 @@ Status DeleteSecondInstruction(InstructionSetProto* instruction_set) {
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   instructions->erase(instructions->begin() + 1);
-  return Status::OK;
+  return OkStatus();
 }
 
 TEST(RunTransformWithDiffTest, WithDifference) {
