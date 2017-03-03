@@ -16,27 +16,9 @@ syntax = "proto3";
 
 package cpu_instructions;
 
-// Represents a CPU type defined by its id.
-message CpuTypeProto {
-  // The model identifier.
-  // For intel, this is "intel:<family>_<model>", where <family> and <model> are
-  // the values returned by the CPUID instruction in hexadecimal format without
-  // a leading 0x. See:
-  // https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
-  // for a more complete explanation.
-  string id = 8;
-
-  // The code name for the architecture. For example "Haswell" or "Skylake".
-  // It is a mapping from the pair (family, model) to code_name.
-  string code_name = 3;
-
-  // The vendor name string as returned by the CPUID instrunction.
-  // See https://en.wikipedia.org/wiki/CPUID#EAX.3D0:_Get_vendor_ID.
-  string vendor_name = 4;
-
-  // The commercial names by which these CPUs are sold. This is mostly useful
-  // for debugging or for building a CPU database.
-  repeated string commercial_names = 5;
+// Represents a microarchitecture, defined by its id.
+message MicroArchitectureProto {
+  string id = 1;
 
 
   // Describes the protected mode for the CPU.
@@ -56,5 +38,37 @@ message CpuTypeProto {
     repeated int32 user_modes = 2;
   }
   ProtectedMode protected_mode = 7;
+
+  repeated CpuTypeProto cpu_models = 13;
+}
+
+message MicroArchitecturesProto {
+  repeated MicroArchitectureProto microarchitectures = 1;
+}
+
+// Represents a CPU type defined by its id.
+message CpuTypeProto {
+  // The model identifier.
+  // For intel, this is "intel:<family>_<model>", where <family> and <model> are
+  // the values returned by the CPUID instruction in hexadecimal format without
+  // a leading 0x. See:
+  // https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
+  // for a more complete explanation.
+  string id = 8;
+
+  // The identifier of the MicroArchitecture of this model.
+  // string microarchitecture_id = 13;
+
+  // The code name for the architecture. For example "Haswell" or "Skylake".
+  // It is a mapping from the pair (family, model) to code_name.
+  string code_name = 3;
+
+  // The vendor name string as returned by the CPUID instrunction.
+  // See https://en.wikipedia.org/wiki/CPUID#EAX.3D0:_Get_vendor_ID.
+  string vendor_name = 4;
+
+  // The commercial names by which these CPUs are sold. This is mostly useful
+  // for debugging or for building a CPU database.
+  repeated string commercial_names = 5;
 }
 

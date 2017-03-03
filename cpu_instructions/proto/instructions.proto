@@ -18,8 +18,8 @@ syntax = "proto2";
 
 package cpu_instructions;
 
-import "cpu_instructions/proto/cpu_info.proto";
 import "cpu_instructions/proto/x86/encoding_specification.proto";
+import "cpu_instructions/proto/cpu_type.proto";
 
 // The Intel documentation referred to here can be found at:
 // http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf
@@ -262,7 +262,6 @@ message InstructionProto {
 
   // The group the instruction belong to. For example, VADDPS belongs to ADDPS.
   optional string group_id = 31;
-
 }
 
 // Stores information about the source of an instruction set, for debugging.
@@ -279,9 +278,6 @@ message InstructionSetSourceInfo {
 }
 
 message InstructionSetProto {
-  // The CPU Info for the cpu that generated this.
-  optional CpuInfoProto cpu_info = 2;
-
   // There might be several sources. For example historically the intel SDM was
   // distributed as two files with instructions A-M in Volume 2A and
   // instructions N-Z in volume 2B. When merging instruction sets, make sure

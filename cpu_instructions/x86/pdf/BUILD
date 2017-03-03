@@ -161,7 +161,6 @@ cpu_instructions_proto_library(
     cc_api_version = 2,
     deps = [
         ":pdf_document_proto",
-        "//cpu_instructions/proto:cpu_info_proto",
         "//cpu_instructions/proto:cpu_type_proto",
         "//cpu_instructions/proto:instructions_proto",
     ],
@@ -220,7 +219,6 @@ cc_library(
         ":proto_util",
         ":xpdf_util",
         "//base",
-        "//cpu_instructions/proto:cpu_info_proto",
         "//cpu_instructions/proto:instructions_proto",
         "//external:gflags",
         "//external:glog",

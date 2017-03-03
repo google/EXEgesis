@@ -21,7 +21,6 @@
 #include <memory>
 #include "strings/string.h"
 
-#include "cpu_instructions/proto/cpu_info.pb.h"
 #include "cpu_instructions/x86/pdf/intel_sdm_extractor.h"
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 #include "cpu_instructions/x86/pdf/proto_util.h"
@@ -92,7 +91,6 @@ InstructionSetProto ParseSdmOrDie(const string& input_spec,
   const auto input_specs = ParseInputSpec(input_spec);
 
   InstructionSetProto full_instruction_set;
-  full_instruction_set.mutable_cpu_info()->set_architecture("x86_64");
 
   for (int spec_id = 0; spec_id < input_specs.size(); ++spec_id) {
     const InputSpec& input_spec = input_specs[spec_id];
