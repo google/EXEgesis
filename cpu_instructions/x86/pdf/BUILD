@@ -64,38 +64,6 @@ cc_test(
 )
 
 cc_library(
-    name = "proto_util",
-    srcs = ["proto_util.cc"],
-    hdrs = ["proto_util.h"],
-    deps = [
-        "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
-        "//strings",
-    ],
-)
-
-cc_test(
-    name = "proto_util_test",
-    srcs = ["proto_util_test.cc"],
-    deps = [
-        ":pdf_document_proto",
-        ":proto_util",
-        "//base",
-        "//cpu_instructions/testing:test_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
-        "//strings",
-    ],
-)
-
-cc_library(
     name = "pdf_document_parser",
     srcs = ["pdf_document_parser.cc"],
     hdrs = ["pdf_document_parser.h"],
@@ -117,7 +85,7 @@ cc_test(
     srcs = ["pdf_document_parser_test.cc"],
     deps = [
         ":pdf_document_parser",
-        ":proto_util",
+        "//cpu_instructions/util:proto_util",
         "//external:googletest_main",
         "//external:protobuf_clib",
     ],
@@ -143,8 +111,8 @@ cc_test(
     srcs = ["pdf_document_utils_test.cc"],
     deps = [
         ":pdf_document_utils",
-        ":proto_util",
         "//base",
+        "//cpu_instructions/util:proto_util",
         "//external:gflags",
         "//external:glog",
         "//external:googletest",
@@ -199,8 +167,8 @@ cc_test(
     deps = [
         ":intel_sdm_extractor",
         ":pdf_document_parser",
-        ":proto_util",
         "//cpu_instructions/testing:test_util",
+        "//cpu_instructions/util:proto_util",
         "//external:googletest_main",
         "//external:protobuf_clib",
         "//strings",
@@ -216,10 +184,10 @@ cc_library(
     deps = [
         ":intel_sdm_extractor",
         ":pdf_document_utils",
-        ":proto_util",
         ":xpdf_util",
         "//base",
         "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/util:proto_util",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib",

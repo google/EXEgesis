@@ -38,7 +38,40 @@ cc_test(
     ],
 )
 
-# Helper functions for wokring with Status object.
+# Utilities to read and write binary and text protos from files and strings.
+cc_library(
+    name = "proto_util",
+    srcs = ["proto_util.cc"],
+    hdrs = ["proto_util.h"],
+    deps = [
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+cc_test(
+    name = "proto_util_test",
+    srcs = ["proto_util_test.cc"],
+    deps = [
+        ":proto_util",
+        "//base",
+        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/testing:test_util",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+# Helper functions for working with Status object.
 cc_library(
     name = "status_util",
     srcs = ["status_util.cc"],

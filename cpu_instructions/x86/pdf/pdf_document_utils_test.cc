@@ -14,7 +14,7 @@
 
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
 
-#include "cpu_instructions/x86/pdf/proto_util.h"
+#include "cpu_instructions/util/proto_util.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"

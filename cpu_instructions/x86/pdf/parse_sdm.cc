@@ -21,9 +21,9 @@
 #include <memory>
 #include "strings/string.h"
 
+#include "cpu_instructions/util/proto_util.h"
 #include "cpu_instructions/x86/pdf/intel_sdm_extractor.h"
 #include "cpu_instructions/x86/pdf/pdf_document_utils.h"
-#include "cpu_instructions/x86/pdf/proto_util.h"
 #include "cpu_instructions/x86/pdf/xpdf_util.h"
 #include "glog/logging.h"
 #include "re2/re2.h"

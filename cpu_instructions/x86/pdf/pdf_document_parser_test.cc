@@ -16,7 +16,7 @@
 
 #include <iterator>
 
-#include "cpu_instructions/x86/pdf/proto_util.h"
+#include "cpu_instructions/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
