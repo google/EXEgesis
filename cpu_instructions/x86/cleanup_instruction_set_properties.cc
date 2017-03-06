@@ -80,6 +80,7 @@ const std::unordered_map<string, int>& GetProtectionModes() {
           // accessible using RDMSR/WRMSR instructions. Those instructions are
           // only accessible at privilege level 0."
           {"RDMSR", 0},
+          {"RDPMC", 0},
           {"STAC", 0},
           {"STD", 0},  // Not 100% sure, it looks like the SDM is wrong.
           {"STI", 0},
