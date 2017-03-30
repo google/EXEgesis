@@ -9,5 +9,9 @@ cc_library(
     name = "base",
     hdrs = [
         "macros.h",
+        "stringprintf.h",
+    ],
+    deps = [
+        "//external:protobuf_clib_for_base",
     ],
 )
