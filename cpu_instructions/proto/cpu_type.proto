@@ -40,6 +40,7 @@ message MicroArchitectureProto {
   ProtectedMode protected_mode = 7;
 
   repeated CpuTypeProto cpu_models = 13;
+
 }
 
 message MicroArchitecturesProto {
@@ -70,5 +71,53 @@ message CpuTypeProto {
   // The commercial names by which these CPUs are sold. This is mostly useful
   // for debugging or for building a CPU database.
   repeated string commercial_names = 5;
+
+  // Whether the L1 instruction cache is separate from the L1 data cache.
+  // On Intel CPUs, it is almost always the case (they represent a form  of
+  // "modified Harvard" or "Almost Von Neumann" architecture), with the notable
+  // exception of Pentium 4s.
+  // If is l1_cache_split is false, then all the instructions should be
+  // considered as loaded from (and thus "polluting") l1_data_cache.
+  bool is_l1_cache_split = 9;
+
+  // The description of the L1 instruction cache. Sizes are in bytes.
+  CacheProto l1_instruction_cache = 10;
+
+  // The description of the L1 data cache. Sizes are in bytes.
+  CacheProto l1_data_cache = 11;
+
+  // The description of the L2 cache. Sizes are in bytes.
+  CacheProto l2_cache = 12;
+
+  // The description of the L3 cache. Sizes are in bytes.
+  CacheProto l3_cache = 13;
+}
+
+// Describes the parameters of a cache.
+message CacheProto {
+  // Th.e name of the cache, for example "L1D" or "uops-cache".
+  string name = 1;
+
+  // The size of the cache expressed in the smallest unit, i.e. bytes
+  // or micro-operations.
+  int32 size = 2;
+
+  // The associativity of the cache
+  int32 associativity = 3;
+
+  // The size of each line in the cache, expressed in the same unit as 'size'.
+  int32 line_size = 4;
+
+  // The latency of the cache in CPU cycles.
+  int32 latency_in_cycles = 5;
+
+  // The bandwidth of the cache, expressed in the same unit as 'size'.
+  int64 bandwidth = 6;
+
+  // Whether the cache in situated on-chip.
+  bool is_on_chip = 7;
+
+  // Whether the cache is shared between cores.
+  bool is_shared_between_cores = 8;
 }
 

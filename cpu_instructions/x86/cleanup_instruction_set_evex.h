@@ -30,6 +30,10 @@ using ::cpu_instructions::util::Status;
 // instruction set.
 Status AddEvexBInterpretation(InstructionSetProto* instruction_set);
 
+// Adds the opmask-related fields to the encoding specifications of all
+// instructions in the instruction set.
+Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace cpu_instructions
 

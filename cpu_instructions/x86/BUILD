@@ -169,6 +169,8 @@ cc_library(
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
         "//util/task:status",
     ],
     alwayslink = 1,
@@ -351,6 +353,36 @@ cc_test(
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
         "//external:googletest",
         "//external:googletest_main",
+    ],
+)
+
+# Utilities to represent to CPU state.
+cc_library(
+    name = "cpu_state",
+    srcs = ["cpu_state.cc"],
+    hdrs = ["cpu_state.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/util:bits",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+cc_test(
+    name = "cpu_state_test",
+    srcs = ["cpu_state_test.cc"],
+    deps = [
+        ":cpu_state",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
+        "//strings",
     ],
 )
 

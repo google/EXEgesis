@@ -55,7 +55,7 @@ TEST(AddOperandInfoTest, AddInfo) {
            x86_encoding_specification {
              vex_prefix {
                prefix_type: VEX_PREFIX
-               vector_size: VECTOR_SIZE_128_BIT
+               vector_size: VEX_VECTOR_SIZE_128_BIT
                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                map_select: MAP_SELECT_0F
                vex_w_usage: VEX_W_IS_ZERO }
@@ -104,7 +104,7 @@ TEST(AddOperandInfoTest, AddInfo) {
            x86_encoding_specification {
              vex_prefix {
                prefix_type: VEX_PREFIX
-               vector_size: VECTOR_SIZE_128_BIT
+               vector_size: VEX_VECTOR_SIZE_128_BIT
                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                map_select: MAP_SELECT_0F
                vex_w_usage: VEX_W_IS_ZERO }

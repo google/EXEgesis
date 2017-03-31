@@ -94,11 +94,8 @@ class EncodingSpecificationParser {
 
   // Hash maps mapping tokens of the instruction encoding specification language
   // to enum values of the encoding protos.
-  const std::unordered_map<string,
-                           VexPrefixEncodingSpecification::VexOperandUsage>
-      vex_operand_usage_tokens_;
-  const std::unordered_map<string, VexPrefixEncodingSpecification::VectorSize>
-      vector_size_tokens_;
+  const std::unordered_map<string, VexOperandUsage> vex_operand_usage_tokens_;
+  const std::unordered_map<string, VexVectorSize> vector_size_tokens_;
   const std::unordered_map<string, VexEncoding::MandatoryPrefix>
       mandatory_prefix_tokens_;
   const std::unordered_map<string, VexPrefixEncodingSpecification::VexWUsage>
@@ -109,28 +106,23 @@ class EncodingSpecificationParser {
 // Definitions of maps from tokens to the enum values used in the instruction
 // encoding specification proto. These values are used to initialize the hash
 // maps used in the parser object.
-const std::pair<const char*, VexPrefixEncodingSpecification::VexOperandUsage>
-    kVexOperandUsageTokens[] = {
-        {"", VexPrefixEncodingSpecification::NO_VEX_OPERAND_USAGE},
-        {"NDS",
-         VexPrefixEncodingSpecification::VEX_OPERAND_IS_FIRST_SOURCE_REGISTER},
-        {"NDD",
-         VexPrefixEncodingSpecification::VEX_OPERAND_IS_DESTINATION_REGISTER},
-        {"DDS", VexPrefixEncodingSpecification::
-                    VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
-const std::pair<const char*, VexPrefixEncodingSpecification::VectorSize>
-    kVectorSizeTokens[] = {
-        {"LZ", VexPrefixEncodingSpecification::VECTOR_SIZE_BIT_IS_ZERO},
-        // The two following are undocumented. We assume that L0 is equivalent
-        // to LZ, and extend the semantics to L1 naturally to mean "L must be
-        // 1".
-        {"L0", VexPrefixEncodingSpecification::VECTOR_SIZE_BIT_IS_ZERO},
-        {"L1", VexPrefixEncodingSpecification::VECTOR_SIZE_BIT_IS_ONE},
-        {"128", VexPrefixEncodingSpecification::VECTOR_SIZE_128_BIT},
-        {"256", VexPrefixEncodingSpecification::VECTOR_SIZE_256_BIT},
-        {"512", VexPrefixEncodingSpecification::VECTOR_SIZE_512_BIT},
-        {"LIG", VexPrefixEncodingSpecification::VECTOR_SIZE_IS_IGNORED},
-        {"LIG.128", VexPrefixEncodingSpecification::VECTOR_SIZE_128_BIT}};
+const std::pair<const char*, VexOperandUsage> kVexOperandUsageTokens[] = {
+    {"", NO_VEX_OPERAND_USAGE},
+    {"NDS", VEX_OPERAND_IS_FIRST_SOURCE_REGISTER},
+    {"NDD", VEX_OPERAND_IS_DESTINATION_REGISTER},
+    {"DDS", VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
+const std::pair<const char*, VexVectorSize> kVectorSizeTokens[] = {
+    {"LZ", VEX_VECTOR_SIZE_BIT_IS_ZERO},
+    // The two following are undocumented. We assume that L0 is equivalent
+    // to LZ, and extend the semantics to L1 naturally to mean "L must be
+    // 1".
+    {"L0", VEX_VECTOR_SIZE_BIT_IS_ZERO},
+    {"L1", VEX_VECTOR_SIZE_BIT_IS_ONE},
+    {"128", VEX_VECTOR_SIZE_128_BIT},
+    {"256", VEX_VECTOR_SIZE_256_BIT},
+    {"512", VEX_VECTOR_SIZE_512_BIT},
+    {"LIG", VEX_VECTOR_SIZE_IS_IGNORED},
+    {"LIG.128", VEX_VECTOR_SIZE_128_BIT}};
 const std::pair<const char*, VexEncoding::MandatoryPrefix>
     kMandatoryPrefixTokens[] = {
         {"", VexEncoding::NO_MANDATORY_PREFIX},
@@ -281,17 +273,15 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   // Note that we use the regexp to filter out invalid values of these fields,
   // so FindOrDie never dies unless the regexp and the token definitions at the
   // top of this file are out of sync.
-  const VexPrefixEncodingSpecification::VexPrefixType prefix_type =
-      prefix_type_str == "EVEX" ? VexPrefixEncodingSpecification::EVEX_PREFIX
-                                : VexPrefixEncodingSpecification::VEX_PREFIX;
-  const VexPrefixEncodingSpecification::VectorSize vector_size =
+  const VexPrefixType prefix_type =
+      prefix_type_str == "EVEX" ? EVEX_PREFIX : VEX_PREFIX;
+  const VexVectorSize vector_size =
       FindOrDie(vector_size_tokens_, vex_l_usage_str);
   vex_prefix->set_prefix_type(prefix_type);
   vex_prefix->set_vex_operand_usage(
       FindOrDie(vex_operand_usage_tokens_, vex_operand_directionality));
   vex_prefix->set_vector_size(vector_size);
-  if (vector_size == VexPrefixEncodingSpecification::VECTOR_SIZE_512_BIT &&
-      prefix_type != VexPrefixEncodingSpecification::EVEX_PREFIX) {
+  if (vector_size == VEX_VECTOR_SIZE_512_BIT && prefix_type != EVEX_PREFIX) {
     return InvalidArgumentError(
         "The 512 bit vector size can be used only in an EVEX prefix");
   }
@@ -508,8 +498,7 @@ InstructionOperandEncodingMultiset GetAvailableEncodings(
   if (encoding_specification.has_vex_prefix()) {
     const VexPrefixEncodingSpecification& vex_prefix =
         encoding_specification.vex_prefix();
-    if (vex_prefix.vex_operand_usage() !=
-        VexPrefixEncodingSpecification::NO_VEX_OPERAND_USAGE) {
+    if (vex_prefix.vex_operand_usage() != NO_VEX_OPERAND_USAGE) {
       available_encodings.insert(InstructionOperand::VEX_V_ENCODING);
     }
     if (vex_prefix.has_vex_operand_suffix()) {

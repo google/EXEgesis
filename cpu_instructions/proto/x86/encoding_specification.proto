@@ -43,59 +43,141 @@ message LegacyPrefixEncodingSpecification {
   bool has_mandatory_address_size_override_prefix = 5;
 }
 
+// Specifies how the instruction uses the register index that is encoded in the
+// VEX/EVEX prefix (in the vvvv and V bits of the VEX/EVEX prefix).
+enum VexOperandUsage {
+  // The register index bits are not used.
+  NO_VEX_OPERAND_USAGE = 0;
+  // The register is the first source operand of a three-operand instruction.
+  VEX_OPERAND_IS_FIRST_SOURCE_REGISTER = 1;
+  // The register is the second source operand of a three-operand instruction.
+  VEX_OPERAND_IS_SECOND_SOURCE_REGISTER = 2;
+  // The register is the destination register that could not be encoded in the
+  // ModRM.reg bits.
+  VEX_OPERAND_IS_DESTINATION_REGISTER = 3;
+}
+
+// Specifies the interpretation of the EVEX.b bit (broadcast, static rounding,
+// suppress all exceptions; do not confuse with EVEX.B which is an extension of
+// the SIB.base bits). This bit is available only in the EVEX encoding, and the
+// value of this enum must be EVEX_B_IS_NOT_USED for VEX instructions.
+enum EvexBInterpretation {
+  // The interpretation of the EVEX.b bit is undefined; this value must not be
+  // used in real data.
+  UNDEFINED_EVEX_B_INTERPRETATION = 0;
+  // When EVEX.b is set to 1, the instruction reads a single 32-bit value from
+  // the memory location specified in the modrm.rm operand, and broadcasts it to
+  // all elements of the destination vector register. Note that this value can
+  // be used only if all the following conditions hold:
+  // 1. The instruction operates on vectors of 32-bit values.
+  // 2. The instruction has a modrm.rm operand, and this operand is a read
+  //    operand of the instruction.
+  // 3. The modrm.rm operand uses an indirerct addressing mode.
+  // 4. The destination is a vector register.
+  EVEX_B_ENABLES_32_BIT_BROADCAST = 1;
+  // When EVEX.b is set to 1, the instruction reads a single 64-bit value from
+  // the memory location specified in the modrm.rm operand, and broadcasts it to
+  // all elements of the destination vector register. Note that this value can
+  // be used only if all the following conditions hold:
+  // 1. The instruction operates on vectors of 64-bit values.
+  // 2. The instruction has a modrm.rm operand, and this operand is a read
+  //    operand of the instruction.
+  // 3. The modrm.rm operand uses an indirerct addressing mode.
+  // 4. The destination is a vector register.
+  EVEX_B_ENABLES_64_BIT_BROADCAST = 2;
+  // When EVEX.b is set to 1, the EVEX.L and EVEX.L' bits control the rounding
+  // mode of the floating point operation performed by the instruction.
+  // Otherwise, the system-wide rounding mode specified in MXCSR.RC is used.
+  // Note that static rounding control implies 'suppress all exceptions'.
+  EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL = 3;
+  // When EVEX.b is set to 1, all exceptions are suppressed for the instruction.
+  EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS = 4;
+}
+
+// Specifies how a vector instruction uses the opmask register encoded in the
+// EVEX.aaa bits. Opmasks are available only in the EVEX encoding; for VEX
+// instructions, the value must always be EVEX_OPMASK_IS_NOT_USED.
+// There are eight opmask registers k0-k7, and a special register k0. When used
+// as an opmask (not as a regular operand), the registers k1-k7 select elements
+// of the vector operands affected by the instruction: each element of the
+// vector operands is controlled by one bit of the selected opmask register. The
+// register k0 has a special meaning: when used as an opmask register, it
+// applies the operation to all elements of the vector operands, regardless of
+// the value of its bits.
+// There are three kinds of EVEX instructions:
+// 1. Instructions that do not use opmasks; the EVEX.aaa bits of these
+//    instructions must be set to 0.
+// 2. Instructions that support opmasks and allow the use of k0.
+// 3. Instructions that support opmasks, but do not allow using k0.
+enum EvexOpmaskUsage {
+  // The instruction does not use opmask registers.
+  EVEX_OPMASK_IS_NOT_USED = 0;
+  // The instruction uses the opmask, and it allows the use of k0 as the opmask
+  // register.
+  EVEX_OPMASK_IS_OPTIONAL = 1;
+  // The instruction uses the opmask, but it does not allow using k0 as the
+  // opmask register.
+  EVEX_OPMASK_IS_REQUIRED = 2;
+}
+
+// Specifies what operation is applied to vector elements masked by the opmask
+// of an EVEX instruction, as encoded in the EVEX.z bit. The masking operation
+// is well defined only for EVEX instructions that use opmasks; for all other
+// instructions, this enum must be set to NO_EVEX_MASKING.
+// TODO(ondrasej): For some instruction, e.g. VCOMPRESSPD, zeroing merging is
+// supported when the destination is a register but not when the destination is
+// a memory location. Add a transform that fixes this behavior after adding
+// alternatives for addressing modes. Note that this behavior is described only
+// in the free-text description of the instruction, and we will have to
+// enumerate the affected instructions by hand.
+enum EvexMaskingOperation {
+  // The instruction does not support EVEX opmasks. For EVEX instructions with
+  // this value, the EVEX.z bit must be set to zero.
+  NO_EVEX_MASKING = 0;
+  // The instruciton supports only merging masking.
+  EVEX_MASKING_MERGING_ONLY = 1;
+  // The instruction supports both merging masking and zeroing masking.
+  EVEX_MASKING_MERGING_AND_ZEROING = 2;
+}
+
+// The size of the vector used by the instruction (the value of the L and L'
+// bits of the VEX/EVEX prefixe). Note that there are five possible states for
+// one or two bits. This is because the values of the enum refer not only to the
+// value of the bits, but also to the way how the bit is interpreted by the CPU.
+enum VexVectorSize {
+  // The instruction is not a vector instruction, and the value of the vector
+  // length bits is ignored.
+  VEX_VECTOR_SIZE_IS_IGNORED = 0;
+  // The instruction is not a vector instruction, and the value of the vector
+  // length bits must be zero (resp. 1). Setting it to the other value would
+  // trigger the undefined instruction exception).
+  VEX_VECTOR_SIZE_BIT_IS_ZERO = 1;
+  VEX_VECTOR_SIZE_BIT_IS_ONE = 2;
+  // The instruction uses 128-bit vector operands.
+  VEX_VECTOR_SIZE_128_BIT = 3;
+  // The instruction uses 256-bit vector operands.
+  VEX_VECTOR_SIZE_256_BIT = 4;
+  // The instruction uses 512-bit vector operands. This value can be used only
+  // with the EVEX prefix.
+  VEX_VECTOR_SIZE_512_BIT = 5;
+}
+
+// Specifies whether the prefix is a VEX prefix or an EVEX prefix.
+enum VexPrefixType {
+  // The type of the prefix was not specified. It is an error to use this value
+  // in a "real" encoding specification.
+  UNDEFINED_VEX_PREFIX = 0;
+  // The prefix is a VEX prefix.
+  VEX_PREFIX = 1;
+  // The prefix is an EVEX prefix.
+  EVEX_PREFIX = 2;
+}
+
 // Specifies how the VEX/EVEX prefix of the instruction is encoded. From the
 // perspective of the instruction encoding specification, the VEX prefix is a
 // subset of the EVEX prefix. Unless noted in the comment on a field or a type,
 // the features are available in both types of prefix.
 message VexPrefixEncodingSpecification {
-  // Specifies whether the prefix is a VEX prefix or an EVEX prefix.
-  enum VexPrefixType {
-    // The type of the prefix was not specified. It is an error to use this
-    // value in a "real" encoding specification.
-    UNDEFINED_PREFIX = 0;
-    // The prefix is a VEX prefix.
-    VEX_PREFIX = 1;
-    // The prefix is an EVEX prefix.
-    EVEX_PREFIX = 2;
-  }
-
-  // Specifies how the instruction uses the register index that is encoded in
-  // the VEX/EVEX prefix (in the vvvv and V bits of the VEX/EVEX prefix).
-  enum VexOperandUsage {
-    // The register index bits are not used.
-    NO_VEX_OPERAND_USAGE = 0;
-    // The register is the first source operand of a three-operand instruction.
-    VEX_OPERAND_IS_FIRST_SOURCE_REGISTER = 1;
-    // The register is the second source operand of a three-operand instruction.
-    VEX_OPERAND_IS_SECOND_SOURCE_REGISTER = 2;
-    // The register is the destination register that could not be encoded in the
-    // ModRM.reg bits.
-    VEX_OPERAND_IS_DESTINATION_REGISTER = 3;
-  }
-
-  // The size of the vector used by the instruction (the value of the L and L'
-  // bits of the VEX/EVEX prefixe). Note that there are five possible states for
-  // one or two bits. This is because the values of the enum refer not only
-  // to the value of the bits, but also to the way how the bit is interpreted by
-  // the CPU.
-  enum VectorSize {
-    // The instruction is not a vector instruction, and the value of the vector
-    // length bits is ignored.
-    VECTOR_SIZE_IS_IGNORED = 0;
-    // The instruction is not a vector instruction, and the value of the vector
-    // length bits must be zero (resp. 1). Setting it to the other value would
-    // trigger the undefined instruction exception).
-    VECTOR_SIZE_BIT_IS_ZERO = 1;
-    VECTOR_SIZE_BIT_IS_ONE = 2;
-    // The instruction uses 128-bit vector operands.
-    VECTOR_SIZE_128_BIT = 3;
-    // The instruction uses 256-bit vector operands.
-    VECTOR_SIZE_256_BIT = 4;
-    // The instruction uses 512-bit vector operands. This value can be used only
-    // with the EVEX prefix.
-    VECTOR_SIZE_512_BIT = 5;
-  }
-
   // Specifies how the W bit of the VEX/EVEX prefix is used by the instruction.
   enum VexWUsage {
     // The value of the W bit is not specified.
@@ -117,44 +199,6 @@ message VexPrefixEncodingSpecification {
     VSIB_USED = 1;
   }
 
-  // Specifies the interpretation of the EVEX.b bit (broadcast, static rounding,
-  // suppress all exceptions; do not confuse with EVEX.B which is an extension
-  // of the SIB.base bits). This bit is available only in the EVEX encoding, and
-  // the value of this enum must be EVEX_B_IS_NOT_USED for VEX instructions.
-  enum EvexBInterpretation {
-    // The EVEX.b bit is not used, and it must be set to zero.
-    EVEX_B_IS_NOT_USED = 0;
-    // When EVEX.b is set to 1, the instruction reads a single 32-bit value from
-    // the memory location specified in the modrm.rm operand, and broadcasts it
-    // to all elements of the destination vector register.
-    // Note that this value can be used only if all the following conditions
-    // hold:
-    // 1. The instruction operates on vectors of 32-bit values.
-    // 2. The instruction has a modrm.rm operand, and this operand is a read
-    //    operand of the instruction.
-    // 3. The modrm.rm operand uses an indirerct addressing mode.
-    // 4. The destination is a vector register.
-    EVEX_B_ENABLES_32_BIT_BROADCAST = 1;
-    // When EVEX.b is set to 1, the instruction reads a single 64-bit value from
-    // the memory location specified in the modrm.rm operand, and broadcasts it
-    // to all elements of the destination vector register.
-    // Note that this value can be used only if all the following conditions
-    // hold:
-    // 1. The instruction operates on vectors of 64-bit values.
-    // 2. The instruction has a modrm.rm operand, and this operand is a read
-    //    operand of the instruction.
-    // 3. The modrm.rm operand uses an indirerct addressing mode.
-    // 4. The destination is a vector register.
-    EVEX_B_ENABLES_64_BIT_BROADCAST = 2;
-    // When EVEX.b is set to 1, the EVEX.L and EVEX.L' bits control the rounding
-    // mode of the floating point operation performed by the instruction.
-    // Otherwise, the system-wide rounding mode specified in MXCSR.RC is used.
-    EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL = 3;
-    // When EVEX.b is set to 1, all exceptions are suppressed for the
-    // instruction.
-    EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS = 4;
-  }
-
   // Specifies whether this is a VEX prefix or an EVEX prefix.
   VexPrefixType prefix_type = 1;
 
@@ -163,7 +207,7 @@ message VexPrefixEncodingSpecification {
   VexOperandUsage vex_operand_usage = 2;
 
   // Specifies how the instruction uses the vector size bits.
-  VectorSize vector_size = 3;
+  VexVectorSize vector_size = 3;
 
   // Specifies the mandatory prefix used by the instruction.
   VexEncoding.MandatoryPrefix mandatory_prefix = 4;
@@ -185,11 +229,22 @@ message VexPrefixEncodingSpecification {
   // instructions, the interpretation depends on the addressing mode of the
   // modrm.rm operand - for memory locations, setting EVEX.b to one enables
   // broadcast while for register operands it enables static rounding control
-  // or suppresses all exceptions. In such case, this field contains all
-  // possible interpretation.
-  // TODO(ondrasej): Pick the correct interpretation when adding alternatives
-  // of the instruction.
-  repeated EvexBInterpretation evex_b_interpretation = 9;
+  // ({er}) or suppresses all exceptions ({sae}). In such case, this field
+  // contains all possible interpretation. When this field is empty, the
+  // instruction does not use the EVEX.b bit, and its value must be 0.
+  // Note that only the following combinations of interpretations are allowed in
+  // an instruction:
+  // * No interpretation (EVEX.b is not used),
+  // * Any single interpretation,
+  // * A 32/64-bit broadcast, and either {er} or {sae}.
+  repeated EvexBInterpretation evex_b_interpretations = 9;
+
+  // Specifies whether and how the instruction uses the opmask.
+  EvexOpmaskUsage opmask_usage = 10;
+
+  // Specifies the masking operation of the EVEX instructions that support
+  // opmasks. For all other instructions, it must be set to NO_EVEX_MASKING.
+  EvexMaskingOperation masking_operation = 11;
 }
 
 // Contains the specification of how the binary encoding of the instruction is

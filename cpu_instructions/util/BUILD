@@ -5,6 +5,33 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# A library for working with bits in an unsigned integer.
+cc_library(
+    name = "bits",
+    hdrs = ["bits.h"],
+    deps = [
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+    ],
+)
+
+cc_test(
+    name = "bits_test",
+    srcs = ["bits_test.cc"],
+    deps = [
+        ":bits",
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
 # Helper functions for working with instruction syntax.
 cc_library(
     name = "instruction_syntax",

@@ -447,7 +447,7 @@ TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
           vex_prefix {
             prefix_type: VEX_PREFIX
             vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-            vector_size: VECTOR_SIZE_128_BIT
+            vector_size: VEX_VECTOR_SIZE_128_BIT
             mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
             map_select: MAP_SELECT_0F38
             vex_w_usage: VEX_W_IS_ZERO }}}

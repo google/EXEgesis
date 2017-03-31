@@ -196,12 +196,12 @@ TEST(EncodingSpecificationParserTest, MandatoryRepnePrefix) {
 
 TEST(EncodingSpecificationParserTest, VexNoSuffix) {
   CheckParser("VEX.128.0F.WIG 77",
-              R"(vex_prefix { vector_size: VECTOR_SIZE_128_BIT
+              R"(vex_prefix { vector_size: VEX_VECTOR_SIZE_128_BIT
                               prefix_type: VEX_PREFIX
                               map_select: MAP_SELECT_0F }
                  opcode: 0x0f77)");
   CheckParser("VEX.256.0F.WIG 77",
-              R"(vex_prefix { vector_size: VECTOR_SIZE_256_BIT
+              R"(vex_prefix { vector_size: VEX_VECTOR_SIZE_256_BIT
                               prefix_type: VEX_PREFIX
                               map_select: MAP_SELECT_0F }
                  opcode: 0x0f77)");
@@ -212,7 +212,7 @@ TEST(EncodingSpecificationParserTest, VexLig128) {
               R"(vex_prefix {
                    prefix_type: VEX_PREFIX
                    vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F38 vex_w_usage: VEX_W_IS_ONE }
                  opcode: 0x0f3899 modrm_usage: FULL_MODRM)");
@@ -220,12 +220,12 @@ TEST(EncodingSpecificationParserTest, VexLig128) {
 
 TEST(EncodingSpecificationParserTest, VexLSynonyms) {
   CheckParser("VEX.L0.0F.WIG 77",
-              R"(vex_prefix { vector_size: VECTOR_SIZE_BIT_IS_ZERO
+              R"(vex_prefix { vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
                               prefix_type: VEX_PREFIX
                               map_select: MAP_SELECT_0F }
                  opcode: 0x0f77)");
   CheckParser("VEX.L1.0F.WIG 77",
-              R"(vex_prefix { vector_size: VECTOR_SIZE_BIT_IS_ONE
+              R"(vex_prefix { vector_size: VEX_VECTOR_SIZE_BIT_IS_ONE
                               prefix_type: VEX_PREFIX
                               map_select: MAP_SELECT_0F }
                  opcode: 0x0f77)");
@@ -242,7 +242,7 @@ TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
               R"(vex_prefix {
                    prefix_type: VEX_PREFIX
                    vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-                   vector_size: VECTOR_SIZE_BIT_IS_ZERO
+                   vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
                    mandatory_prefix: MANDATORY_PREFIX_REPE
                    map_select: MAP_SELECT_0F38 vex_w_usage: VEX_W_IS_ONE }
                  opcode: 0x0f38f5 modrm_usage: FULL_MODRM)");
@@ -250,7 +250,7 @@ TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
               R"(vex_prefix {
                    prefix_type: VEX_PREFIX
                    vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F38
                    vex_w_usage: VEX_W_IS_ONE }
@@ -260,7 +260,7 @@ TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
               R"(vex_prefix {
                    prefix_type: VEX_PREFIX
                    vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F
                    vex_w_usage: VEX_W_IS_IGNORED }
@@ -275,7 +275,7 @@ TEST(EncodingSpecificationParserTest, VexOperandSuffixByte) {
               R"(vex_prefix {
                    prefix_type: VEX_PREFIX
                    vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F3A
                    vex_w_usage: VEX_W_IS_ZERO
@@ -288,7 +288,7 @@ TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
   CheckParser("EVEX.128.66.0F38.W0 92 /vsib",
               R"(vex_prefix {
                    prefix_type: EVEX_PREFIX
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F38
                    vex_w_usage: VEX_W_IS_ZERO
@@ -298,7 +298,7 @@ TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
   CheckParser("EVEX.128.66.0F38.W0 92 /r /vsib",
               R"(vex_prefix {
                    prefix_type: EVEX_PREFIX
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F38
                    vex_w_usage: VEX_W_IS_ZERO
@@ -308,7 +308,7 @@ TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
   CheckParser("EVEX.128.66.0F38.W0 92 /5 /vsib",
               R"(vex_prefix {
                    prefix_type: EVEX_PREFIX
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                    map_select: MAP_SELECT_0F38
                    vex_w_usage: VEX_W_IS_ZERO
@@ -331,7 +331,7 @@ TEST(EncodingSpecificationParserTest, EvexPrefixWithModRm) {
               R"(vex_prefix {
                    prefix_type: EVEX_PREFIX
                    map_select: MAP_SELECT_0F
-                   vector_size: VECTOR_SIZE_128_BIT
+                   vector_size: VEX_VECTOR_SIZE_128_BIT
                    vex_w_usage: VEX_W_IS_ZERO }
                  opcode: 0x0f29
                  modrm_usage: FULL_MODRM)");
@@ -342,7 +342,7 @@ TEST(EncodingSpecificationParserTest, EvexLig512) {
               R"(vex_prefix {
                    prefix_type: EVEX_PREFIX
                    map_select: MAP_SELECT_0F
-                   vector_size: VECTOR_SIZE_512_BIT
+                   vector_size: VEX_VECTOR_SIZE_512_BIT
                    vex_w_usage: VEX_W_IS_ZERO }
                 opcode: 0x0f29
                 modrm_usage: FULL_MODRM)");
