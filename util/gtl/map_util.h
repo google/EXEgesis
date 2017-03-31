@@ -24,6 +24,7 @@ using ::google::protobuf::FindCopy;
 using ::google::protobuf::FindOrDie;
 using ::google::protobuf::FindOrDieNoPrint;
 using ::google::protobuf::FindOrNull;
+using ::google::protobuf::FindPtrOrNull;
 using ::google::protobuf::FindWithDefault;
 using ::google::protobuf::InsertIfNotPresent;
 using ::google::protobuf::InsertOrDie;
