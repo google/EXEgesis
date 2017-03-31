@@ -21,6 +21,12 @@ namespace cpu_instructions {
 
 using ::google::protobuf::LowerString;
 
+namespace strings {
+
+using ::google::protobuf::ToUpper;
+
+}  // namespace strings
+
 }  // namespace cpu_instructions
 
 #endif  // STRINGS_CASE_H_
