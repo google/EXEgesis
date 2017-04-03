@@ -30,12 +30,17 @@ namespace cpu_instructions {
 template <int alignement, typename T>
 class UniqueAlignedStorage {
  public:
+  // This class implements only a trivial destructor that frees the allocated
+  // memory, but does not call the destructor of T/ValueType. We need to make
+  // sure that it is never used with a type where this might cause problems.
+  static_assert(std::is_trivially_destructible<T>::value,
+                "The type T is not trivially destructible.");
   using ValueType = typename std::remove_extent<T>::type;
 
   UniqueAlignedStorage() : value_(nullptr) {
     void* ptr = nullptr;
     CHECK(!posix_memalign(&ptr, alignement, sizeof(T)));
-    value_ = new (ptr) ValueType;
+    value_ = new (ptr) T;
   }
 
   ~UniqueAlignedStorage() { free(value_); }

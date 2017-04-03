@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
+#include "cpu_instructions/base/pdf/pdf_document_utils.h"
 
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/x86/pdf/pdf_document_parser.h"
+#include "cpu_instructions/base/pdf/pdf_document_parser.h"
 
 #include <algorithm>
 #include <cfloat>
@@ -21,7 +21,7 @@
 #include <vector>
 #include "strings/string.h"
 
-#include "cpu_instructions/x86/pdf/geometry.h"
+#include "cpu_instructions/base/pdf/geometry.h"
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
 #include "strings/string_view.h"

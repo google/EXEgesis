@@ -5,7 +5,10 @@ package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])  # Apache 2.0
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "llvm.bzl",
+])
 
 package_group(
     name = "internal_users",

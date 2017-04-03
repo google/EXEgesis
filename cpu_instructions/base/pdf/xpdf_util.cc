@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/x86/pdf/xpdf_util.h"
+#include "cpu_instructions/base/pdf/xpdf_util.h"
 
 #include <functional>
 #include <memory>
@@ -21,10 +21,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cpu_instructions/x86/pdf/geometry.h"
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
-#include "cpu_instructions/x86/pdf/pdf_document_parser.h"
-#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
+#include "cpu_instructions/base/pdf/geometry.h"
+#include "cpu_instructions/base/pdf/pdf_document.pb.h"
+#include "cpu_instructions/base/pdf/pdf_document_parser.h"
+#include "cpu_instructions/base/pdf/pdf_document_utils.h"
 #include "glog/logging.h"
 #include "libutf/utf.h"
 #include "strings/string_view_utils.h"

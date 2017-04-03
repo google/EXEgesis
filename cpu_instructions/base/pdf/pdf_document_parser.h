@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CPU_INSTRUCTIONS_X86_PDF_PDF_DOCUMENT_PARSER_H_
-#define CPU_INSTRUCTIONS_X86_PDF_PDF_DOCUMENT_PARSER_H_
+#ifndef CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_PARSER_H_
+#define CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_PARSER_H_
 
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "cpu_instructions/base/pdf/pdf_document.pb.h"
 
 namespace cpu_instructions {
 namespace x86 {
@@ -49,4 +49,4 @@ void Cluster(PdfPage* page,
 }  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_X86_PDF_PDF_DOCUMENT_PARSER_H_
+#endif  // CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_PARSER_H_

@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-#include "cpu_instructions/x86/pdf/pdf_document_utils.h"
+#include "cpu_instructions/base/pdf/pdf_document_utils.h"
 #include "cpu_instructions/x86/pdf/vendor_syntax.h"
 #include "glog/logging.h"
 #include "re2/re2.h"

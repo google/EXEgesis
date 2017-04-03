@@ -125,3 +125,41 @@ bind(
     name = "xpdf",
     actual = "@xpdf_archive//:xpdf",
 )
+
+# ===== libpfm4 =====
+
+new_git_repository(
+    name = "libpfm4_git",
+    build_file = "libpfm4.BUILD",
+    remote = "https://git.code.sf.net/p/perfmon2/libpfm4",
+    tag = "v4.8.0",
+)
+
+bind(
+    name = "libpfm4",
+    actual = "@libpfm4_git//:pfm4",
+)
+
+# ===== LLVM =====
+
+new_git_repository(
+    name = "llvm_git",
+    build_file = "llvm.BUILD",
+    remote = "http://llvm.org/git/llvm.git",
+    # LLVM has no tags.
+    commit = "69112bd6d297c71dfa60f0e3156db54acf0bafc",
+)
+
+load("//:llvm.bzl", "export_llvm_target")
+
+export_llvm_target("analysis")
+export_llvm_target("codegen")
+export_llvm_target("ir")
+export_llvm_target("machine_code")
+export_llvm_target("support")
+export_llvm_target("target_base")
+export_llvm_target("x86_target")
+export_llvm_target("x86_target_asm_parser")
+export_llvm_target("x86_target_disassembler")
+export_llvm_target("x86_target_info")
+

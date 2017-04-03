@@ -14,9 +14,9 @@
 
 #include "cpu_instructions/x86/pdf/intel_sdm_extractor.h"
 
+#include "cpu_instructions/base/pdf/pdf_document_parser.h"
 #include "cpu_instructions/testing/test_util.h"
 #include "cpu_instructions/util/proto_util.h"
-#include "cpu_instructions/x86/pdf/pdf_document_parser.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"

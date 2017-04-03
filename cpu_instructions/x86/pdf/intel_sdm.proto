@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-import "cpu_instructions/x86/pdf/pdf_document.proto";
+import "cpu_instructions/base/pdf/pdf_document.proto";
 import "cpu_instructions/proto/instructions.proto";
 
 package cpu_instructions.x86.pdf;

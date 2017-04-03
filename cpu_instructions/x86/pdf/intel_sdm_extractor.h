@@ -17,9 +17,9 @@
 
 #include "strings/string.h"
 
+#include "cpu_instructions/base/pdf/pdf_document.pb.h"
 #include "cpu_instructions/proto/instructions.pb.h"
 #include "cpu_instructions/x86/pdf/intel_sdm.pb.h"
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
 
 namespace cpu_instructions {
 namespace x86 {

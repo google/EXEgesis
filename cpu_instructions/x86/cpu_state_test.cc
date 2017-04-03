@@ -52,5 +52,26 @@ TEST(CpuStateTest, UniqueAlignedStorage) {
   CheckAlignement<1024>();
 }
 
+struct CountConstructors {
+  CountConstructors() : value(num_constructor_calls++) {}
+
+  int value;
+  static int num_constructor_calls;
+};
+
+int CountConstructors::num_constructor_calls = 0;
+
+// Checks that UniqueAlignedStorage<n, T> calls the constructor for all elements
+// of T when T is an array.
+TEST(CpuStateTest, UniqueAlignedStorageCallsConstructors) {
+  constexpr int kArraySize = 128;
+  ASSERT_EQ(CountConstructors::num_constructor_calls, 0);
+  UniqueAlignedStorage<16, CountConstructors[kArraySize]> storage;
+  EXPECT_EQ(CountConstructors::num_constructor_calls, kArraySize);
+  for (int i = 0; i < kArraySize; ++i) {
+    EXPECT_EQ(storage.get()[i].value, i);
+  }
+}
+
 }  // namespace
 }  // namespace cpu_instructions

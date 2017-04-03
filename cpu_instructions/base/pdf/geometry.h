@@ -13,13 +13,13 @@
 // limitations under the License.
 
 // Simple geometry header with PODs.
-#ifndef CPU_INSTRUCTIONS_X86_PDF_GEOMETRY_H_
-#define CPU_INSTRUCTIONS_X86_PDF_GEOMETRY_H_
+#ifndef CPU_INSTRUCTIONS_BASE_PDF_GEOMETRY_H_
+#define CPU_INSTRUCTIONS_BASE_PDF_GEOMETRY_H_
 
 #include <memory>
 #include <vector>
 
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "cpu_instructions/base/pdf/pdf_document.pb.h"
 
 namespace cpu_instructions {
 namespace x86 {
@@ -154,4 +154,4 @@ Orientation RotateClockwise90(Orientation orientation);
 }  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_X86_PDF_GEOMETRY_H_
+#endif  // CPU_INSTRUCTIONS_BASE_PDF_GEOMETRY_H_

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/x86/pdf/xpdf_util.h"
+#include "cpu_instructions/base/pdf/xpdf_util.h"
 
 #include "cpu_instructions/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -28,7 +28,7 @@ namespace {
 
 using ::cpu_instructions::testing::EqualsProto;
 
-const char kTestDataPath[] = "/__main__/cpu_instructions/x86/pdf/testdata/";
+const char kTestDataPath[] = "/__main__/cpu_instructions/base/pdf/testdata/";
 constexpr const int kHorizontalDPI = 72;
 constexpr const int kVerticalDPI = 72;
 

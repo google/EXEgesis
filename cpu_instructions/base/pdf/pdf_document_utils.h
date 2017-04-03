@@ -13,12 +13,12 @@
 // limitations under the License.
 
 // This file provides primitives to compose to extract parts of a PdfDocument.
-#ifndef CPU_INSTRUCTIONS_X86_PDF_PDF_DOCUMENT_UTILS_H_
-#define CPU_INSTRUCTIONS_X86_PDF_PDF_DOCUMENT_UTILS_H_
+#ifndef CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_UTILS_H_
+#define CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_UTILS_H_
 
 #include "strings/string.h"
 
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "cpu_instructions/base/pdf/pdf_document.pb.h"
 #include "strings/string_view.h"
 
 namespace cpu_instructions {
@@ -59,4 +59,4 @@ const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
 }  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_X86_PDF_PDF_DOCUMENT_UTILS_H_
+#endif  // CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_UTILS_H_

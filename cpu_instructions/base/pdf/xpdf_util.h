@@ -14,14 +14,14 @@
 
 // Utilities to manipulate PDF files with xpdf.
 
-#ifndef CPU_INSTRUCTIONS_X86_PDF_XPDF_UTIL_H_
-#define CPU_INSTRUCTIONS_X86_PDF_XPDF_UTIL_H_
+#ifndef CPU_INSTRUCTIONS_BASE_PDF_XPDF_UTIL_H_
+#define CPU_INSTRUCTIONS_BASE_PDF_XPDF_UTIL_H_
 
 #include <map>
 #include <memory>
 #include "strings/string.h"
 
-#include "cpu_instructions/x86/pdf/pdf_document.pb.h"
+#include "cpu_instructions/base/pdf/pdf_document.pb.h"
 
 // xpdf classes.
 class PDFDoc;
@@ -57,4 +57,4 @@ class XPDFDoc {
 }  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_X86_PDF_XPDF_UTIL_H_
+#endif  // CPU_INSTRUCTIONS_BASE_PDF_XPDF_UTIL_H_
