@@ -123,3 +123,33 @@ cc_test(
         "//util/task:status",
     ],
 )
+
+# A library of string functions.
+cc_library(
+    name = "strings",
+    srcs = ["strings.cc"],
+    hdrs = ["strings.h"],
+    deps = [
+        "//base",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//external:re2",
+        "//strings",
+        "//util/task:status",
+        "//util/task:statusor",
+    ],
+)
+
+cc_test(
+    name = "strings_test",
+    size = "small",
+    srcs = ["strings_test.cc"],
+    deps = [
+        ":strings",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//strings",
+        "//util/task:status",
+    ],
+)
