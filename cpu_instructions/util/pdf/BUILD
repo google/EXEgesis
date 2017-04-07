@@ -12,8 +12,8 @@ cc_library(
     srcs = ["geometry.cc"],
     hdrs = ["geometry.h"],
     deps = [
-        ":pdf_document_proto",
         "//base",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib_for_base",
@@ -30,20 +30,14 @@ cc_test(
     ],
 )
 
-cpu_instructions_proto_library(
-    name = "pdf_document_proto",
-    srcs = ["pdf_document.proto"],
-    cc_api_version = 2,
-)
-
 cc_library(
     name = "pdf_document_parser",
     srcs = ["pdf_document_parser.cc"],
     hdrs = ["pdf_document_parser.h"],
     deps = [
         ":geometry",
-        ":pdf_document_proto",
         "//base",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib_for_base",
@@ -69,8 +63,8 @@ cc_library(
     srcs = ["pdf_document_utils.cc"],
     hdrs = ["pdf_document_utils.h"],
     deps = [
-        ":pdf_document_proto",
         "//base",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib_for_base",
@@ -103,12 +97,13 @@ cc_library(
     deps = [
         ":geometry",
         ":pdf_document_parser",
-        ":pdf_document_proto",
         ":pdf_document_utils",
         "//base",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib_for_base",
+        "//external:re2",
         "//external:utf",
         "//external:xpdf",
         "//strings",

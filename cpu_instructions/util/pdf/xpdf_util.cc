@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/xpdf_util.h"
+#include "cpu_instructions/util/pdf/xpdf_util.h"
 
 #include <functional>
 #include <memory>
@@ -21,12 +21,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cpu_instructions/base/pdf/geometry.h"
-#include "cpu_instructions/base/pdf/pdf_document.pb.h"
-#include "cpu_instructions/base/pdf/pdf_document_parser.h"
-#include "cpu_instructions/base/pdf/pdf_document_utils.h"
+#include "cpu_instructions/proto/pdf/pdf_document.pb.h"
+#include "cpu_instructions/util/pdf/geometry.h"
+#include "cpu_instructions/util/pdf/pdf_document_parser.h"
+#include "cpu_instructions/util/pdf/pdf_document_utils.h"
 #include "glog/logging.h"
 #include "libutf/utf.h"
+#include "re2/re2.h"
 #include "strings/string_view_utils.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
@@ -38,7 +39,6 @@
 #include "xpdf-3.04/xpdf/UnicodeMap.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 
 namespace {
@@ -70,8 +70,11 @@ GlobalParams* GetXpdfGlobalParams() {
 }
 
 // Reads PDF metadata.
-XPDFDoc::Metadata ReadMetadata(PDFDoc* doc) {
-  XPDFDoc::Metadata metadata_map;
+void ReadMetadata(PDFDoc* doc, PdfDocument* document) {
+  CHECK(document != nullptr);
+  CHECK(doc != nullptr);
+  google::protobuf::Map<string, string>& metadata_map =
+      *document->mutable_metadata();
   UnicodeMap* const unicode_map = GetXpdfGlobalParams()->getTextEncoding();
 
   Object info;
@@ -79,7 +82,7 @@ XPDFDoc::Metadata ReadMetadata(PDFDoc* doc) {
   if (!info.isDict()) {
     LOG(WARNING) << "PDF has no metadata entries";
     info.free();
-    return metadata_map;
+    return;
   }
   for (const char* key : kMetadataEntries) {
     Object obj;
@@ -109,38 +112,32 @@ XPDFDoc::Metadata ReadMetadata(PDFDoc* doc) {
     obj.free();
   }
   info.free();
-  return metadata_map;
 }
 
-PdfDocumentId CreateDocumentId(const XPDFDoc::Metadata& map) {
-  PdfDocumentId document_id;
+void CreateDocumentId(PdfDocument* document) {
+  CHECK(document != nullptr);
+
+  const google::protobuf::Map<string, string>& map = document->metadata();
+  PdfDocumentId* const document_id = document->mutable_document_id();
   if (ContainsKey(map, kMetadataTitle))
-    document_id.set_title(FindOrDie(map, kMetadataTitle));
+    document_id->set_title(FindOrDie(map, kMetadataTitle));
   if (ContainsKey(map, kMetadataCreationDate))
-    document_id.set_creation_date(FindOrDie(map, kMetadataCreationDate));
+    document_id->set_creation_date(FindOrDie(map, kMetadataCreationDate));
   if (ContainsKey(map, kMetadataModificationDate))
-    document_id.set_modification_date(
+    document_id->set_modification_date(
         FindOrDie(map, kMetadataModificationDate));
-  return document_id;
 }
 
-}  // namespace
-
-std::unique_ptr<const XPDFDoc> XPDFDoc::OpenOrDie(const string& filename) {
+std::unique_ptr<PDFDoc> OpenOrDie(const string& filename) {
   GetXpdfGlobalParams();  // Maybe initialize xpdf globals.
   auto doc =
       gtl::MakeUnique<PDFDoc>(new GString(filename.c_str()), nullptr, nullptr);
   CHECK(doc->isOk()) << "Could not open PDF file: '" << filename << "'";
-  CHECK_GT(doc->getNumPages(), 0);
-  return std::unique_ptr<const XPDFDoc>(new XPDFDoc(std::move(doc)));
+  CHECK_GT(doc->getNumPages(), 0) << "PDF has no pages: '" << filename << "'";
+  return doc;
 }
 
-XPDFDoc::XPDFDoc(std::unique_ptr<PDFDoc> doc)
-    : doc_(std::move(doc)),
-      metadata_(ReadMetadata(doc_.get())),
-      doc_id_(CreateDocumentId(metadata_)) {}
-
-XPDFDoc::~XPDFDoc() {}
+}  // namespace
 
 namespace {
 
@@ -154,7 +151,7 @@ class ProtobufOutputDevice : public OutputDev {
   // pdf_document should outlive this instance.
   ProtobufOutputDevice(const PdfDocumentChanges& document_changes,
                        PdfDocument* pdf_document)
-      : document_changes_(document_changes), pdf_document_(pdf_document) {}
+      : document_changes_(&document_changes), pdf_document_(pdf_document) {}
 
   ProtobufOutputDevice(const ProtobufOutputDevice&) = delete;
 
@@ -172,7 +169,7 @@ class ProtobufOutputDevice : public OutputDev {
                 double originX, double originY, CharCode c, int nBytes,
                 Unicode* u, int uLen) override;
 
-  const PdfDocumentChanges document_changes_;
+  const PdfDocumentChanges* const document_changes_;
   PdfDocument* const pdf_document_ = nullptr;
   PdfPage current_page_;
 };
@@ -242,7 +239,7 @@ void ProtobufOutputDevice::startPage(int pageNum, GfxState* state) {
 
 void ProtobufOutputDevice::endPage() {
   const auto page_number = current_page_.number();
-  const auto& page_changes = GetPageChanges(document_changes_, page_number);
+  const auto& page_changes = GetPageChanges(*document_changes_, page_number);
   Cluster(&current_page_, page_changes.prevent_segment_bindings());
   if (!page_changes.patches().empty()) {
     LOG(INFO) << "Patching page " << page_number;
@@ -291,18 +288,43 @@ void ProtobufOutputDevice::drawChar(GfxState* state, double x, double y,
 
 }  // namespace
 
-PdfDocument XPDFDoc::Parse(const int first_page, const int last_page,
-                           const PdfDocumentChanges& patches) const {
-  PdfDocument pdf_document;
-  ProtobufOutputDevice output_device(patches, &pdf_document);
-  doc_->displayPages(&output_device, first_page,
-                     last_page <= 0 ? doc_->getNumPages() : last_page,
-                     kHorizontalDPI, kVerticalDPI, /* rotate= */ 0,
-                     /* useMediaBox= */ gTrue, /* crop= */ gTrue,
-                     /* printing= */ gTrue);
-  return pdf_document;
+PdfParseRequest ParseRequestOrDie(const string& spec) {
+  PdfParseRequest request;
+  CHECK(RE2::FullMatch(spec, R"(([^:]+)(:[0-9]+-[0-9]+)?)",
+                       request.mutable_filename()))
+      << "Invalid spec '" << spec << "'";
+  int first_page = 0;
+  int last_page = 0;
+  RE2::FullMatch(spec, R"([^:]+:([0-9]+)-([0-9]+))", &first_page, &last_page);
+  request.set_first_page(first_page);
+  request.set_last_page(last_page);
+  return request;
 }
 
+PdfDocument ParseOrDie(const PdfParseRequest& request,
+                       const PdfDocumentsChanges& all_patches) {
+  const std::unique_ptr<PDFDoc> pdf_doc = OpenOrDie(request.filename());
+  PdfDocument document;
+  ReadMetadata(pdf_doc.get(), &document);
+  CreateDocumentId(&document);
+  const auto* const patches =
+      GetConfigOrNull(all_patches, document.document_id());
+  CHECK(all_patches.documents().empty() || patches != nullptr)
+      << "Unable to find document_id '" << document.document_id().DebugString()
+      << "' in '" << request.filename() << "'";
+  const PdfDocumentChanges no_patch;
+  ProtobufOutputDevice output_device(patches ? *patches : no_patch, &document);
+  const int num_pages = pdf_doc->getNumPages();
+  const int first_page = request.first_page() == 0 ? 1 : request.first_page();
+  const int last_page =
+      request.last_page() == 0 ? num_pages : request.last_page();
+  pdf_doc->displayPages(&output_device,                //
+                        first_page, last_page,         //
+                        kHorizontalDPI, kVerticalDPI,  //
+                        /* rotate= */ 0,
+                        /* useMediaBox= */ gTrue, /* crop= */ gTrue,
+                        /* printing= */ gTrue);
+  return document;
+}
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions

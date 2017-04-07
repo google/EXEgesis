@@ -22,7 +22,7 @@
 #include <utility>
 #include <vector>
 
-#include "cpu_instructions/base/pdf/pdf_document_utils.h"
+#include "cpu_instructions/util/pdf/pdf_document_utils.h"
 #include "cpu_instructions/x86/pdf/vendor_syntax.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
@@ -41,6 +41,11 @@ namespace x86 {
 namespace pdf {
 
 namespace {
+
+using cpu_instructions::pdf::PdfDocument;
+using cpu_instructions::pdf::PdfPage;
+using cpu_instructions::pdf::PdfTextTableRow;
+using cpu_instructions::pdf::PdfTextBlock;
 
 using re2::StringPiece;
 
@@ -799,7 +804,8 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
   return encoding;
 }
 
-SdmDocument ConvertPdfDocumentToSdmDocument(const PdfDocument& pdf) {
+SdmDocument ConvertPdfDocumentToSdmDocument(
+    const cpu_instructions::pdf::PdfDocument& pdf) {
   // Find all instruction pages.
   SdmDocument sdm_document;
   std::map<string, Pages> instruction_group_id_to_pages;

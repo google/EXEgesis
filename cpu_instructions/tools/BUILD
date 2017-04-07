@@ -23,3 +23,20 @@ cc_binary(
         "//util/task:status",
     ],
 )
+
+cc_binary(
+    name = "pdf2proto",
+    srcs = ["pdf2proto.cc"],
+    deps = [
+        "//base",
+        "//cpu_instructions/base:transform_factory",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/util:proto_util",
+        "//cpu_instructions/util/pdf:xpdf_util",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/task:status",
+    ],
+)

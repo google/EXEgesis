@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package cpu_instructions.x86.pdf;
+package cpu_instructions.pdf;
 
 // A unique identifer for a PDF document.
 message PdfDocumentId {
@@ -27,6 +27,7 @@ message PdfDocumentId {
 message PdfDocument {
   PdfDocumentId document_id = 1;
   repeated PdfPage pages = 2;
+  map<string, string> metadata = 3;
 }
 
 // Coordinate system of a page: (0,0) is the point at the top-left of the page.
@@ -173,4 +174,11 @@ message PdfDocumentChanges {
 // A collection of per document changes.
 message PdfDocumentsChanges {
   repeated PdfDocumentChanges documents = 1;
+}
+
+// A message specifying how to parse a pdf file.
+message PdfParseRequest {
+  string filename = 1;
+  uint32 first_page = 2;  // 1-based, 0 means first page.
+  uint32 last_page = 3;   // 1-based, 0 means last page.
 }

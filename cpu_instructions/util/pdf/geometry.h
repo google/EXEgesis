@@ -13,16 +13,15 @@
 // limitations under the License.
 
 // Simple geometry header with PODs.
-#ifndef CPU_INSTRUCTIONS_BASE_PDF_GEOMETRY_H_
-#define CPU_INSTRUCTIONS_BASE_PDF_GEOMETRY_H_
+#ifndef CPU_INSTRUCTIONS_UTIL_PDF_GEOMETRY_H_
+#define CPU_INSTRUCTIONS_UTIL_PDF_GEOMETRY_H_
 
 #include <memory>
 #include <vector>
 
-#include "cpu_instructions/base/pdf/pdf_document.pb.h"
+#include "cpu_instructions/proto/pdf/pdf_document.pb.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 
 typedef std::vector<size_t> Indices;
@@ -151,7 +150,6 @@ Vec2F GetDirectionVector(Orientation orientation);
 Orientation RotateClockwise90(Orientation orientation);
 
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_BASE_PDF_GEOMETRY_H_
+#endif  // CPU_INSTRUCTIONS_UTIL_PDF_GEOMETRY_H_

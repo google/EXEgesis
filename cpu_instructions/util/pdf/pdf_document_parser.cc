@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/pdf_document_parser.h"
+#include "cpu_instructions/util/pdf/pdf_document_parser.h"
 
 #include <algorithm>
 #include <cfloat>
@@ -21,7 +21,7 @@
 #include <vector>
 #include "strings/string.h"
 
-#include "cpu_instructions/base/pdf/geometry.h"
+#include "cpu_instructions/util/pdf/geometry.h"
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
 #include "strings/string_view.h"
@@ -29,7 +29,6 @@
 #include "util/gtl/map_util.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 
 namespace {
@@ -508,5 +507,4 @@ void Cluster(PdfPage* page,
 }
 
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions

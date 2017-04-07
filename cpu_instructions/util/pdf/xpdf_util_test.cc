@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/xpdf_util.h"
+#include "cpu_instructions/util/pdf/xpdf_util.h"
 
 #include "cpu_instructions/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -22,28 +22,20 @@
 #include "util/gtl/ptr_util.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 namespace {
 
 using ::cpu_instructions::testing::EqualsProto;
 
-const char kTestDataPath[] = "/__main__/cpu_instructions/base/pdf/testdata/";
-constexpr const int kHorizontalDPI = 72;
-constexpr const int kVerticalDPI = 72;
-
-string GetPdfFilename(const string& name) {
-  return StrCat(getenv("TEST_SRCDIR"), kTestDataPath, name);
-}
+const char kTestDataPath[] = "/__main__/cpu_instructions/util/pdf/testdata/";
 
 TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
-  const auto doc = XPDFDoc::OpenOrDie(GetPdfFilename("simple.pdf"));
+  PdfParseRequest request;
+  request.set_filename(
+      StrCat(getenv("TEST_SRCDIR"), kTestDataPath, "simple.pdf"));
 
-  EXPECT_THAT(doc->GetDocumentId(), EqualsProto(""));
+  PdfDocument pdf_document = ParseOrDie(request, PdfDocumentsChanges());
 
-  PdfDocument pdf_document =
-      doc->Parse(1 /*first_page*/, -1 /*last_page*/, PdfDocumentChanges());
-  pdf_document.PrintDebugString();
   // We don't care about the hash; it can vary depending on the compiler.
   for (PdfPage& page : *pdf_document.mutable_pages()) {
     for (PdfCharacter& character : *page.mutable_characters()) {
@@ -55,6 +47,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
   }
 
   constexpr char kExpected[] = R"(
+    document_id {
+    }
     pages {
       number: 1
       width: 612
@@ -491,7 +485,22 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
   EXPECT_THAT(pdf_document, EqualsProto(kExpected));
 }
 
+TEST(ProtobufOutputDeviceTest, TestParseRequestOrDie) {
+  constexpr const char kExpected1[] = R"(
+        filename: "/path/to/file.pdf"
+        first_page: 0
+        last_page: 0
+      )";
+  EXPECT_THAT(ParseRequestOrDie("/path/to/file.pdf"), EqualsProto(kExpected1));
+  constexpr const char kExpected2[] = R"(
+        filename: "/path/to/file.pdf"
+        first_page: 12
+        last_page: 25
+      )";
+  EXPECT_THAT(ParseRequestOrDie("/path/to/file.pdf:12-25"),
+              EqualsProto(kExpected2));
+}
+
 }  // namespace
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions

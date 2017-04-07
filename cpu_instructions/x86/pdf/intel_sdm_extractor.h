@@ -17,15 +17,16 @@
 
 #include "strings/string.h"
 
-#include "cpu_instructions/base/pdf/pdf_document.pb.h"
 #include "cpu_instructions/proto/instructions.pb.h"
-#include "cpu_instructions/x86/pdf/intel_sdm.pb.h"
+#include "cpu_instructions/proto/pdf/pdf_document.pb.h"
+#include "cpu_instructions/proto/pdf/x86/intel_sdm.pb.h"
 
 namespace cpu_instructions {
 namespace x86 {
 namespace pdf {
 
-SdmDocument ConvertPdfDocumentToSdmDocument(const PdfDocument& document);
+SdmDocument ConvertPdfDocumentToSdmDocument(
+    const cpu_instructions::pdf::PdfDocument& document);
 
 InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document);
 

@@ -13,16 +13,15 @@
 // limitations under the License.
 
 // This file provides primitives to compose to extract parts of a PdfDocument.
-#ifndef CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_UTILS_H_
-#define CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_UTILS_H_
+#ifndef CPU_INSTRUCTIONS_UTIL_PDF_PDF_DOCUMENT_UTILS_H_
+#define CPU_INSTRUCTIONS_UTIL_PDF_PDF_DOCUMENT_UTILS_H_
 
 #include "strings/string.h"
 
-#include "cpu_instructions/base/pdf/pdf_document.pb.h"
+#include "cpu_instructions/proto/pdf/pdf_document.pb.h"
 #include "strings/string_view.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 
 // Returns the text for the corresponding cell in the page or empty string.
@@ -56,7 +55,6 @@ std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
 const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
                                           const PdfDocumentId& document_id);
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_BASE_PDF_PDF_DOCUMENT_UTILS_H_
+#endif  // CPU_INSTRUCTIONS_UTIL_PDF_PDF_DOCUMENT_UTILS_H_

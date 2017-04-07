@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/geometry.h"
+#include "cpu_instructions/util/pdf/geometry.h"
 
 #include "gtest/gtest.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 namespace {
 
@@ -243,5 +242,4 @@ TEST(GeometryTest, GetSpan) {
 }  // namespace
 
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions

@@ -34,28 +34,17 @@ cc_test(
     ],
 )
 
-cpu_instructions_proto_library(
-    name = "intel_sdm_proto",
-    srcs = ["intel_sdm.proto"],
-    cc_api_version = 2,
-    deps = [
-        "//cpu_instructions/base/pdf:pdf_document_proto",
-        "//cpu_instructions/proto:cpu_type_proto",
-        "//cpu_instructions/proto:instructions_proto",
-    ],
-)
-
 cc_library(
     name = "intel_sdm_extractor",
     srcs = ["intel_sdm_extractor.cc"],
     hdrs = ["intel_sdm_extractor.h"],
     deps = [
-        ":intel_sdm_proto",
         ":vendor_syntax",
         "//base",
-        "//cpu_instructions/base/pdf:pdf_document_proto",
-        "//cpu_instructions/base/pdf:pdf_document_utils",
         "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf/x86:intel_sdm_proto",
+        "//cpu_instructions/util/pdf:pdf_document_utils",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib",
@@ -77,9 +66,9 @@ cc_test(
     ],
     deps = [
         ":intel_sdm_extractor",
-        "//cpu_instructions/base/pdf:pdf_document_parser",
         "//cpu_instructions/testing:test_util",
         "//cpu_instructions/util:proto_util",
+        "//cpu_instructions/util/pdf:pdf_document_parser",
         "//external:googletest_main",
         "//external:protobuf_clib",
         "//strings",
@@ -95,10 +84,10 @@ cc_library(
     deps = [
         ":intel_sdm_extractor",
         "//base",
-        "//cpu_instructions/base/pdf:pdf_document_utils",
-        "//cpu_instructions/base/pdf:xpdf_util",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/util:proto_util",
+        "//cpu_instructions/util/pdf:pdf_document_utils",
+        "//cpu_instructions/util/pdf:xpdf_util",
         "//external:gflags",
         "//external:glog",
         "//external:protobuf_clib",

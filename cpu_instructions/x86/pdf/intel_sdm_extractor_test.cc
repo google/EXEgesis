@@ -14,8 +14,8 @@
 
 #include "cpu_instructions/x86/pdf/intel_sdm_extractor.h"
 
-#include "cpu_instructions/base/pdf/pdf_document_parser.h"
 #include "cpu_instructions/testing/test_util.h"
+#include "cpu_instructions/util/pdf/pdf_document_parser.h"
 #include "cpu_instructions/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -26,7 +26,8 @@ namespace x86 {
 namespace pdf {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using cpu_instructions::pdf::PdfDocument;
+using cpu_instructions::testing::EqualsProto;
 
 const char kTestDataPath[] = "/__main__/cpu_instructions/x86/pdf/testdata/";
 

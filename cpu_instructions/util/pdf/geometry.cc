@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/geometry.h"
+#include "cpu_instructions/util/pdf/geometry.h"
 
 #include <cfloat>
 
 #include "glog/logging.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 
 BoundingBox CreateBox(float left, float top, float right, float bottom) {
@@ -181,5 +180,4 @@ Orientation RotateClockwise90(Orientation orientation) {
   return NORTH;
 }
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions

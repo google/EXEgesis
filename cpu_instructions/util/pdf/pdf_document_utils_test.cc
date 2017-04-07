@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/pdf_document_utils.h"
+#include "cpu_instructions/util/pdf/pdf_document_utils.h"
 
 #include "cpu_instructions/util/proto_util.h"
 #include "glog/logging.h"
@@ -20,7 +20,6 @@
 #include "src/google/protobuf/text_format.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 namespace {
 
@@ -136,5 +135,4 @@ TEST(PdfDocumentExtractorTest, GetPageBodyRows) {
 
 }  // namespace
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions

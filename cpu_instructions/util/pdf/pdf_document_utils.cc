@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/pdf/pdf_document_utils.h"
+#include "cpu_instructions/util/pdf/pdf_document_utils.h"
 
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 
 namespace cpu_instructions {
-namespace x86 {
 namespace pdf {
 
 namespace {
@@ -98,5 +97,4 @@ const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
   return nullptr;
 }
 }  // namespace pdf
-}  // namespace x86
 }  // namespace cpu_instructions
