@@ -396,6 +396,63 @@ cc_library(
 )
 
 cc_library(
+    name = "execution_engine",
+    srcs = glob([
+        "lib/ExecutionEngine/*.cpp",
+        "lib/ExecutionEngine/*.h",
+        "lib/ExecutionEngine/RuntimeDyld/*.cpp",
+        "lib/ExecutionEngine/RuntimeDyld/*.h",
+        "lib/ExecutionEngine/RuntimeDyld/Targets/*.cpp",
+        "lib/ExecutionEngine/RuntimeDyld/Targets/*.h",
+    ]) + [
+        "include/llvm-c/ExecutionEngine.h",
+        "include/llvm/DebugInfo/DIContext.h",
+    ],
+    hdrs = [
+        "include/llvm/ExecutionEngine/ExecutionEngine.h",
+        "include/llvm/ExecutionEngine/GenericValue.h",
+        "include/llvm/ExecutionEngine/JITEventListener.h",
+        "include/llvm/ExecutionEngine/JITSymbol.h",
+        "include/llvm/ExecutionEngine/ObjectCache.h",
+        "include/llvm/ExecutionEngine/ObjectMemoryBuffer.h",
+        "include/llvm/ExecutionEngine/RTDyldMemoryManager.h",
+        "include/llvm/ExecutionEngine/RuntimeDyld.h",
+        "include/llvm/ExecutionEngine/RuntimeDyldChecker.h",
+        "include/llvm/ExecutionEngine/SectionMemoryManager.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":codegen",
+        ":config",
+        ":ir",
+        ":machine_code_disassembler",
+        ":object",
+        ":support",
+        ":target_base",
+    ],
+)
+
+cc_library(
+    name = "mcjit",
+    srcs = glob([
+        "lib/ExecutionEngine/MCJIT/*.cpp",
+        "lib/ExecutionEngine/MCJIT/*.h",
+    ]),
+    hdrs = glob(["include/llvm/ExecutionEngine/MCJIT*.h"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        ":codegen",
+        ":config",
+        ":execution_engine",
+        ":ir",
+        ":machine_code",
+        ":object",
+        ":support",
+        ":target_base",
+    ],
+)
+
+cc_library(
     name = "llvm-tblgen-lib",
     srcs = glob([
         "utils/TableGen/*.cpp",
@@ -790,6 +847,7 @@ cc_library(
         ":target_base",
         ":transform_base",
         ":transform_utils",
+        ":instrumentation_transforms",
     ],
 )
 
