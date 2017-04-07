@@ -56,6 +56,131 @@ cc_test(
     ],
 )
 
+# A library to represent known CPU types.
+cc_library(
+    name = "cpu_type",
+    srcs = ["cpu_type.cc"],
+    hdrs = ["cpu_type.h"],
+    deps = [
+        ":port_mask",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/util:proto_util",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/gtl:ptr_util",
+    ],
+)
+
+cc_test(
+    name = "cpu_type_test",
+    srcs = ["cpu_type_test.cc"],
+    deps = [
+        ":cpu_type",
+        "//external:googletest",
+        "//external:googletest_main",
+    ],
+)
+
+# A library for getting host CPU info.
+cc_library(
+    name = "host_cpu",
+    srcs = ["host_cpu.cc"],
+    hdrs = ["host_cpu.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+        "//util/gtl:map_util",
+    ],
+)
+
+cc_test(
+    name = "host_cpu_test",
+    srcs = ["host_cpu_test.cc"],
+    deps = [
+        ":host_cpu",
+        "//base",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+# An efficient representation of the execution unit port mask.
+cc_library(
+    name = "port_mask",
+    srcs = ["port_mask.cc"],
+    hdrs = ["port_mask.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+cc_test(
+    name = "port_mask_test",
+    size = "small",
+    srcs = ["port_mask_test.cc"],
+    deps = [
+        ":port_mask",
+        "//base",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+# Utilities to prettyprint protos.
+cc_library(
+    name = "prettyprint",
+    srcs = ["prettyprint.cc"],
+    hdrs = ["prettyprint.h"],
+    deps = [
+        ":cpu_type",
+        ":port_mask",
+        "//base",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:instructions_proto",
+        "//external:gflags",
+        "//external:glog",
+        "//external:protobuf_clib_for_base",
+        "//strings",
+    ],
+)
+
+cc_test(
+    name = "prettyprint_test",
+    size = "small",
+    srcs = ["prettyprint_test.cc"],
+    deps = [
+        ":prettyprint",
+        "//base",
+        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/util:proto_util",
+        "//external:gflags",
+        "//external:glog",
+        "//external:googletest",
+        "//external:googletest_main",
+        "//external:protobuf_clib_for_base",
+    ],
+)
+
 # Factory functions for obtaining the list of instruction set transforms.
 cc_library(
     name = "transform_factory",

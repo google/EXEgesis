@@ -159,6 +159,19 @@ message InstructionOperand {
   optional Usage usage = 6;
 }
 
+// Contains a list of measurements of the CPU events like the number of uoos
+// issued, where they have been dispatched, and how many cycles were spent.
+// The values are normalized to one instruction.
+message ObservationVector {
+  message Observation {
+    // The name of the event. Added by PerfSubsystem::PopulateEventLists().
+    optional string event_name = 1;
+
+    // The measured value corresponding to the event.
+    optional double measurement = 2;
+  }
+  repeated Observation observations = 1;
+}
 
 message InstructionFormat {
   // This is the key field for an instruction as there can be several
@@ -285,5 +298,122 @@ message InstructionSetProto {
   repeated InstructionSetSourceInfo source_infos = 3;
 
   repeated InstructionProto instructions = 4;
+}
+
+
+// The MicroOperation message describes a single micro-operation of the
+// instruction. It describes the micro-operation in terms of the set of
+// execution ports on which the micro-operation can be executed,
+// the latency and the dependencies from the other micro-operations of
+// the instruction. When executing a given micro-operation, the CPU picks
+// one of the execution ports and sends the micro-operation there.
+message MicroOperationProto {
+  optional PortMaskProto port_mask = 1;
+  optional int32 latency = 2 [default = 1];
+  repeated int32 dependencies = 3;
+  optional bool double_pumped = 4 [default = false];
+  optional string likely_execution_unit = 5;
+}
+
+// The itinerary for an instruction.
+message ItineraryProto {
+  // This is useful to be able to read stored files more easily. For debug only.
+  optional string llvm_mnemonic = 1;
+
+  // The latency is the number of cycles, after which the output of the
+  // instruction is ready, and any other instruction that uses this
+  // output can be sent for execution.
+
+  // The minimum latency for the instruction (for example for simple cases).
+  optional int32 min_latency = 6;
+
+  // The maximum latency for the instruction. For most of the basic instructions
+  // the minimum latency is equal to the maximum latency.
+  optional int32 max_latency = 7;
+
+  // For complex instructions like ENTER or REP CMPS, the latency can be
+  // proportional to the number of bytes treated by the instruction.
+  optional double proportional_latency_per_byte = 8;
+
+  // True if the latency is approximate. This is the case for complex
+  // micro-coded instructions.
+  optional bool latency_is_approximate = 9 [default = false];
+
+  // The minimum throughput for the instruction (for example for simple cases).
+  optional int32 min_throughput = 10;
+
+  // The maximum throughput for the instruction. For most of the basic
+  // instructions the minimum throughput is equal to the maximum throughput.
+  optional int32 max_throughput = 11;
+
+  // For complex instructions like ENTER or REP CMPS, the throughput can be
+  // proportional to the number of bytes treated by the instruction.
+  optional double proportional_throughput_per_byte = 12;
+
+  // The number of micro-ops in the unfused domain, i.e. before macro-fusion
+  // occurs.
+  optional int32 num_uops_unfused_domain = 13;
+
+  // The number of micro-ops in the unfused domain, i.e. before macro-fusion
+  // occurs. For most instructions,
+  // num_uops_unfused_domain >= num_uops_fused_domain.
+  optional int32 num_uops_fused_domain = 14;
+
+  // The following Boolean is true when the instruction is issued in
+  // a standard way to the different execution units, by opposition to
+  // micro-coded instructions.
+  optional bool standard_execution = 15 [default = true];
+
+  // An itinerary is an array of MicroOperations describing the
+  // different steps that must be performed to execute the instruction.
+  repeated MicroOperationProto micro_ops = 16;
+
+  // Observation vector for throughput measurements.
+  optional ObservationVector throughput_observation = 27;
+
+  // Observation vector for latency measurements.
+  optional ObservationVector latency_observation = 28;
+}
+
+// A set of instruction itineraries. This is always specific to a given
+// microarchitecture.
+message InstructionSetItinerariesProto {
+  optional string microarchitecture_id = 1;
+  repeated ItineraryProto itineraries = 2;
+}
+
+// Represents a set of per-model itineraries for an instruction set. The
+// microarchitecture-specific information is kept separate from the ISA which is
+// common to all microarchitectures.
+message ArchitectureProto {
+  // e.g. "x86_64".
+  optional string name = 5;
+
+  // The unannotated instruction set after applying transforms.
+  optional InstructionSetProto instruction_set = 1;
+
+  // Itineraries, per micro-architecture.
+  repeated InstructionSetItinerariesProto per_microarchitecture_itineraries = 3;
+
+  // The raw instruction set, for reference. This might not have the same number
+  // of instructions as unannotated_instruction_set.
+  optional InstructionSetProto raw_instruction_set = 2;
+}
+
+// Allows defining translation of instruction mnemonics from one or more source
+// mnemonics to a target mnemonic.
+//
+// This is used to compensate for LLVM opcodes that do not correspond to a real
+// x86 instruction and that are fixed by instruction lowering long after the
+// instruciton scheduling pass. An example of such translation is the
+// translation of MOV32ri64 (a LLVM-specific instruction) to MOV32ri (a valid
+// x86 and x86-64 instruction).
+message InstructionMnemonicTranslationProto {
+  repeated string source_mnemonics = 1;
+  optional string target_mnemonic = 2;
+}
+
+message InstructionMnemonicTranslationListProto {
+  repeated InstructionMnemonicTranslationProto translations = 1;
 }
 

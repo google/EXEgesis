@@ -30,6 +30,18 @@ inline std::string Join(const std::vector<std::string>& components,
   return ::google::protobuf::JoinStrings(components, delim);
 }
 
+template <typename Range, typename Formatter>
+std::string Join(const Range& components, const char* delim,
+                 const Formatter& formatter) {
+  std::vector<std::string> str_components;
+  for (const auto& component : components) {
+    std::string str;
+    formatter(&str, component);
+    str_components.push_back(std::move(str));
+  }
+  return ::google::protobuf::JoinStrings(str_components, delim);
+}
+
 }  // namespace strings
 }  // namespace cpu_instructions
 

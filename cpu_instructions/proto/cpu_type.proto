@@ -20,6 +20,20 @@ package cpu_instructions;
 message MicroArchitectureProto {
   string id = 1;
 
+  // The ports of this cpu.
+  repeated PortProto ports = 9;
+
+  // The port masks of this cpu.
+  repeated PortMaskProto port_masks = 6;
+
+  // The 1-based indices of the port masks corresponding to some semantics.
+  // TODO(bdb): remove these when the decomposition code uses the Boolean
+  // fields of PortMaskProto.
+  int32 load_store_address_generation_port_mask_index = 10;
+  int32 store_address_generation_port_mask_index = 11;
+  int32 store_data_port_mask_index = 12;
+
+  PerfEventsProto perf_events = 14;
 
   // Describes the protected mode for the CPU.
   message ProtectedMode {
@@ -121,3 +135,36 @@ message CacheProto {
   bool is_shared_between_cores = 8;
 }
 
+// Represents a port.
+message PortProto {
+  // A optional list of freeform comments to document semantics.
+  repeated string comments = 1;
+}
+
+// Represents a port mask.
+message PortMaskProto {
+  // An optional freeform comment to document semantics.
+  string comment = 1;
+
+  // The set of ports for the mask.
+  repeated int32 port_numbers = 2;
+}
+
+// Defines the set of measurable perf events.
+// To avoid multiplexing, there should not be more than 4 events per group.
+message PerfEventsProto {
+  // The names of the events corresponding to actually executing instructions,
+  // excluding memory-related events.
+  repeated string computation_events = 1;
+
+  // The names of the events related to memory reads and writes.
+  repeated string memory_events = 2;
+
+  // The names of the events related to cycles.
+  repeated string cycle_events = 3;
+
+  // The names of the events related to uops (how many were
+  // issued/executed/retired). Note that these events are per core, so the
+  // numbers are higher than the actual numbers for the current thread.
+  repeated string uops_events = 4;
+}
