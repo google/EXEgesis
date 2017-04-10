@@ -2301,3 +2301,287 @@ documents {
 
   }
 }
+
+################################################################################
+# March 2017
+################################################################################
+
+documents {
+  document_id {
+    title: "Intel\302\256 64 and IA-32 Architectures Software Developers Manual, Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D and 4"
+    creation_date: "D:20170330225004Z"
+    modification_date: "D:20170330230942-07\'00\'"
+  }
+  pages {
+    page_number: 605
+    patches {
+      row: 13
+      expected: "FV-RVM"
+      replacement: "FV"
+    }
+  }
+  pages {
+    page_number: 608
+    patches {
+      row: 13
+      expected: "FV-RVM"
+      replacement: "FV"
+    }
+  }
+  pages {
+    page_number: 611
+    patches {
+      row: 10
+      expected: "T1S-RVM"
+      replacement: "T1S"
+    }
+  }
+  pages {
+    page_number: 879
+    patches {
+      row: 3
+      col: 2
+      expected: "VV"
+      replacement: "V/V"
+    }
+  }
+  pages {
+    page_number: 1189
+    patches {
+      row: 21
+      expected: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
+      replacement: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, xmm2/m128"
+    }
+  }
+  pages {
+    page_number: 1239
+    patches {
+      row: 3
+      col: 1
+      expected: "A"
+      replacement: "RM"
+    }
+  }
+  pages {
+    page_number: 1248
+    patches {
+      row: 20
+      expected: "RVM-MR"
+      replacement: "FVM-MR"
+    }
+  }
+  pages {
+    page_number: 1252
+    patches {
+      row: 20
+      expected: "RVM-MR"
+      replacement: "FVM-MR"
+    }
+  }
+  pages {
+    page_number: 1303
+    patches {
+      row: 5
+      expected: "VPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
+      replacement: "EVEX.512.66.0F38.W0 1E /r\nVPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
+    }
+  }
+  pages {
+    page_number: 1316
+    patches {
+      row: 7
+      expected: "EVEX.NDS.256.66.0F38.W0 2B /r"
+      replacement: "EVEX.NDS.256.66.0F38.W0 2B /r\nVPACKUSDW ymm1{k1}{z}, ymm2, ymm3/m256/m32bcst"
+    }
+  }
+  pages {
+    page_number: 1396
+    patches {
+      row: 9
+      col: 1
+      expected: "T1S-MRI"
+      replacement: "MRI"
+    }
+    patches {
+      row: 10
+      col: 1
+      expected: "T1S-MRI"
+      replacement: "MRI"
+    }
+    patches {
+      row: 11
+      col: 1
+      expected: "T1S-MRI"
+      replacement: "MRI"
+    }
+  }
+  pages {
+    page_number: 1399
+    patches {
+      row: 9
+      col: 1
+      expected: "T1S-\nMRI"
+      replacement: "MRI"
+    }
+  }
+  pages {
+    page_number: 1526
+    patches {
+      row: 6
+      expected: "M"
+      replacement: "A"
+    }
+  }
+  pages {
+    page_number: 1580
+    patches {
+      row: 14
+      col: 1
+      expected: "FV"
+      replacement: "FVI"
+    }
+    patches {
+      row: 15
+      col: 1
+      expected: "FV"
+      replacement: "FVI"
+    }
+  }
+  pages {
+    page_number: 1581
+    patches {
+      row: 1
+      col: 1
+      expected: "FV"
+      replacement: "FVI"
+    }
+    patches {
+      row: 2
+      col: 1
+      expected: "FV"
+      replacement: "FVI"
+    }
+  }
+  pages {
+    page_number: 1729
+    patches {
+      row: 3
+      col: 1
+      expected: "RM0"
+      replacement: "RMI"
+    }
+  }
+  pages {
+    page_number: 1803
+    patches {
+      row: 8
+      expected: "A"
+      replacement: "RM"
+    }
+  }
+  pages {
+    page_number: 2082
+    patches {
+      row: 9
+      expected: "A"
+      replacement: "RMV"
+    }
+  }
+  pages {
+    page_number: 2106
+    patches {
+      row: 9
+      expected: "A"
+      replacement: "RMV"
+    }
+  }
+  pages {
+    page_number: 2125
+    patches {
+      row: 8
+      expected: "FVI"
+      replacement: "FV"
+    }
+  }
+  pages {
+    page_number: 2129
+    patches {
+      row: 8
+      expected: "FVI"
+      replacement: "FV"
+    }
+  }
+  pages {
+    page_number: 2174
+    patches {
+      row: 8
+      expected: "VPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
+      replacement: "EVEX.NDS.512.66.0F3A.W1 3E /r ib\nVPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
+    }
+  }
+  pages {
+    page_number: 2202
+    patches {
+      row: 12
+      expected: "EVEX.512.66.0F3A.W0 04 /r \nibVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
+      replacement: "EVEX.512.66.0F3A.W0 04 /r ib\nVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
+    }
+  }
+  pages {
+    page_number: 2207
+    patches {
+      row: 4
+      col: 1
+      expected: "FV-RM"
+      replacement: "FV-RMI"
+    }
+  }
+  pages {
+    page_number: 2213
+    patches {
+      row: 4
+      col: 1
+      expected: "FV-RM"
+      replacement: "FV-RMI"
+    }
+  }
+  pages {
+    page_number: 2240
+    patches {
+      row: 3
+      col: 1
+      expected: "A"
+      replacement: "HVM"
+    }
+    patches {
+      row: 4
+      col: 1
+      expected: "A"
+      replacement: "HVM"
+    }
+    patches {
+      row: 5
+      col: 1
+      expected: "A"
+      replacement: "HVM"
+    }
+    patches {
+      row: 6
+      col: 1
+      expected: "A"
+      replacement: "HVM"
+    }
+    patches {
+      row: 7
+      col: 1
+      expected: "A"
+      replacement: "HVM"
+    }
+    patches {
+      row: 8
+      col: 1
+      expected: "A"
+      replacement: "HVM"
+    }
+  }
+}
