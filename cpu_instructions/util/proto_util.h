@@ -33,6 +33,18 @@ Proto ReadTextProtoOrDie(const string& filename) {
   return proto;
 }
 
+// Reads a proto in binary format from a file.
+void ReadBinaryProtoOrDie(const string& filename,
+                          google::protobuf::Message* message);
+
+// Typed version of the above.
+template <typename Proto>
+Proto ReadBinaryProtoOrDie(const string& filename) {
+  Proto proto;
+  ReadBinaryProtoOrDie(filename, &proto);
+  return proto;
+}
+
 // Reads a proto in text format from a string.
 void ParseProtoFromStringOrDie(const string& text,
                                google::protobuf::Message* message);

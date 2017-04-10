@@ -11,9 +11,9 @@ cc_library(
     hdrs = ["bits.h"],
     deps = [
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -23,12 +23,12 @@ cc_test(
     deps = [
         ":bits",
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -40,10 +40,10 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -56,12 +56,12 @@ cc_test(
         "//base",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/testing:test_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -72,11 +72,11 @@ cc_library(
     hdrs = ["proto_util.h"],
     deps = [
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -88,13 +88,13 @@ cc_test(
         "//base",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/testing:test_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -105,10 +105,10 @@ cc_library(
     hdrs = ["status_util.h"],
     deps = [
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -118,9 +118,9 @@ cc_test(
     srcs = ["status_util_test.cc"],
     deps = [
         ":status_util",
-        "//external:googletest",
-        "//external:googletest_main",
         "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -131,13 +131,13 @@ cc_library(
     hdrs = ["strings.h"],
     deps = [
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
         "//strings",
         "//util/task:status",
         "//util/task:statusor",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -147,9 +147,9 @@ cc_test(
     srcs = ["strings_test.cc"],
     deps = [
         ":strings",
-        "//external:googletest",
-        "//external:googletest_main",
         "//strings",
         "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )

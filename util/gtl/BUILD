@@ -14,7 +14,7 @@ cc_library(
     name = "map_util",
     hdrs = ["map_util.h"],
     deps = [
-        "//external:protobuf_clib_for_map_util",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 

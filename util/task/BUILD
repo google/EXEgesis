@@ -14,8 +14,8 @@ cc_library(
         "status_macros.h",
     ],
     deps = [
-        "//external:protobuf_clib_for_status",
         "//strings",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -23,6 +23,6 @@ cc_library(
     name = "statusor",
     hdrs = ["statusor.h"],
     deps = [
-        "//external:protobuf_clib_for_status",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

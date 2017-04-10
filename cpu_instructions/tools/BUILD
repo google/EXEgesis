@@ -16,11 +16,11 @@ cc_binary(
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/x86/pdf:parse_sdm",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -29,14 +29,29 @@ cc_binary(
     srcs = ["pdf2proto.cc"],
     deps = [
         "//base",
-        "//cpu_instructions/base:transform_factory",
         "//cpu_instructions/proto/pdf:pdf_document_proto",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:xpdf_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
-        "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
+    ],
+)
+
+cc_binary(
+    name = "proto_patch_helper",
+    srcs = ["proto_patch_helper.cc"],
+    deps = [
+        "//base",
+        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/util:proto_util",
+        "//cpu_instructions/util/pdf:xpdf_util",
+        "//strings",
+        "//util/gtl:map_util",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

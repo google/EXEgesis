@@ -13,10 +13,10 @@ cc_library(
     hdrs = ["connected_components.h"],
     deps = [
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

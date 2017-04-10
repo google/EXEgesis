@@ -1,13 +1,5 @@
 """Custom build rules for llvm."""
 
-def export_llvm_target(name):
-  """Alias to avoid redundancy when exporting llvm targets.
-
-  Args:
-      name: name of the llvm subtarget
-  """
-  native.bind(name = "llvm_" + name, actual = "@llvm_git//:" + name)
-
 
 def gentbl(name, tblgen, td_file, td_srcs, tbl_outs, library = True, **kwdargs):
   """Generates tabular code from a table definition file.

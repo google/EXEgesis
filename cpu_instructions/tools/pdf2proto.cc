@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// This program converts a pdf document in binary proto format:
+// Usage:
+// bazel run -c opt \
+// cpu_instructions/tools:pdf2proto -- \
+// --cpu_instructions_pdf_input_file=/path/to/file.pdf \
+// --cpu_instructions_pdf_output_file=/path/to/file.pdf.pb
+
 #include "strings/string.h"
 
 #include "gflags/gflags.h"
@@ -20,7 +27,6 @@
 #include "cpu_instructions/util/pdf/xpdf_util.h"
 #include "cpu_instructions/util/proto_util.h"
 #include "glog/logging.h"
-#include "util/task/status.h"
 
 DEFINE_string(cpu_instructions_pdf_input_file, "",
               "filename or filename:start-end e.g. "

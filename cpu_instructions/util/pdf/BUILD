@@ -14,9 +14,9 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto/pdf:pdf_document_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -25,8 +25,8 @@ cc_test(
     srcs = ["geometry_test.cc"],
     deps = [
         ":geometry",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -38,12 +38,12 @@ cc_library(
         ":geometry",
         "//base",
         "//cpu_instructions/proto/pdf:pdf_document_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/graph:connected_components",
         "//util/gtl:map_util",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -53,8 +53,8 @@ cc_test(
     deps = [
         ":pdf_document_parser",
         "//cpu_instructions/util:proto_util",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -65,11 +65,11 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto/pdf:pdf_document_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -80,13 +80,13 @@ cc_test(
         ":pdf_document_utils",
         "//base",
         "//cpu_instructions/util:proto_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -100,15 +100,15 @@ cc_library(
         ":pdf_document_utils",
         "//base",
         "//cpu_instructions/proto/pdf:pdf_document_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
-        "//external:utf",
-        "//external:xpdf",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
+        "@utf_archive//:utf",
+        "@xpdf_archive//:xpdf",
     ],
 )
 
@@ -122,12 +122,12 @@ cc_test(
         ":xpdf_util",
         "//base",
         "//cpu_instructions/testing:test_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:ptr_util",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

@@ -120,8 +120,8 @@ Status FixEncodingSpecificationOfPopFsAndGs(
   // in pop_instructions.
   std::vector<InstructionProto> new_pop_instructions;
   for (InstructionProto* const instruction : pop_instructions) {
-    // The only way to find out which version it is is from the description of
-    // the instruction.
+    // The only way to find out which version it is from the description of the
+    // instruction.
     const string& description = instruction->description();
     if (description.find(k16Bits) != string::npos) {
       AddOperandSizeOverrideToInstructionProto(instruction);

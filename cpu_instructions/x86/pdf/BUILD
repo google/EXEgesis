@@ -14,12 +14,12 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -29,8 +29,8 @@ cc_test(
     deps = [
         ":vendor_syntax",
         "//cpu_instructions/testing:test_util",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -45,14 +45,14 @@ cc_library(
         "//cpu_instructions/proto/pdf:pdf_document_proto",
         "//cpu_instructions/proto/pdf/x86:intel_sdm_proto",
         "//cpu_instructions/util/pdf:pdf_document_utils",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -69,9 +69,9 @@ cc_test(
         "//cpu_instructions/testing:test_util",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:pdf_document_parser",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
         "//strings",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -88,13 +88,13 @@ cc_library(
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:pdf_document_utils",
         "//cpu_instructions/util/pdf:xpdf_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

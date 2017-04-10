@@ -13,12 +13,12 @@ cc_library(
     hdrs = ["test_util.h"],
     deps = [
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -35,7 +35,7 @@ cc_test(
     deps = [
         ":test_proto",
         ":test_util",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )

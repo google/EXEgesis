@@ -12,6 +12,6 @@ cc_library(
         "stringprintf.h",
     ],
     deps = [
-        "//external:protobuf_clib_for_base",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

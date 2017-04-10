@@ -15,10 +15,10 @@ cc_library(
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/proto/x86:encoding_specification_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -30,9 +30,9 @@ cc_test(
         ":cleanup_instruction_set_utils",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/testing:test_util",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -67,12 +67,12 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -84,8 +84,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_alternatives",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -97,12 +97,12 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -114,8 +114,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_asm_syntax",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -131,14 +131,14 @@ cc_library(
         "//cpu_instructions/proto/x86:encoding_specification_proto",
         "//cpu_instructions/util:status_util",
         "//cpu_instructions/x86:encoding_specification",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -150,10 +150,10 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_encoding",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
         "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -166,12 +166,12 @@ cc_library(
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/proto/x86:encoding_specification_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -184,11 +184,11 @@ cc_test(
         ":cleanup_instruction_set_evex",
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -201,13 +201,13 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -219,10 +219,10 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_fix_operands",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
         "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -237,13 +237,13 @@ cc_library(
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/proto/x86:encoding_specification_proto",
         "//cpu_instructions/util:status_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -255,10 +255,10 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_operand_info",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
         "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -273,12 +273,12 @@ cc_library(
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/util:instruction_syntax",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -290,8 +290,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_operand_size_override",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -303,11 +303,11 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -319,8 +319,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_properties",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -332,14 +332,14 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:container_algorithm",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -351,8 +351,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_removals",
         "//cpu_instructions/base:cleanup_instruction_set_test_utils",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -364,10 +364,10 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/util:bits",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -377,12 +377,12 @@ cc_test(
     deps = [
         ":cpu_state",
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -398,14 +398,14 @@ cc_library(
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/proto/x86:encoding_specification_proto",
         "//cpu_instructions/proto/x86:instruction_encoding_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
-        "//external:re2",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -418,13 +418,13 @@ cc_test(
         "//base",
         "//cpu_instructions/base:cleanup_instruction_set",
         "//cpu_instructions/testing:test_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/task:status",
         "//util/task:statusor",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

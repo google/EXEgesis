@@ -20,6 +20,6 @@ cc_library(
         "util.h",
     ],
     deps = [
-        "//external:protobuf_clib_for_strings",
+        "@protobuf_git//:protobuf_lite",
     ],
 )

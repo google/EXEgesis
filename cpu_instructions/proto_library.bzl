@@ -25,9 +25,9 @@ def cpu_instructions_proto_library(name, srcs, cc_api_version=None,
       # srcs, so we need to add proto files for deps for includes to work.
       srcs = srcs + deps_proto_files,
       outs = out_hdrs + out_srcs,
-      cmd = ("$(location //external:protoc) --cpp_out=$(GENDIR) " +
+      cmd = ("$(location @protobuf_git//:protoc) --cpp_out=$(GENDIR) " +
              " ".join(["$(location %s)" % src for src in srcs])),
-      tools = ["//external:protoc"],
+      tools = ["@protobuf_git//:protoc"],
       visibility = ["//visibility:private"],
   )
   # Make a library with the cc files.
@@ -36,7 +36,7 @@ def cpu_instructions_proto_library(name, srcs, cc_api_version=None,
       srcs = out_srcs,
       hdrs = out_hdrs,
       deps = deps + [
-          "//external:protobuf_clib",
+          "@protobuf_git//:protobuf",
       ],
       visibility = visibility,
   )

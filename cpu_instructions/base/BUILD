@@ -13,13 +13,13 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -33,8 +33,8 @@ cc_library(
         ":cleanup_instruction_set",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/testing:test_util",
-        "//external:googletest",
-        "//external:protobuf_clib",
+        "@googletest_git//:gtest",
+        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -46,13 +46,13 @@ cc_test(
         ":cleanup_instruction_set",
         ":cleanup_instruction_set_test_utils",
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib",
-        "//external:protobuf_clib_for_base",
         "//util/task:status",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -76,8 +76,8 @@ cc_test(
     srcs = ["cpu_type_test.cc"],
     deps = [
         ":cpu_type",
-        "//external:googletest",
-        "//external:googletest_main",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -89,11 +89,11 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto:cpu_type_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -104,12 +104,12 @@ cc_test(
         ":host_cpu",
         "//base",
         "//cpu_instructions/proto:cpu_type_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -121,10 +121,10 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto:cpu_type_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -136,12 +136,12 @@ cc_test(
         ":port_mask",
         "//base",
         "//cpu_instructions/proto:cpu_type_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -156,10 +156,10 @@ cc_library(
         "//base",
         "//cpu_instructions/proto:cpu_type_proto",
         "//cpu_instructions/proto:instructions_proto",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -173,11 +173,11 @@ cc_test(
         "//cpu_instructions/proto:cpu_type_proto",
         "//cpu_instructions/proto:instructions_proto",
         "//cpu_instructions/util:proto_util",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -189,11 +189,11 @@ cc_library(
     deps = [
         ":cleanup_instruction_set",
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:protobuf_clib_for_base",
         "//strings",
         "//util/gtl:map_util",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -204,10 +204,10 @@ cc_test(
         ":cleanup_instruction_set",
         ":transform_factory",
         "//base",
-        "//external:gflags",
-        "//external:glog",
-        "//external:googletest",
-        "//external:googletest_main",
-        "//external:protobuf_clib_for_base",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+        "@protobuf_git//:protobuf_lite",
     ],
 )
