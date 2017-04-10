@@ -26,6 +26,10 @@ Status InternalError(StringPiece error_message) {
   return Status(error::INTERNAL, error_message);
 }
 
+Status UnknownError(StringPiece error_message) {
+  return Status(error::UNKNOWN, error_message);
+}
+
 Status InvalidArgumentError(StringPiece error_message) {
   return Status(error::INVALID_ARGUMENT, error_message);
 }

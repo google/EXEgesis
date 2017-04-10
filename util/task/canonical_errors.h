@@ -24,6 +24,7 @@ namespace util {
 Status FailedPreconditionError(StringPiece error);
 
 Status InternalError(StringPiece error);
+Status UnknownError(StringPiece error);
 
 Status InvalidArgumentError(StringPiece error);
 bool IsInvalidArgument(const Status& status);

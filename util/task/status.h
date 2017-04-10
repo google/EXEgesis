@@ -22,9 +22,10 @@ namespace util {
 namespace error {
 
 using ::google::protobuf::util::error::Code;
+using ::google::protobuf::util::error::FAILED_PRECONDITION;
 using ::google::protobuf::util::error::INTERNAL;
 using ::google::protobuf::util::error::INVALID_ARGUMENT;
-using ::google::protobuf::util::error::FAILED_PRECONDITION;
+using ::google::protobuf::util::error::UNKNOWN;
 
 }  // namespace error
 
