@@ -12,14 +12,14 @@ cc_library(
     hdrs = ["cleanup_instruction_set.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
     alwayslink = 1,
 )
@@ -31,10 +31,10 @@ cc_library(
     hdrs = ["cleanup_instruction_set_test_utils.h"],
     deps = [
         ":cleanup_instruction_set",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//cpu_instructions/testing:test_util",
+        "@com_google_protobuf//:protobuf",
         "@googletest_git//:gtest",
-        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -47,12 +47,12 @@ cc_test(
         ":cleanup_instruction_set_test_utils",
         "//base",
         "//util/task:status",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -63,7 +63,7 @@ cc_library(
     hdrs = ["cpu_type.h"],
     deps = [
         ":port_mask",
-        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//cpu_instructions/util:proto_util",
         "//strings",
         "//util/gtl:map_util",
@@ -88,12 +88,12 @@ cc_library(
     hdrs = ["host_cpu.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//strings",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -103,13 +103,13 @@ cc_test(
     deps = [
         ":host_cpu",
         "//base",
-        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -120,11 +120,11 @@ cc_library(
     hdrs = ["port_mask.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -135,13 +135,13 @@ cc_test(
     deps = [
         ":port_mask",
         "//base",
-        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -154,12 +154,12 @@ cc_library(
         ":cpu_type",
         ":port_mask",
         "//base",
-        "//cpu_instructions/proto:cpu_type_proto",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -170,14 +170,14 @@ cc_test(
     deps = [
         ":prettyprint",
         "//base",
-        "//cpu_instructions/proto:cpu_type_proto",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//cpu_instructions/util:proto_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -191,9 +191,9 @@ cc_library(
         "//base",
         "//strings",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -204,10 +204,10 @@ cc_test(
         ":cleanup_instruction_set",
         ":transform_factory",
         "//base",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )

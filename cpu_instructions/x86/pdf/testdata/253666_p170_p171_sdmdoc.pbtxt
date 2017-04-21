@@ -5,141 +5,225 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "Opcode"
+        row: 2
+        col: 0
       }
       blocks: {
         text: "Instruction"
+        row: 2
+        col: 1
       }
       blocks: {
         text: "Op/ \nEn"
+        row: 2
+        col: 2
       }
       blocks: {
         text: "64-bit \nMode"
+        row: 2
+        col: 3
       }
       blocks: {
         text: "Compat/\nLeg Mode"
+        row: 2
+        col: 4
       }
       blocks: {
         text: "Description"
+        row: 2
+        col: 5
       }
     }
     rows: {
       blocks: {
         text: "0F A3 /r"
+        row: 3
+        col: 0
       }
       blocks: {
         text: "BT r/m16, r16"
+        row: 3
+        col: 1
       }
       blocks: {
         text: "MR"
+        row: 3
+        col: 2
       }
       blocks: {
         text: "Valid"
+        row: 3
+        col: 3
       }
       blocks: {
         text: "Valid"
+        row: 3
+        col: 4
       }
       blocks: {
         text: "Store selected bit in CF flag."
+        row: 3
+        col: 5
       }
     }
     rows: {
       blocks: {
         text: "0F A3 /r"
+        row: 4
+        col: 0
       }
       blocks: {
         text: "BT r/m32, r32"
+        row: 4
+        col: 1
       }
       blocks: {
         text: "MR"
+        row: 4
+        col: 2
       }
       blocks: {
         text: "Valid"
+        row: 4
+        col: 3
       }
       blocks: {
         text: "Valid"
+        row: 4
+        col: 4
       }
       blocks: {
         text: "Store selected bit in CF flag."
+        row: 4
+        col: 5
       }
     }
     rows: {
       blocks: {
         text: "REX.W + 0F A3 /r"
+        row: 5
+        col: 0
       }
       blocks: {
         text: "BT r/m64, r64"
+        row: 5
+        col: 1
       }
       blocks: {
         text: "MR"
+        row: 5
+        col: 2
       }
       blocks: {
         text: "Valid"
+        row: 5
+        col: 3
       }
       blocks: {
         text: "N.E."
+        row: 5
+        col: 4
       }
       blocks: {
         text: "Store selected bit in CF flag."
+        row: 5
+        col: 5
       }
     }
     rows: {
       blocks: {
         text: "0F BA /4 ib"
+        row: 6
+        col: 0
       }
       blocks: {
         text: "BT r/m16, imm8"
+        row: 6
+        col: 1
       }
       blocks: {
         text: "MI"
+        row: 6
+        col: 2
       }
       blocks: {
         text: "Valid"
+        row: 6
+        col: 3
       }
       blocks: {
         text: "Valid"
+        row: 6
+        col: 4
       }
       blocks: {
         text: "Store selected bit in CF flag."
+        row: 6
+        col: 5
       }
     }
     rows: {
       blocks: {
         text: "0F BA /4 ib"
+        row: 7
+        col: 0
       }
       blocks: {
         text: "BT r/m32, imm8"
+        row: 7
+        col: 1
       }
       blocks: {
         text: "MI"
+        row: 7
+        col: 2
       }
       blocks: {
         text: "Valid"
+        row: 7
+        col: 3
       }
       blocks: {
         text: "Valid"
+        row: 7
+        col: 4
       }
       blocks: {
         text: "Store selected bit in CF flag."
+        row: 7
+        col: 5
       }
     }
     rows: {
       blocks: {
         text: "REX.W + 0F BA /4 ib"
+        row: 8
+        col: 0
       }
       blocks: {
         text: "BT r/m64, imm8"
+        row: 8
+        col: 1
       }
       blocks: {
         text: "MI"
+        row: 8
+        col: 2
       }
       blocks: {
         text: "Valid"
+        row: 8
+        col: 3
       }
       blocks: {
         text: "N.E."
+        row: 8
+        col: 4
       }
       blocks: {
         text: "Store selected bit in CF flag."
+        row: 8
+        col: 5
       }
     }
   }
@@ -148,52 +232,82 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "Op/En"
+        row: 10
+        col: 0
       }
       blocks: {
         text: "Operand 1"
+        row: 10
+        col: 1
       }
       blocks: {
         text: "Operand 2"
+        row: 10
+        col: 2
       }
       blocks: {
         text: "Operand 3"
+        row: 10
+        col: 3
       }
       blocks: {
         text: "Operand 4"
+        row: 10
+        col: 4
       }
     }
     rows: {
       blocks: {
         text: "MR"
+        row: 11
+        col: 0
       }
       blocks: {
         text: "ModRM:r/m (r)"
+        row: 11
+        col: 1
       }
       blocks: {
         text: "ModRM:reg (r)"
+        row: 11
+        col: 2
       }
       blocks: {
         text: "NA"
+        row: 11
+        col: 3
       }
       blocks: {
         text: "NA"
+        row: 11
+        col: 4
       }
     }
     rows: {
       blocks: {
         text: "MI"
+        row: 12
+        col: 0
       }
       blocks: {
         text: "ModRM:r/m (r)"
+        row: 12
+        col: 1
       }
       blocks: {
         text: "imm8"
+        row: 12
+        col: 2
       }
       blocks: {
         text: "NA"
+        row: 12
+        col: 3
       }
       blocks: {
         text: "NA"
+        row: 12
+        col: 4
       }
     }
   }
@@ -202,62 +316,88 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "Selects the bit in a bit string (specified with the first operand, called the bit base) at the bit-position designated by \nthe bit offset (specified by the second operand) and stores the value of the bit in the CF flag. The bit base operand \ncan be a register or a memory location; the bit offset operand can be a register or an im\nmediate value:"
+        row: 14
+        col: 0
       }
     }
     rows: {
       blocks: {
-        text: "•"
+        text: "\342\200\242"
+        row: 15
+        col: 0
       }
       blocks: {
         text: "If the bit base operand specifies a register, the instruction takes the modulo 16, 32, or 64 of the bit offset \noperand (modulo size depends on the mode and register size; 64-bit operands are available only in 64-bit \nmode)."
+        row: 15
+        col: 1
       }
     }
     rows: {
       blocks: {
-        text: "•"
+        text: "\342\200\242"
+        row: 16
+        col: 0
       }
       blocks: {
         text: "If the bit base operand specifies a memory location, the operand represents the address of the byte in memory \nthat contains the bit base (bit 0 of the specified byte) of the bit string. The range of the bit position that can be \nreferenced by the offset operand depends on the operand size."
+        row: 16
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "See also: Bit(BitBase, BitOffset) on page 3-10."
+        row: 17
+        col: 0
       }
     }
     rows: {
       blocks: {
         text: "Some assemblers support im\nmediate bit offsets larger than 31 by using the im\nmediate bit offset field in combina-\ntion with the displacement field of the memory operand. In this case, the low-order 3 or 5 bits (3 for 16-bit oper-\nands, 5 for 32-bit operands) of the im\nmediate bit offset are stored in the im\nmediate bit offset field, and the high-\norder bits are shifted and combined with the byte displacement in the addressing mode by the assembler. The \nprocessor will ignore the high order bits if they are not zero."
+        row: 18
+        col: 0
       }
     }
     rows: {
       blocks: {
         text: "When accessing a bit in memory, the processor may access 4 bytes starting from the memory address for a 32-bit \noperand size, using by the following relationship:"
+        row: 19
+        col: 0
       }
     }
     rows: {
       blocks: {
-        text: "Effective Address + (4 ∗ (BitOffset DIV 32))"
+        text: "Effective Address + (4 \342\210\227 (BitOffset DIV 32))"
+        row: 20
+        col: 0
       }
     }
     rows: {
       blocks: {
         text: "Or, it may access 2 bytes starting from the memory address for a 16-bit operand, using this relationship:"
+        row: 21
+        col: 0
       }
     }
     rows: {
       blocks: {
-        text: "Effective Address + (2 ∗ (BitOffset DIV 16))"
+        text: "Effective Address + (2 \342\210\227 (BitOffset DIV 16))"
+        row: 22
+        col: 0
       }
     }
     rows: {
       blocks: {
         text: "It may do so even when only a single byte needs to be accessed to reach the given bit. When using this bit \naddressing mechanism, software should avoid referencing areas of memory close to address space holes. In partic-\nular, it should avoid references to memory-mapped I/O registers. Instead, software should use the MOV instruc-\ntions to load from or store to these addresses, and use the register form of these instructions to manipulate the \ndata."
+        row: 23
+        col: 0
       }
     }
     rows: {
       blocks: {
-        text: "In 64-bit mode, the instruction’s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits \naccess to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bit oper-\nands. See the sum\nmary chart at the beginning of this section for encoding data and limits."
+        text: "In 64-bit mode, the instruction\342\200\231s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits \naccess to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bit oper-\nands. See the sum\nmary chart at the beginning of this section for encoding data and limits."
+        row: 24
+        col: 0
       }
     }
   }
@@ -265,7 +405,9 @@ instruction_sections: {
     type: OPERATION
     rows: {
       blocks: {
-        text: "CF ← Bit(BitBase, BitOffset);"
+        text: "CF \342\206\220 Bit(BitBase, BitOffset);"
+        row: 2
+        col: 0
       }
     }
   }
@@ -274,6 +416,8 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "The CF flag contains the value of the selected bit. The ZF flag is unaffected. The OF, SF, AF, and PF flags are \nundefined."
+        row: 4
+        col: 0
       }
     }
   }
@@ -282,41 +426,61 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "#GP(0)"
+        row: 6
+        col: 0
       }
       blocks: {
         text: "If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.\nIf the DS, ES, FS, or GS register contains a NULL segment selector."
+        row: 6
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#SS(0)"
+        row: 7
+        col: 0
       }
       blocks: {
         text: "If a memory operand effective address is outside the SS segment limit."
+        row: 7
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#PF(fault-code)"
+        row: 8
+        col: 0
       }
       blocks: {
         text: "If a page fault occurs."
+        row: 8
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#AC(0)"
+        row: 9
+        col: 0
       }
       blocks: {
         text: "If alignment checking is enabled and an unaligned memory reference is made while the \ncurrent privilege level is 3."
+        row: 9
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#UD"
+        row: 10
+        col: 0
       }
       blocks: {
         text: "If the LOCK prefix is used."
+        row: 10
+        col: 1
       }
     }
   }
@@ -325,25 +489,37 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "#GP"
+        row: 12
+        col: 0
       }
       blocks: {
         text: "If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit."
+        row: 12
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#SS"
+        row: 13
+        col: 0
       }
       blocks: {
         text: "If a memory operand effective address is outside the SS segment limit."
+        row: 13
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#UD"
+        row: 14
+        col: 0
       }
       blocks: {
         text: "If the LOCK prefix is used."
+        row: 14
+        col: 1
       }
     }
   }
@@ -352,41 +528,61 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "#GP(0)"
+        row: 16
+        col: 0
       }
       blocks: {
         text: "If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit."
+        row: 16
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#SS(0)"
+        row: 17
+        col: 0
       }
       blocks: {
         text: "If a memory operand effective address is outside the SS segment limit."
+        row: 17
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#PF(fault-code)"
+        row: 18
+        col: 0
       }
       blocks: {
         text: "If a page fault occurs."
+        row: 18
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#AC(0)"
+        row: 19
+        col: 0
       }
       blocks: {
         text: "If alignment checking is enabled and an unaligned memory reference is made."
+        row: 19
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#UD"
+        row: 20
+        col: 0
       }
       blocks: {
         text: "If the LOCK prefix is used."
+        row: 20
+        col: 1
       }
     }
   }
@@ -395,6 +591,8 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "Same exceptions as in protected mode."
+        row: 22
+        col: 0
       }
     }
   }
@@ -403,46 +601,71 @@ instruction_sections: {
     rows: {
       blocks: {
         text: "#SS(0)"
+        row: 24
+        col: 0
       }
       blocks: {
         text: "If a memory address referencing the SS segment is in a non-canonical form."
+        row: 24
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#GP(0)"
+        row: 25
+        col: 0
       }
       blocks: {
         text: "If the memory address is in a non-canonical form."
+        row: 25
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#PF(fault-code)"
+        row: 26
+        col: 0
       }
       blocks: {
         text: "If a page fault occurs."
+        row: 26
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#AC(0)"
+        row: 27
+        col: 0
       }
       blocks: {
         text: "If alignment checking is enabled and an unaligned memory reference is made while the \ncurrent privilege level is 3."
+        row: 27
+        col: 1
       }
     }
     rows: {
       blocks: {
         text: "#UD"
+        row: 28
+        col: 0
       }
       blocks: {
         text: "If the LOCK prefix is used."
+        row: 28
+        col: 1
       }
     }
   }
   instruction_table: {
-    columns: [ IT_OPCODE, IT_INSTRUCTION, IT_OP_EN, IT_MODE_SUPPORT_64BIT, IT_MODE_COMPAT_LEG, IT_DESCRIPTION ]
+    columns: IT_OPCODE
+    columns: IT_INSTRUCTION
+    columns: IT_OP_EN
+    columns: IT_MODE_SUPPORT_64BIT
+    columns: IT_MODE_COMPAT_LEG
+    columns: IT_DESCRIPTION
     instructions: {
       description: "Store selected bit in CF flag."
       vendor_syntax: {

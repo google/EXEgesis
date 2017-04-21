@@ -11,9 +11,9 @@ cc_library(
     hdrs = ["bits.h"],
     deps = [
         "//base",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -24,11 +24,11 @@ cc_test(
         ":bits",
         "//base",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -39,11 +39,11 @@ cc_library(
     hdrs = ["instruction_syntax.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -54,14 +54,14 @@ cc_test(
     deps = [
         ":instruction_syntax",
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//cpu_instructions/testing:test_util",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -73,10 +73,10 @@ cc_library(
     deps = [
         "//base",
         "//strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -86,15 +86,15 @@ cc_test(
     deps = [
         ":proto_util",
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//cpu_instructions/testing:test_util",
         "//strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -106,9 +106,9 @@ cc_library(
     deps = [
         "//base",
         "//util/task:status",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -134,10 +134,10 @@ cc_library(
         "//strings",
         "//util/task:status",
         "//util/task:statusor",
+        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 

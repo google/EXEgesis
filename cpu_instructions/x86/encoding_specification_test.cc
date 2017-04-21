@@ -74,6 +74,20 @@ TEST(EncodingSpecificationParserTest, NoPrefixAndNoSuffix) {
   CheckParser("0F 06", "legacy_prefixes {} opcode: 0x0f06");
 }
 
+TEST(EncodingSpecificationParserTest, NPPrefix) {
+  CheckParser("NP 0F 58 /r",
+              R"(legacy_prefixes {}
+                 modrm_usage: FULL_MODRM
+                 opcode: 0x0f58)");
+  CheckParser("NP REX.W + 0F AE /1",
+              R"(opcode: 4014
+                 modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                 modrm_opcode_extension: 1
+                 legacy_prefixes {
+                   has_mandatory_rex_w_prefix: true
+                 })");
+}
+
 TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
   CheckParser("REX + 80 /2 ib",
               R"(legacy_prefixes { has_mandatory_rex_w_prefix: true }

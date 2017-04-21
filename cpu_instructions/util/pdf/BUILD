@@ -3,8 +3,6 @@
 
 package(default_visibility = ["//:internal_users"])
 
-load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
-
 licenses(["notice"])  # Apache 2.0
 
 cc_library(
@@ -13,10 +11,10 @@ cc_library(
     hdrs = ["geometry.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -37,13 +35,13 @@ cc_library(
     deps = [
         ":geometry",
         "//base",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
         "//strings",
         "//util/graph:connected_components",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -53,8 +51,8 @@ cc_test(
     deps = [
         ":pdf_document_parser",
         "//cpu_instructions/util:proto_util",
+        "@com_google_protobuf//:protobuf",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -64,12 +62,12 @@ cc_library(
     hdrs = ["pdf_document_utils.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
         "//strings",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -79,14 +77,15 @@ cc_test(
     deps = [
         ":pdf_document_utils",
         "//base",
+        "//cpu_instructions/testing:test_util",
         "//cpu_instructions/util:proto_util",
         "//strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -99,14 +98,14 @@ cc_library(
         ":pdf_document_parser",
         ":pdf_document_utils",
         "//base",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
         "@utf_archive//:utf",
         "@xpdf_archive//:xpdf",
     ],
@@ -124,10 +123,10 @@ cc_test(
         "//cpu_instructions/testing:test_util",
         "//strings",
         "//util/gtl:ptr_util",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )

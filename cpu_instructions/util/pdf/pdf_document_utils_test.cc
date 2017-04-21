@@ -14,14 +14,21 @@
 
 #include "cpu_instructions/util/pdf/pdf_document_utils.h"
 
+#include <algorithm>
+#include <numeric>
+
+#include "cpu_instructions/testing/test_util.h"
 #include "cpu_instructions/util/proto_util.h"
 #include "glog/logging.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
 
 namespace cpu_instructions {
 namespace pdf {
 namespace {
+
+using cpu_instructions::testing::EqualsProto;
 
 PdfPage GetFakeDocument() {
   return ParseProtoFromStringOrDie<PdfPage>(R"(
@@ -131,6 +138,110 @@ TEST(PdfDocumentExtractorTest, GetPageBodyRows) {
   )");
   const auto result = GetPageBodyRows(page, 10.0f);
   EXPECT_EQ(result.size(), 1);
+}
+
+TEST(PdfDocumentExtractorTest, TransferPatches) {
+  const auto from_pdf = ParseProtoFromStringOrDie<PdfDocument>(R"(
+    document_id { title: "doc 1" }
+    pages {
+      number: 5
+      width: 100
+      height: 30
+      rows {
+        blocks {
+          row: 0
+          col: 0
+          text: "incorrect"
+        }
+        bounding_box { top: 11.0 bottom: 12.0 } # in body
+      }
+      rows {
+        blocks {
+          row: 1
+          col: 0
+          text: "to replace"
+        }
+        bounding_box { top: 12.0 bottom: 13.0 } # in body
+      }
+    }
+  )");
+
+  const auto patches = ParseProtoFromStringOrDie<PdfDocumentChanges>(R"(
+    document_id { title: "doc 1" }
+    pages {
+      page_number: 5
+      patches {
+        row: 0
+        col: 0
+        expected: "incorrect"
+        replacement: "correct"
+      }
+      patches {
+        row: 1
+        col: 0
+        expected: "to replace"
+        replacement: "replaced"
+      }
+    }
+  )");
+
+  const auto to_pdf = ParseProtoFromStringOrDie<PdfDocument>(R"(
+    document_id { title: "doc 2" }
+    pages {
+      number: 6
+      width: 100
+      height: 30
+      rows {
+        blocks {
+          row: 0
+          col: 0
+          text: "incorrect"
+        }
+        bounding_box { top: 11.0 bottom: 12.0 } # in body
+      }
+      rows {
+        blocks {
+          row: 1
+          col: 0
+          text: "to replace with typo"
+        }
+        bounding_box { top: 12.0 bottom: 13.0 } # in body
+      }
+    }
+  )");
+
+  PdfDocumentChanges successful_patches;
+  PdfDocumentChanges failed_patches;
+  TransferPatches(patches, from_pdf, to_pdf, &successful_patches,
+                  &failed_patches);
+
+  constexpr char kExpectedSuccessful[] = R"(
+      document_id { title: "doc 2" }
+      pages {
+        page_number: 6
+        patches {
+          row: 0
+          col: 0
+          expected: "incorrect"
+          replacement: "correct"
+        }
+      }
+    )";
+  EXPECT_THAT(successful_patches, EqualsProto(kExpectedSuccessful));
+
+  constexpr char kExpectedFailed[] = R"(
+      document_id { title: "doc 1" }
+      pages {
+        page_number: 5
+        patches {
+          row: 1
+          col: 0
+          expected: "to replace"
+          replacement: "replaced"
+        }
+      }
+    )";
+  EXPECT_THAT(failed_patches, EqualsProto(kExpectedFailed));
 }
 
 }  // namespace

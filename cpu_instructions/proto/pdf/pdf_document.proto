@@ -108,6 +108,10 @@ message PdfTextBlock {
   Orientation orientation = 3;
   float font_size = 4;
   string text = 5;  // UTF-8 text without the subscripts / superscripts.
+
+  // When PdfTextBlock is part of PdfTextTableRow:
+  int32 row = 6;  // 0-based index of the page's row.
+  int32 col = 7;  // 0-based index of the row's column.
 }
 
 // Consists in several horizontaly aligned PdfTextBlocks.

@@ -22,11 +22,17 @@
 #include "strings/string.h"
 
 #include "cpu_instructions/util/pdf/geometry.h"
+#include "gflags/gflags.h"
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
 #include "strings/string_view.h"
 #include "util/graph/connected_components.h"
 #include "util/gtl/map_util.h"
+
+DEFINE_double(cpu_instructions_pdf_max_character_distance, 0.9,
+              "The maximal distance of two characters to be considered part of "
+              "the same cell. The value is a multiplier; the real distance is "
+              "obtained by multiplying the font size with this coefficient.");
 
 namespace cpu_instructions {
 namespace pdf {
@@ -131,7 +137,10 @@ void ClusterCharacters(const Characters& all, PdfTextSegments* segments) {
     const bool same_orientation = a.orientation() == b.orientation();
     const Vec2F forward = GetForwardDirection(a);
     const float distance = GetVector(a, b).dot_product(forward);
-    const bool within_distance = distance > 0 && distance < 0.9 * a.font_size();
+    const bool within_distance =
+        distance > 0 &&
+        distance <
+            FLAGS_cpu_instructions_pdf_max_character_distance * a.font_size();
     if (same_line && same_orientation && within_distance) {
       return distance;
     }
@@ -504,6 +513,16 @@ void Cluster(PdfPage* page,
             [](const PdfTextTableRow& a, const PdfTextTableRow& b) {
               return a.bounding_box().top() < b.bounding_box().top();
             });
+
+  // Set row/col numbers.
+  for (size_t row_index = 0; row_index < page_rows->size(); ++row_index) {
+    auto* row = page_rows->Mutable(row_index);
+    for (size_t col_index = 0; col_index < row->blocks_size(); ++col_index) {
+      auto* block = row->mutable_blocks(col_index);
+      block->set_row(row_index);
+      block->set_col(col_index);
+    }
+  }
 }
 
 }  // namespace pdf

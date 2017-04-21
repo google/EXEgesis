@@ -3,8 +3,6 @@
 
 package(default_visibility = ["//:internal_users"])
 
-load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
-
 licenses(["notice"])  # Apache 2.0
 
 cc_library(
@@ -14,18 +12,24 @@ cc_library(
     deps = [
         "//base",
         "//strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
-cpu_instructions_proto_library(
+proto_library(
     name = "test_proto",
     srcs = ["test.proto"],
-    cc_api_version = 2,
+)
+
+cc_proto_library(
+    name = "test_cc_proto",
+    deps = [
+        ":test_proto",
+    ],
 )
 
 cc_test(
@@ -33,7 +37,7 @@ cc_test(
     size = "small",
     srcs = ["test_util_test.cc"],
     deps = [
-        ":test_proto",
+        ":test_cc_proto",
         ":test_util",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",

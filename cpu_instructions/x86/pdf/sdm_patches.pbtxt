@@ -62,7 +62,7 @@ documents {
   pages {
     page_number: 612
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
       replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
     }
@@ -70,7 +70,7 @@ documents {
   pages {
     page_number: 624
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX128.66.0F.WIG 17/r\nVMOVHPD m64, xmm1"
       replacement: "VEX.128.66.0F.WIG 17 /r\nVMOVHPD m64, xmm1"
     }
@@ -89,7 +89,7 @@ documents {
   pages {
     page_number: 50
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
       replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
     }
@@ -97,7 +97,7 @@ documents {
   pages {
     page_number: 56
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.NDS.256.66.0F.WIG DB /r\nVPAND ymm1, ymm2, ymm3/.m256"
       replacement: "VEX.NDS.256.66.0F.WIG DB /r\nVPAND ymm1, ymm2, ymm3/m256"
     }
@@ -128,7 +128,7 @@ documents {
   pages {
     page_number: 413
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "0F 5C /r\nSUBPS xmm1 xmm2/m128"
       replacement: "0F 5C /r\nSUBPS xmm1,xmm2/m128"
     }
@@ -136,7 +136,7 @@ documents {
   pages {
     page_number: 453
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.128.66.0F3A.W0.1D /r ib\nVCVTPS2PH xmm1/m64, xmm2, imm8"
       replacement: "VEX.128.66.0F3A.W0 1D /r ib\nVCVTPS2PH xmm1/m64, xmm2, imm8"
     }
@@ -156,7 +156,7 @@ documents {
   pages {
     page_number: 747
     patches {
-      row: 21 col: 0
+      row: 21
       expected:    "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
       replacement: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/m128"
     }
@@ -1190,22 +1190,22 @@ documents {
   pages {
     page_number: 598
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "VEX.L1.0F.W0 4A /r \nKADDW k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W0 4A /r\nKADDW k1, k2, k3"
     }
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 4A /r \nKADDB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 4A /r\nKADDB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 4A /r \nKADDQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 4A /r\nKADDQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 4A /r \nKADDD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 4A /r\nKADDD k1, k2, k3"
     }
@@ -1213,17 +1213,17 @@ documents {
   pages {
     page_number: 599
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 41 /r \nKANDB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 41 /r\nKANDB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 41 /r \nKANDQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 41 /r\nKANDQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 41 /r \nKANDD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 41 /r\nKANDD k1, k2, k3"
     }
@@ -1231,17 +1231,17 @@ documents {
   pages {
     page_number: 600
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 42 /r\nKANDNB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 42 /r \nKANDNQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 42 /r\nKANDNQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 42 /r \nKANDND k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 42 /r\nKANDND k1, k2, k3"
     }
@@ -1249,17 +1249,17 @@ documents {
   pages {
     page_number: 604
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 45 /r\nKORB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 45 /r \nKORQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 45 /r\nKORQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 45 /r \nKORD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 45 /r\nKORD k1, k2, k3"
     }
@@ -1267,17 +1267,17 @@ documents {
   pages {
     page_number: 614
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 46 /r\nKXNORB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 46 /r \nKXNORQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 46 /r\nKXNORQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 46 /r \nKXNORD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 46 /r\nKXNORD k1, k2, k3"
     }
@@ -1285,17 +1285,17 @@ documents {
   pages {
     page_number: 615
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 47 /r \nKXORQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 47 /r\nKXORQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 47 /r \nKXORD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 47 /r\nKXORD k1, k2, k3"
     }
@@ -1303,7 +1303,7 @@ documents {
   pages {
     page_number: 707
     patches {
-      row: 11 col: 0
+      row: 11
       expected:    "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
       replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
     }
@@ -1311,7 +1311,7 @@ documents {
   pages {
     page_number: 719
     patches {
-      row: 21 col: 0
+      row: 21
       expected:    "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
       replacement: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/m128"
     }
@@ -1319,17 +1319,17 @@ documents {
   pages {
     page_number: 782
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.128.0F 11.WIG /r\nVMOVUPS xmm2/m128, xmm1"
       replacement: "VEX.128.0F.WIG 11 /r\nVMOVUPS xmm2/m128, xmm1"
     }
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "VEX.256.0F 10.WIG /r\nVMOVUPS ymm1, ymm2/m256"
       replacement: "VEX.256.0F.WIG 10 /r\nVMOVUPS ymm1, ymm2/m256"
     }
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "VEX.256.0F 11.WIG /r\nVMOVUPS ymm2/m256, ymm1"
       replacement: "VEX.256.0F.WIG 11 /r\nVMOVUPS ymm2/m256, ymm1"
     }
@@ -1345,7 +1345,7 @@ documents {
   pages {
     page_number: 833
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
       replacement: "EVEX.512.66.0F38.W0 1E /r\nVPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
     }
@@ -1353,7 +1353,7 @@ documents {
   pages {
     page_number: 846
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "EVEX.NDS.256.66.0F38.W0 2B /r"
       replacement: "EVEX.NDS.256.66.0F38.W0 2B /r\nVPACKUSDW ymm1{k1}{z}, ymm2, ymm3/m256/m32bcst"
     }
@@ -1361,7 +1361,7 @@ documents {
   pages {
     page_number: 867
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
       replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
     }
@@ -1369,7 +1369,7 @@ documents {
   pages {
     page_number: 1002
     patches {
-      row: 14 col: 0
+      row: 14
       expected:    "VEX.128.66.0F 38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
       replacement: "VEX.128.66.0F38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
     }
@@ -1377,7 +1377,7 @@ documents {
   pages {
     page_number: 1003
     patches {
-      row: 2 col: 0
+      row: 2
       expected:    "EVEX.128.66.0F38 30.WIG /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
       replacement: "EVEX.128.66.0F38.WIG 30 /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
     }
@@ -1385,7 +1385,7 @@ documents {
   pages {
     page_number: 1415
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "EVEX.256.0F.W1 78 02 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
       replacement: "EVEX.256.0F.W1 78 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
     }
@@ -1393,7 +1393,7 @@ documents {
   pages {
     page_number: 1704
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "VPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
       replacement: "EVEX.NDS.512.66.0F3A.W1 3E /r ib\nVPCMPUW k1 {k2}, zmm2, zmm3/m512, imm8"
     }
@@ -1401,7 +1401,7 @@ documents {
   pages {
     page_number: 1732
     patches {
-      row: 12 col: 0
+      row: 12
       expected:    "EVEX.512.66.0F3A.W0 04 /r \nibVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
       replacement: "EVEX.512.66.0F3A.W0 04 /r ib\nVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
     }
@@ -1409,7 +1409,7 @@ documents {
   pages {
     page_number: 1740
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "VEX.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
       replacement: "VEX.NDS.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
     }
@@ -1417,7 +1417,7 @@ documents {
   pages {
     page_number: 1753
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "VEX.NDS.128.66.0F38.W0 8C /rVPMASK-\nMOVD xmm1, xmm2, m128"
       replacement: "VEX.NDS.128.66.0F38.W0 8C /r\nVPMASKMOVD xmm1, xmm2, m128"
     }
@@ -1425,7 +1425,7 @@ documents {
   pages {
     page_number: 1860
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "EVEX.NDS.LIG.66.0F3A.W1 57\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
       replacement: "EVEX.NDS.LIG.66.0F3A.W1 57 /r\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8"
     }
@@ -1433,7 +1433,7 @@ documents {
   pages {
     page_number: 1864
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "EVEX.NDS.LIG.66.0F3A.W0 57 \n/r /ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
       replacement: "EVEX.NDS.LIG.66.0F3A.W0 57 /r ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
     }
@@ -1526,7 +1526,7 @@ documents {
   pages {
     page_number: 778
     patches {
-      row: 20 col: 0
+      row: 20
       expected:    "RVM-MR"
       replacement: "FVM-MR"
     }
@@ -1534,7 +1534,7 @@ documents {
   pages {
     page_number: 782
     patches {
-      row: 20 col: 0
+      row: 20
       expected:    "RVM-MR"
       replacement: "FVM-MR"
     }
@@ -1610,7 +1610,7 @@ documents {
   pages {
     page_number: 1333
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "A"
       replacement: "RM"
     }
@@ -1618,7 +1618,7 @@ documents {
   pages {
     page_number: 1612
     patches {
-      row: 9 col: 0
+      row: 9
       expected:    "A"
       replacement: "RMV"
     }
@@ -1626,7 +1626,7 @@ documents {
   pages {
     page_number: 1636
     patches {
-      row: 9 col: 0
+      row: 9
       expected:    "A"
       replacement: "RMV"
     }
@@ -1634,7 +1634,7 @@ documents {
   pages {
     page_number: 1655
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "FVI"
       replacement: "FV"
     }
@@ -1642,7 +1642,7 @@ documents {
   pages {
     page_number: 1659
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "FVI"
       replacement: "FV"
     }
@@ -1729,12 +1729,12 @@ documents {
       replacement: "O2"
     }
     patches {
-      row: 23 col: 0
+      row: 23
       expected:    "O"
       replacement: "O1"
     }
     patches {
-      row: 24 col: 0
+      row: 24
       expected:    "O"
       replacement: "O2"
     }
@@ -1754,7 +1754,7 @@ documents {
   pages {
     page_number: 603
     patches {
-      row: 13 col: 0
+      row: 13
       expected:    "FV-RVM"
       replacement: "FV"
     }
@@ -1762,7 +1762,7 @@ documents {
   pages {
     page_number: 606
     patches {
-      row: 13 col: 0
+      row: 13
       expected:    "FV-RVM"
       replacement: "FV"
     }
@@ -1770,7 +1770,7 @@ documents {
   pages {
     page_number: 609
     patches {
-      row: 10 col: 0
+      row: 10
       expected:    "T1S-RVM"
       replacement: "T1S"
     }
@@ -1830,22 +1830,22 @@ documents {
   pages {
     page_number: 1066
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "VEX.L1.0F.W0 4A /r \nKADDW k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W0 4A /r\nKADDW k1, k2, k3"
     }
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 4A /r \nKADDB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 4A /r\nKADDB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 4A /r \nKADDQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 4A /r\nKADDQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 4A /r \nKADDD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 4A /r\nKADDD k1, k2, k3"
     }
@@ -1853,17 +1853,17 @@ documents {
   pages {
     page_number: 1067
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 41 /r \nKANDB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 41 /r\nKANDB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 41 /r \nKANDQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 41 /r\nKANDQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 41 /r \nKANDD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 41 /r\nKANDD k1, k2, k3"
     }
@@ -1871,17 +1871,17 @@ documents {
   pages {
     page_number: 1068
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 42 /r \nKANDNQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 42 /r \nKANDNQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 42 /r \nKANDND k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 42 /r \nKANDND k1, k2, k3"
     }
@@ -1889,17 +1889,17 @@ documents {
   pages {
     page_number: 1072
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 45 /r \nKORQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 45 /r \nKORQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 45 /r \nKORD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 45 /r \nKORD k1, k2, k3"
     }
@@ -1907,17 +1907,17 @@ documents {
   pages {
     page_number: 1082
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 46 /r \nKXNORQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 46 /r \nKXNORQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 46 /r \nKXNORD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 46 /r \nKXNORD k1, k2, k3"
     }
@@ -1925,17 +1925,17 @@ documents {
   pages {
     page_number: 1083
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "VEX.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
     }
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VEX.L1.0F.W1 47 /r \nKXORQ k1, k2, k3"
       replacement: "VEX.NDS.L1.0F.W1 47 /r \nKXORQ k1, k2, k3"
     }
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.L1.66.0F.W1 47 /r \nKXORD k1, k2, k3"
       replacement: "VEX.NDS.L1.66.0F.W1 47 /r \nKXORD k1, k2, k3"
     }
@@ -1943,7 +1943,7 @@ documents {
   pages {
     page_number: 1187
     patches {
-      row: 21 col: 0
+      row: 21
       expected:    "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
       replacement: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/m128"
     }
@@ -1951,7 +1951,7 @@ documents {
   pages {
     page_number: 1175
     patches {
-      row: 11 col: 0
+      row: 11
       expected:    "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
       replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
     }
@@ -1975,7 +1975,7 @@ documents {
   pages {
     page_number: 1246
     patches {
-      row: 20 col: 0
+      row: 20
       expected:    "RVM-MR"
       replacement: "FVM-MR"
     }
@@ -1983,22 +1983,22 @@ documents {
   pages {
     page_number: 1250
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "VEX.128.0F 11.WIG /r\nVMOVUPS xmm2/m128, xmm1"
       replacement: "VEX.128.0F.WIG 11 /r\nVMOVUPS xmm2/m128, xmm1"
     }
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "VEX.256.0F 10.WIG /r\nVMOVUPS ymm1, ymm2/m256"
       replacement: "VEX.256.0F.WIG 10 /r\nVMOVUPS ymm1, ymm2/m256"
     }
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "VEX.256.0F 11.WIG /r\nVMOVUPS ymm2/m256, ymm1"
       replacement: "VEX.256.0F.WIG 11 /r\nVMOVUPS ymm2/m256, ymm1"
     }
     patches {
-      row: 20 col: 0
+      row: 20
       expected:    "RVM-MR"
       replacement: "FVM-MR"
     }
@@ -2014,7 +2014,7 @@ documents {
   pages {
     page_number: 1301
     patches {
-      row: 5 col: 0
+      row: 5
       expected:    "VPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
       replacement: "EVEX.512.66.0F38.W0 1E /r\nVPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
     }
@@ -2022,7 +2022,7 @@ documents {
   pages {
     page_number: 1314
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "EVEX.NDS.256.66.0F38.W0 2B /r"
       replacement: "EVEX.NDS.256.66.0F38.W0 2B /r\nVPACKUSDW ymm1{k1}{z},\nymm2, ymm3/m256/m32bcst"
     }
@@ -2030,7 +2030,7 @@ documents {
   pages {
     page_number: 1335
     patches {
-      row: 7 col: 0
+      row: 7
       expected:    "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
       replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
     }
@@ -2064,7 +2064,7 @@ documents {
   pages {
     page_number: 1470
     patches {
-      row: 14 col: 0
+      row: 14
       expected:    "VEX.128.66.0F 38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
       replacement: "VEX.128.66.0F38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
     }
@@ -2072,7 +2072,7 @@ documents {
   pages {
     page_number: 1471
     patches {
-      row: 2 col: 0
+      row: 2
       expected:    "EVEX.128.66.0F38 30.WIG /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
       replacement: "EVEX.128.66.0F38.WIG 30 /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
     }
@@ -2114,7 +2114,7 @@ documents {
   pages {
     page_number: 1727
     patches {
-      row: 6 col: 0
+      row: 6
       expected:    "RMI"
       replacement: "RM0"
     }
@@ -2122,7 +2122,7 @@ documents {
   pages {
     page_number: 1801
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "A"
       replacement: "RM"
     }
@@ -2130,7 +2130,7 @@ documents {
   pages {
     page_number: 1883
     patches {
-      row: 4 col: 0
+      row: 4
       expected:    "EVEX.256.0F.W1 78 02 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
       replacement: "EVEX.256.0F.W1 78 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
     }
@@ -2138,7 +2138,7 @@ documents {
   pages {
     page_number: 2080
     patches {
-      row: 9 col: 0
+      row: 9
       expected:    "A"
       replacement: "RMV"
     }
@@ -2146,7 +2146,7 @@ documents {
   pages {
     page_number: 2104
     patches {
-      row: 9 col: 0
+      row: 9
       expected:    "A"
       replacement: "RMV"
     }
@@ -2154,7 +2154,7 @@ documents {
   pages {
     page_number: 2123
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "FVI"
       replacement: "FV"
     }
@@ -2162,7 +2162,7 @@ documents {
   pages {
     page_number: 2127
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "FVI"
       replacement: "FV"
     }
@@ -2170,7 +2170,7 @@ documents {
   pages {
     page_number: 2172
     patches {
-      row: 8 col: 0
+      row: 8
       expected:    "VPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
       replacement: "EVEX.NDS.512.66.0F3A.W1 3E /r ib\nVPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
     }
@@ -2178,7 +2178,7 @@ documents {
   pages {
     page_number: 2200
     patches {
-      row: 12 col: 0
+      row: 12
       expected:    "EVEX.512.66.0F3A.W0 04 /r \nibVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
       replacement: "EVEX.512.66.0F3A.W0 04 /r ib\nVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
     }
@@ -2194,7 +2194,7 @@ documents {
   pages {
     page_number: 2208
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "VEX.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
       replacement: "VEX.NDS.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
     }
@@ -2243,7 +2243,7 @@ documents {
   pages {
     page_number: 2328
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "EVEX.NDS.LIG.66.0F3A.W1 57\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
       replacement: "EVEX.NDS.LIG.66.0F3A.W1 57 /r\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8"
     }
@@ -2251,7 +2251,7 @@ documents {
   pages {
     page_number: 2332
     patches {
-      row: 3 col: 0
+      row: 3
       expected:    "EVEX.NDS.LIG.66.0F3A.W0 57 \n/r /ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
       replacement: "EVEX.NDS.LIG.66.0F3A.W0 57 \n/r ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
     }
@@ -2289,12 +2289,12 @@ documents {
       replacement: "O2"
     }
     patches {
-      row: 23 col: 0
+      row: 23
       expected:    "O"
       replacement: "O1"
     }
     patches {
-      row: 24 col: 0
+      row: 24
       expected:    "O"
       replacement: "O2"
     }
@@ -2337,6 +2337,73 @@ documents {
     }
   }
   pages {
+    page_number: 825
+    patches {
+      row: 5
+      expected: "VEX.LIG.F2.0F.W0 2D /r 1\nVCVTSD2SI r32, xmm1/m64"
+      replacement: "VEX.LIG.F2.0F.W0 2D /r\nVCVTSD2SI r32, xmm1/m64"
+    }
+    patches {
+      row: 6
+      expected: "VEX.LIG.F2.0F.W1 2D /r 1\nVCVTSD2SI r64, xmm1/m64"
+      replacement: "VEX.LIG.F2.0F.W1 2D /r\nVCVTSD2SI r64, xmm1/m64"
+    }
+  }
+  pages {
+    page_number: 835
+    patches {
+      row: 5
+      expected: "VEX.LIG.F3.0F.W0 2D /r 1\nVCVTSS2SI r32, xmm1/m32"
+      replacement: "VEX.LIG.F3.0F.W0 2D /r\nVCVTSS2SI r32, xmm1/m32"
+    }
+    patches {
+      row: 6
+      expected: "VEX.LIG.F3.0F.W1 2D /r 1\nVCVTSS2SI r64, xmm1/m32"
+      replacement: "VEX.LIG.F3.0F.W1 2D /r\nVCVTSS2SI r64, xmm1/m32"
+    }
+  }
+  pages {
+    page_number: 846
+    patches {
+      row: 5
+      expected: "VEX.LIG.F2.0F.W0 2C /r 1\nVCVTTSD2SI r32, xmm1/m64"
+      replacement: "VEX.LIG.F2.0F.W0 2C /r\nVCVTTSD2SI r32, xmm1/m64"
+    }
+    patches {
+      row: 6
+      expected: "VEX.LIG.F2.0F.W1 2C /r 1\nVCVTTSD2SI r64, xmm1/m64"
+      replacement: "VEX.LIG.F2.0F.W1 2C /r\nVCVTTSD2SI r64, xmm1/m64"
+    }
+  }
+  pages {
+    page_number: 848
+    patches {
+      row: 5
+      expected: "VEX.LIG.F3.0F.W0 2C /r 1\nVCVTTSS2SI r32, xmm1/m32"
+      replacement: "VEX.LIG.F3.0F.W0 2C /r\nVCVTTSS2SI r32, xmm1/m32"
+    }
+    patches {
+      row: 6
+      expected: "VEX.LIG.F3.0F.W1 2C /r 1\nVCVTTSS2SI r64, xmm1/m32"
+      replacement: "VEX.LIG.F3.0F.W1 2C /r\nVCVTTSS2SI r64, xmm1/m32"
+    }
+  }
+  pages {
+    page_number: 694
+    patches {
+      row: 3
+      col: 2
+      expected: "M"
+      replacement: "D"
+    }
+    patches {
+      row: 4
+      col: 2
+      expected: "M"
+      replacement: "D"
+    }
+  }
+  pages {
     page_number: 879
     patches {
       row: 3
@@ -2346,11 +2413,177 @@ documents {
     }
   }
   pages {
+    page_number: 1019
+    patches {
+      row: 11
+      col: 1
+      expected: "imm8"
+      replacement: "NA"
+    }
+    patches {
+      row: 11
+      col: 2
+      expected: "NA"
+      replacement: "imm8"
+    }
+  }
+  pages {
+    page_number: 1060
+    patches {
+      row: 11
+      col: 2
+      expected: "D"
+      replacement: "M"
+    }
+    patches {
+      row: 12
+      col: 2
+      expected: "D"
+      replacement: "M"
+    }
+    patches {
+      row: 13
+      col: 2
+      expected: "D"
+      replacement: "M"
+    }
+  }
+  pages {
+    page_number: 1068
+    patches {
+      row: 3
+      expected: "VEX.L1.0F.W0 4A /r \nKADDW k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W0 4A /r \nKADDW k1, k2, k3"
+    }
+    patches {
+      row: 4
+      expected: "VEX.L1.66.0F.W0 4A /r \nKADDB k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W0 4A /r \nKADDB k1, k2, k3"
+    }
+    patches {
+      row: 5
+      expected: "VEX.L1.0F.W1 4A /r \nKADDQ k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W1 4A /r \nKADDQ k1, k2, k3"
+    }
+    patches {
+      row: 6
+      expected: "VEX.L1.66.0F.W1 4A /r \nKADDD k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W1 4A /r \nKADDD k1, k2, k3"
+    }
+  }
+  pages {
+    page_number: 1069
+    patches {
+      row: 4
+      expected: "VEX.L1.66.0F.W0 41 /r \nKANDB k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W0 41 /r \nKANDB k1, k2, k3"
+    }
+    patches {
+      row: 5
+      expected: "VEX.L1.0F.W1 41 /r \nKANDQ k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W1 41 /r \nKANDQ k1, k2, k3"
+    }
+    patches {
+      row: 6
+      expected: "VEX.L1.66.0F.W1 41 /r \nKANDD k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W1 41 /r \nKANDD k1, k2, k3"
+    }
+  }
+  pages {
+    page_number: 1070
+    patches {
+      row: 4
+      expected: "VEX.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
+    }
+    patches {
+      row: 5
+      expected: "VEX.L1.0F.W1 42 /r \nKANDNQ k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W1 42 /r \nKANDNQ k1, k2, k3"
+    }
+    patches {
+      row: 6
+      expected: "VEX.L1.66.0F.W1 42 /r \nKANDND k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W1 42 /r \nKANDND k1, k2, k3"
+    }
+  }
+  pages {
+    page_number: 1074
+    patches {
+      row: 4
+      expected: "VEX.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
+    }
+    patches {
+      row: 5
+      expected: "VEX.L1.0F.W1 45 /r \nKORQ k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W1 45 /r \nKORQ k1, k2, k3"
+    }
+    patches {
+      row: 6
+      expected: "VEX.L1.66.0F.W1 45 /r \nKORD k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W1 45 /r \nKORD k1, k2, k3"
+    }
+  }
+  pages {
+    page_number: 1084
+    patches {
+      row: 4
+      expected: "VEX.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
+    }
+    patches {
+      row: 5
+      expected: "VEX.L1.0F.W1 46 /r \nKXNORQ k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W1 46 /r \nKXNORQ k1, k2, k3"
+    }
+    patches {
+      row: 6
+      expected: "VEX.L1.66.0F.W1 46 /r \nKXNORD k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W1 46 /r \nKXNORD k1, k2, k3"
+    }
+  }
+  pages {
+    page_number: 1085
+    patches {
+      row: 4
+      expected: "VEX.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
+    }
+    patches {
+      row: 5
+      expected: "VEX.L1.0F.W1 47 /r \nKXORQ k1, k2, k3"
+      replacement: "VEX.NDS.L1.0F.W1 47 /r \nKXORQ k1, k2, k3"
+    }
+    patches {
+      row: 6
+      expected: "VEX.L1.66.0F.W1 47 /r \nKXORD k1, k2, k3"
+      replacement: "VEX.NDS.L1.66.0F.W1 47 /r \nKXORD k1, k2, k3"
+    }
+  }
+  pages {
+    page_number: 1177
+    patches {
+      row: 11
+      expected: "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
+      replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
+    }
+  }
+  pages {
     page_number: 1189
     patches {
       row: 21
       expected: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
       replacement: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, xmm2/m128"
+    }
+  }
+  pages {
+    page_number: 1206
+    patches {
+      row: 12
+      col: 1
+      expected: "ModRM:r/m (r)"
+      replacement: "ModRM:reg (w)"
     }
   }
   pages {
@@ -2373,6 +2606,21 @@ documents {
   pages {
     page_number: 1252
     patches {
+      row: 6
+      expected: "VEX.128.0F 11.WIG /r\nVMOVUPS xmm2/m128, xmm1"
+      replacement: "VEX.128.0F.WIG 11 /r\nVMOVUPS xmm2/m128, xmm1"
+    }
+    patches {
+      row: 7
+      expected: "VEX.256.0F 10.WIG /r\nVMOVUPS ymm1, ymm2/m256"
+      replacement: "VEX.256.0F.WIG 10 /r\nVMOVUPS ymm1, ymm2/m256"
+    }
+    patches {
+      row: 8
+      expected: "VEX.256.0F 11.WIG /r\nVMOVUPS ymm2/m256, ymm1"
+      replacement: "VEX.256.0F.WIG 11 /r\nVMOVUPS ymm2/m256, ymm1"
+    }
+    patches {
       row: 20
       expected: "RVM-MR"
       replacement: "FVM-MR"
@@ -2392,6 +2640,14 @@ documents {
       row: 7
       expected: "EVEX.NDS.256.66.0F38.W0 2B /r"
       replacement: "EVEX.NDS.256.66.0F38.W0 2B /r\nVPACKUSDW ymm1{k1}{z}, ymm2, ymm3/m256/m32bcst"
+    }
+  }
+  pages {
+    page_number: 1337
+    patches {
+      row: 7
+      expected: "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
+      replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
     }
   }
   pages {
@@ -2430,6 +2686,22 @@ documents {
       row: 6
       expected: "M"
       replacement: "A"
+    }
+  }
+    pages {
+    page_number: 1472
+    patches {
+      row: 14
+      expected: "VEX.128.66.0F 38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
+      replacement: "VEX.128.66.0F38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
+    }
+  }
+  pages {
+    page_number: 1473
+    patches {
+      row: 2
+      expected: "EVEX.128.66.0F38 30.WIG /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
+      replacement: "EVEX.128.66.0F38.WIG 30 /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
     }
   }
   pages {
@@ -2477,6 +2749,14 @@ documents {
       row: 8
       expected: "A"
       replacement: "RM"
+    }
+  }
+  pages {
+    page_number: 1885
+    patches {
+      row: 4
+      expected: "EVEX.256.0F.W1 78 02 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
+      replacement: "EVEX.256.0F.W1 78 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
     }
   }
   pages {
@@ -2537,6 +2817,14 @@ documents {
     }
   }
   pages {
+    page_number: 2210
+    patches {
+      row: 3
+      expected: "VEX.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
+      replacement: "VEX.NDS.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
+    }
+  }
+  pages {
     page_number: 2213
     patches {
       row: 4
@@ -2582,6 +2870,65 @@ documents {
       col: 1
       expected: "A"
       replacement: "HVM"
+    }
+  }
+  pages {
+    page_number: 2330
+    patches {
+      row: 3
+      expected: "EVEX.NDS.LIG.66.0F3A.W1 57\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
+      replacement: "EVEX.NDS.LIG.66.0F3A.W1 57 /r\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
+    }
+  }
+  pages {
+    page_number: 2334
+    patches {
+      row: 3
+      expected: "EVEX.NDS.LIG.66.0F3A.W0 57 \n/r /ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
+      replacement: "EVEX.NDS.LIG.66.0F3A.W0 57 /r ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
+    }
+  }
+  pages {
+    page_number: 2412
+    patches {
+      row: 3 col: 2
+      expected:    "O"
+      replacement: "O1"
+    }
+    patches {
+      row: 4 col: 2
+      expected:    "O"
+      replacement: "O2"
+    }
+    patches {
+      row: 5 col: 2
+      expected:    "O"
+      replacement: "O1"
+    }
+    patches {
+      row: 6 col: 2
+      expected:    "O"
+      replacement: "O1"
+    }
+    patches {
+      row: 7 col: 2
+      expected:    "O"
+      replacement: "O2"
+    }
+    patches {
+      row: 8 col: 2
+      expected:    "O"
+      replacement: "O2"
+    }
+    patches {
+      row: 23
+      expected:    "O"
+      replacement: "O1"
+    }
+    patches {
+      row: 24
+      expected:    "O"
+      replacement: "O2"
     }
   }
 }

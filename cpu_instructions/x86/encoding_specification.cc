@@ -162,6 +162,11 @@ EncodingSpecificationParser::EncodingSpecificationParser()
 StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
     StringPiece specification) {
   specification_.Clear();
+  // TODO(b/37203350): In 2017/03, Intel started adding NP to the encoding
+  // specifications of instructions that do not accept any additional prefixes,
+  // but it's inconsistent across the SDM. For now we simply drop the prefix and
+  // ignore it.
+  RE2::Consume(&specification, "NP ");
   if (specification.starts_with("VEX.") || specification.starts_with("EVEX")) {
     RETURN_IF_ERROR(ParseVexOrEvexPrefix(&specification));
   } else {

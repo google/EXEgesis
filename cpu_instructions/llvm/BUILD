@@ -16,13 +16,13 @@ cc_library(
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@llvm_git//:execution_engine",
         "@llvm_git//:ir",
         "@llvm_git//:mcjit",
         "@llvm_git//:support",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -35,13 +35,13 @@ cc_test(
         "//base",
         "//cpu_instructions/llvm:llvm_utils",
         "//cpu_instructions/util:strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
         "@llvm_git//:ir",
         "@llvm_git//:support",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -70,6 +70,7 @@ cc_library(
         "//strings",
         "//util/task:status",
         "//util/task:statusor",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@llvm_git//:analysis",  # buildcleaner: keep
@@ -78,6 +79,5 @@ cc_library(
         "@llvm_git//:machine_code",
         "@llvm_git//:support",
         "@llvm_git//:target_base",
-        "@protobuf_git//:protobuf_lite",
     ],
 )

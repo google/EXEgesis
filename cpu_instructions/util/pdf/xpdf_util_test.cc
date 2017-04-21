@@ -400,6 +400,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
             bottom: 83.25
           }
           font_size: 11
+          row: 0
+          col: 0
         }
         bounding_box {
           left: 72
@@ -418,6 +420,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
           }
           font_size: 11
           text: "ab"
+          row: 1
+          col: 0
         }
         blocks {
           bounding_box {
@@ -428,6 +432,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
           }
           font_size: 11
           text: "cd \nef"
+          row: 1
+          col: 1
         }
         bounding_box {
           left: 78
@@ -446,6 +452,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
           }
           font_size: 11
           text: "gh"
+          row: 2
+          col: 0
         }
         blocks {
           bounding_box {
@@ -455,6 +463,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
             bottom: 142.5
           }
           font_size: 11
+          row: 2
+          col: 1
         }
         bounding_box {
           left: 78
@@ -472,6 +482,8 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
             bottom: 162
           }
           font_size: 11
+          row: 3
+          col: 0
         }
         bounding_box {
           left: 72

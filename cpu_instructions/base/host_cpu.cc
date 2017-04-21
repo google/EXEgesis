@@ -29,9 +29,16 @@
 #include "util/gtl/map_util.h"
 
 namespace cpu_instructions {
-namespace {
+
+#define PROCESS_FEATURE(name, reg, field)  \
+  if (reg.field()) {                       \
+    InsertOrDie(&indexed_features, #name); \
+  }
 
 #ifdef __x86_64__
+
+namespace intel {
+namespace {
 
 // Represents a register with access to individual bit ranges.
 class StructuredRegister {
@@ -254,24 +261,7 @@ struct Extended2FeatureRegisters {
   EDXStructure edx;
 };
 
-#define PROCESS_FEATURE(name, reg, field)  \
-  if (reg.field()) {                       \
-    InsertOrDie(&indexed_features, #name); \
-  }
-
 HostCpuInfo CreateHostCpuInfo() {
-  // Basic checks.
-  {
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
-
-    // Check that we can retrieve extended features.
-    __cpuid(0, eax, ebx, ecx, edx);
-    CHECK_GT(eax, 0x07);
-  }
-
   const FeatureRegisters features;
   const ExtendedFeatureRegisters ext_features;
   const Extended2FeatureRegisters ext2_features;
@@ -324,6 +314,30 @@ HostCpuInfo CreateHostCpuInfo() {
 
   return HostCpuInfo(StringPrintf("intel:%02X_%02X", family, model),
                      std::move(indexed_features));
+}
+
+}  // namespace
+}  // namespace intel
+
+namespace {
+HostCpuInfo CreateHostCpuInfo() {
+  // Basic checks.
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
+
+  // Check that we can retrieve extended features.
+  __cpuid(0, eax, ebx, ecx, edx);
+  CHECK_GT(eax, 0x07);
+
+  // Check for "GenuineIntel" (see Intel SDM).
+  if (ebx == 0x756e6547 && edx == 0x49656e69 && ecx == 0x6c65746e) {
+    return intel::CreateHostCpuInfo();
+  }
+  LOG(FATAL) << "Unknown CPU identitification string eax=" << eax
+             << " edx=" << edx << " ecx=" << ecx;
+  return HostCpuInfo("unknown", std::unordered_set<string>{});
 }
 #else
 // TODO(courbet): Add support for ARM if needed. The above code should work for

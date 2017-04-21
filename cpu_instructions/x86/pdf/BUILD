@@ -3,8 +3,6 @@
 
 package(default_visibility = ["//:internal_users"])
 
-load("//cpu_instructions:proto_library.bzl", "cpu_instructions_proto_library")
-
 licenses(["notice"])  # Apache 2.0
 
 cc_library(
@@ -13,13 +11,13 @@ cc_library(
     hdrs = ["vendor_syntax.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//strings",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -41,18 +39,18 @@ cc_library(
     deps = [
         ":vendor_syntax",
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
-        "//cpu_instructions/proto/pdf/x86:intel_sdm_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
+        "//cpu_instructions/proto/pdf/x86:intel_sdm_cc_proto",
         "//cpu_instructions/util/pdf:pdf_document_utils",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -70,8 +68,8 @@ cc_test(
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:pdf_document_parser",
         "//strings",
+        "@com_google_protobuf//:protobuf",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf",
     ],
 )
 
@@ -84,17 +82,18 @@ cc_library(
     deps = [
         ":intel_sdm_extractor",
         "//base",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:pdf_document_utils",
         "//cpu_instructions/util/pdf:xpdf_util",
+        "//cpu_instructions/x86:cleanup_instruction_set_all",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )

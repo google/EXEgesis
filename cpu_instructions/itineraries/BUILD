@@ -18,11 +18,11 @@ cc_library(
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@llvm_git//:ir",
         "@llvm_git//:support",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -34,11 +34,11 @@ cc_test(
         "//base",
         "//cpu_instructions/itineraries:perf_subsystem",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -51,14 +51,14 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cpu_type",
         "//cpu_instructions/base:host_cpu",
-        "//cpu_instructions/proto:cpu_type_proto",
+        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//strings",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@libpfm4_git//:pfm4",
-        "@protobuf_git//:protobuf",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -71,9 +71,9 @@ cc_test(
         ":perf_subsystem",
         "//base",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest_main",
-        "@protobuf_git//:protobuf_lite",
     ],
 )

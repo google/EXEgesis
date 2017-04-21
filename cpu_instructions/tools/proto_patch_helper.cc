@@ -19,7 +19,7 @@
 // cpu_instructions/tools:proto_patch_helper -- \
 // --cpu_instructions_proto_input_file=/path/to/sdm.pdf.pb \
 // --cpu_instructions_match_expression='SAL/SAR/SHL/SHR' \
-// --cpu_instruction_page_numbers=662
+// --cpu_instructions_page_numbers=662
 
 #include <algorithm>
 #include <unordered_map>
@@ -41,7 +41,7 @@ DEFINE_string(cpu_instructions_proto_input_file, "",
               "Path to the binary proto representation of the PDF file.");
 DEFINE_string(cpu_instructions_match_expression, "",
               "The regular expression to match cells to patch.");
-DEFINE_string(cpu_instruction_page_numbers, "",
+DEFINE_string(cpu_instructions_page_numbers, "",
               "A list of page numbers to process, all pages if not set.");
 
 namespace cpu_instructions {
@@ -65,7 +65,7 @@ std::unordered_set<size_t> ParsePageNumbers() {
   int page_number = 0;
   ::re2::
 
-      StringPiece input(FLAGS_cpu_instruction_page_numbers);
+      StringPiece input(FLAGS_cpu_instructions_page_numbers);
   while (RE2::Consume(&input, "(\\d+),?", &page_number)) {
     pages.insert(page_number);
   }
@@ -88,21 +88,17 @@ void Main() {
   for (const auto& page : pdf_document.pages()) {
     if (!ShouldProcessPage(pages, page)) continue;
 
-    size_t row_index = 0;
     for (const auto& row : page.rows()) {
-      size_t col_index = 0;
       for (const auto& block : row.blocks()) {
         if (ShouldProcessTextBlock(block)) {
           PdfPagePatch patch;
-          patch.set_row(row_index);
-          patch.set_col(col_index);
+          patch.set_row(block.row());
+          patch.set_col(block.col());
           patch.set_expected(block.text());
-          patch.set_replacement("CHANGE ME");
+          patch.set_replacement(block.text());
           page_patches[page.number()].push_back(patch);
         }
-        ++col_index;
       }
-      ++row_index;
     }
   }
 

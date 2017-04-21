@@ -46,6 +46,9 @@ string* GetMutableCellTextOrNull(PdfTextTableRow* row, int col);
 // Applies patches to the page.
 void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page);
 
+// Returns true if the patch applies successfully.
+bool CheckPatch(const PdfPagePatch& patch, const PdfPage& page);
+
 // Retrieve the page's rows excluding header and footer.
 std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
                                                     float margin);
@@ -54,6 +57,26 @@ std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
 // found.
 const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,
                                           const PdfDocumentId& document_id);
+
+// Tries to apply patches from one document to another.
+// 'successful_patches' and 'failed_patches' must not be nullptr.
+//
+// The algorithm computes a vector of hashes of PdfTextBlock from both documents
+// and finds subsequences of hashes that matches between the two. Then we
+// traverse the matching ranges starting by longest matches to get a mapping
+// from block in the from_document to block in the to_document.
+//
+// Longest matching subsequence algorithm is described here:
+// https://cs.stackexchange.com/a/9619
+//
+// If a patch is part of this mapping we rewrite it using the destination block
+// coordinates and append it to successful_patches, otherwise we append it to
+// failed_patches.
+void TransferPatches(const PdfDocumentChanges& changes,
+                     const PdfDocument& from_document,
+                     const PdfDocument& to_document,
+                     PdfDocumentChanges* successful_patches,
+                     PdfDocumentChanges* failed_patches);
 }  // namespace pdf
 }  // namespace cpu_instructions
 

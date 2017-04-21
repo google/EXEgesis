@@ -15,7 +15,7 @@ cc_library(
     ],
     deps = [
         "//strings",
-        "@protobuf_git//:protobuf_lite",
+        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -23,6 +23,6 @@ cc_library(
     name = "statusor",
     hdrs = ["statusor.h"],
     deps = [
-        "@protobuf_git//:protobuf_lite",
+        "@com_google_protobuf//:protobuf_lite",
     ],
 )

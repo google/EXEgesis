@@ -507,6 +507,15 @@ KnownMicroArchitectures() {
           id: 'intel:06_5E'
         })",
                                    kSkylakeMicroarchitecture))));
+    result->emplace("skx",
+                    gtl::MakeUnique<MicroArchitecture>(
+                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
+                            StrCat(R"(
+        id: "skx"
+        cpu_models {
+          id: 'intel:06_55'
+        })",
+                                   kSkylakeMicroarchitecture))));
     result->emplace("hsw",
                     gtl::MakeUnique<MicroArchitecture>(
                         ParseProtoFromStringOrDie<MicroArchitectureProto>(
@@ -657,7 +666,11 @@ const std::unordered_map<string, const CpuType*>& KnownCpus() {
 }  // namespace
 
 const CpuType* CpuType::FromCpuId(const string& cpu_id) {
-  return FindPtrOrNull(KnownCpus(), cpu_id);
+  const auto* const result = FindPtrOrNull(KnownCpus(), cpu_id);
+  if (result == nullptr) {
+    LOG(WARNING) << "Unknown CPU with id '" << cpu_id << "'";
+  }
+  return result;
 }
 
 }  // namespace cpu_instructions

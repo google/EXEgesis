@@ -7,11 +7,18 @@ git_repository(
 )
 
 # ===== protobuf =====
+# See https://bazel.build/blog/2017/02/27/protocol-buffers.html
 
 git_repository(
-    name = "protobuf_git",
+    name = "com_google_protobuf",
     remote = "https://github.com/google/protobuf.git",
-    tag = "v3.2.0",
+    commit = "b4b0e304be5a68de3d0ee1af9b286f958750f5e4",
+)
+
+git_repository(
+    name = "com_google_protobuf_cc",
+    remote = "https://github.com/google/protobuf.git",
+    commit = "b4b0e304be5a68de3d0ee1af9b286f958750f5e4",
 )
 
 # ===== googletest =====

@@ -13,14 +13,14 @@ cc_binary(
     deps = [
         "//base",
         "//cpu_instructions/base:transform_factory",
-        "//cpu_instructions/proto:instructions_proto",
+        "//cpu_instructions/proto:instructions_cc_proto",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/x86/pdf:parse_sdm",
         "//strings",
         "//util/task:status",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -29,13 +29,13 @@ cc_binary(
     srcs = ["pdf2proto.cc"],
     deps = [
         "//base",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:xpdf_util",
         "//strings",
+        "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
     ],
 )
 
@@ -44,14 +44,32 @@ cc_binary(
     srcs = ["proto_patch_helper.cc"],
     deps = [
         "//base",
-        "//cpu_instructions/proto/pdf:pdf_document_proto",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:xpdf_util",
         "//strings",
         "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@gflags_git//:gflags",
         "@glog_git//:glog",
-        "@protobuf_git//:protobuf_lite",
+    ],
+)
+
+cc_binary(
+    name = "proto_patch_migrate",
+    srcs = ["proto_patch_migrate.cc"],
+    deps = [
+        "//base",
+        "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
+        "//cpu_instructions/util:proto_util",
+        "//cpu_instructions/util/pdf:pdf_document_utils",
+        "//cpu_instructions/util/pdf:xpdf_util",
+        "//strings",
+        "//util/gtl:map_util",
+        "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
     ],
 )
