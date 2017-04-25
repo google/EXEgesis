@@ -42,9 +42,9 @@
 DEFINE_string(cpu_instructions_from_proto_file, "", "");
 DEFINE_string(cpu_instructions_to_proto_file, "", "");
 DEFINE_string(cpu_instructions_output_file_base, "", "");
-DEFINE_string(cpu_instructions_patch_sets_file,
-              "cpu_instructions/x86/pdf/sdm_patches.pbtxt",
-              "A set of patches to original documents");
+DEFINE_string(
+    cpu_instructions_patches_directory, "cpu_instructions/x86/pdf/sdm_patches/",
+    "A folder containing a set of patches to apply to original documents");
 
 namespace cpu_instructions {
 namespace pdf {
@@ -101,8 +101,8 @@ void Main() {
       << "missing --cpu_instructions_from_proto_file";
   CHECK(!FLAGS_cpu_instructions_to_proto_file.empty())
       << "missing --cpu_instructions_to_proto_file";
-  CHECK(!FLAGS_cpu_instructions_patch_sets_file.empty())
-      << "missing --cpu_instructions_patch_sets_file";
+  CHECK(!FLAGS_cpu_instructions_patches_directory.empty())
+      << "missing --cpu_instructions_patches_directory";
   CHECK(!FLAGS_cpu_instructions_output_file_base.empty())
       << "missing --cpu_instructions_output_file_base";
 
@@ -110,9 +110,10 @@ void Main() {
             << FLAGS_cpu_instructions_from_proto_file;
   const auto from_document =
       ReadBinaryProtoOrDie<PdfDocument>(FLAGS_cpu_instructions_from_proto_file);
-  LOG(INFO) << "Opening patches " << FLAGS_cpu_instructions_patch_sets_file;
-  const auto patch_sets = ReadTextProtoOrDie<PdfDocumentsChanges>(
-      FLAGS_cpu_instructions_patch_sets_file);
+  LOG(INFO) << "Opening patches from "
+            << FLAGS_cpu_instructions_patches_directory;
+  const auto patch_sets =
+      LoadConfigurations(FLAGS_cpu_instructions_patches_directory);
   LOG(INFO) << "Finding original patches";
   const auto& changes = FindPatchesOrDie(from_document, patch_sets);
   LOG(INFO) << "Checking patches";

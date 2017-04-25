@@ -78,7 +78,14 @@ cc_library(
     name = "parse_sdm",
     srcs = ["parse_sdm.cc"],
     hdrs = ["parse_sdm.h"],
-    data = [":sdm_patches.pbtxt"],
+    data = [
+        "sdm_patches/sdm_2016_04_vol2a.pbtxt",
+        "sdm_patches/sdm_2016_04_vol2b.pbtxt",
+        "sdm_patches/sdm_2016_06_vol2.pbtxt",
+        "sdm_patches/sdm_2016_09_vol2.pbtxt",
+        "sdm_patches/sdm_2016_12_vol123.pbtxt",
+        "sdm_patches/sdm_2017_03_vol123.pbtxt",
+    ],
     deps = [
         ":intel_sdm_extractor",
         "//base",

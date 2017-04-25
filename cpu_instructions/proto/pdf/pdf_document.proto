@@ -151,7 +151,10 @@ message PdfPagePatch {
   int32 col = 2;  // 0-based index of the row's column to apply the patch to.
 
   string expected = 3;     // The value to be found at [row, col] in the page.
-  string replacement = 4;  // The new value.
+  oneof action {
+    string replacement = 4;  // The new value.
+    bool remove_cell = 5;  // Removes the cell and renumber the adjacent blocks.
+  }
 }
 
 // It is not always obvious (based on the bounding boxes) if two segments should

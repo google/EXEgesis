@@ -70,8 +70,13 @@ PerfSubsystem::PerfSubsystem()
   const int ret = pfm_initialize();
   CHECK_EQ(PFM_SUCCESS, ret);
   // Check the consistency between CPUs that p4lib and we detect.
-  CHECK(Contains(Info(), microarchitecture_.proto().id()))
-      << "'" << Info() << "' vs '" << microarchitecture_.proto().id() << "'";
+  // p4lib does not make a difference between skl and skx.
+  const string cpu_id = microarchitecture_.proto().id() == "skx"
+                            ? "skl"
+                            : microarchitecture_.proto().id();
+  CHECK(Contains(Info(), cpu_id))
+      << "'" << Info() << "' vs '" << cpu_id << "' ('"
+      << microarchitecture_.proto().id() << ")'";
 }
 
 PerfSubsystem::~PerfSubsystem() {

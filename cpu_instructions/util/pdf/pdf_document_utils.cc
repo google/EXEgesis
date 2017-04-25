@@ -14,12 +14,15 @@
 
 #include "cpu_instructions/util/pdf/pdf_document_utils.h"
 
+#include <dirent.h>
 #include <algorithm>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
 
+#include "cpu_instructions/util/proto_util.h"
 #include "glog/logging.h"
+#include "strings/str_cat.h"
 #include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 
@@ -264,10 +267,9 @@ bool RewritePatch(const std::unordered_map<size_t, size_t>& block_mapping,
   if (out_index == nullptr) return false;
   const BlockPosition out_pos = index_out.GetPosition(*out_index);
   *patch_out_page = out_pos.page;
+  *patch_out = patch_in;
   patch_out->set_row(out_pos.row);
   patch_out->set_col(out_pos.col);
-  patch_out->set_expected(patch_in.expected());
-  patch_out->set_replacement(patch_in.replacement());
   return true;
 }
 
@@ -317,8 +319,28 @@ void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page) {
   string* text = GetMutableCellTextOrNull(page, patch.row(), patch.col());
   CHECK(text != nullptr) << "No valid cell for patch "
                          << patch.ShortDebugString();
-  CHECK_EQ(*text, patch.expected()) << "Can't apply patch, unexpected value";
-  *text = patch.replacement();
+  CHECK_EQ(*text, patch.expected())
+      << "Can't apply patch " << patch.ShortDebugString();
+  switch (patch.action_case()) {
+    case PdfPagePatch::ACTION_NOT_SET:
+      CHECK(false) << "action must be one of replacement or remove_cell for "
+                   << patch.ShortDebugString();
+      break;
+    case PdfPagePatch::kReplacement:
+      *text = patch.replacement();
+      break;
+    case PdfPagePatch::kRemoveCell: {
+      CHECK(patch.remove_cell()) << "remove_cell must be true if set";
+      // Remove the cell.
+      auto* blocks = page->mutable_rows(patch.row())->mutable_blocks();
+      blocks->erase(blocks->begin() + patch.col());
+      // And renumber the blocks.
+      for (size_t col = 0; col < blocks->size(); ++col) {
+        blocks->Mutable(col)->set_col(col);
+      }
+      break;
+    }
+  }
 }
 
 std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
@@ -332,6 +354,21 @@ std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
       result.push_back(&row);
   }
   return result;
+}
+
+PdfDocumentsChanges LoadConfigurations(const string& directory) {
+  PdfDocumentsChanges patch_sets;
+  DIR* dir = nullptr;
+  struct dirent* ent = nullptr;
+  if ((dir = opendir(directory.c_str())) != nullptr) {
+    while ((ent = readdir(dir)) != nullptr) {
+      const string full_path = StrCat(directory, "/", ent->d_name);
+      LOG(INFO) << "Reading configuration file " << full_path;
+      ReadTextProtoOrDie(full_path, patch_sets.add_documents());
+    }
+    closedir(dir);
+  }
+  return patch_sets;
 }
 
 const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,

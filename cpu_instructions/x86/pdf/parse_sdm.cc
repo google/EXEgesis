@@ -37,6 +37,7 @@ namespace x86 {
 namespace pdf {
 namespace {
 
+using cpu_instructions::pdf::LoadConfigurations;
 using cpu_instructions::pdf::PdfDocument;
 using cpu_instructions::pdf::PdfDocumentsChanges;
 using cpu_instructions::pdf::PdfPage;
@@ -73,13 +74,9 @@ std::vector<PdfParseRequest> ParseRequestsOrDie(const string& input_spec) {
 }  // namespace
 
 InstructionSetProto ParseSdmOrDie(const string& input_spec,
-                                  const string& patch_sets_file,
+                                  const string& patches_folder,
                                   const string& output_base) {
-  // Read the input files
-  PdfDocumentsChanges patch_sets;
-  if (!patch_sets_file.empty()) {
-    ReadTextProtoOrDie(patch_sets_file, &patch_sets);
-  }
+  const PdfDocumentsChanges patch_sets = LoadConfigurations(patches_folder);
 
   const auto requests = ParseRequestsOrDie(input_spec);
 

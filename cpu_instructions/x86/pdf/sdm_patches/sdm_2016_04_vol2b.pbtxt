@@ -1,0 +1,60 @@
+document_id {
+  title: "Intel\302\256 64 and IA-32 Architectures Software Developers Manual Volume 2B: Instruction Set Reference, N-Z"
+  creation_date: "D:20160410202721Z"
+  modification_date: "D:20160419024503+05\'30\'"
+}
+pages {
+  page_number: 50
+  patches {
+    row: 7
+    expected: "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
+    replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
+  }
+}
+pages {
+  page_number: 56
+  patches {
+    row: 6
+    expected: "VEX.NDS.256.66.0F.WIG DB /r\nVPAND ymm1, ymm2, ymm3/.m256"
+    replacement: "VEX.NDS.256.66.0F.WIG DB /r\nVPAND ymm1, ymm2, ymm3/m256"
+  }
+}
+pages {
+  page_number: 74
+  prevent_segment_bindings {
+    first: "VEX.NDS.128.66.0F.WIG 74 /r"
+    second: "VPCMPEQB xmm1, xmm2, xmm3/m128"
+  }
+  prevent_segment_bindings {
+    first: "VEX.NDS.128.66.0F.WIG 75 /r"
+    second: "VPCMPEQW xmm1, xmm2, xmm3/m128"
+  }
+  prevent_segment_bindings {
+    first: "VEX.NDS.128.66.0F.WIG 76 /r"
+    second: "VPCMPEQD xmm1, xmm2, xmm3/m128"
+  }
+  prevent_segment_bindings {
+    first: "VPCMPEQB ymm1, ymm2, ymm3 /m256"
+    second: "VEX.NDS.256.66.0F.WIG 75 /r"
+  }
+  prevent_segment_bindings {
+    first: "VEX.NDS.256.66.0F.WIG 75 /r"
+    second: "VPCMPEQW ymm1, ymm2, ymm3 /m256"
+  }
+}
+pages {
+  page_number: 413
+  patches {
+    row: 3
+    expected: "0F 5C /r\nSUBPS xmm1 xmm2/m128"
+    replacement: "0F 5C /r\nSUBPS xmm1,xmm2/m128"
+  }
+}
+pages {
+  page_number: 453
+  patches {
+    row: 4
+    expected: "VEX.128.66.0F3A.W0.1D /r ib\nVCVTPS2PH xmm1/m64, xmm2, imm8"
+    replacement: "VEX.128.66.0F3A.W0 1D /r ib\nVCVTPS2PH xmm1/m64, xmm2, imm8"
+  }
+}

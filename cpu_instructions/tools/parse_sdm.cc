@@ -33,9 +33,9 @@ DEFINE_string(cpu_instructions_input_spec, "",
               "the entire PDF is processed.");
 DEFINE_string(cpu_instructions_output_file_base, "",
               "Where to dump instructions");
-DEFINE_string(cpu_instructions_patch_sets_file,
-              "cpu_instructions/x86/pdf/sdm_patches.pbtxt",
-              "A set of patches to original documents");
+DEFINE_string(
+    cpu_instructions_patches_directory, "cpu_instructions/x86/pdf/sdm_patches/",
+    "A folder containing a set of patches to apply to original documents");
 
 namespace cpu_instructions {
 namespace {
@@ -46,9 +46,10 @@ void Main() {
   CHECK(!FLAGS_cpu_instructions_output_file_base.empty())
       << "missing --cpu_instructions_output_file_base";
 
-  InstructionSetProto instruction_set = x86::pdf::ParseSdmOrDie(
-      FLAGS_cpu_instructions_input_spec, FLAGS_cpu_instructions_patch_sets_file,
-      FLAGS_cpu_instructions_output_file_base);
+  InstructionSetProto instruction_set =
+      x86::pdf::ParseSdmOrDie(FLAGS_cpu_instructions_input_spec,
+                              FLAGS_cpu_instructions_patches_directory,
+                              FLAGS_cpu_instructions_output_file_base);
 
   // Optionally apply transforms in --cpu_instructions_transforms.
   CHECK_OK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),

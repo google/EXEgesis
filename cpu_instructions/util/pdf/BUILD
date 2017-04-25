@@ -63,6 +63,7 @@ cc_library(
     deps = [
         "//base",
         "//cpu_instructions/proto/pdf:pdf_document_cc_proto",
+        "//cpu_instructions/util:proto_util",
         "//strings",
         "//util/gtl:map_util",
         "@com_google_protobuf//:protobuf_lite",

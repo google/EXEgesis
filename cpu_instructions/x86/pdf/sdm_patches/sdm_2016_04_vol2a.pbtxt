@@ -1,0 +1,74 @@
+document_id {
+  title: "Intel\302\256 64 and IA-32 Architectures Software Developers Manual Volume 2A: Instruction Set Reference"
+  creation_date: "D:20160410203355Z"
+  modification_date: "D:20160419024132+05\'30\'"
+}
+pages {
+  page_number: 148
+  prevent_segment_bindings {
+    first: "BNDCL bnd, r/m32"
+    second: "F3 0F 1A /r"
+  }
+}
+pages {
+  page_number: 150
+  prevent_segment_bindings {
+    first: "BNDCU bnd, r/m32"
+    second: "F2 0F 1A /r"
+  }
+  prevent_segment_bindings {
+    first: "BNDCU bnd, r/m64"
+    second: "F2 0F 1B /r"
+  }
+  prevent_segment_bindings {
+    first: "BNDCN bnd, r/m32"
+    second: "F2 0F 1B /r"
+  }
+}
+pages {
+  page_number: 155
+  prevent_segment_bindings {
+    first: "BNDMK bnd, m32"
+    second: "F3 0F 1B /r"
+  }
+}
+pages {
+  page_number: 157
+  prevent_segment_bindings {
+    first: "BNDMOV bnd1, bnd2/m64"
+    second: "66 0F 1A /r"
+  }
+  prevent_segment_bindings {
+    first: "BNDMOV bnd1, bnd2/m128"
+    second: "66 0F 1B /r"
+  }
+  prevent_segment_bindings {
+    first: "BNDMOV bnd1/m64, bnd2"
+    second: "66 0F 1B /r"
+  }
+}
+pages {
+  page_number: 205
+  patches {
+    row: 23
+    col: 3
+    expected: "V/N.E."
+    replacement: "Valid"
+  }
+}
+pages {
+  page_number: 612
+  patches {
+    row: 7
+    expected: "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
+    replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
+  }
+}
+pages {
+  page_number: 624
+  patches {
+    row: 6
+    expected: "VEX128.66.0F.WIG 17/r\nVMOVHPD m64, xmm1"
+    replacement: "VEX.128.66.0F.WIG 17 /r\nVMOVHPD m64, xmm1"
+  }
+}

@@ -53,6 +53,9 @@ bool CheckPatch(const PdfPagePatch& patch, const PdfPage& page);
 std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
                                                     float margin);
 
+// Loads all files in directory and returns the merged PdfDocumentsChanges.
+PdfDocumentsChanges LoadConfigurations(const string& directory);
+
 // Returns the changes corresponding to the given document id, or nullptr if not
 // found.
 const PdfDocumentChanges* GetConfigOrNull(const PdfDocumentsChanges& patch_sets,

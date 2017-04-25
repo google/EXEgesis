@@ -1,0 +1,1066 @@
+document_id {
+  title: "Intel\302\256 64 and IA-32 Architectures Software Developers Manual Volume 2 (2A, 2B, 2C & 2D): Instruction Set Reference, A-Z"
+  creation_date: "D:20160706190738Z"
+  modification_date: "D:20160707150802-07\'00\'"
+}
+pages {
+  page_number: 276
+  patches {
+    row: 23
+    col: 3
+    expected: "V/N.E."
+    replacement: "Valid"
+  }
+}
+pages {
+  page_number: 735
+  patches {
+    row: 11
+    expected: "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
+    replacement: "VEX.128.66.0F.W0 6E /r\nVMOVD xmm1, r32/m32"
+  }
+}
+pages {
+  page_number: 747
+  patches {
+    row: 21
+    expected: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
+    replacement: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/m128"
+  }
+}
+pages {
+  page_number: 758
+  prevent_segment_bindings {
+    first: "MOVHPD xmm1, m64"
+    second: "VEX.NDS.128.66.0F.WIG 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVHPD xmm2, xmm1, m64"
+    second: "EVEX.NDS.128.66.0F.W1 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVHPD xmm2, xmm1, m64"
+    second: "66 0F 17 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVHPD m64, xmm1"
+    second: "VEX.128.66.0F.WIG 17 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVHPD m64, xmm1"
+    second: "EVEX.128.66.0F.W1 17 /r"
+  }
+}
+pages {
+  page_number: 760
+  prevent_segment_bindings {
+    first: "MOVHPS xmm1, m64"
+    second: "VEX.NDS.128.0F.WIG 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVHPS xmm2, xmm1, m64"
+    second: "EVEX.NDS.128.0F.W0 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVHPS xmm2, xmm1, m64"
+    second: "0F 17 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVHPS m64, xmm1"
+    second: "VEX.128.0F.WIG 17 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVHPS m64, xmm1"
+    second: "EVEX.128.0F.W0 17 /r"
+  }
+}
+pages {
+  page_number: 762
+  prevent_segment_bindings {
+    first: "MOVLHPS xmm1, xmm2"
+    second: "VEX.NDS.128.0F.WIG 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLHPS xmm1, xmm2, xmm3"
+    second: "EVEX.NDS.128.0F.W0 16 /r"
+  }
+}
+pages {
+  page_number: 764
+  prevent_segment_bindings {
+    first: "MOVLPD xmm1, m64"
+    second: "VEX.NDS.128.66.0F.WIG 12 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLPD xmm2, xmm1, m64"
+    second: "EVEX.NDS.128.66.0F.W1 12 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLPD xmm2, xmm1, m64"
+    second: "66 0F 13/r"
+  }
+  prevent_segment_bindings {
+    first: "MOVLPD m64, xmm1"
+    second: "VEX.128.66.0F.WIG 13/r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLPD m64, xmm1"
+    second: "EVEX.128.66.0F.W1 13/r"
+  }
+}
+pages {
+  page_number: 766
+  prevent_segment_bindings {
+    first: "MOVLPS xmm1, m64"
+    second: "VEX.NDS.128.0F.WIG 12 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLPS xmm2, xmm1, m64"
+    second: "EVEX.NDS.128.0F.W0 12 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLPS xmm2, xmm1, m64"
+    second: "0F 13/r"
+  }
+  prevent_segment_bindings {
+    first: "MOVLPS m64, xmm1"
+    second: "VEX.128.0F.WIG 13/r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVLPS m64, xmm1"
+    second: "EVEX.128.0F.W0 13/r"
+  }
+}
+pages {
+  page_number: 772
+  prevent_segment_bindings {
+    first: "MOVNTDQA xmm1, m128"
+    second: "VEX.128.66.0F38.WIG 2A /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVNTDQA xmm1, m128"
+    second: "VEX.256.66.0F38.WIG 2A /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVNTDQA ymm1, m256"
+    second: "EVEX.128.66.0F38.W0 2A /r"
+  }
+}
+pages {
+  page_number: 774
+  prevent_segment_bindings {
+    first: "MOVNTDQ m128, xmm1"
+    second: "VEX.128.66.0F.WIG E7 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVNTDQ m128, xmm1"
+    second: "VEX.256.66.0F.WIG E7 /r"
+  }
+  prevent_segment_bindings {
+    first: "VEX.256.66.0F.WIG E7 /r"
+    second: "VMOVNTDQ m256, ymm1"
+  }
+}
+pages {
+  page_number: 778
+  prevent_segment_bindings {
+    first: "MOVNTPD m128, xmm1"
+    second: "VEX.128.66.0F.WIG 2B /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVNTPD m128, xmm1"
+    second: "VEX.256.66.0F.WIG 2B /r"
+  }
+  prevent_segment_bindings {
+    first: "VEX.256.66.0F.WIG 2B /r"
+    second: "VMOVNTPD m256, ymm1"
+  }
+}
+pages {
+  page_number: 780
+  prevent_segment_bindings {
+    first: "MOVNTPS m128, xmm1"
+    second: "VEX.128.0F.WIG 2B /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVNTPS m128, xmm1"
+    second: "VEX.256.0F.WIG 2B /r"
+  }
+  prevent_segment_bindings {
+    first: "VEX.256.0F.WIG 2B /r"
+    second: "VMOVNTPS m256, ymm1"
+  }
+}
+pages {
+  page_number: 791
+  prevent_segment_bindings {
+    first: "MOVSD xmm1, xmm2"
+    second: "F2 0F 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVSD xmm1, m64"
+    second: "F2 0F 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVSD xmm1/m64, xmm2"
+    second: "VEX.NDS.LIG.F2.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSD xmm1, xmm2, xmm3"
+    second: "VEX.LIG.F2.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSD xmm1, m64"
+    second: "VEX.NDS.LIG.F2.0F.WIG 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSD xmm1, xmm2, xmm3"
+    second: "VEX.LIG.F2.0F.WIG 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSD m64, xmm1"
+    second: "EVEX.NDS.LIG.F2.0F.W1 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSD xmm1 {k1}{z}, m64"
+    second: "EVEX.NDS.LIG.F2.0F.W1 11 /r"
+  }
+}
+pages {
+  page_number: 794
+  prevent_segment_bindings {
+    first: "MOVSHDUP xmm1, xmm2/m128"
+    second: "VEX.128.F3.0F.WIG 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSHDUP xmm1, xmm2/m128"
+    second: "VEX.256.F3.0F.WIG 16 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSHDUP ymm1, ymm2/m256"
+    second: "EVEX.128.F3.0F.W0 16 /r"
+  }
+}
+pages {
+  page_number: 797
+  prevent_segment_bindings {
+    first: "MOVSLDUP xmm1, xmm2/m128"
+    second: "VEX.128.F3.0F.WIG 12 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSLDUP xmm1, xmm2/m128"
+    second: "VEX.256.F3.0F.WIG 12 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSLDUP ymm1, ymm2/m256"
+    second: "EVEX.128.F3.0F.W0 12 /r"
+  }
+}
+pages {
+  page_number: 800
+  prevent_segment_bindings {
+    first: "MOVSS xmm1, xmm2"
+    second: "F3 0F 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSS xmm1, m32"
+    second: "F3 0F 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVSS xmm1, m32"
+    second: "VEX.NDS.LIG.F3.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSS xmm1, xmm2, xmm3"
+    second: "VEX.LIG.F3.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVSS xmm2/m32, xmm1"
+    second: "VEX.NDS.LIG.F3.0F.WIG 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSS xmm1, xmm2, xmm3"
+    second: "VEX.LIG.F3.0F.WIG 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSS m32, xmm1"
+    second: "EVEX.NDS.LIG.F3.0F.W0 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVSS xmm1 {k1}{z}, m32"
+    second: "EVEX.NDS.LIG.F3.0F.W0 11 /r"
+  }
+}
+pages {
+  page_number: 806
+  prevent_segment_bindings {
+    first: "MOVUPD xmm1, xmm2/m128"
+    second: "66 0F 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVUPD xmm2/m128, xmm1"
+    second: "VEX.128.66.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPD xmm1, xmm2/m128"
+    second: "VEX.128.66.0F.WIG 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPD xmm2/m128, xmm1"
+    second: "VEX.256.66.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPD ymm1, ymm2/m256"
+    second: "VEX.256.66.0F.WIG 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPD ymm2/m256, ymm1"
+    second: "EVEX.128.66.0F.W1 10 /r"
+  }
+}
+pages {
+  page_number: 810
+  prevent_segment_bindings {
+    first: "MOVUPS xmm1, xmm2/m128"
+    second: "0F 11 /r"
+  }
+  prevent_segment_bindings {
+    first: "MOVUPS xmm2/m128, xmm1"
+    second: "VEX.128.0F.WIG 10 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPS xmm1, xmm2/m128"
+    second: "VEX.128.0F 11.WIG /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPS xmm2/m128, xmm1"
+    second: "VEX.256.0F 10.WIG /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPS ymm1, ymm2/m256"
+    second: "VEX.256.0F 11.WIG /r"
+  }
+  prevent_segment_bindings {
+    first: "VMOVUPS ymm2/m256, ymm1"
+    second: "EVEX.128.0F.W0 10 /r"
+  }
+}
+pages {
+  page_number: 826
+  prevent_segment_bindings {
+    first: "MULPD xmm1, xmm2/m128"
+    second: "VEX.NDS.128.66.0F.WIG 59 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMULPD xmm1,xmm2, xmm3/m128"
+    second: "VEX.NDS.256.66.0F.WIG 59 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMULPD ymm1, ymm2, ymm3/m256"
+    second: "EVEX.NDS.128.66.0F.W1 59 /r"
+  }
+}
+pages {
+  page_number: 829
+  prevent_segment_bindings {
+    first: "MULPS xmm1, xmm2/m128"
+    second: "VEX.NDS.128.0F.WIG 59 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMULPS xmm1,xmm2, xmm3/m128"
+    second: "VEX.NDS.256.0F.WIG 59 /r"
+  }
+  prevent_segment_bindings {
+    first: "VMULPS ymm1, ymm2, ymm3/m256"
+    second: "EVEX.NDS.128.0F.W0 59 /r"
+  }
+}
+pages {
+  page_number: 836
+  prevent_segment_bindings {
+    first: "MULX r32a, r32b, r/m32"
+    second: "VEX.NDD.LZ.F2.0F38.W1 F6 /r"
+  }
+}
+pages {
+  page_number: 848
+  prevent_segment_bindings {
+    first: "ORPD xmm1, xmm2/m128"
+    second: "VEX.NDS.128.66.0F 56 /r"
+  }
+  prevent_segment_bindings {
+    first: "VORPD xmm1,xmm2, xmm3/m128"
+    second: "VEX.NDS.256.66.0F 56 /r"
+  }
+  prevent_segment_bindings {
+    first: "VORPD ymm1, ymm2, ymm3/m256"
+    second: "EVEX.NDS.128.66.0F.W1 56 /r"
+  }
+}
+pages {
+  page_number: 851
+  prevent_segment_bindings {
+    first: "ORPS xmm1, xmm2/m128"
+    second: "VEX.NDS.128.0F 56 /r"
+  }
+  prevent_segment_bindings {
+    first: "VORPS xmm1,xmm2, xmm3/m128"
+    second: "VEX.NDS.256.0F 56 /r"
+  }
+  prevent_segment_bindings {
+    first: "VORPS ymm1, ymm2, ymm3/m256"
+    second: "EVEX.NDS.128.0F.W0 56 /r"
+  }
+}
+pages {
+  page_number: 884
+  prevent_segment_bindings {
+    first: "PADDQ xmm1, xmm2/m128"
+    second: "VEX.NDS.128.66.0F.WIG FC /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDB xmm1, xmm2, xmm3/m128"
+    second: "VEX.NDS.128.66.0F.WIG FD /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDW xmm1, xmm2, xmm3/m128"
+    second: "VEX.NDS.128.66.0F.WIG FE /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDD xmm1, xmm2, xmm3/m128"
+    second: "VEX.NDS.128.66.0F.WIG D4 /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDQ xmm1, xmm2, xmm3/m128"
+    second: "VEX.NDS.256.66.0F.WIG FC /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDB ymm1, ymm2, ymm3/m256"
+    second: "VEX.NDS.256.66.0F.WIG FD /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDW ymm1, ymm2, ymm3/m256"
+    second: "VEX.NDS.256.66.0F.WIG FE /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDD ymm1, ymm2, ymm3/m256"
+    second: "VEX.NDS.256.66.0F.WIG D4 /r"
+  }
+  prevent_segment_bindings {
+    first: "VPADDQ ymm1, ymm2, ymm3/m256"
+    second: "EVEX.NDS.128.66.0F.WIG FC /r"
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "EVEX.NDS.128.66.0F.WIG FD /r"
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "EVEX.NDS.128.66.0F.W0 FE /r"
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128/m32bcst "
+    second: "EVEX.NDS.128.66.0F.W1 D4 /r"
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128/m64bcst"
+    second: "EVEX.NDS.256.66.0F.WIG FC /r"
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.256.66.0F.WIG FD /r"
+  }
+  prevent_segment_bindings {
+    first: "PADDB xmm1, xmm2/m128"
+    second: "66 0F FD /r"
+  }
+  prevent_segment_bindings {
+    first: "PADDW xmm1, xmm2/m128"
+    second: "66 0F FE /r"
+  }
+  prevent_segment_bindings {
+    first: "PADDD xmm1, xmm2/m128"
+    second: "66 0F D4 /r"
+  }
+}
+pages {
+  page_number: 885
+  prevent_segment_bindings {
+    first: "ymm3/m256/m32bcst "
+    second: "EVEX.NDS.256.66.0F.W1 D4 /r"
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256/m64bcst"
+    second: "EVEX.NDS.512.66.0F.WIG FC /r"
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512"
+    second: "EVEX.NDS.512.66.0F.WIG FD /r"
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512"
+    second: "EVEX.NDS.512.66.0F.W0 FE /r"
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512/m32bcst "
+    second: "EVEX.NDS.512.66.0F.W1 D4 /r"
+  }
+}
+pages {
+  page_number: 895
+  patches {
+    row: 7
+    expected: "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
+    replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
+  }
+}
+pages {
+  page_number: 903
+  patches {
+    row: 6
+    expected: "VEX.NDS.256.66.0F.WIG DB /r\nVPAND ymm1, ymm2, ymm3/.m256"
+    replacement: "VEX.NDS.256.66.0F.WIG DB /r\nVPAND ymm1, ymm2, ymm3/m256"
+  }
+}
+pages {
+  page_number: 906
+  prevent_segment_bindings {
+    first: "xmm3/m128/m32bcst "
+    second: "EVEX.NDS.256.66.0F.W0 DF /r"
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256/m32bcst "
+    second: "EVEX.NDS.512.66.0F.W0 DF /r"
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512/m32bcst "
+    second: "EVEX.NDS.128.66.0F.W1 DF /r"
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128/m64bcst "
+    second: "EVEX.NDS.256.66.0F.W1 DF /r"
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256/m64bcst "
+    second: "EVEX.NDS.512.66.0F.W1 DF /r"
+  }
+}
+pages {
+  page_number: 924
+  prevent_segment_bindings {
+    first: "VEX.NDS.256.66.0F.WIG 75 /r"
+    second: "VPCMPEQW ymm1, ymm2, ymm3 /m256"
+  }
+  prevent_segment_bindings {
+    first: "VPCMPEQB ymm1, ymm2, ymm3 /m256"
+    second: "VEX.NDS.256.66.0F.WIG 75 /r"
+  }
+}
+pages {
+  page_number: 1096
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.256.66.0F.W0 70 /r ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.512.66.0F.W0 70 /r ib"
+  }
+}
+pages {
+  page_number: 1114
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.256.66.0F.W0 72 /6 ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.512.66.0F.W0 72 /6 ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDS.128.66.0F.W1 F3 /r"
+  }
+}
+pages {
+  page_number: 1115
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.256.66.0F.W1 73 /6 ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.512.66.0F.W1 73 /6 ib"
+  }
+}
+pages {
+  page_number: 1126
+  prevent_segment_bindings {
+    first: "VPSRAW xmm1 {k1}{z}, xmm2/m128, imm8"
+    second: "EVEX.NDD.256.66.0F.WIG 71 /4 ib"
+  }
+  prevent_segment_bindings {
+    first: "VPSRAW ymm1 {k1}{z}, ymm2/m256, imm8"
+    second: "EVEX.NDD.512.66.0F.WIG 71 /4 ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.256.66.0F.W0 72 /4 ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.512.66.0F.W0 72 /4 ib"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDS.128.66.0F.W1 E2 /r"
+  }
+  prevent_segment_bindings {
+    first: "imm8"
+    second: "EVEX.NDD.256.66.0F.W1 72 /4 ib"
+  }
+}
+pages {
+  page_number: 1181
+  prevent_segment_bindings {
+    first: "xmm3/m128/m32bcst"
+    second: "EVEX.NDS.128.66.0F.W1 6C /r"
+  }
+}
+pages {
+  page_number: 1359
+  patches {
+    row: 3
+    expected: "A8"
+    replacement: "A8 ib"
+  }
+  patches {
+    row: 3
+    col: 1
+    expected: "ib"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 1394
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m64bcst"
+    second: "EVEX.NDS.128.66.0F38.W0 65 /r"
+  }
+}
+pages {
+  page_number: 1502
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W1 A8 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W1 B8 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W1 98 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 A8 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 B8 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W1 98 /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 A8 /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 B8 /r "
+  }
+}
+pages {
+  page_number: 1509
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W0 A8 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W0 B8 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W0 98 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W0 A8 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.0 B8 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W0 98 /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 A8 /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 B8 /r "
+  }
+}
+pages {
+  page_number: 1521
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.128.66.0F38.W1 A6 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.DDS.128.66.0F38.W1 B6 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.256.66.0F38.W1 96 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W1 A6 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W1 B6 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.DDS.128.66.0F38.W1 A6 /r "
+  }
+}
+pages {
+  page_number: 1528
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.128.66.0F38.W0 A6 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.DDS.128.66.0F38.W0 B6 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.256.66.0F38.W0 96 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W0 A6 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W0 B6 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.DDS.128.66.0F38.W0 A6 /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.DDS.512.66.0F38.W0 96 /r "
+  }
+}
+pages {
+  page_number: 1535
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.128.66.0F38.W1 A7 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.DDS.128.66.0F38.W1 B7 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.256.66.0F38.W1 97 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W1 A7 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W1 B7 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.DDS.128.66.0F38.W1 97 /r "
+  }
+}
+pages {
+  page_number: 1542
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.128.66.0F38.W0 A7 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.DDS.128.66.0F38.W0 B7 /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.DDS.256.66.0F38.W0 97 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W0 A7 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.DDS.256.66.0F38.W0 B7 /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.DDS.128.66.0F38.W0 97 /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.DDS.512.66.0F38.W0 A7 /r "
+  }
+}
+pages {
+  page_number: 1549
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W1 AA /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W1 BA /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W1 9A /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 AA /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 BA /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W1 9A /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 AA /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 BA /r "
+  }
+}
+pages {
+  page_number: 1555
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W0 AA /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W0 BA /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W0 9A /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W0 AA /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.0 BA /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W0 9A /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 AA /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 BA /r "
+  }
+}
+pages {
+  page_number: 1567
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W1 AC /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W1 BC /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W1 9C /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 AC /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 BC /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W1 9C /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm2, xmm3/m128/m64bcst"
+    second: "EVEX.NDS.128.66.0F38.W1 BC /r "
+  }
+}
+pages {
+  page_number: 1568
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 BC /r "
+  }
+}
+pages {
+  page_number: 1574
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W0 AC /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W0 BC /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W0 9C /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W0 AC /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.0 BC /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W0 9C /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 BC /r "
+  }
+}
+pages {
+  page_number: 1586
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W1 AE /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W1 BE /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W1 9E /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 AE /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W1 BE /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W1 9E /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 AE /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m64bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W1 BE /r "
+  }
+}
+pages {
+  page_number: 1592
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.128.66.0F38.W0 AE /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128 "
+    second: "VEX.NDS.128.66.0F38.W0 BE /r "
+  }
+  prevent_segment_bindings {
+    first: "xmm3/m128"
+    second: "VEX.NDS.256.66.0F38.W0 9E /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.W0 AE /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "VEX.NDS.256.66.0F38.0 BE /r "
+  }
+  prevent_segment_bindings {
+    first: "ymm3/m256"
+    second: "EVEX.NDS.128.66.0F38.W0 9E /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 AE /r "
+  }
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512/m32bcst{er}"
+    second: "EVEX.NDS.512.66.0F38.W0 BE /r "
+  }
+}
+pages {
+  page_number: 1680
+  prevent_segment_bindings {
+    first: "zmm2, zmm3/m512"
+    second: "EVEX.NDS.128.66.0F38.W1 66 /r"
+  }
+}
+pages {
+  page_number: 1682
+  prevent_segment_bindings {
+    first: "zmm3/m512/m32bcst"
+    second: "EVEX.NDS.128.66.0F38.W1 64 /r"
+  }
+}
+pages {
+  page_number: 1719
+  prevent_segment_bindings {
+    first: "zmm3/m512/m32bcst"
+    second: "EVEX.NDS.128.66.0F38.W1 8D /r"
+  }
+}
