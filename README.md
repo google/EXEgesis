@@ -17,7 +17,7 @@ repository and run bazel:
 
 ```
 git clone https://github.com/google/CPU-instructions
-bazel build //cpu_instructions/tools:parse_sdm
+bazel -c opt build //cpu_instructions/tools:parse_sdm
 ```
 
 You don't need to worry about dependencies since bazel will download and build
@@ -41,10 +41,10 @@ Just add `--define libunwind=true` to the command line like so:
 
 ```
 # Building
-bazel build //cpu_instructions/tools:parse_sdm --define libunwind=true
+bazel -c opt build //cpu_instructions/tools:parse_sdm --define libunwind=true
 
 # Executing
-bazel run cpu_instructions/tools:parse_sdm --define libunwind=true -- \
+bazel -c opt run cpu_instructions/tools:parse_sdm --define libunwind=true -- \
   --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
   --cpu_instructions_output_file_base=/tmp/instructions
 ```
@@ -71,7 +71,7 @@ Here's a sample command line to parse all instructions, assuming that the manual
 has been downloaded as `/path/to/intel-sdm.pdf`.
 
 ```
-bazel run cpu_instructions/tools:parse_sdm -- \
+bazel -c opt run cpu_instructions/tools:parse_sdm -- \
   --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
   --cpu_instructions_output_file_base=/tmp/instructions
 ```
@@ -97,7 +97,7 @@ apply default transforms. Note that this is different from an empty/unspecified
 flag, where no transform is applied.
 
 ```
-bazel run cpu_instructions/tools:parse_sdm -- \
+bazel -c opt run cpu_instructions/tools:parse_sdm -- \
   --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
   --cpu_instructions_output_file_base=/tmp/instructions \
   --cpu_instructions_transforms=default
