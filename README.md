@@ -59,8 +59,8 @@ at least the following versions of the manual:
 *   September 2016: Intel® 64 and IA-32 Architectures Software Developer’s
     Manual Volume 2 (2A, 2B, 2C & 2D): Instruction Set Reference, A-Z
 
-For the complete list of supported and tested versions, see the file
-[`pdf_document_patches.pbtxt`](cpu_instructions/x86/pdf/pdf_document_patches.pbtxt).
+For the complete list of supported and tested versions, see the files in
+[`sdm_patches`](cpu_instructions/x86/pdf/sdm_patches/).
 
 The most recent version of the SDM can be downloaded from the [Intel Developer
 Zone](https://software.intel.com/en-us/articles/intel-sdm). The September 2016
