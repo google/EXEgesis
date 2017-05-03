@@ -41,11 +41,10 @@ new_http_archive(
 
 # ===== gflags =====
 
-new_git_repository(
-    name = "gflags_git",
-    build_file = "gflags.BUILD",
+git_repository(
+    name = "com_github_gflags_gflags",
     remote = "https://github.com/gflags/gflags.git",
-    tag = "v2.1.2",
+    tag = "v2.2.0",
 )
 
 # ===== glog =====

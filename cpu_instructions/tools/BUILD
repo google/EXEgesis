@@ -18,8 +18,8 @@ cc_binary(
         "//cpu_instructions/x86/pdf:parse_sdm",
         "//strings",
         "//util/task:status",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf_lite",
-        "@gflags_git//:gflags",
         "@glog_git//:glog",
     ],
 )
@@ -33,8 +33,8 @@ cc_binary(
         "//cpu_instructions/util:proto_util",
         "//cpu_instructions/util/pdf:xpdf_util",
         "//strings",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf_lite",
-        "@gflags_git//:gflags",
         "@glog_git//:glog",
     ],
 )
@@ -49,9 +49,9 @@ cc_binary(
         "//cpu_instructions/util/pdf:xpdf_util",
         "//strings",
         "//util/gtl:map_util",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@gflags_git//:gflags",
         "@glog_git//:glog",
     ],
 )
@@ -67,9 +67,9 @@ cc_binary(
         "//cpu_instructions/util/pdf:xpdf_util",
         "//strings",
         "//util/gtl:map_util",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@gflags_git//:gflags",
         "@glog_git//:glog",
     ],
 )

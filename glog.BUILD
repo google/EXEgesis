@@ -1,10 +1,10 @@
 cc_library(
     name = "glog",
     srcs = [
+        "config.h",
         "src/base/commandlineflags.h",
         "src/base/googleinit.h",
         "src/base/mutex.h",
-        "src/config.h",
         "src/demangle.cc",
         "src/demangle.h",
         "src/logging.cc",
@@ -34,7 +34,7 @@ cc_library(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        "@gflags_git//:gflags",
+        "@com_github_gflags_gflags//:gflags",
     ],
 )
 
@@ -63,7 +63,7 @@ genrule(
         "src/glog/vlog_is_on.h.in",
     ],
     outs = [
-        "src/config.h",
+        "config.h",
         "src/glog/logging.h",
         "src/glog/raw_logging.h",
         "src/glog/stl_logging.h",
@@ -73,7 +73,7 @@ genrule(
         "configure",
     ],
     cmd = "$(location :configure)" +
-          "&& cp -v src/config.h $(location src/config.h) " +
+          "&& cp -v src/config.h $(location config.h) " +
           "&& cp -v src/glog/logging.h $(location src/glog/logging.h) " +
           "&& cp -v src/glog/raw_logging.h $(location src/glog/raw_logging.h) " +
           "&& cp -v src/glog/stl_logging.h $(location src/glog/stl_logging.h) " +

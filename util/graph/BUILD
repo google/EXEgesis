@@ -15,8 +15,8 @@ cc_library(
         "//base",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf_lite",
-        "@gflags_git//:gflags",
         "@glog_git//:glog",
     ],
 )

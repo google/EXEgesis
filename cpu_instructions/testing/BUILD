@@ -12,9 +12,9 @@ cc_library(
     deps = [
         "//base",
         "//strings",
+        "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@gflags_git//:gflags",
         "@glog_git//:glog",
         "@googletest_git//:gtest",
     ],
