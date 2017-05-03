@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_X86_MICROARCHITECTURES_H_
-#define THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_X86_MICROARCHITECTURES_H_
+#ifndef CPU_INSTRUCTIONS_X86_MICROARCHITECTURES_H_
+#define CPU_INSTRUCTIONS_X86_MICROARCHITECTURES_H_
 
 #include "cpu_instructions/base/cpu_model.h"
 
@@ -83,4 +83,4 @@ inline const MicroArchitecture& NehalemMicroArchitecture() {
 }  // namespace x86
 }  // namespace cpu_instructions
 
-#endif  // THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_X86_MICROARCHITECTURES_H_
+#endif  // CPU_INSTRUCTIONS_X86_MICROARCHITECTURES_H_
