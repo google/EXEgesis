@@ -5,6 +5,49 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# A library that decomposes instructions into micro-operations based on measurements made
+# using the performance counters.
+cc_library(
+    name = "decomposition",
+    srcs = ["decomposition.cc"],
+    hdrs = ["decomposition.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/base:cpu_model",
+        "//cpu_instructions/base:port_mask",
+        "//cpu_instructions/proto:instructions_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
+        "//cpu_instructions/util:instruction_syntax",
+        "//strings",
+        "//util/gtl:container_algorithm",
+        "//util/gtl:map_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+        "@or_tools_git//ortools/linear_solver:linear_solver",
+    ],
+)
+
+cc_test(
+    name = "decomposition_test",
+    size = "medium",
+    timeout = "long",
+    srcs = ["decomposition_test.cc"],
+    deps = [
+        ":decomposition",
+        "//cpu_instructions/testing:test_util",
+        "//cpu_instructions/x86:microarchitectures",
+        "//strings",
+        "//util/task:status",
+        "@com_google_protobuf//:protobuf",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # A library using perf on JIT-generated assembly code.
 cc_library(
     name = "jit_perf_evaluator",
@@ -33,6 +76,7 @@ cc_test(
         ":jit_perf_evaluator",
         "//base",
         "//cpu_instructions/itineraries:perf_subsystem",
+        "//cpu_instructions/testing:test_util",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_google_protobuf//:protobuf_lite",

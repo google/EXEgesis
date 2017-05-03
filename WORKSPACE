@@ -74,6 +74,14 @@ new_git_repository(
     tag = "v4.8.0",
 )
 
+# ===== or-tools =====
+
+git_repository(
+    name = "or_tools_git",
+    remote = "https://github.com/google/or-tools.git",
+    commit = "9f906c8a087bf9769129fffa5e04e518afab5083",
+)
+
 # ===== LLVM =====
 
 new_git_repository(
@@ -82,4 +90,16 @@ new_git_repository(
     remote = "http://llvm.org/git/llvm.git",
     # LLVM has no tags.
     commit = "69112bd6d297c71dfa60f0e3156db54acf0bafc",
+)
+
+# ==============================================================================
+# Transitive Dependencies:
+# See https://bazel.build/versions/master/docs/external.html#transitive-dependencies
+# ==============================================================================
+
+new_http_archive(
+    name = "glpk",
+    url = "http://ftp.gnu.org/gnu/glpk/glpk-4.52.tar.gz",
+    sha256 = "9a5dab356268b4f177c33e00ddf8164496dc2434e83bd1114147024df983a3bb",
+    build_file = "@or_tools_git//bazel:glpk.BUILD",
 )
