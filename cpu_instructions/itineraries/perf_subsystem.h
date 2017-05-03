@@ -20,7 +20,7 @@
 #include <vector>
 #include "strings/string.h"
 
-#include "cpu_instructions/base/cpu_type.h"
+#include "cpu_instructions/base/cpu_model.h"
 #include "cpu_instructions/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"

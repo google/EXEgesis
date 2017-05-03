@@ -273,9 +273,6 @@ message InstructionProto {
     cpu_instructions.x86.EncodingSpecification x86_encoding_specification = 30;
   }
 
-  // The group the instruction belong to. For example, VADDPS belongs to ADDPS.
-  optional string group_id = 31 [deprecated = true];
-
   // The index of the instruction group this instruction belongs to.
   optional uint32 instruction_group_index = 32;
 }

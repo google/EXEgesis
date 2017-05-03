@@ -428,3 +428,32 @@ cc_test(
         "@googletest_git//:gtest_main",
     ],
 )
+
+# A library that contains information about the x86-64 microarchitectures.
+cc_library(
+    name = "microarchitectures",
+    srcs = ["microarchitectures.cc"],
+    hdrs = ["microarchitectures.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/base:cpu_model",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
+        "//strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "microarchitectures_test",
+    srcs = ["microarchitectures_test.cc"],
+    deps = [
+        ":microarchitectures",
+        "//cpu_instructions/base:cpu_model",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)

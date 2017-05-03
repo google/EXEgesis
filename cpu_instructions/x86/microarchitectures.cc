@@ -12,63 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/cpu_type.h"
+#include "cpu_instructions/x86/microarchitectures.h"
 
-#include <unordered_map>
+#include <vector>
+#include "strings/string.h"
 
-#include "cpu_instructions/util/proto_util.h"
+#include "cpu_instructions/base/cpu_model.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
+#include "glog/logging.h"
+#include "src/google/protobuf/text_format.h"
 #include "strings/str_cat.h"
-#include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 
 namespace cpu_instructions {
-
-MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
-    : proto_(proto),
-      port_masks_(proto_.port_masks().begin(), proto_.port_masks().end()) {
-  for (const CpuModelProto& model_proto : proto_.cpu_models()) {
-    cpu_models_.push_back(CpuModel(&model_proto, this));
-  }
-}
-
-const PortMask* MicroArchitecture::load_store_address_generation() const {
-  return GetPortMaskOrNull(
-      proto_.load_store_address_generation_port_mask_index() - 1);
-}
-
-const PortMask* MicroArchitecture::store_address_generation() const {
-  return GetPortMaskOrNull(proto_.store_address_generation_port_mask_index() -
-                           1);
-}
-
-const PortMask* MicroArchitecture::store_data() const {
-  return GetPortMaskOrNull(proto_.store_data_port_mask_index() - 1);
-}
-
-const PortMask* MicroArchitecture::GetPortMaskOrNull(const int index) const {
-  return index < 0 ? nullptr : &port_masks_[index];
-}
-
-bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
-  CHECK_NE(proto_.protected_mode().protected_modes().empty(),
-           proto_.protected_mode().user_modes().empty());
-  if (proto_.protected_mode().protected_modes().empty()) {
-    for (int mode : proto_.protected_mode().user_modes()) {
-      if (protection_mode == mode) {
-        return false;
-      }
-    }
-    return true;
-  } else {
-    for (int mode : proto_.protected_mode().protected_modes()) {
-      if (protection_mode == mode) {
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
+namespace x86 {
 namespace {
 
 // This is derived from Figure 2-1 "CPU Core Pipeline Functionality of the
@@ -215,6 +171,23 @@ constexpr const char kSkylakeMicroarchitecture[] = R"(
     }
     )";
 
+constexpr const char kSkylakeConsumerModels[] = R"(
+    id: "skl"
+    cpu_models {
+      id: 'intel:06_4E'
+    }
+    cpu_models {
+      id: 'intel:06_5E'
+    }
+    )";
+
+constexpr const char kSkylakeXeonModels[] = R"(
+    id: "skx"
+    cpu_models {
+      id: 'intel:06_55'
+    }
+    )";
+
 // The Haswell CPU microarchitecture.
 constexpr const char kHaswellMicroarchitecture[] = R"(
     ports {
@@ -326,6 +299,35 @@ constexpr const char kHaswellMicroarchitecture[] = R"(
     }
     )";
 
+constexpr const char kHaswellModels[] = R"(
+    id: "hsw"
+    cpu_models {
+      id: 'intel:06_3C'
+    }
+    cpu_models {
+      id: 'intel:06_3F'
+    }
+    cpu_models {
+      id: 'intel:06_45'
+    }
+    cpu_models {
+      id: 'intel:06_46'
+    }
+    )";
+
+constexpr const char kBroadwellModels[] = R"(
+    id: "bdw"
+    cpu_models {
+      id: 'intel:06_3D'
+    }
+    cpu_models {
+      id: 'intel:06_47'
+    }
+    cpu_models {
+      id: 'intel:06_56'
+    }
+    )";
+
 constexpr const char kSandyBridgeMicroarchitecture[] = R"(
     ports {
       comments: "Integer ALU"
@@ -402,6 +404,26 @@ constexpr const char kSandyBridgeMicroarchitecture[] = R"(
       cycle_events: "ild_stall.lcp"
       uops_events: "uops_issued:any"
       uops_events: "uops_retired:all"
+    }
+    )";
+
+constexpr const char kIvyBridgeModels[] = R"(
+    id: "ivb"
+    cpu_models {
+      id: 'intel:06_3A'
+    }
+    cpu_models {
+      id: 'intel:06_3E'
+    }
+    )";
+
+constexpr const char kSandyBridgeModels[] = R"(
+    id: "snb"
+    cpu_models {
+      id: 'intel:06_2A'
+    }
+    cpu_models {
+      id: 'intel:06_2D'
     }
     )";
 
@@ -489,188 +511,77 @@ constexpr const char kNehalemMicroarchitecture[] = R"(
     }
     )";
 
-const std::unordered_map<string, std::unique_ptr<MicroArchitecture>>&
-KnownMicroArchitectures() {
-  static const auto* const known_microarchitectures = []() {
-    auto* const result =
-        new std::unordered_map<string, std::unique_ptr<MicroArchitecture>>();
-    // TODO(courbet): Move this to a separate file.
-    result->emplace("skl",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "skl"
-        cpu_models {
-          id: 'intel:06_4E'
-        }
-        cpu_models {
-          id: 'intel:06_5E'
-        })",
-                                   kSkylakeMicroarchitecture))));
-    result->emplace("skx",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "skx"
-        cpu_models {
-          id: 'intel:06_55'
-        })",
-                                   kSkylakeMicroarchitecture))));
-    result->emplace("hsw",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "hsw"
-        cpu_models {
-          id: 'intel:06_3C'
-        }
-        cpu_models {
-          id: 'intel:06_3F'
-        }
-        cpu_models {
-          id: 'intel:06_45'
-        }
-        cpu_models {
-          id: 'intel:06_46'
-        })",
-                                   kHaswellMicroarchitecture))));
-    result->emplace(
-        "bdw", gtl::MakeUnique<MicroArchitecture>(
-                   ParseProtoFromStringOrDie<MicroArchitectureProto>(StrCat(
-                       R"(
-        id: "bdw"
-        cpu_models {
-          id: 'intel:06_3D'
-        }
-        cpu_models {
-          id: 'intel:06_47'
-        }
-        cpu_models {
-          id: 'intel:06_56'
-        })",
-                       kHaswellMicroarchitecture))));
-    result->emplace("ivb",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "ivb"
-        cpu_models {
-          id: 'intel:06_3A'
-        }
-        cpu_models {
-          id: 'intel:06_3E'
-        })",
-                                   kSandyBridgeMicroarchitecture))));
-    result->emplace("snb",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "snb"
-        cpu_models {
-          id: 'intel:06_2A'
-        }
-        cpu_models {
-          id: 'intel:06_2D'
-        })",
-                                   kSandyBridgeMicroarchitecture))));
-    result->emplace("wsm",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "wsm"
-        cpu_models {
-          id: 'intel:06_25'
-        }
-        cpu_models {
-          id: 'intel:06_2C'
-        }
-        cpu_models {
-          id: 'intel:06_2F'
-        })",
-                                   kNehalemMicroarchitecture))));
-    result->emplace("nhm",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(
-                            StrCat(R"(
-        id: "nhm"
-        cpu_models {
-          id: 'intel:06_1A'
-        }
-        cpu_models {
-          id: 'intel:06_1E'
-        }
-        cpu_models {
-          id: 'intel:06_1F'
-        }
-        cpu_models {
-          id: 'intel:06_2E'
-        })",
-                                   kNehalemMicroarchitecture))));
-    // Note(bdb): As of 2017-03-01 we do not need the itineraries of the Core
-    // and Enhanced Core architectures.
-    result->emplace("enhanced_core",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(R"(
-        id: "enhanced_core"
-        cpu_models {
-          id: 'intel:06_17'
-        }
-        cpu_models {
-          id: 'intel:06_1D'
-        })")));
-    result->emplace("core",
-                    gtl::MakeUnique<MicroArchitecture>(
-                        ParseProtoFromStringOrDie<MicroArchitectureProto>(R"(
-        id: "core"
-        cpu_models {
-          id: 'intel:06_0F'
-        })")));
-    return result;
-  }();
-  return *known_microarchitectures;
-}
+constexpr const char kWestmireModels[] = R"(
+    id: "wsm"
+    cpu_models {
+      id: 'intel:06_25'
+    }
+    cpu_models {
+      id: 'intel:06_2C'
+    }
+    cpu_models {
+      id: 'intel:06_2F'
+    }
+    )";
 
-}  // namespace
+constexpr const char kNehalemModels[] = R"(
+    id: "nhm"
+    cpu_models {
+      id: 'intel:06_1A'
+    }
+    cpu_models {
+      id: 'intel:06_1E'
+    }
+    cpu_models {
+      id: 'intel:06_1F'
+    }
+    cpu_models {
+      id: 'intel:06_2E'
+    }
+    )";
 
-const MicroArchitecture* MicroArchitecture::FromId(
-    const string& microarchitecture_id) {
-  const std::unique_ptr<MicroArchitecture>* const result =
-      FindOrNull(KnownMicroArchitectures(), microarchitecture_id);
-  return result ? result->get() : nullptr;
-}
+constexpr const char kEnhancedCoreModels[] = R"(
+    id: "enhanced_core"
+    cpu_models {
+      id: 'intel:06_17'
+    }
+    cpu_models {
+      id: 'intel:06_1D'
+    }
+    )";
 
-CpuModel::CpuModel(const CpuModelProto* proto,
-                   const MicroArchitecture* microarchitecture)
-    : proto_(CHECK_NOTNULL(proto)),
-      microarchitecture_(CHECK_NOTNULL(microarchitecture)) {}
+constexpr const char kCoreModels[] = R"(
+    id: "core"
+    cpu_models {
+      id: 'intel:06_0F'
+    }
+    )";
 
-const MicroArchitecture& CpuModel::microarchitecture() const {
-  return *microarchitecture_;
-}
-
-namespace {
-
-const std::unordered_map<string, const CpuModel*>& KnownCpus() {
-  static const auto* const known_cpus = []() {
-    auto* const result = new std::unordered_map<string, const CpuModel*>();
-    for (const auto& microarchitecture : KnownMicroArchitectures()) {
-      for (const CpuModel& model : microarchitecture.second->cpu_models()) {
-        InsertOrDie(result, model.proto().id(), &model);
-      }
+const MicroArchitecturesProto& GetMicroArchitecturesProto() {
+  static const MicroArchitecturesProto* const microarchitectures = []() {
+    const std::vector<string> sources = {
+        StrCat(kSkylakeConsumerModels, kSkylakeMicroarchitecture),
+        StrCat(kSkylakeXeonModels, kSkylakeMicroarchitecture),
+        StrCat(kHaswellModels, kHaswellMicroarchitecture),
+        StrCat(kBroadwellModels, kHaswellMicroarchitecture),
+        StrCat(kIvyBridgeModels, kSandyBridgeMicroarchitecture),
+        StrCat(kSandyBridgeModels, kSandyBridgeMicroarchitecture),
+        StrCat(kWestmireModels, kNehalemMicroarchitecture),
+        StrCat(kNehalemModels, kNehalemMicroarchitecture),
+        // NOTE(bdb): As of 2017-03-01 we do not need the itineraries of the
+        // Core and Enhanced Core architectures.
+        kEnhancedCoreModels, kCoreModels};
+    auto* const result = new MicroArchitecturesProto();
+    for (const string& source : sources) {
+      CHECK(::google::protobuf::TextFormat::ParseFromString(
+          source, result->add_microarchitectures()));
     }
     return result;
   }();
-  return *known_cpus;
+  return *microarchitectures;
 }
+REGISTER_MICRO_ARCHITECTURES(GetMicroArchitecturesProto);
 
 }  // namespace
-
-const CpuModel* CpuModel::FromCpuId(const string& cpu_id) {
-  const auto* const result = FindPtrOrNull(KnownCpus(), cpu_id);
-  if (result == nullptr) {
-    LOG(WARNING) << "Unknown CPU with id '" << cpu_id << "'";
-  }
-  return result;
-}
-
+}  // namespace x86
 }  // namespace cpu_instructions

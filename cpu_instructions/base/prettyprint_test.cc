@@ -100,7 +100,6 @@ TEST(PrettyPrintTest, Instruction) {
           vex_w_usage: VEX_W_IS_ZERO
         }
       }
-      group_id: "VBROADCAST-Load with Broadcast Floating-Point Data"
   )");
   EXPECT_EQ(PrettyPrintInstruction(proto, PrettyPrintOptions()),
             "VBROADCASTF128 ymm1, m128\n"

@@ -889,7 +889,6 @@ InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document) {
       InstructionProto* const new_instruction =
           instruction_set.add_instructions();
       *new_instruction = instruction;
-      new_instruction->set_group_id(section.id());
       new_instruction->set_instruction_group_index(group_index);
     }
   }

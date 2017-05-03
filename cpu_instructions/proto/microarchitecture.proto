@@ -1,0 +1,174 @@
+// Copyright 2016 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package cpu_instructions;
+
+// Represents a microarchitecture, defined by its id. All models of a
+// microarchitecture have the same execution units and itineraries; they can
+// differ in the size of the cache on the chip.
+message MicroArchitectureProto {
+  string id = 1;
+
+  // The ports of this cpu.
+  repeated PortProto ports = 9;
+
+  // The port masks of this cpu.
+  repeated PortMaskProto port_masks = 6;
+
+  // The 1-based indices of the port masks corresponding to some semantics.
+  // TODO(bdb): remove these when the decomposition code uses the Boolean
+  // fields of PortMaskProto.
+  int32 load_store_address_generation_port_mask_index = 10;
+  int32 store_address_generation_port_mask_index = 11;
+  int32 store_data_port_mask_index = 12;
+
+  PerfEventsProto perf_events = 14;
+
+  // Describes the protected mode for the CPU.
+  message ProtectedMode {
+    // List of protected/user modes. Only one of these must be set.
+    // If protected_modes is empty, then instructions are protected by default,
+    // and only the instructions whose protection mode is in user_modes are
+    // considered to be user instructions (and vice versa).
+    // For example, for the following proto:
+    //   protected_mode {
+    //     protected_modes: 0
+    //     protected_modes: 1
+    //   }
+    // Instructions with protection mode 0 and 1 are considered protected.
+    // All others are user instructions.
+    repeated int32 protected_modes = 1;
+    repeated int32 user_modes = 2;
+  }
+  ProtectedMode protected_mode = 7;
+
+  // The list of CPU models of the microarchitecture.
+  repeated CpuModelProto cpu_models = 13;
+
+}
+
+message MicroArchitecturesProto {
+  repeated MicroArchitectureProto microarchitectures = 1;
+}
+
+// Represents a single model of a CPU. Most parameters of the CPU are determined
+// by the microarchitecture of the CPU.
+message CpuModelProto {
+  // The model identifier.
+  // For intel, this is "intel:<family>_<model>", where <family> and <model> are
+  // the values returned by the CPUID instruction in hexadecimal format without
+  // a leading 0x. See:
+  // https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
+  // for a more complete explanation.
+  string id = 1;
+
+  // The identifier of the MicroArchitecture of this model.
+  string microarchitecture_id = 2;
+
+  // The code name for the architecture. For example "Haswell" or "Skylake".
+  // It is a mapping from the pair (family, model) to code_name.
+  string code_name = 3;
+
+  // The vendor name string as returned by the CPUID instrunction.
+  // See https://en.wikipedia.org/wiki/CPUID#EAX.3D0:_Get_vendor_ID.
+  string vendor_name = 4;
+
+  // The commercial names by which these CPUs are sold. This is mostly useful
+  // for debugging or for building a CPU database.
+  repeated string commercial_names = 5;
+
+  // Whether the L1 instruction cache is separate from the L1 data cache.
+  // On Intel CPUs, it is almost always the case (they represent a form  of
+  // "modified Harvard" or "Almost Von Neumann" architecture), with the notable
+  // exception of Pentium 4s.
+  // If is l1_cache_split is false, then all the instructions should be
+  // considered as loaded from (and thus "polluting") l1_data_cache.
+  bool is_l1_cache_split = 6;
+
+  // The description of the L1 instruction cache. Sizes are in bytes.
+  CacheProto l1_instruction_cache = 7;
+
+  // The description of the L1 data cache. Sizes are in bytes.
+  CacheProto l1_data_cache = 8;
+
+  // The description of the L2 cache. Sizes are in bytes.
+  CacheProto l2_cache = 9;
+
+  // The description of the L3 cache. Sizes are in bytes.
+  CacheProto l3_cache = 10;
+}
+
+// Describes the parameters of a cache.
+message CacheProto {
+  // Th.e name of the cache, for example "L1D" or "uops-cache".
+  string name = 1;
+
+  // The size of the cache expressed in the smallest unit, i.e. bytes
+  // or micro-operations.
+  int32 size = 2;
+
+  // The associativity of the cache
+  int32 associativity = 3;
+
+  // The size of each line in the cache, expressed in the same unit as 'size'.
+  int32 line_size = 4;
+
+  // The latency of the cache in CPU cycles.
+  int32 latency_in_cycles = 5;
+
+  // The bandwidth of the cache, expressed in the same unit as 'size'.
+  int64 bandwidth = 6;
+
+  // Whether the cache in situated on-chip.
+  bool is_on_chip = 7;
+
+  // Whether the cache is shared between cores.
+  bool is_shared_between_cores = 8;
+}
+
+// Represents a port.
+message PortProto {
+  // A optional list of freeform comments to document semantics.
+  repeated string comments = 1;
+}
+
+// Represents a port mask.
+message PortMaskProto {
+  // An optional freeform comment to document semantics.
+  string comment = 1;
+
+  // The set of ports for the mask.
+  repeated int32 port_numbers = 2;
+}
+
+// Defines the set of measurable perf events.
+// To avoid multiplexing, there should not be more than 4 events per group.
+message PerfEventsProto {
+  // The names of the events corresponding to actually executing instructions,
+  // excluding memory-related events.
+  repeated string computation_events = 1;
+
+  // The names of the events related to memory reads and writes.
+  repeated string memory_events = 2;
+
+  // The names of the events related to cycles.
+  repeated string cycle_events = 3;
+
+  // The names of the events related to uops (how many were
+  // issued/executed/retired). Note that these events are per core, so the
+  // numbers are higher than the actual numbers for the current thread.
+  repeated string uops_events = 4;
+}

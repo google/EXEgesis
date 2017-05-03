@@ -56,28 +56,20 @@ cc_test(
     ],
 )
 
-# A library to represent known CPU types.
+# A library to represent known CPU microarchitectures and models.
 cc_library(
-    name = "cpu_type",
-    srcs = ["cpu_type.cc"],
-    hdrs = ["cpu_type.h"],
+    name = "cpu_model",
+    srcs = ["cpu_model.cc"],
+    hdrs = ["cpu_model.h"],
     deps = [
         ":port_mask",
+        "//base",
         "//cpu_instructions/proto:microarchitecture_cc_proto",
-        "//cpu_instructions/util:proto_util",
-        "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
-    ],
-)
-
-cc_test(
-    name = "cpu_type_test",
-    srcs = ["cpu_type_test.cc"],
-    deps = [
-        ":cpu_type",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_protobuf//:protobuf_lite",
+        "@gflags_git//:gflags",
+        "@glog_git//:glog",
     ],
 )
 
@@ -151,7 +143,7 @@ cc_library(
     srcs = ["prettyprint.cc"],
     hdrs = ["prettyprint.h"],
     deps = [
-        ":cpu_type",
+        ":cpu_model",
         ":port_mask",
         "//base",
         "//cpu_instructions/proto:instructions_cc_proto",

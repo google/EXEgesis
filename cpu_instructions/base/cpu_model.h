@@ -12,8 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef CPU_INSTRUCTIONS_BASE_CPU_TYPE_H_
-#define CPU_INSTRUCTIONS_BASE_CPU_TYPE_H_
+#ifndef CPU_INSTRUCTIONS_BASE_CPU_MODEL_H_
+#define CPU_INSTRUCTIONS_BASE_CPU_MODEL_H_
+
+#include <vector>
+#include "strings/string.h"
 
 #include "cpu_instructions/base/port_mask.h"
 #include "cpu_instructions/proto/microarchitecture.pb.h"
@@ -26,37 +29,10 @@ class MicroArchitecture;
 // details.
 class CpuModel {
  public:
-  // Returns nullptr if the cpu model is unknown.
+  // Returns nullptr if the CPU model is unknown.
   static const CpuModel* FromCpuId(const string& cpu_id);
-
-  // For tests. CPUs per reverse chronological order.
-  static const CpuModel& Skylake() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_4E"));
-  }
-
-  static const CpuModel& Broadwell() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_3D"));
-  }
-
-  static const CpuModel& Haswell() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_3C"));
-  }
-
-  static const CpuModel& IvyBridge() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_3A"));
-  }
-
-  static const CpuModel& SandyBridge() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_2A"));
-  }
-
-  static const CpuModel& Westmere() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_25"));
-  }
-
-  static const CpuModel& Nehalem() {
-    return *CHECK_NOTNULL(FromCpuId("intel:06_1A"));
-  }
+  // Dies when the CPU model is unknown.
+  static const CpuModel& FromCpuIdOrDie(const string& cpu_id);
 
   CpuModel(const CpuModelProto* proto,
            const MicroArchitecture* microarchitecture);
@@ -80,6 +56,9 @@ class MicroArchitecture {
  public:
   // Returns nullptr if unknown.
   static const MicroArchitecture* FromId(const string& microarchitecture_id);
+  // Dies if unknown.
+  static const MicroArchitecture& FromIdOrDie(
+      const string& microarchitecture_id);
 
   explicit MicroArchitecture(const MicroArchitectureProto& proto);
 
@@ -110,6 +89,32 @@ class MicroArchitecture {
   std::vector<CpuModel> cpu_models_;
 };
 
+// Registers a list of micro-architectures to make them and their CPU models
+// available through MicroArchitecture::FromId, and CpuModel::FromId. The macro
+// takes a single parameter 'provider'. This must be a callable object (e.g.
+// a function pointer, a functor, a std::function object) that returns an object
+// convertible to const MicroArchitecturesProto&.
+#define REGISTER_MICRO_ARCHITECTURES(provider)             \
+  ::cpu_instructions::internal::RegisterMicroArchitectures \
+      register_micro_architectures_##provider(provider);
+
+namespace internal {
+
+// A helper class used for the implementation of the registerer; the constructor
+// registers the microarchitectures returned by the provider.
+class RegisterMicroArchitectures {
+ public:
+  template <typename Provider>
+  RegisterMicroArchitectures(Provider provider) {
+    RegisterFromProto(provider());
+  }
+
+ private:
+  static void RegisterFromProto(const MicroArchitecturesProto& proto);
+};
+
+}  // namespace internal
+
 }  // namespace cpu_instructions
 
-#endif  // CPU_INSTRUCTIONS_BASE_CPU_TYPE_H_
+#endif  // CPU_INSTRUCTIONS_BASE_CPU_MODEL_H_

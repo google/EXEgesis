@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "cpu_instructions/base/cpu_type.h"
+#include "cpu_instructions/x86/microarchitectures.h"
 
+#include "cpu_instructions/base/cpu_model.h"
 #include "gtest/gtest.h"
 
 namespace cpu_instructions {
+namespace x86 {
 namespace {
 
-void CheckCPU(const CpuModel& cpu_type, int num_port_masks,
+void CheckCPU(const CpuModel& cpu_model, int num_port_masks,
               const string& load_store_address_generation_ports,
               const string& store_address_generation_ports,
               const string& store_data_ports) {
-  const auto& uarch = cpu_type.microarchitecture();
+  const auto& uarch = cpu_model.microarchitecture();
   EXPECT_EQ(uarch.port_masks().size(), num_port_masks);
   const PortMask* mask = uarch.load_store_address_generation();
   ASSERT_NE(mask, nullptr);
@@ -41,32 +43,33 @@ void CheckCPU(const CpuModel& cpu_type, int num_port_masks,
 }
 
 TEST(CpuModelTest, SkylakeParses) {
-  CheckCPU(CpuModel::Skylake(), 12, "P23", "P237", "P4");
+  CheckCPU(SkylakeCpuModel(), 12, "P23", "P237", "P4");
 }
 
 TEST(CpuModelTest, BroadwellParses) {
-  CheckCPU(CpuModel::Broadwell(), 12, "P23", "P237", "P4");
+  CheckCPU(BroadwellCpuModel(), 12, "P23", "P237", "P4");
 }
 
 TEST(CpuModelTest, HaswellParses) {
-  CheckCPU(CpuModel::Haswell(), 12, "P23", "P237", "P4");
+  CheckCPU(HaswellCpuModel(), 12, "P23", "P237", "P4");
 }
 
 TEST(CpuModelTest, IvyBridgeParses) {
-  CheckCPU(CpuModel::IvyBridge(), 6, "P23", "P23", "P4");
+  CheckCPU(IvyBridgeCpuModel(), 6, "P23", "P23", "P4");
 }
 
 TEST(CpuModelTest, SandyBridgeParses) {
-  CheckCPU(CpuModel::SandyBridge(), 6, "P23", "P23", "P4");
+  CheckCPU(SandyBridgeCpuModel(), 6, "P23", "P23", "P4");
 }
 
 TEST(CpuModelTest, WestmereParses) {
-  CheckCPU(CpuModel::Westmere(), 7, "P2", "P3", "P4");
+  CheckCPU(WestmereCpuModel(), 7, "P2", "P3", "P4");
 }
 
 TEST(CpuModelTest, NehalemParses) {
-  CheckCPU(CpuModel::Nehalem(), 7, "P2", "P3", "P4");
+  CheckCPU(NehalemCpuModel(), 7, "P2", "P3", "P4");
 }
 
 }  // namespace
+}  // namespace x86
 }  // namespace cpu_instructions

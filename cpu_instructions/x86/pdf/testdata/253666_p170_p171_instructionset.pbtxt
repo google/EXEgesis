@@ -1,133 +1,127 @@
-instructions: {
-  description    : "Store selected bit in CF flag."
-  vendor_syntax: {
+instructions {
+  description: "Store selected bit in CF flag."
+  vendor_syntax {
     mnemonic: "BT"
-    operands: {
-      encoding       : MODRM_RM_ENCODING
+    operands {
+      encoding: MODRM_RM_ENCODING
       name: "r/m16"
       usage: USAGE_READ
     }
-    operands: {
-      encoding       : MODRM_REG_ENCODING
+    operands {
+      encoding: MODRM_REG_ENCODING
       name: "r16"
       usage: USAGE_READ
     }
   }
-  available_in_64_bit    : true
-  legacy_instruction     : true
+  available_in_64_bit: true
+  legacy_instruction: true
   encoding_scheme: "MR"
   raw_encoding_specification: "0F A3 /r"
-  group_id: "BT-Bit Test"
   instruction_group_index: 0
 }
-instructions: {
-  description    : "Store selected bit in CF flag."
-  vendor_syntax: {
+instructions {
+  description: "Store selected bit in CF flag."
+  vendor_syntax {
     mnemonic: "BT"
-    operands: {
-      encoding       : MODRM_RM_ENCODING
+    operands {
+      encoding: MODRM_RM_ENCODING
       name: "r/m32"
       usage: USAGE_READ
     }
-    operands: {
-      encoding       : MODRM_REG_ENCODING
+    operands {
+      encoding: MODRM_REG_ENCODING
       name: "r32"
       usage: USAGE_READ
     }
   }
-  available_in_64_bit    : true
-  legacy_instruction     : true
+  available_in_64_bit: true
+  legacy_instruction: true
   encoding_scheme: "MR"
   raw_encoding_specification: "0F A3 /r"
-  group_id: "BT-Bit Test"
   instruction_group_index: 0
 }
-instructions: {
-  description    : "Store selected bit in CF flag."
-  vendor_syntax: {
+instructions {
+  description: "Store selected bit in CF flag."
+  vendor_syntax {
     mnemonic: "BT"
-    operands: {
-      encoding       : MODRM_RM_ENCODING
+    operands {
+      encoding: MODRM_RM_ENCODING
       name: "r/m64"
       usage: USAGE_READ
     }
-    operands: {
-      encoding       : MODRM_REG_ENCODING
+    operands {
+      encoding: MODRM_REG_ENCODING
       name: "r64"
       usage: USAGE_READ
     }
   }
-  available_in_64_bit    : true
-  legacy_instruction     : false
+  available_in_64_bit: true
+  legacy_instruction: false
   encoding_scheme: "MR"
   raw_encoding_specification: "REX.W + 0F A3 /r"
-  group_id: "BT-Bit Test"
   instruction_group_index: 0
 }
-instructions: {
-  description    : "Store selected bit in CF flag."
-  vendor_syntax: {
+instructions {
+  description: "Store selected bit in CF flag."
+  vendor_syntax {
     mnemonic: "BT"
-    operands: {
-      encoding       : MODRM_RM_ENCODING
+    operands {
+      encoding: MODRM_RM_ENCODING
       name: "r/m16"
       usage: USAGE_READ
     }
-    operands: {
-      encoding       : IMMEDIATE_VALUE_ENCODING
+    operands {
+      encoding: IMMEDIATE_VALUE_ENCODING
       name: "imm8"
       usage: USAGE_READ
     }
   }
-  available_in_64_bit    : true
-  legacy_instruction     : true
+  available_in_64_bit: true
+  legacy_instruction: true
   encoding_scheme: "MI"
   raw_encoding_specification: "0F BA /4 ib"
-  group_id: "BT-Bit Test"
   instruction_group_index: 0
 }
-instructions: {
-  description    : "Store selected bit in CF flag."
-  vendor_syntax: {
+instructions {
+  description: "Store selected bit in CF flag."
+  vendor_syntax {
     mnemonic: "BT"
-    operands: {
-      encoding       : MODRM_RM_ENCODING
+    operands {
+      encoding: MODRM_RM_ENCODING
       name: "r/m32"
       usage: USAGE_READ
     }
-    operands: {
-      encoding       : IMMEDIATE_VALUE_ENCODING
+    operands {
+      encoding: IMMEDIATE_VALUE_ENCODING
       name: "imm8"
       usage: USAGE_READ
     }
   }
-  available_in_64_bit    : true
-  legacy_instruction     : true
+  available_in_64_bit: true
+  legacy_instruction: true
   encoding_scheme: "MI"
   raw_encoding_specification: "0F BA /4 ib"
-  group_id: "BT-Bit Test"
   instruction_group_index: 0
 }
-instructions: {
-  description    : "Store selected bit in CF flag."
-  vendor_syntax: {
+instructions {
+  description: "Store selected bit in CF flag."
+  vendor_syntax {
     mnemonic: "BT"
-    operands: {
-      encoding       : MODRM_RM_ENCODING
+    operands {
+      encoding: MODRM_RM_ENCODING
       name: "r/m64"
       usage: USAGE_READ
     }
-    operands: {
-      encoding       : IMMEDIATE_VALUE_ENCODING
+    operands {
+      encoding: IMMEDIATE_VALUE_ENCODING
       name: "imm8"
       usage: USAGE_READ
     }
   }
-  available_in_64_bit    : true
-  legacy_instruction     : false
+  available_in_64_bit: true
+  legacy_instruction: false
   encoding_scheme: "MI"
   raw_encoding_specification: "REX.W + 0F BA /4 ib"
-  group_id: "BT-Bit Test"
   instruction_group_index: 0
 }
 instruction_groups {

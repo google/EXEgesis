@@ -20,13 +20,13 @@
 
 namespace cpu_instructions {
 
-string PrettyPrintCpuModel(const CpuModel& cpu_type,
+string PrettyPrintCpuModel(const CpuModel& cpu_model,
                            const PrettyPrintOptions& options) {
-  string result = StrCat(cpu_type.proto().id(), " (name: '",
-                         cpu_type.proto().code_name(), "')");
+  string result = StrCat(cpu_model.proto().id(), " (name: '",
+                         cpu_model.proto().code_name(), "')");
   if (options.cpu_details_) {
     StrAppend(&result, "\nport masks:\n  ",
-              strings::Join(cpu_type.microarchitecture().port_masks(), "\n  ",
+              strings::Join(cpu_model.microarchitecture().port_masks(), "\n  ",
                             [](string* out, const PortMask& mask) {
                               out->append(mask.ToString());
                             }));

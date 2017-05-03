@@ -49,9 +49,10 @@ cc_library(
     hdrs = ["perf_subsystem.h"],
     deps = [
         "//base",
-        "//cpu_instructions/base:cpu_type",
+        "//cpu_instructions/base:cpu_model",
         "//cpu_instructions/base:host_cpu",
         "//cpu_instructions/proto:microarchitecture_cc_proto",
+        "//cpu_instructions/x86:microarchitectures",
         "//strings",
         "//util/gtl:map_util",
         "@com_google_protobuf//:protobuf",
