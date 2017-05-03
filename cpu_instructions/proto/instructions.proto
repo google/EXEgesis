@@ -292,7 +292,11 @@ message InstructionGroupProto {
   optional string description = 2;
 
   // A human-readable description of which flags are affected and how.
-  optional string flags_affected = 3;
+  message FlagsAffected {
+    optional string content = 1;
+  }
+
+  repeated FlagsAffected flags_affected = 3;
 }
 
 // Stores information about the source of an instruction set, for debugging.

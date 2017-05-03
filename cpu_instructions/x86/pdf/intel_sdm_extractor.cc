@@ -749,6 +749,57 @@ void ProcessSubSections(std::vector<SubSection> sub_sections,
   PairOperandEncodings(section);
 }
 
+// Outputs a row to a string separating cells by tabulations.
+// TODO(gchatelet): if one of the block's text contains a tab or a line feed the
+// resulting formatting will be broken. Nevertheless after looking at a few
+// examples, tab separated cells seems to be a good strategy.
+void ToString(const PdfTextTableRow& row, string* output) {
+  bool first_block = true;
+  for (const auto& block : row.blocks()) {
+    if (!first_block) StrAppend(output, "\t");
+    StrAppend(output, block.text());
+    first_block = false;
+  }
+}
+
+// Outputs a section to a string separating rows by line feeds.
+// If type is not filled returns false.
+bool ToString(const InstructionSection& section, const SubSection::Type type,
+              string* output) {
+  CHECK(output);
+  const auto& sub_sections = section.sub_sections();
+  const auto itr = std::find_if(sub_sections.begin(), sub_sections.end(),
+                                [type](const SubSection& sub_section) {
+                                  return sub_section.type() == type;
+                                });
+  if (itr == sub_sections.end()) {
+    return false;
+  }
+  output->clear();
+  for (const auto& row : itr->rows()) {
+    if (!output->empty()) StrAppend(output, "\n");
+    ToString(row, output);
+  }
+  return true;
+}
+
+// Fills InstructionGroupProto with subsections.
+void FillGroupProto(const InstructionSection& section,
+                    InstructionGroupProto* group) {
+  group->set_name(section.id());
+  string buffer;
+  if (ToString(section, SubSection::DESCRIPTION, &buffer)) {
+    group->set_description(buffer);
+  }
+  for (const auto type :
+       {SubSection::FLAGS_AFFECTED, SubSection::FLAGS_AFFECTED_FPU,
+        SubSection::FLAGS_AFFECTED_INTEGER}) {
+    if (ToString(section, type, &buffer)) {
+      group->add_flags_affected()->set_content(buffer);
+    }
+  }
+}
+
 }  // namespace
 
 OperandEncoding ParseOperandEncodingTableCell(const string& content) {
@@ -832,11 +883,14 @@ SdmDocument ConvertPdfDocumentToSdmDocument(
 InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document) {
   InstructionSetProto instruction_set;
   for (const auto& section : sdm_document.instruction_sections()) {
+    const size_t group_index = instruction_set.instruction_groups_size();
+    FillGroupProto(section, instruction_set.add_instruction_groups());
     for (const auto& instruction : section.instruction_table().instructions()) {
       InstructionProto* const new_instruction =
           instruction_set.add_instructions();
       *new_instruction = instruction;
       new_instruction->set_group_id(section.id());
+      new_instruction->set_instruction_group_index(group_index);
     }
   }
   return instruction_set;
