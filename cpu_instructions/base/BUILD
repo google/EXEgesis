@@ -5,6 +5,36 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# A library of functions for working with categories.
+
+cc_library(
+    name = "category_utils",
+    srcs = [],
+    hdrs = ["category_utils.h"],
+    deps = [
+        "//base",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+    ],
+)
+
+cc_test(
+    name = "category_utils_test",
+    size = "small",
+    srcs = ["category_utils_test.cc"],
+    deps = [
+        ":category_utils",
+        "//base",
+        "//strings",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # Framework for writing procedural clean-ups of an instruction set.
 cc_library(
     name = "cleanup_instruction_set",
