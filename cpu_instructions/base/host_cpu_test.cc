@@ -14,7 +14,7 @@
 
 #include "cpu_instructions/base/host_cpu.h"
 
-#include "cpu_instructions/proto/cpu_type.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "strings/string_view_utils.h"

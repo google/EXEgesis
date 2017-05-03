@@ -20,7 +20,7 @@
 #include <cstdint>
 #include "strings/string.h"
 
-#include "cpu_instructions/proto/cpu_type.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 
 namespace cpu_instructions {

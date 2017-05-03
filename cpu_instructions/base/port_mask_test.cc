@@ -16,7 +16,7 @@
 
 #include <cstdint>
 
-#include "cpu_instructions/proto/cpu_type.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

@@ -16,60 +16,61 @@
 #define CPU_INSTRUCTIONS_BASE_CPU_TYPE_H_
 
 #include "cpu_instructions/base/port_mask.h"
-#include "cpu_instructions/proto/cpu_type.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 
 namespace cpu_instructions {
 
 class MicroArchitecture;
 
-// Represents a CpuTypeProto in memory. See the proto documentation for details.
-class CpuType {
+// Represents a CpuModelProto in memory. See the proto documentation for
+// details.
+class CpuModel {
  public:
   // Returns nullptr if the cpu model is unknown.
-  static const CpuType* FromCpuId(const string& cpu_id);
+  static const CpuModel* FromCpuId(const string& cpu_id);
 
   // For tests. CPUs per reverse chronological order.
-  static const CpuType& Skylake() {
+  static const CpuModel& Skylake() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_4E"));
   }
 
-  static const CpuType& Broadwell() {
+  static const CpuModel& Broadwell() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_3D"));
   }
 
-  static const CpuType& Haswell() {
+  static const CpuModel& Haswell() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_3C"));
   }
 
-  static const CpuType& IvyBridge() {
+  static const CpuModel& IvyBridge() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_3A"));
   }
 
-  static const CpuType& SandyBridge() {
+  static const CpuModel& SandyBridge() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_2A"));
   }
 
-  static const CpuType& Westmere() {
+  static const CpuModel& Westmere() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_25"));
   }
 
-  static const CpuType& Nehalem() {
+  static const CpuModel& Nehalem() {
     return *CHECK_NOTNULL(FromCpuId("intel:06_1A"));
   }
 
-  CpuType(const CpuTypeProto* proto,
-          const MicroArchitecture* microarchitecture);
-  CpuType(CpuType&&) = default;
+  CpuModel(const CpuModelProto* proto,
+           const MicroArchitecture* microarchitecture);
+  CpuModel(CpuModel&&) = default;
 
-  const CpuTypeProto& proto() const { return *proto_; }
+  const CpuModelProto& proto() const { return *proto_; }
 
   const MicroArchitecture& microarchitecture() const;
 
  private:
-  CpuType() = delete;
-  CpuType(const CpuType&) = delete;
+  CpuModel() = delete;
+  CpuModel(const CpuModel&) = delete;
 
-  const CpuTypeProto* const proto_;
+  const CpuModelProto* const proto_;
   const MicroArchitecture* const microarchitecture_;
 };
 
@@ -96,7 +97,7 @@ class MicroArchitecture {
   // protected in x86 but 3 is not). protection_mode < 0 is the default.
   bool IsProtectedMode(int protection_mode) const;
 
-  const std::vector<CpuType>& cpu_models() const { return cpu_models_; }
+  const std::vector<CpuModel>& cpu_models() const { return cpu_models_; }
 
  private:
   MicroArchitecture() = delete;
@@ -106,7 +107,7 @@ class MicroArchitecture {
 
   const MicroArchitectureProto proto_;
   const std::vector<PortMask> port_masks_;
-  std::vector<CpuType> cpu_models_;
+  std::vector<CpuModel> cpu_models_;
 };
 
 }  // namespace cpu_instructions

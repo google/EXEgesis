@@ -20,8 +20,8 @@
 
 namespace cpu_instructions {
 
-string PrettyPrintCpuType(const CpuType& cpu_type,
-                          const PrettyPrintOptions& options) {
+string PrettyPrintCpuModel(const CpuModel& cpu_type,
+                           const PrettyPrintOptions& options) {
   string result = StrCat(cpu_type.proto().id(), " (name: '",
                          cpu_type.proto().code_name(), "')");
   if (options.cpu_details_) {

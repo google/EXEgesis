@@ -62,7 +62,7 @@ bool Contains(const string& big, const string& small) {
 
 PerfSubsystem::PerfSubsystem()
     : microarchitecture_(
-          CHECK_NOTNULL(CpuType::FromCpuId(HostCpuInfo::Get().cpu_id()))
+          CHECK_NOTNULL(CpuModel::FromCpuId(HostCpuInfo::Get().cpu_id()))
               ->microarchitecture()) {
   counter_fds_.reserve(kMaxNumCounters);
   event_names_.reserve(kMaxNumCounters);

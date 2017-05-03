@@ -51,7 +51,7 @@ cc_library(
         "//base",
         "//cpu_instructions/base:cpu_type",
         "//cpu_instructions/base:host_cpu",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//strings",
         "//util/gtl:map_util",
         "@com_google_protobuf//:protobuf",

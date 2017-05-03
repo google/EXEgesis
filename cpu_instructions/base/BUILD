@@ -63,7 +63,7 @@ cc_library(
     hdrs = ["cpu_type.h"],
     deps = [
         ":port_mask",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//cpu_instructions/util:proto_util",
         "//strings",
         "//util/gtl:map_util",
@@ -88,7 +88,7 @@ cc_library(
     hdrs = ["host_cpu.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//strings",
         "//util/gtl:map_util",
         "@com_google_protobuf//:protobuf_lite",
@@ -103,7 +103,7 @@ cc_test(
     deps = [
         ":host_cpu",
         "//base",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
@@ -120,7 +120,7 @@ cc_library(
     hdrs = ["port_mask.h"],
     deps = [
         "//base",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
@@ -135,7 +135,7 @@ cc_test(
     deps = [
         ":port_mask",
         "//base",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
@@ -154,8 +154,8 @@ cc_library(
         ":cpu_type",
         ":port_mask",
         "//base",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//cpu_instructions/proto:instructions_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",
@@ -170,8 +170,8 @@ cc_test(
     deps = [
         ":prettyprint",
         "//base",
-        "//cpu_instructions/proto:cpu_type_cc_proto",
         "//cpu_instructions/proto:instructions_cc_proto",
+        "//cpu_instructions/proto:microarchitecture_cc_proto",
         "//cpu_instructions/util:proto_util",
         "@com_google_protobuf//:protobuf_lite",
         "@gflags_git//:gflags",

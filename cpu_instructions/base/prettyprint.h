@@ -16,8 +16,8 @@
 #define THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_BASE_DEBUG_H_
 
 #include "cpu_instructions/base/cpu_type.h"
-#include "cpu_instructions/proto/cpu_type.pb.h"
 #include "cpu_instructions/proto/instructions.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 
 namespace cpu_instructions {
 
@@ -71,8 +71,8 @@ string PrettyPrintItinerary(
     const ItineraryProto& instruction,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintCpuType(
-    const CpuType& cpu_type,
+string PrettyPrintCpuModel(
+    const CpuModel& cpu_type,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
 string PrettyPrintSyntax(

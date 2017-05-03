@@ -21,7 +21,7 @@
 #include "strings/string.h"
 
 #include "cpu_instructions/base/cpu_type.h"
-#include "cpu_instructions/proto/cpu_type.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "util/gtl/map_util.h"

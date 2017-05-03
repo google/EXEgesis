@@ -19,7 +19,7 @@ syntax = "proto2";
 package cpu_instructions;
 
 import "cpu_instructions/proto/x86/encoding_specification.proto";
-import "cpu_instructions/proto/cpu_type.proto";
+import "cpu_instructions/proto/microarchitecture.proto";
 
 // The Intel documentation referred to here can be found at:
 // http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf
@@ -187,9 +187,9 @@ message InstructionFormat {
 }
 
 // Contains information about a single instruction.
-// Next index to use: 32
+// Next index to use: 33
 message InstructionProto {
-  // A human-readable instruction of what the instruction actually does.
+  // A human-readable description of what the instruction actually does.
   // See the abovementioned Intel document, sections 3.1 and later.
   optional string description = 1;
 
@@ -274,7 +274,25 @@ message InstructionProto {
   }
 
   // The group the instruction belong to. For example, VADDPS belongs to ADDPS.
-  optional string group_id = 31;
+  optional string group_id = 31 [deprecated = true];
+
+  // The index of the instruction group this instruction belongs to.
+  optional uint32 instruction_group_index = 32;
+}
+
+// Contains information about a group of instructions. (e.g. for Intel, this
+// corresponds to a full table and associated description/algorithm
+// specification/... in the SDM)
+message InstructionGroupProto {
+  // The group the instruction belong to. For example, VADDPS belongs to ADDPS.
+  optional string name = 1;
+
+  // A human-readable description of what the group of instructions actually
+  // does.
+  optional string description = 2;
+
+  // A human-readable description of which flags are affected and how.
+  optional string flags_affected = 3;
 }
 
 // Stores information about the source of an instruction set, for debugging.
@@ -298,6 +316,8 @@ message InstructionSetProto {
   repeated InstructionSetSourceInfo source_infos = 3;
 
   repeated InstructionProto instructions = 4;
+
+  repeated InstructionGroupProto instruction_groups = 5;
 }
 
 

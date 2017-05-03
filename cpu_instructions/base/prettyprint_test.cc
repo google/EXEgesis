@@ -14,15 +14,15 @@
 
 #include "cpu_instructions/base/prettyprint.h"
 
-#include "cpu_instructions/proto/cpu_type.pb.h"
 #include "cpu_instructions/proto/instructions.pb.h"
+#include "cpu_instructions/proto/microarchitecture.pb.h"
 #include "cpu_instructions/util/proto_util.h"
 #include "gtest/gtest.h"
 
 namespace cpu_instructions {
 namespace {
 
-TEST(PrettyPrintTest, CpuType) {
+TEST(PrettyPrintTest, CpuModel) {
   const MicroArchitecture microarchitecture(
       ParseProtoFromStringOrDie<MicroArchitectureProto>(R"(
       id: 'haswell'
@@ -34,10 +34,10 @@ TEST(PrettyPrintTest, CpuType) {
         code_name: 'haswell'
       }
   )"));
-  EXPECT_EQ(PrettyPrintCpuType(microarchitecture.cpu_models()[0]),
+  EXPECT_EQ(PrettyPrintCpuModel(microarchitecture.cpu_models()[0]),
             "intel:06_3F (name: 'haswell')");
-  EXPECT_EQ(PrettyPrintCpuType(microarchitecture.cpu_models()[0],
-                               PrettyPrintOptions().WithCpuDetails(true)),
+  EXPECT_EQ(PrettyPrintCpuModel(microarchitecture.cpu_models()[0],
+                                PrettyPrintOptions().WithCpuDetails(true)),
             "intel:06_3F (name: 'haswell')\n"
             "port masks:\n"
             "  P0156\n"

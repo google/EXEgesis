@@ -19,7 +19,7 @@
 namespace cpu_instructions {
 namespace {
 
-void CheckCPU(const CpuType& cpu_type, int num_port_masks,
+void CheckCPU(const CpuModel& cpu_type, int num_port_masks,
               const string& load_store_address_generation_ports,
               const string& store_address_generation_ports,
               const string& store_data_ports) {
@@ -40,32 +40,32 @@ void CheckCPU(const CpuType& cpu_type, int num_port_masks,
   EXPECT_FALSE(uarch.IsProtectedMode(15));
 }
 
-TEST(CpuTypeTest, SkylakeParses) {
-  CheckCPU(CpuType::Skylake(), 12, "P23", "P237", "P4");
+TEST(CpuModelTest, SkylakeParses) {
+  CheckCPU(CpuModel::Skylake(), 12, "P23", "P237", "P4");
 }
 
-TEST(CpuTypeTest, BroadwellParses) {
-  CheckCPU(CpuType::Broadwell(), 12, "P23", "P237", "P4");
+TEST(CpuModelTest, BroadwellParses) {
+  CheckCPU(CpuModel::Broadwell(), 12, "P23", "P237", "P4");
 }
 
-TEST(CpuTypeTest, HaswellParses) {
-  CheckCPU(CpuType::Haswell(), 12, "P23", "P237", "P4");
+TEST(CpuModelTest, HaswellParses) {
+  CheckCPU(CpuModel::Haswell(), 12, "P23", "P237", "P4");
 }
 
-TEST(CpuTypeTest, IvyBridgeParses) {
-  CheckCPU(CpuType::IvyBridge(), 6, "P23", "P23", "P4");
+TEST(CpuModelTest, IvyBridgeParses) {
+  CheckCPU(CpuModel::IvyBridge(), 6, "P23", "P23", "P4");
 }
 
-TEST(CpuTypeTest, SandyBridgeParses) {
-  CheckCPU(CpuType::SandyBridge(), 6, "P23", "P23", "P4");
+TEST(CpuModelTest, SandyBridgeParses) {
+  CheckCPU(CpuModel::SandyBridge(), 6, "P23", "P23", "P4");
 }
 
-TEST(CpuTypeTest, WestmereParses) {
-  CheckCPU(CpuType::Westmere(), 7, "P2", "P3", "P4");
+TEST(CpuModelTest, WestmereParses) {
+  CheckCPU(CpuModel::Westmere(), 7, "P2", "P3", "P4");
 }
 
-TEST(CpuTypeTest, NehalemParses) {
-  CheckCPU(CpuType::Nehalem(), 7, "P2", "P3", "P4");
+TEST(CpuModelTest, NehalemParses) {
+  CheckCPU(CpuModel::Nehalem(), 7, "P2", "P3", "P4");
 }
 
 }  // namespace

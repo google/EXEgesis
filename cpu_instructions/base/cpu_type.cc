@@ -26,8 +26,8 @@ namespace cpu_instructions {
 MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
     : proto_(proto),
       port_masks_(proto_.port_masks().begin(), proto_.port_masks().end()) {
-  for (const CpuTypeProto& model_proto : proto_.cpu_models()) {
-    cpu_models_.push_back(CpuType(&model_proto, this));
+  for (const CpuModelProto& model_proto : proto_.cpu_models()) {
+    cpu_models_.push_back(CpuModel(&model_proto, this));
   }
 }
 
@@ -639,22 +639,22 @@ const MicroArchitecture* MicroArchitecture::FromId(
   return result ? result->get() : nullptr;
 }
 
-CpuType::CpuType(const CpuTypeProto* proto,
-                 const MicroArchitecture* microarchitecture)
+CpuModel::CpuModel(const CpuModelProto* proto,
+                   const MicroArchitecture* microarchitecture)
     : proto_(CHECK_NOTNULL(proto)),
       microarchitecture_(CHECK_NOTNULL(microarchitecture)) {}
 
-const MicroArchitecture& CpuType::microarchitecture() const {
+const MicroArchitecture& CpuModel::microarchitecture() const {
   return *microarchitecture_;
 }
 
 namespace {
 
-const std::unordered_map<string, const CpuType*>& KnownCpus() {
+const std::unordered_map<string, const CpuModel*>& KnownCpus() {
   static const auto* const known_cpus = []() {
-    auto* const result = new std::unordered_map<string, const CpuType*>();
+    auto* const result = new std::unordered_map<string, const CpuModel*>();
     for (const auto& microarchitecture : KnownMicroArchitectures()) {
-      for (const CpuType& model : microarchitecture.second->cpu_models()) {
+      for (const CpuModel& model : microarchitecture.second->cpu_models()) {
         InsertOrDie(result, model.proto().id(), &model);
       }
     }
@@ -665,7 +665,7 @@ const std::unordered_map<string, const CpuType*>& KnownCpus() {
 
 }  // namespace
 
-const CpuType* CpuType::FromCpuId(const string& cpu_id) {
+const CpuModel* CpuModel::FromCpuId(const string& cpu_id) {
   const auto* const result = FindPtrOrNull(KnownCpus(), cpu_id);
   if (result == nullptr) {
     LOG(WARNING) << "Unknown CPU with id '" << cpu_id << "'";
