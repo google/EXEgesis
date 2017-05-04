@@ -457,3 +457,33 @@ cc_test(
         "@googletest_git//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "operand_translator",
+    srcs = ["operand_translator.cc"],
+    hdrs = ["operand_translator.h"],
+    deps = [
+        "//base",
+        "//cpu_instructions/proto:instructions_cc_proto",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+    ],
+)
+
+cc_test(
+    name = "operand_translator_test",
+    size = "small",
+    srcs = ["operand_translator_test.cc"],
+    deps = [
+        ":operand_translator",
+        "//cpu_instructions/testing:test_util",
+        "//cpu_instructions/util:proto_util",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
