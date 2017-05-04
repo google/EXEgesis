@@ -153,3 +153,17 @@ cc_test(
         "@googletest_git//:gtest_main",
     ],
 )
+
+# Utilities for interacting with the host and system.
+
+cc_library(
+    name = "system",
+    srcs = ["system.cc"],
+    hdrs = ["system.h"],
+    deps = [
+        "//base",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+    ],
+)
