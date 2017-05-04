@@ -24,13 +24,13 @@ void SetCoreAffinity(int core_id) {
   cpu_set_t affinity;
   CPU_ZERO(&affinity);
   CPU_SET(core_id, &affinity);
-  QCHECK_EQ(0, sched_setaffinity(0, sizeof(affinity), &affinity));
+  CHECK_EQ(0, sched_setaffinity(0, sizeof(affinity), &affinity));
 }
 
 void PinCoreAffinity() {
   cpu_set_t affinity;
   CPU_ZERO(&affinity);
-  QCHECK_EQ(0, sched_getaffinity(0, sizeof(affinity), &affinity));
+  CHECK_EQ(0, sched_getaffinity(0, sizeof(affinity), &affinity));
   constexpr int kMaxCores = 4096;  // "Ought to be enough for anybody".
   for (int core_id = 0; core_id < kMaxCores; ++core_id) {
     if (CPU_ISSET(core_id, &affinity)) {
