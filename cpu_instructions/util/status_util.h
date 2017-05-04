@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_UTIL_STATUS_UTIL_H_
-#define THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_UTIL_STATUS_UTIL_H_
+#ifndef CPU_INSTRUCTIONS_UTIL_STATUS_UTIL_H_
+#define CPU_INSTRUCTIONS_UTIL_STATUS_UTIL_H_
 
 #include "util/task/status.h"
 
@@ -27,4 +27,4 @@ void UpdateStatus(Status* status, const Status& new_status);
 
 }  // namespace cpu_instructions
 
-#endif  // THIRD_PARTY_CPU_INSTRUCTIONS_CPU_INSTRUCTIONS_UTIL_STATUS_UTIL_H_
+#endif  // CPU_INSTRUCTIONS_UTIL_STATUS_UTIL_H_
