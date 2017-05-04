@@ -188,4 +188,6 @@ message PdfParseRequest {
   string filename = 1;
   uint32 first_page = 2;  // 1-based, 0 means first page.
   uint32 last_page = 3;   // 1-based, 0 means last page.
+  BoundingBox restrict_to = 4;  // Do not handle characters outside this area.
+                                // Leave unset to parse the whole page.
 }

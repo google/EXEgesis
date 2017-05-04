@@ -149,9 +149,12 @@ class ProtobufOutputDevice : public OutputDev {
   // also responsible for patching the document afterwards.
   // ProtobufOutputDevice does not acquire ownership of pdf_document.
   // pdf_document should outlive this instance.
-  ProtobufOutputDevice(const PdfDocumentChanges& document_changes,
+  ProtobufOutputDevice(const BoundingBox* restrict_to,
+                       const PdfDocumentChanges& document_changes,
                        PdfDocument* pdf_document)
-      : document_changes_(&document_changes), pdf_document_(pdf_document) {}
+      : restrict_to_(restrict_to),
+        document_changes_(&document_changes),
+        pdf_document_(pdf_document) {}
 
   ProtobufOutputDevice(const ProtobufOutputDevice&) = delete;
 
@@ -169,6 +172,7 @@ class ProtobufOutputDevice : public OutputDev {
                 double originX, double originY, CharCode c, int nBytes,
                 Unicode* u, int uLen) override;
 
+  const BoundingBox* const restrict_to_ = nullptr;
   const PdfDocumentChanges* const document_changes_;
   PdfDocument* const pdf_document_ = nullptr;
   PdfPage current_page_;
@@ -266,9 +270,14 @@ void ProtobufOutputDevice::drawChar(GfxState* state, double x, double y,
 
   const float font_size = state->getTransformedFontSize();
   const Orientation orientation = GetOrientation(width, height);
+  const BoundingBox bounding_box =
+      GetBoundingBox(x1, y1, width, height, font_size, orientation);
 
   // Dropping characters smaller than kMinFontSize.
   if (font_size < kMinFontSize) return;
+
+  // Dropping characters that are outside of the restrict_to area.
+  if (restrict_to_ && !Contains(*restrict_to_, bounding_box)) return;
 
   auto* pdf_char = current_page_.add_characters();
   pdf_char->set_codepoint(c);
@@ -282,8 +291,7 @@ void ProtobufOutputDevice::drawChar(GfxState* state, double x, double y,
       sizeof(GfxColorComp);
   pdf_char->set_fill_color_hash(
       std::hash<string>()(string(color_buffer, color_buffer_size)));
-  *pdf_char->mutable_bounding_box() =
-      GetBoundingBox(x1, y1, width, height, font_size, orientation);
+  *pdf_char->mutable_bounding_box() = bounding_box;
 }
 
 }  // namespace
@@ -313,7 +321,10 @@ PdfDocument ParseOrDie(const PdfParseRequest& request,
       << "Unable to find document_id '" << document.document_id().DebugString()
       << "' in '" << request.filename() << "'";
   const PdfDocumentChanges no_patch;
-  ProtobufOutputDevice output_device(patches ? *patches : no_patch, &document);
+  const auto& restrict_to = request.restrict_to();
+  const bool is_restricted = restrict_to.right() || restrict_to.bottom();
+  ProtobufOutputDevice output_device(is_restricted ? &restrict_to : nullptr,
+                                     patches ? *patches : no_patch, &document);
   const int num_pages = pdf_doc->getNumPages();
   const int first_page = request.first_page() == 0 ? 1 : request.first_page();
   const int last_page =
