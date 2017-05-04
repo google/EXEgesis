@@ -27,20 +27,20 @@ const uint64_t kIter = 1000;
 #define NL "\n\t"
 
 TEST(PerfSubsystemTest, Accumulate) {
-  PerfResult r1{{"a", TimingInfo(1, 2, 3)}, {"b", TimingInfo(4, 5, 6)}};
-  const string r1_string = PerfResultString(r1);
-  EXPECT_EQ("a: 1.50, b: 4.80, ", r1_string);
-  PerfResult r2{{"b", TimingInfo(4, 5, 6)}, {"c", TimingInfo(7, 8, 9)}};
-  const string r2_string = PerfResultString(r2);
-  EXPECT_EQ("b: 4.80, c: 7.88, ", r2_string);
-  LOG(INFO) << PerfResultString(r2);
-  AccumulateCounters(r1, &r2);
-  EXPECT_EQ("a: 1.50, b: 9.60, c: 7.88, ", PerfResultString(r2));
+  PerfResult r1({{"a", TimingInfo(1, 2, 3)}, {"b", TimingInfo(4, 5, 6)}});
+  const string r1_string = r1.ToString();
+  EXPECT_EQ("a: 1.50, b: 4.80, (num_times: 1)", r1_string);
+  PerfResult r2({{"b", TimingInfo(4, 5, 6)}, {"c", TimingInfo(7, 8, 9)}});
+  const string r2_string = r2.ToString();
+  EXPECT_EQ("b: 4.80, c: 7.88, (num_times: 1)", r2_string);
+  LOG(INFO) << r2_string;
+  r2.Accumulate(r1);
+  EXPECT_EQ("a: 1.50, b: 9.60, c: 7.88, (num_times: 1)", r2.ToString());
   PerfResult r;
-  AccumulateCounters(r, &r1);
-  EXPECT_EQ(r1_string, PerfResultString(r1));
-  AccumulateCounters(r1, &r);
-  EXPECT_EQ(r1_string, PerfResultString(r));
+  r1.Accumulate(r);
+  EXPECT_EQ(r1_string, r1.ToString());
+  r.Accumulate(r1);
+  EXPECT_EQ(r1_string, r.ToString());
 }
 
 namespace {
@@ -55,7 +55,7 @@ TEST(PerfSubsystemTest, Collect) {
   PerfResult result;
   CPU_INSTRUCTIONS_RUN_UNDER_PERF(&result, kIter, k = Fib(20););
   EXPECT_EQ(10946, k);
-  LOG(INFO) << PerfResultString(result);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, BasicInlineAsmSyntax) {
@@ -77,7 +77,7 @@ TEST(PerfSubsystemTest, CpuId) {
       :
       : "%eax", "%ebx", "%ecx", "%edx"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Xor) {
@@ -94,7 +94,7 @@ TEST(PerfSubsystemTest, Xor) {
       :
       : "%eax", "%ebx", "%ecx", "%edx"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 // CVTPD2PS uses P1 and P5.
@@ -114,7 +114,7 @@ TEST(PerfSubsystemTest, Cvtpd2psLatency) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 // Reciprocal throughput = average number of cycles per instruction.
@@ -129,7 +129,7 @@ TEST(PerfSubsystemTest, Cvtpd2psReciprocalThroughput) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 // CVTDQ2PS
@@ -147,7 +147,7 @@ TEST(PerfSubsystemTest, AddXorAdd) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 ////////////////////////////////////////////
@@ -170,7 +170,7 @@ TEST(PerfSubsystemTest, Cvtdq2psShufpd) {
       : [shuffle] "I"(3)
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Cvtpd2psShufpd) {
@@ -193,7 +193,7 @@ TEST(PerfSubsystemTest, Cvtpd2psShufpd) {
       : [shuffle] "I"(3)
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Cvtpd2psCvtdq2ps) {
@@ -211,7 +211,7 @@ TEST(PerfSubsystemTest, Cvtpd2psCvtdq2ps) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 // CVTSI2SD uses P1 and P5.
@@ -231,7 +231,7 @@ TEST(PerfSubsystemTest, Cvtsd2siLatency) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 // Reciprocal throughput = average number of cycles per instruction.
@@ -246,7 +246,7 @@ TEST(PerfSubsystemTest, Cvtsd2siReciprocalThroughput) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Cvtsi2sdShufpd) {
@@ -267,7 +267,7 @@ TEST(PerfSubsystemTest, Cvtsi2sdShufpd) {
       : [shuffle] "I"(15)
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Cvtsi2sdCvtdq2ps) {
@@ -283,7 +283,7 @@ TEST(PerfSubsystemTest, Cvtsi2sdCvtdq2ps) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Cvtdq2psCvtpd2ps) {
@@ -299,7 +299,7 @@ TEST(PerfSubsystemTest, Cvtdq2psCvtpd2ps) {
       :
       :));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, Shufpd) {
@@ -313,7 +313,7 @@ TEST(PerfSubsystemTest, Shufpd) {
       :
       : [shuffle] "I"(3)));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, MOV64mi32) {
@@ -327,7 +327,7 @@ TEST(PerfSubsystemTest, MOV64mi32) {
       :
       : [memory] "m"(memory)));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, ADDSDrm) {
@@ -342,7 +342,7 @@ TEST(PerfSubsystemTest, ADDSDrm) {
       : [memory] "m"(memory)
       : "%xmm0"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 #ifndef MEMORY_SANITIZER
@@ -373,7 +373,7 @@ TEST(PerfSubsystemTest, BlockThroughput) {
       : [address] "r"(address)
       : "%rsi", "%xmm0", "%xmm1", "%xmm2", "%xmm3"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result, 1000);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, LoopDetectorJAE) {
@@ -391,7 +391,7 @@ TEST(PerfSubsystemTest, LoopDetectorJAE) {
       :
       : "%rcx", "%xmm2", "%xmm3"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, LoopDetectorJNE) {
@@ -408,7 +408,7 @@ TEST(PerfSubsystemTest, LoopDetectorJNE) {
       :
       : "%rcx", "%xmm2", "%xmm3"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, LoopDetectorJLE) {
@@ -426,7 +426,7 @@ TEST(PerfSubsystemTest, LoopDetectorJLE) {
       :
       : "%rcx", "%xmm2", "%xmm3"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result);
+  LOG(INFO) << result.ToString();
 }
 
 TEST(PerfSubsystemTest, LoopDetectorJL) {
@@ -444,7 +444,7 @@ TEST(PerfSubsystemTest, LoopDetectorJL) {
       :
       : "%rcx", "%xmm2", "%xmm3"));
   // clang-format on
-  LOG(INFO) << PerfResultString(result);
+  LOG(INFO) << result.ToString();
 }
 
 }  // namespace cpu_instructions

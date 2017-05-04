@@ -340,6 +340,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
       // No default case as we want the compiler to check for the complete
       // treatment of all the cases.
   }
+  return util::InternalError("Never reached.");
 }
 
 void DecompositionSolver::FillInResults() {

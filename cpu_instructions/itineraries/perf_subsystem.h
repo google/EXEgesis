@@ -35,17 +35,11 @@ struct TimingInfo {
   TimingInfo() : raw_count(0), time_enabled(0), time_running(0) {}
   TimingInfo(uint64_t c, uint64_t e, uint64_t r)
       : raw_count(c), time_enabled(e), time_running(r) {}
+
   uint64_t raw_count;     // How many times the counter was incremented.
   uint64_t time_enabled;  // How much time the counter was enabled.
   uint64_t time_running;  // How much time the profiled code has been running.
-  // This scales the counter, taking into account the ratio of time the
-  // counter was enabled.
-  double scaled() const {
-    if (time_running == 0 || time_enabled == 0) return 0.0;
-    const double ratio =
-        static_cast<double>(time_running) / static_cast<double>(time_enabled);
-    return ratio * static_cast<double>(raw_count);
-  }
+
   TimingInfo& Accumulate(const TimingInfo& other) {
     raw_count += other.raw_count;
     time_enabled += other.time_enabled;
@@ -60,28 +54,40 @@ struct TimingInfo {
 // We use an ordered map, because they are out of the critical performance path,
 // they are small (less than 10 pairs), and they enable to display sorted
 // results easily.
-class PerfResult : public std::map<string, TimingInfo> {
+class PerfResult {
  public:
-  using std::map<string, TimingInfo>::map;
+  PerfResult() = default;
+  PerfResult(const PerfResult&) = default;
+  PerfResult& operator=(const PerfResult&) = default;
 
-  // Returns the scale factor for the values in the map (typically the number of
-  // times the code was run for this measurements).
-  double GetScaleFactor() const {
-    return FindWithDefault(*this, "num_times", TimingInfo(1, 1, 1)).scaled();
+  // For tests.
+  explicit PerfResult(std::map<string, TimingInfo> timings)
+      : timings_(std::move(timings)) {}
+
+  bool HasTiming(const string& name) const {
+    return ContainsKey(timings_, name);
   }
 
-  void SetScaleFactor(int num_times) {
-    (*this)["num_times"] = TimingInfo(num_times, 1, 1);
-  }
-};
+  // Returns the scaled value for the given counter name.
+  double GetScaledOrDie(const string& name) const;
 
-// Returns a human-readable cycle count for `result`, taking into account the
-// scale factor in `result` and the additional one in `additional_scale_factor.`
-string PerfResultString(const PerfResult& result,
-                        int additional_scale_factor = 1);
+  void SetScaleFactor(int num_times) { num_times_ = num_times; }
 
-// Accumulates the counters in data into accumulator.
-void AccumulateCounters(const PerfResult& data, PerfResult* accumulator);
+  // Returns a human-readable cycle count for `result`.
+  string ToString() const;
+
+  // Accumulates the counters in delta.
+  void Accumulate(const PerfResult& delta);
+
+  // Returns all keys.
+  std::vector<string> Keys() const;
+
+ private:
+  double Scale(const TimingInfo& info) const;
+
+  std::map<string, TimingInfo> timings_;
+  uint64_t num_times_ = 1;
+};  // namespace cpu_instructions
 
 // Not thread safe.
 class PerfSubsystem {
@@ -116,30 +122,21 @@ class PerfSubsystem {
   // A short-cut that adds the events in 'category' and starts collecting.
   void StartCollectingEvents(EventCategory category);
 
+  // A short-cut that stops collecting and reads the counters.
+  PerfResult StopAndReadCounters() {
+    StopCollecting();
+    return ReadCounters();
+  }
+
+ private:
   // Stops collecting data, i.e. hardware counters will be stop being updated
   // from here.
   void StopCollecting();
 
-  // Reads the hardware counters and returns a PerfResult hash_map that contains
-  // all the useful information, independently of the PerfSubsystem.
-  void ReadCounters(PerfResult* result);
+  // Reads the hardware counters and returns a PerfResult that contains all the
+  // useful information, independently of the PerfSubsystem.
+  PerfResult ReadCounters();
 
-  // A short-cut that stops collecting and reads the counters.
-  void StopAndReadCounters(PerfResult* result) {
-    StopCollecting();
-    ReadCounters(result);
-  }
-
-  // A short-cut that stops collecting and acuumulates the counters.
-  void StopAndAccumulateCounters(PerfResult* result) {
-    CHECK(result != nullptr);
-    StopCollecting();
-    PerfResult temp;
-    ReadCounters(&temp);
-    AccumulateCounters(temp, result);
-  }
-
- private:
   // This interface can handle at most kMaxNumCounters counters at the same
   // time.
   static constexpr const int kMaxNumCounters = 128;
@@ -159,7 +156,7 @@ class PerfSubsystem {
   for (int i = 0; i < num_iter; ++i) {                                      \
     s;                                                                      \
   }                                                                         \
-  perf.StopAndReadCounters(result);
+  (result)->Accumulate(perf.StopAndReadCounters());
 
 // A basic macro that measures a code snippet s.
 #define CPU_INSTRUCTIONS_RUN_UNDER_PERF(result, num_iter, s)                \
@@ -171,7 +168,7 @@ class PerfSubsystem {
     (result)->SetScaleFactor(num_iter);                                     \
   }
 
-// A basic macro that counts 'event' on a code snippet s.
+// A basic macro that counts 'event' on a code snippet s. Resets result.
 #define CPU_INSTRUCTIONS_COUNT_EVENT_UNDER_PERF(result, num_iter, s, event) \
   {                                                                         \
     ::cpu_instructions::PerfSubsystem perf;                                 \
@@ -180,7 +177,7 @@ class PerfSubsystem {
     for (int i = 0; i < num_iter; ++i) {                                    \
       s;                                                                    \
     }                                                                       \
-    perf.StopAndReadCounters(result);                                       \
+    *(result) = perf.StopAndReadCounters();                                 \
     (result)->SetScaleFactor(num_iter);                                     \
   }
 

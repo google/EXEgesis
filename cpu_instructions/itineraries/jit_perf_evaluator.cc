@@ -80,7 +80,7 @@ Status EvaluateAssemblyString(
   for (const auto& events : kPerfEventCategories) {
     perf_subsystem.StartCollectingEvents(events);
     inline_asm_function.CallOrDie();
-    perf_subsystem.StopAndReadCounters(result);
+    result->Accumulate(perf_subsystem.StopAndReadCounters());
   }
   result->SetScaleFactor(num_outer_iterations * num_inner_iterations);
   return OkStatus();

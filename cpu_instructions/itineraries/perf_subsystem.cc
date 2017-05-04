@@ -31,25 +31,43 @@
 
 namespace cpu_instructions {
 
-string PerfResultString(const PerfResult& perf_result,
-                        const int additional_scale_factor) {
+double PerfResult::Scale(const TimingInfo& timing) const {
+  if (timing.time_running == 0 || timing.time_enabled == 0) return 0.0;
+  // This scales the counter, taking into account the ratio of time the
+  // counter was enabled.
+  const double ratio = static_cast<double>(timing.time_running) /
+                       static_cast<double>(timing.time_enabled);
+  return ratio * static_cast<double>(timing.raw_count) /
+         static_cast<double>(num_times_);
+}
+
+double PerfResult::GetScaledOrDie(const string& name) const {
+  return Scale(FindOrDie(timings_, name));
+}
+
+string PerfResult::ToString() const {
   string result;
-  for (const auto& key_value : perf_result) {
+  for (const auto& key_value : timings_) {
     StringAppendF(&result, "%s: %.2f, ", key_value.first.c_str(),
-                  key_value.second.scaled() /
-                      (perf_result.GetScaleFactor() * additional_scale_factor));
+                  Scale(key_value.second));
   }
+  StringAppendF(&result, "(num_times: %lu)", num_times_);
   return result;
 }
 
-void AccumulateCounters(const PerfResult& data, PerfResult* accumulator) {
-  CHECK(accumulator != nullptr);
-  for (const auto& key_val : data) {
-    const string& event_name = key_val.first;
-    const TimingInfo count = key_val.second;
-    TimingInfo& current_cumul = (*accumulator)[event_name];
-    current_cumul.Accumulate(count);
+void PerfResult::Accumulate(const PerfResult& delta) {
+  for (const auto& key_val : delta.timings_) {
+    const string& name = key_val.first;
+    timings_[name].Accumulate(key_val.second);
   }
+}
+
+std::vector<string> PerfResult::Keys() const {
+  std::vector<string> result;
+  for (const auto& key_val : timings_) {
+    result.push_back(key_val.first);
+  }
+  return result;
 }
 
 namespace {
@@ -180,7 +198,7 @@ void PerfSubsystem::StopCollecting() {
   }
 }
 
-void PerfSubsystem::ReadCounters(PerfResult* result) {
+PerfResult PerfSubsystem::ReadCounters() {
   const int num_fds = counter_fds_.size();
   const int bytes_to_read = sizeof(TimingInfo);
   for (int i = 0; i < num_fds; ++i) {
@@ -190,9 +208,11 @@ void PerfSubsystem::ReadCounters(PerfResult* result) {
   }
   // We copy the result to the resulting vector here to avoid polluting the
   // counters with the call to resize().
+  std::map<string, TimingInfo> timings;
   for (int i = 0; i < num_fds; ++i) {
-    (*result)[event_names_[i]] = timers_[i];
+    InsertOrDie(&timings, event_names_[i], timers_[i]);
   }
+  return PerfResult(std::move(timings));
 }
 
 }  // namespace cpu_instructions

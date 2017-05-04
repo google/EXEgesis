@@ -43,7 +43,7 @@ void TestEvaluateAssemblyString(const std::string& measured_code,
                                    /*update_code=*/"",
                                    /*suffix_code=*/"",
                                    /*cleanup_code=*/"", constraints, &result));
-  const string result_string = PerfResultString(result);
+  const string result_string = result.ToString();
   EXPECT_THAT(result_string, HasSubstr("num_times"));
   LOG(INFO) << result_string;
 }
@@ -96,7 +96,7 @@ TEST(JitPerfEvaluatorTest, AddsdrmIntel) {
       /*suffix_code=*/"",
       /*cleanup_code=*/"",
       /*constraints=*/"~{r11},~{xmm0}", &result));
-  const string result_string = PerfResultString(result);
+  const string result_string = result.ToString();
   EXPECT_THAT(result_string, HasSubstr("num_times"));
   LOG(INFO) << result_string;
 }
@@ -115,7 +115,7 @@ TEST(JitPerfEvaluatorTest, Mov64mi32ATT) {
       /*cleanup_code=*/"",
       /*constraints=*/"~{r11}", &result));
   DCHECK_EQ(64, memory);
-  const string result_string = PerfResultString(result);
+  const string result_string = result.ToString();
   EXPECT_THAT(result_string, HasSubstr("num_times"));
   LOG(INFO) << result_string;
 }
