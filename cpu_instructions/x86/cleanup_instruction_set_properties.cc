@@ -30,9 +30,9 @@ using ::cpu_instructions::util::Status;
 
 const std::unordered_map<string, string>& GetMissingCpuFlags() {
   static const std::unordered_map<string, string>* const kMissingFlags =
-      new std::unordered_map<string, string>({
-          {"CLFLUSH", "CLFSH"}, {"CLFLUSHOPT", "CLFLUSHOPT"},
-      });
+      new std::unordered_map<string, string>({{"CLFLUSH", "CLFSH"},
+                                              {"CLFLUSHOPT", "CLFLUSHOPT"},
+                                              {"MOVBE", "MOVBE"}});
   return *kMissingFlags;
 }
 
