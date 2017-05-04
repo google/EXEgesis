@@ -58,6 +58,88 @@ message MicroArchitectureProto {
   // The list of CPU models of the microarchitecture.
   repeated CpuModelProto cpu_models = 13;
 
+  // Hardware parameters of the microarchitecture. Note that that these
+  // parameters are not necessarily well-defined for all architectures, and they
+  // should all be treated as optional and informative-only.
+
+  // An ISO-8601 string https://en.wikipedia.org/wiki/ISO_8601 representing the
+  // launch date. This is useful when comparing different architectures.
+  string launch_date = 15;
+
+  // The resolution of the lithography process used in nanometers.
+  int32 lithography_nm = 16;
+
+  // The maximunm number of cores with this architecture.
+  int32 max_num_cores = 17;
+
+  // The number of simultaneous hardware threads supported by one core.
+  // For Intel's Hyperthreading it is 2. For AMD Zen it is 2, for POWER it is
+  // up to 8.
+  int32 max_smt_threads_per_core = 18;
+
+  // The bus bandwidth in transactions per second. Note that this does not fit
+  // in an int32.
+  int64 bus_bandwidth_in_transactions_per_sec = 19;
+
+  // The description of the micro-operations cache, also called decoded
+  // stream buffer in the Intel literature. Sizes are in number of
+  // micro-operations.
+  CacheProto decoded_stream_buffer = 20;
+
+  // The minimum pipeline depth. Typically when no branch misprediction occurs,
+  // and/or without counting the fetch and retire stages.
+  int32 min_pipeline_depth = 21;
+
+  // The maximum pipeline depth, counting fetch, retire, branch prediction or
+  // misprediction.
+  int32 max_pipeline_depth = 22;
+
+  // The number of execution ports.
+  int32 num_execution_ports = 23;
+
+  // The maximum number of simple instructions decoded per cycle.
+  int32 num_simple_instructions_decoded_per_cycle = 24;
+
+  // The maximum number of complex instructions decoded per cycle.
+  int32 num_complex_instructions_decoded_per_cycle = 25;
+
+  // The maximum number of micro-operations issued per cycle.
+  int32 num_uops_issued_per_cycle = 26;
+
+  // The maximum number of micro-operations retired per cycle.
+  int32 num_uops_retired_per_cycle = 27;
+
+  // The size of the instruction decode queue (allocation queue) in number of
+  // micro-operations.
+  int32 instruction_decode_queue_size_in_uops = 28;
+
+  // Whether the instruction decode queue is shared in case of hyperthreading.
+  // For example on Haswell, the instruction decode queue is shared, while
+  // on Skylake there are two instruction decode queues.
+  bool is_instruction_decode_queue_shared = 29;
+
+  // The size of the loop stream detector window.
+  int32 loop_stream_detector_size_in_uops = 30;
+
+  // The size of the reorder buffer (out-of-order-window) in number of
+  // micro-operations.
+  int32 reorder_buffer_size_in_uops = 31;
+
+  // The size of the reservation station in number of micro-operations.
+  int32 reservation_station_size_in_uops = 32;
+
+  // The number of internal registers. Also known as "integer register file
+  // size".
+  int32 num_internal_registers = 33;
+
+  // The number of vector registers. Also known as "FP register file size".
+  int32 num_internal_vector_registers = 34;
+
+  // The number of load buffers. Also known as "in-flight loads".
+  int32 num_load_buffers = 35;
+
+  // The number of store buffers. Also known as "in-flight stores".
+  int32 num_store_buffers = 36;
 }
 
 message MicroArchitecturesProto {

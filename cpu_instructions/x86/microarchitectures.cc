@@ -297,6 +297,12 @@ constexpr const char kHaswellMicroarchitecture[] = R"(
       uops_events: "uops_issued:any"
       uops_events: "uops_retired:all"
     }
+
+    num_simple_instructions_decoded_per_cycle: 3
+    num_complex_instructions_decoded_per_cycle: 1
+    reorder_buffer_size_in_uops: 192
+    reservation_station_size_in_uops: 60
+    num_execution_ports: 8
     )";
 
 constexpr const char kHaswellModels[] = R"(
