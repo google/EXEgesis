@@ -273,6 +273,9 @@ void ProtobufOutputDevice::drawChar(GfxState* state, double x, double y,
   const BoundingBox bounding_box =
       GetBoundingBox(x1, y1, width, height, font_size, orientation);
 
+  // Dropping empty characters.
+  if (uLen == 0) return;
+
   // Dropping characters smaller than kMinFontSize.
   if (font_size < kMinFontSize) return;
 
