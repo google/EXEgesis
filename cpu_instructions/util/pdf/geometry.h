@@ -69,6 +69,11 @@ Point GetCenter(const BoundingBox& bbox);
 // BoundingBox edges are inclusive.
 bool Contains(const BoundingBox& bounding_box, const Point& point);
 
+// Returns whether a BoundingBox contains another BoundingBox (i.e. contains all
+// four corners).
+// BoundingBox edges are inclusive.
+bool Contains(const BoundingBox& container, const BoundingBox& inside);
+
 // Returns whether two BoundingBoxes intersects.
 // If a and b share an edge, they intersect.
 bool Intersects(const BoundingBox& a, const BoundingBox& b);

@@ -53,6 +53,12 @@ bool Contains(const BoundingBox& bounding_box, const Point& point) {
          point.y >= bounding_box.top() && point.y <= bounding_box.bottom();
 }
 
+bool Contains(const BoundingBox& container, const BoundingBox& inside) {
+  return container.left() <= inside.left() && container.top() <= inside.top() &&
+         container.right() >= inside.right() &&
+         container.bottom() >= inside.bottom();
+}
+
 bool Intersects(const BoundingBox& a, const BoundingBox& b) {
   if (a.right() < b.left()) return false;  // a is left of b
   if (a.left() > b.right()) return false;  // a is right of b

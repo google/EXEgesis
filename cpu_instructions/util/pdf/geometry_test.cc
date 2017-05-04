@@ -87,6 +87,23 @@ TEST(GeometryTest, BoundingBoxIntersects) {
                           CreateBox(3.0f, 3.0f, 4.0f, 4.0f)));
 }
 
+TEST(GeometryTest, BoundingContains) {
+  // Contains with self (bounds are inclusive).
+  EXPECT_TRUE(Contains(CreateBox(1.0f, 1.0f, 2.0f, 2.0f),
+                       CreateBox(1.0f, 1.0f, 2.0f, 2.0f)));
+  // Boxes share a point.
+  EXPECT_FALSE(Contains(CreateBox(1.0f, 1.0f, 2.0f, 2.0f),
+                        CreateBox(2.0f, 2.0f, 3.0f, 3.0f)));
+  // One Box contain the other.
+  EXPECT_TRUE(Contains(CreateBox(1.0f, 1.0f, 4.0f, 4.0f),
+                       CreateBox(2.0f, 2.0f, 3.0f, 3.0f)));
+  EXPECT_FALSE(Contains(CreateBox(2.0f, 2.0f, 3.0f, 3.0f),
+                        CreateBox(1.0f, 1.0f, 4.0f, 4.0f)));
+  // Boxes are disjoint.
+  EXPECT_FALSE(Contains(CreateBox(1.0f, 1.0f, 2.0f, 2.0f),
+                        CreateBox(3.0f, 3.0f, 4.0f, 4.0f)));
+}
+
 TEST(GeometryTest, BoundingBoxCenter) {
   const Point center = GetCenter(CreateBox(1.0f, 1.0f, 2.0f, 3.0f));
   EXPECT_EQ(center.x, 1.5f);
