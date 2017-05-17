@@ -203,6 +203,41 @@ cc_test(
     ],
 )
 
+# Utilities for restrict instruction set to a certain range.
+
+cc_library(
+    name = "restrict",
+    srcs = ["restrict.cc"],
+    hdrs = ["restrict.h"],
+    deps = [
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//net/proto2/util/public:repeated_field_util",
+        "//strings",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+    ],
+)
+
+cc_test(
+    name = "restrict_test",
+    size = "small",
+    srcs = ["restrict_test.cc"],
+    deps = [
+        ":restrict",
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # Factory functions for obtaining the list of instruction set transforms.
 cc_library(
     name = "transform_factory",

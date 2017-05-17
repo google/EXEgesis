@@ -15,8 +15,8 @@
 // Contains the library of InstructionSetProto transformations that add semantic
 // information for EVEX-encoded instructions.
 
-#ifndef THIRD_PARTY_EXEGESIS_EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
-#define THIRD_PARTY_EXEGESIS_EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
+#ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
+#define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
 
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
@@ -37,4 +37,4 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set);
 }  // namespace x86
 }  // namespace exegesis
 
-#endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
+#endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_

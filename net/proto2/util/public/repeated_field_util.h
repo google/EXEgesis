@@ -15,19 +15,17 @@
 #ifndef NET_PROTO2_UTIL_PUBLIC_REPEATED_FIELD_UTIL_H_
 #define NET_PROTO2_UTIL_PUBLIC_REPEATED_FIELD_UTIL_H_
 
+#include <cassert>
 #include <utility>
 
 #include "src/google/protobuf/repeated_field.h"
 
 namespace exegesis {
-namespace google {
-namespace protobuf {
-namespace util {
 
 template <typename T>
 void Truncate(::google::protobuf::RepeatedPtrField<T>* array, int new_size) {
   const int size = array->size();
-  CHECK_GE(size, new_size);
+  assert(size >= new_size);
   array->DeleteSubrange(new_size, size - new_size);
 }
 
@@ -46,9 +44,6 @@ int RemoveIf(::google::protobuf::RepeatedPtrField<T>* array, const Pred& pr) {
   return end - write;
 }
 
-}  // namespace util
-}  // namespace protobuf
-}  // namespace google
 }  // namespace exegesis
 
 #endif  // NET_PROTO2_UTIL_PUBLIC_REPEATED_FIELD_UTIL_H_

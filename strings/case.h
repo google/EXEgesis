@@ -15,11 +15,17 @@
 #ifndef STRINGS_CASE_H_
 #define STRINGS_CASE_H_
 
+#include <strings.h>
+
 #include "src/google/protobuf/stubs/strutil.h"
 
 namespace exegesis {
 
 using ::google::protobuf::LowerString;
+
+inline int StringCaseCompare(const string& s1, const string& s2) {
+  return strcasecmp(s1.c_str(), s2.c_str());
+}
 
 namespace strings {
 

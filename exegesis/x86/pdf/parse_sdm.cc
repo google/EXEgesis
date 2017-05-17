@@ -63,6 +63,7 @@ std::vector<PdfParseRequest> ParseRequestsOrDie(const string& input_spec) {
   const std::vector<string> specs =
       strings::Split(input_spec, ",", strings::SkipEmpty());  // NOLINT
   std::vector<PdfParseRequest> parsed_specs;
+  parsed_specs.reserve(specs.size());
   for (const string& spec : specs) {
     parsed_specs.push_back(exegesis::pdf::ParseRequestOrDie(spec));
   }

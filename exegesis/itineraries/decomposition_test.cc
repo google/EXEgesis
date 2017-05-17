@@ -220,11 +220,11 @@ std::vector<double> MeasurementGenerator::GenerateFullVector(
 }
 
 std::vector<int> MeasurementGenerator::GenerateSignature(int num_uops) {
-  std::vector<int> signature;
+  std::vector<int> signature(num_uops);
   const int num_port_masks = port_masks_.size();
   std::uniform_int_distribution<int> uniform_int(0, num_port_masks - 1);
   for (int uop = 0; uop < num_uops; ++uop) {
-    signature.push_back(uniform_int(generator_));
+    signature[uop] = uniform_int(generator_);
   }
   std::sort(signature.begin(), signature.end());
   return signature;

@@ -137,6 +137,7 @@ bool HasDataOperandOfSize(int size, const InstructionProto& instruction) {
 string FormatAllInstructions(
     const std::vector<InstructionProto*>& instructions) {
   std::vector<string> vendor_syntaxes;
+  vendor_syntaxes.reserve(instructions.size());
   for (const InstructionProto* const instruction : instructions) {
     vendor_syntaxes.push_back(
         ConvertToCodeString(instruction->vendor_syntax()));

@@ -116,6 +116,7 @@ std::vector<Indices> GetClusters(DenseConnectedComponentsFinder* finder) {
     all_indices[component_ids[i]].push_back(i);
   }
   std::vector<Indices> output;
+  output.reserve(all_indices.size());
   for (auto& id_indices_pair : all_indices) {
     output.push_back(std::move(id_indices_pair.second));
   }
@@ -363,6 +364,7 @@ class Blocks {
 
   Blocks Keep(Indices indices) const {
     std::vector<const PdfTextBlock*> subset;
+    subset.reserve(indices.size());
     for (const size_t index : indices) subset.push_back(blocks_.at(index));
     return Blocks(std::move(subset));
   }
