@@ -5,6 +5,41 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+cc_library(
+    name = "architecture_provider",
+    srcs = ["architecture_provider.cc"],
+    hdrs = ["architecture_provider.h"],
+    deps = [
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:proto_util",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/gtl:ptr_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+    ],
+)
+
+cc_test(
+    name = "architecture_provider_test",
+    size = "small",
+    srcs = ["architecture_provider_test.cc"],
+    deps = [
+        ":architecture_provider",
+        "//base",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//strings",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # A library of functions for working with categories.
 
 cc_library(
