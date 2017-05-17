@@ -14,8 +14,8 @@
 
 // Utilities to work on instruction sets.
 
-#ifndef EXEGESIS_BASE_RESTRICT_H_
-#define EXEGESIS_BASE_RESTRICT_H_
+#ifndef THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_RESTRICT_H_
+#define THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_RESTRICT_H_
 
 #include "strings/string.h"
 
@@ -37,4 +37,4 @@ void RestrictToIndexRange(size_t start_index, size_t end_index,
 
 }  // namespace exegesis
 
-#endif  // EXEGESIS_BASE_RESTRICT_H_
+#endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_RESTRICT_H_
