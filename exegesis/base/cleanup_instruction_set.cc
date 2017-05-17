@@ -37,14 +37,14 @@ DEFINE_bool(exegesis_print_transform_diffs_to_log, false,
             "Print the names and the diffs of the instruction set before and "
             "after running each transform to the log.");
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::Message;
 using ::google::protobuf::util::MessageDifferencer;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
 
 using InstructionSetTransformOrder =
     std::multimap<int, InstructionSetTransform>;
@@ -256,4 +256,4 @@ Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(SortByVendorSyntax, 7000);
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

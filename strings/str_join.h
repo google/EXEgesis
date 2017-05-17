@@ -20,7 +20,7 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace strings {
 
 using ::google::protobuf::Join;
@@ -43,6 +43,6 @@ std::string Join(const Range& components, const char* delim,
 }
 
 }  // namespace strings
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STR_JOIN_H_

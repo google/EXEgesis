@@ -19,7 +19,7 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::StripWhitespace;
 
@@ -39,6 +39,6 @@ inline ptrdiff_t strrmm(string* str, const string& chars) {
   return out_index;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STRIP_H_

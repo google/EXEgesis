@@ -32,17 +32,15 @@
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 namespace {
 
-using cpu_instructions::pdf::LoadConfigurations;
-using cpu_instructions::pdf::PdfDocument;
-using cpu_instructions::pdf::PdfDocumentsChanges;
-using cpu_instructions::pdf::PdfPage;
-using cpu_instructions::pdf::PdfParseRequest;
-using cpu_instructions::pdf::PdfTextTableRow;
+using ::exegesis::pdf::LoadConfigurations;
+using ::exegesis::pdf::PdfDocument;
+using ::exegesis::pdf::PdfDocumentsChanges;
+using ::exegesis::pdf::PdfParseRequest;
 
 constexpr const char kSourceName[] = "IntelSDMParser V2";
 
@@ -66,7 +64,7 @@ std::vector<PdfParseRequest> ParseRequestsOrDie(const string& input_spec) {
       strings::Split(input_spec, ",", strings::SkipEmpty());  // NOLINT
   std::vector<PdfParseRequest> parsed_specs;
   for (const string& spec : specs) {
-    parsed_specs.push_back(cpu_instructions::pdf::ParseRequestOrDie(spec));
+    parsed_specs.push_back(exegesis::pdf::ParseRequestOrDie(spec));
   }
   return parsed_specs;
 }
@@ -111,4 +109,4 @@ InstructionSetProto ParseSdmOrDie(const string& input_spec,
 
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

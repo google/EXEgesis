@@ -22,9 +22,9 @@
 #include "llvm/IR/InlineAsm.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Run Perf on an assembly code string that is to be assembled using the
 // LLVM JIT assembler.
@@ -67,6 +67,6 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
                            FXStateBuffer* fx_state_buffer_in,
                            FXStateBuffer* fx_state_buffer_out);
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_ITINERARIES_JIT_PERF_EVALUATOR_H_

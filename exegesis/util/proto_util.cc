@@ -18,7 +18,7 @@
 #include "src/google/protobuf/io/zero_copy_stream_impl.h"
 #include "src/google/protobuf/text_format.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 void ReadTextProtoOrDie(const string& filename,
                         google::protobuf::Message* message) {
@@ -71,4 +71,4 @@ void WriteBinaryProtoOrDie(const string& filename,
   fclose(output_file);
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

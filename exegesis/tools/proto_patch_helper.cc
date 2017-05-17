@@ -44,7 +44,7 @@ DEFINE_string(exegesis_match_expression, "",
 DEFINE_string(exegesis_page_numbers, "",
               "A list of page numbers to process, all pages if not set.");
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 namespace {
 
@@ -120,10 +120,10 @@ void Main() {
 
 }  // namespace
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 int main(int argc, char** argv) {
   google::ParseCommandLineFlags(&argc, &argv, true);
-  ::cpu_instructions::pdf::Main();
+  ::exegesis::pdf::Main();
   return 0;
 }

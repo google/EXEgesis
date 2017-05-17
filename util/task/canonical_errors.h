@@ -18,7 +18,7 @@
 #include "strings/string_view.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace util {
 
 Status FailedPreconditionError(StringPiece error);
@@ -30,6 +30,6 @@ Status InvalidArgumentError(StringPiece error);
 bool IsInvalidArgument(const Status& status);
 
 }  // namespace util
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // UTIL_TASK_CANONICAL_ERRORS_H_

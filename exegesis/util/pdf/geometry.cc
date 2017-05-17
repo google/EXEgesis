@@ -18,7 +18,7 @@
 
 #include "glog/logging.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 BoundingBox CreateBox(float left, float top, float right, float bottom) {
@@ -212,4 +212,4 @@ Orientation RotateClockwise90(Orientation orientation) {
   return NORTH;
 }
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

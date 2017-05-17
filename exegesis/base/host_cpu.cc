@@ -28,7 +28,7 @@
 #include "strings/str_split.h"
 #include "util/gtl/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 #define PROCESS_FEATURE(name, reg, field)  \
   if (reg.field()) {                       \
@@ -411,4 +411,4 @@ string HostCpuInfo::DebugString() const {
   }
   return result;
 }
-}  // namespace cpu_instructions
+}  // namespace exegesis

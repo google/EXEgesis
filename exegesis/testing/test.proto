@@ -17,7 +17,7 @@
 
 syntax = "proto3";
 
-package cpu_instructions.testing;
+package exegesis.testing;
 
 message TestProto {
   int32 integer_field = 1;

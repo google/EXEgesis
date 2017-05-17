@@ -19,12 +19,12 @@
 #include "src/google/protobuf/text_format.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::error::INVALID_ARGUMENT;
+using ::exegesis::util::Status;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(AddOperandInfoTest, AddInfo) {
   constexpr char kInstructionSetProto[] =
@@ -219,4 +219,4 @@ TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

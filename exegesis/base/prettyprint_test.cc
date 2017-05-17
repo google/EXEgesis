@@ -19,7 +19,7 @@
 #include "exegesis/util/proto_util.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 TEST(PrettyPrintTest, CpuModel) {
@@ -154,4 +154,4 @@ TEST(PrettyPrintTest, ItineraryOneLine) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

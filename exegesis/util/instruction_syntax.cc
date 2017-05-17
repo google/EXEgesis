@@ -24,7 +24,7 @@
 #include "strings/string_view.h"
 #include "strings/strip.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 namespace {
 bool ContainsPrefix(StringPiece s, const std::vector<StringPiece>& prefixes) {
@@ -105,4 +105,4 @@ string ConvertToCodeString(const InstructionFormat& instruction) {
   return result;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

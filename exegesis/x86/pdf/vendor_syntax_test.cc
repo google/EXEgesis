@@ -18,12 +18,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 TEST(ParseVendorSyntaxTest, Simple) {
   InstructionFormat vendor_syntax;
@@ -114,4 +114,4 @@ TEST(ParseVendorSyntaxTest, Invalid) {
 }  // namespace
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

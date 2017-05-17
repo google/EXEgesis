@@ -18,7 +18,7 @@
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 string PrettyPrintCpuModel(const CpuModel& cpu_model,
                            const PrettyPrintOptions& options) {
@@ -92,4 +92,4 @@ string PrettyPrintItinerary(const ItineraryProto& itineraries,
   return result;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

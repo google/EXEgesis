@@ -21,10 +21,10 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Updates the operands of CMPS and MOVS instructions. These instructions are
 // documented in the Intel manual in two forms: a form that doesn't use any
@@ -125,6 +125,6 @@ Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set);
 Status RenameOperands(InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_FIX_OPERANDS_H_

@@ -17,7 +17,7 @@
 
 #include <cstdint>
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Returns true if the given value is in the given category. Both category and
 // value are integral types. Both are interpreted as sequences of 4-bit numbers.
@@ -35,6 +35,6 @@ inline bool InCategory(int32_t value, int32_t category) {
   return value == category;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_CATEGORY_UTILS_H_

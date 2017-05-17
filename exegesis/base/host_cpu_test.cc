@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 #include "strings/string_view_utils.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 TEST(HostCpuInfoTest, Print) {
@@ -40,4 +40,4 @@ TEST(HostCpuInfoTest, SupportsFeature) {
   EXPECT_FALSE(cpu_info.SupportsFeature("ADX && AVX"));
 }
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

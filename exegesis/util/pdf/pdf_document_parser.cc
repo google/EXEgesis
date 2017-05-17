@@ -35,7 +35,7 @@ DEFINE_double(exegesis_pdf_max_character_distance, 0.9,
               "the same cell. The value is a multiplier; the real distance is "
               "obtained by multiplying the font size with this coefficient.");
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 namespace {
@@ -526,4 +526,4 @@ void Cluster(PdfPage* page,
 }
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

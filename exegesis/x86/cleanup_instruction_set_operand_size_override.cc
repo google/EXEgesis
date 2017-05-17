@@ -36,14 +36,14 @@
 #include "util/task/status.h"
 #include "util/task/status_macros.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::FailedPreconditionError;
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::FailedPreconditionError;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 // Mnemonics of 16-bit string instructions that take no operands.
 const char* const k16BitInstructionsWithImplicitOperands[] = {
@@ -240,4 +240,4 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefix, 5000);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

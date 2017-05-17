@@ -21,10 +21,10 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Adds the EVEX.b bit interpretation field to all instructions in the
 // instruction set.
@@ -35,6 +35,6 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set);
 Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_

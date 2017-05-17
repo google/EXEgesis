@@ -23,9 +23,9 @@
 #include "strings/string_view.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::StatusOr;
 
 // Parses the given hexadecimal string in several possible formats:
 // * each byte is encoded as one or two hexadecimal digits,
@@ -71,6 +71,6 @@ string ToPastableHexString(const Range& binary_data) {
   return buffer;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_STRINGS_H_

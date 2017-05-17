@@ -21,7 +21,7 @@
 
 syntax = "proto3";
 
-package cpu_instructions.x86;
+package exegesis.x86;
 
 // Contains definitions of enums for VEX and EVEX prefixes.
 message VexEncoding {

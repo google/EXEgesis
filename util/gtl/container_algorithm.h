@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace gtl {
 
 // Returns true if 'container' contains an element equal to value.
@@ -29,6 +29,6 @@ bool c_linear_search(const Container& container, const ValueType& value) {
 }
 
 }  // namespace gtl
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // UTIL_GTL_CONTAINER_ALGORITHM_H_

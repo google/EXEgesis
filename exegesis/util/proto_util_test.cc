@@ -25,10 +25,10 @@
 #include "src/google/protobuf/text_format.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   constexpr char kExpected[] = R"(
@@ -54,4 +54,4 @@ TEST(ProtoUtilDeathTest, ParseProtoFromStringOrDie) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

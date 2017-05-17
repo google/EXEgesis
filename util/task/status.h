@@ -17,7 +17,7 @@
 
 #include "src/google/protobuf/stubs/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace util {
 namespace error {
 
@@ -35,29 +35,29 @@ using ::google::protobuf::util::operator<<;
 inline Status OkStatus() { return Status(); }
 
 #ifndef CHECK_OK
-#define CHECK_OK(status_expr)                                      \
-  do {                                                             \
-    const ::cpu_instructions::util::Status status = (status_expr); \
-    CHECK(status.ok()) << status;                                  \
+#define CHECK_OK(status_expr)                              \
+  do {                                                     \
+    const ::exegesis::util::Status status = (status_expr); \
+    CHECK(status.ok()) << status;                          \
   } while (false)
 #endif  // CHECK_OK
 
 #ifndef ASSERT_OK
-#define ASSERT_OK(status_expr)                                     \
-  do {                                                             \
-    const ::cpu_instructions::util::Status status = (status_expr); \
-    ASSERT_TRUE(status.ok()) << status;                            \
+#define ASSERT_OK(status_expr)                             \
+  do {                                                     \
+    const ::exegesis::util::Status status = (status_expr); \
+    ASSERT_TRUE(status.ok()) << status;                    \
   } while (false)
 #endif  // ASSERT_OK
 #ifndef EXPECT_OK
-#define EXPECT_OK(status_expr)                                     \
-  do {                                                             \
-    const ::cpu_instructions::util::Status status = (status_expr); \
-    EXPECT_TRUE(status.ok()) << status;                            \
+#define EXPECT_OK(status_expr)                             \
+  do {                                                     \
+    const ::exegesis::util::Status status = (status_expr); \
+    EXPECT_TRUE(status.ok()) << status;                    \
   } while (false)
 #endif  // EXPECT_OK
 
 }  // namespace util
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // UTIL_TASK_STATUS_H_

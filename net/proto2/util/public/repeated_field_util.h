@@ -19,7 +19,7 @@
 
 #include "src/google/protobuf/repeated_field.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace google {
 namespace protobuf {
 namespace util {
@@ -49,6 +49,6 @@ int RemoveIf(::google::protobuf::RepeatedPtrField<T>* array, const Pred& pr) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // NET_PROTO2_UTIL_PUBLIC_REPEATED_FIELD_UTIL_H_

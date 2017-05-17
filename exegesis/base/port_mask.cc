@@ -16,7 +16,7 @@
 
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 PortMask::PortMask(const PortMaskProto& proto) {
   uint64_t result = 0;
@@ -53,4 +53,4 @@ PortMaskProto PortMask::ToProto() const {
   return proto;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

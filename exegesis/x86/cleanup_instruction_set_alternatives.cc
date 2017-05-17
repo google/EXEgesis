@@ -27,13 +27,13 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 // Information about an operand that need to be modified when adding an
 // alternative. There is one instance of this struct for each alternative.
@@ -268,4 +268,4 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddAlternatives, 6000);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

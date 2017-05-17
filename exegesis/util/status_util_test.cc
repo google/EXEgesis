@@ -19,15 +19,15 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::FailedPreconditionError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::error::FAILED_PRECONDITION;
-using ::cpu_instructions::util::error::INVALID_ARGUMENT;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::FailedPreconditionError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
+using ::exegesis::util::error::FAILED_PRECONDITION;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(UpdateStatusTest, UpdateOkWithOk) {
   Status overall_status;
@@ -61,4 +61,4 @@ TEST(UpdateStatusTest, UpdateErrorWithError) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

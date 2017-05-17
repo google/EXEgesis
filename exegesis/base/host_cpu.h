@@ -18,7 +18,7 @@
 #include <unordered_set>
 #include "strings/string.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 class HostCpuInfo {
  public:
@@ -31,7 +31,7 @@ class HostCpuInfo {
   const string& cpu_id() const { return cpu_id_; }
 
   // Returns true if the CPU supports this feature. See
-  // cpu_instructions.InstructionProto.feature_name for the syntax.
+  // exegesis.InstructionProto.feature_name for the syntax.
   bool SupportsFeature(const string& feature_name) const;
 
   string DebugString() const;
@@ -54,6 +54,6 @@ class HostCpuInfo {
   const std::unordered_set<string> indexed_features_;
 };
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_HOST_CPU_H_

@@ -21,15 +21,15 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Adds the Intel assembler syntax that is parsed by LLVM.
 Status AddIntelAsmSyntax(InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_ASM_SYNTAX_H_

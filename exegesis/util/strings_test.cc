@@ -19,7 +19,7 @@
 #include "strings/str_cat.h"
 #include "util/task/canonical_errors.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 using ::testing::ElementsAreArray;
@@ -113,4 +113,4 @@ TEST(ToPastableHexStringTest, FromArray) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

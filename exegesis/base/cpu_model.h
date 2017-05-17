@@ -21,7 +21,7 @@
 #include "exegesis/base/port_mask.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 class MicroArchitecture;
 
@@ -94,8 +94,8 @@ class MicroArchitecture {
 // takes a single parameter 'provider'. This must be a callable object (e.g.
 // a function pointer, a functor, a std::function object) that returns an object
 // convertible to const MicroArchitecturesProto&.
-#define REGISTER_MICRO_ARCHITECTURES(provider)             \
-  ::cpu_instructions::internal::RegisterMicroArchitectures \
+#define REGISTER_MICRO_ARCHITECTURES(provider)     \
+  ::exegesis::internal::RegisterMicroArchitectures \
       register_micro_architectures_##provider(provider);
 
 namespace internal {
@@ -115,6 +115,6 @@ class RegisterMicroArchitectures {
 
 }  // namespace internal
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_CPU_MODEL_H_

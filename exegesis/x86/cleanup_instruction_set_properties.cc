@@ -21,12 +21,12 @@
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 const std::unordered_map<string, string>& GetMissingCpuFlags() {
   static const std::unordered_map<string, string>* const kMissingFlags =
@@ -128,4 +128,4 @@ Status AddProtectionModes(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddProtectionModes, 1000);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

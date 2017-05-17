@@ -17,7 +17,7 @@
 #include "exegesis/base/cpu_model.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
@@ -72,4 +72,4 @@ TEST(CpuModelTest, NehalemParses) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

@@ -21,10 +21,10 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Adds detailed information about operands to the vendor syntax section.
 // Assumes that this section already has operand names in the format used by the
@@ -42,6 +42,6 @@ Status AddOperandInfo(InstructionSetProto* instruction_set);
 Status AddMissingOperandUsage(InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_OPERAND_INFO_H_

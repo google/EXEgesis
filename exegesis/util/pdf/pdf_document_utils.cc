@@ -26,7 +26,7 @@
 #include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 namespace {
@@ -415,4 +415,4 @@ void TransferPatches(const PdfDocumentChanges& changes, const PdfDocument& from,
 }
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

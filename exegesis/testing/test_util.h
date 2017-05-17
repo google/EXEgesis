@@ -32,7 +32,7 @@
 #include "src/google/protobuf/text_format.h"
 #include "src/google/protobuf/util/message_differencer.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace testing {
 namespace internal {
 
@@ -136,6 +136,6 @@ bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
 
 }  // namespace internal
 }  // namespace testing
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_TESTING_TEST_UTIL_H_

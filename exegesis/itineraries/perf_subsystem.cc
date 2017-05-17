@@ -29,7 +29,7 @@
 #include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 double PerfResult::Scale(const TimingInfo& timing) const {
   if (timing.time_running == 0 || timing.time_enabled == 0) return 0.0;
@@ -215,4 +215,4 @@ PerfResult PerfSubsystem::ReadCounters() {
   return PerfResult(std::move(timings));
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

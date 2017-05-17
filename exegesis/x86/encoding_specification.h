@@ -34,10 +34,10 @@
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::StatusOr;
 
 // Parses the instruction encoding specification from a string.
 //
@@ -63,6 +63,6 @@ InstructionOperandEncodingMultiset GetAvailableEncodings(
     const EncodingSpecification& specification);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_ENCODING_SPECIFICATION_H_

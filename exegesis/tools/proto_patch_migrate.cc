@@ -46,7 +46,7 @@ DEFINE_string(
     exegesis_patches_directory, "exegesis/x86/pdf/sdm_patches/",
     "A folder containing a set of patches to apply to original documents");
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 namespace {
 
@@ -130,10 +130,10 @@ void Main() {
 
 }  // namespace
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 int main(int argc, char** argv) {
   google::ParseCommandLineFlags(&argc, &argv, true);
-  ::cpu_instructions::pdf::Main();
+  ::exegesis::pdf::Main();
   return 0;
 }

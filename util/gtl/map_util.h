@@ -17,7 +17,7 @@
 
 #include "src/google/protobuf/stubs/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::ContainsKey;
 using ::google::protobuf::FindCopy;
@@ -30,6 +30,6 @@ using ::google::protobuf::InsertIfNotPresent;
 using ::google::protobuf::InsertOrDie;
 using ::google::protobuf::InsertOrDieNoPrint;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // UTIL_GTL_MAP_UTIL_H_

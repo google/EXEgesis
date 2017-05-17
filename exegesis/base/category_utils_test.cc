@@ -20,7 +20,7 @@
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 TEST(InCategoryTest, TestCategories) {
@@ -41,4 +41,4 @@ TEST(InCategoryTest, TestCategories) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

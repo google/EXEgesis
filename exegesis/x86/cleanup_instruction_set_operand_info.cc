@@ -36,15 +36,14 @@
 #include "util/task/status_macros.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::FailedPreconditionError;
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::FailedPreconditionError;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 using EncodingMap = std::unordered_map<string, InstructionOperand::Encoding>;
 using AddressingModeMap =
@@ -1035,4 +1034,4 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsage, 8000);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

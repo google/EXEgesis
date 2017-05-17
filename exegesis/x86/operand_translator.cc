@@ -23,7 +23,7 @@
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
 namespace {
@@ -171,4 +171,4 @@ InstructionFormat InstantiateOperands(const InstructionProto& instruction) {
 }
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

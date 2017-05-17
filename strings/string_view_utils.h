@@ -17,7 +17,7 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace strings {
 
 inline bool StartsWith(::google::protobuf::StringPiece str,
@@ -26,6 +26,6 @@ inline bool StartsWith(::google::protobuf::StringPiece str,
 }
 
 }  // namespace strings
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STRING_VIEW_UTILS_H_

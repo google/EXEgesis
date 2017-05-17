@@ -17,7 +17,7 @@ syntax = "proto3";
 import "exegesis/proto/pdf/pdf_document.proto";
 import "exegesis/proto/instructions.proto";
 
-package cpu_instructions.x86.pdf;
+package exegesis.x86.pdf;
 
 // The SDM document itself.
 // The original PDF document contains chapters (e.g. "Chapter 1: About this
@@ -70,7 +70,7 @@ message SubSection {
   Type type = 1;
 
   // The rows for this subsection.
-  repeated cpu_instructions.pdf.PdfTextTableRow rows = 2;
+  repeated exegesis.pdf.PdfTextTableRow rows = 2;
 }
 
 // The description of a particular instruction table.

@@ -21,12 +21,12 @@
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/proto/pdf/x86/intel_sdm.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 
 SdmDocument ConvertPdfDocumentToSdmDocument(
-    const cpu_instructions::pdf::PdfDocument& document);
+    const exegesis::pdf::PdfDocument& document);
 
 InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document);
 
@@ -36,6 +36,6 @@ ParseOperandEncodingTableCell(const string& content);
 
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_PDF_INTEL_SDM_EXTRACTOR_H_

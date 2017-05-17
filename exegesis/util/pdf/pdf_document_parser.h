@@ -17,7 +17,7 @@
 
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 typedef google::protobuf::RepeatedPtrField<PdfCharacter> PdfCharacters;
@@ -45,6 +45,6 @@ void Cluster(PdfPage* page,
                  PdfPagePreventSegmentBindings());
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_PDF_PDF_DOCUMENT_PARSER_H_

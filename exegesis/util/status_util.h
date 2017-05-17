@@ -17,14 +17,14 @@
 
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Updates the value of 'status': if 'status' was not OK, its old value is kept.
 // Otherwise, it is replaced with the value of 'new_status'.
 void UpdateStatus(Status* status, const Status& new_status);
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_STATUS_UTIL_H_

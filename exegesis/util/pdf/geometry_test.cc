@@ -17,7 +17,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 namespace {
 
@@ -324,4 +324,4 @@ TEST(GeometryTest, GetSpan) {
 }  // namespace
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

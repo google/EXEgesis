@@ -24,13 +24,13 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
 // Instanciates all operands in the instructions.
 InstructionFormat InstantiateOperands(const InstructionProto& instruction);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_OPERAND_TRANSLATOR_H_

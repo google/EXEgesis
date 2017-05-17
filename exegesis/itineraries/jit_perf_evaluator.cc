@@ -27,7 +27,7 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 namespace {
 std::string RepeatCode(int num_repeats, const std::string& code) {
@@ -119,4 +119,4 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
   return OkStatus();
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

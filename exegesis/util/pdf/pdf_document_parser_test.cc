@@ -23,7 +23,7 @@
 
 using ::testing::ElementsAreArray;
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 bool operator==(const BoundingBox& a, const BoundingBox& b) {
@@ -183,4 +183,4 @@ TEST(ExtractLine, do_not_connect) {
 }  // namespace
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

@@ -24,19 +24,17 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
-using ::cpu_instructions::InstructionFormat;
-using ::cpu_instructions::InstructionOperand;
-using ::cpu_instructions::InstructionProto;
-using ::cpu_instructions::InstructionSetProto;
+using ::exegesis::InstructionProto;
+using ::exegesis::InstructionSetProto;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::error::INVALID_ARGUMENT;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(GetTransformsByNameTest, ReturnedMapIsNotEmpty) {
   const InstructionSetTransformsByName& transforms = GetTransformsByName();
@@ -159,4 +157,4 @@ TEST(SortByVendorSyntaxTest, Sort) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

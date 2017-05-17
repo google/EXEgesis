@@ -20,9 +20,9 @@
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 void TestTransform(const InstructionSetTransform& transform,
                    const string& input_proto, const string& expected_output) {
@@ -33,4 +33,4 @@ void TestTransform(const InstructionSetTransform& transform,
   EXPECT_THAT(instruction_set, EqualsProto(expected_output));
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

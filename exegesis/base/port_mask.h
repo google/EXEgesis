@@ -23,7 +23,7 @@
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // An encapsulation of uint64 use as a bit set to represent the possible
 // execution ports for a micro-operation.
@@ -137,5 +137,5 @@ inline std::ostream& operator<<(std::ostream& os, const PortMask& p) {
   return os << p.ToString();
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 #endif  // EXEGESIS_BASE_PORT_MASK_H_

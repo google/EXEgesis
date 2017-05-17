@@ -26,13 +26,13 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 char GetSuffixFromPointerType(StringPiece operand) {
   string result;
@@ -99,4 +99,4 @@ Status AddIntelAsmSyntax(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddIntelAsmSyntax, kNotInDefaultPipeline);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

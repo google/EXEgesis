@@ -21,10 +21,10 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Adds the missing operand size override prefix to the binary encoding
 // specification of instruction where it is missing. We detect such instructions
@@ -49,6 +49,6 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
     InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_OPERAND_SIZE_OVERRIDE_H_

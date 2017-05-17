@@ -34,14 +34,14 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status_macros.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
 
 // RE2 and protobuf have two slightly different implementations of StringPiece.
 // In this file, we use RE2::Consume heavily, so we explicitly switch to the RE2
@@ -532,4 +532,4 @@ InstructionOperandEncodingMultiset GetAvailableEncodings(
 }
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

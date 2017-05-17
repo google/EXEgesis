@@ -9,6 +9,12 @@ Manual (SDM), in PDF format. The purpose of this code is to parse
 instruction information from that PDF and export it into a structured database
 of instructions in machine readable format.
 
+## Get involved
+
+*   Issue tracker: https://github.com/google/EXEgesis/issues
+*   Mailing list: exegesis-discuss@googlegroups.com
+
+We welcome patches -- see CONTRIBUTING for more information on how to submit a patch.
 
 ## Requirements/Building
 

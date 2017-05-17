@@ -17,11 +17,11 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::GlobalReplaceSubstring;
 using ::google::protobuf::StringReplace;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_UTIL_H_

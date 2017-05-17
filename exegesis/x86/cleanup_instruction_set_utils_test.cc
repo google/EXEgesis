@@ -20,11 +20,11 @@
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
   constexpr char kInstructionProto[] = R"(
@@ -124,4 +124,4 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest,
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

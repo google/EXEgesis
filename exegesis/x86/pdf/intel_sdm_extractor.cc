@@ -36,16 +36,16 @@
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 
 namespace {
 
-using cpu_instructions::pdf::PdfDocument;
-using cpu_instructions::pdf::PdfPage;
-using cpu_instructions::pdf::PdfTextTableRow;
-using cpu_instructions::pdf::PdfTextBlock;
+using exegesis::pdf::PdfDocument;
+using exegesis::pdf::PdfPage;
+using exegesis::pdf::PdfTextTableRow;
+using exegesis::pdf::PdfTextBlock;
 
 using re2::StringPiece;
 
@@ -856,7 +856,7 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
 }
 
 SdmDocument ConvertPdfDocumentToSdmDocument(
-    const cpu_instructions::pdf::PdfDocument& pdf) {
+    const exegesis::pdf::PdfDocument& pdf) {
   // Find all instruction pages.
   SdmDocument sdm_document;
   std::map<string, Pages> instruction_group_id_to_pages;
@@ -897,4 +897,4 @@ InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document) {
 
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

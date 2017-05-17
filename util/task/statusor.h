@@ -17,12 +17,12 @@
 
 #include "src/google/protobuf/stubs/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace util {
 
 using ::google::protobuf::util::StatusOr;
 
 }  // namespace util
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // UTIL_TASK_STATUSOR_H_

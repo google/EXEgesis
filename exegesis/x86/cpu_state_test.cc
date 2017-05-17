@@ -18,7 +18,7 @@
 
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 struct Int32Pair {
@@ -74,4 +74,4 @@ TEST(CpuStateTest, UniqueAlignedStorageCallsConstructors) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

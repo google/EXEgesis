@@ -21,7 +21,7 @@
 
 #include "glog/logging.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Returns true if the bit at 'bit_position' of 'value' is set to one.
 // Otherwise, returns false. The position of the bit is zero-based.
@@ -62,6 +62,6 @@ inline uint32_t GetBitRange(uint32_t value, int start_bit_position,
   return (value & mask) >> start_bit_position;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_BITS_H_

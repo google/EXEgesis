@@ -19,7 +19,7 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 class PrettyPrintOptions {
  public:
@@ -87,6 +87,6 @@ string PrettyPrintMicroOperations(
     const ::google::protobuf::RepeatedPtrField<MicroOperationProto>& uops,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_DEBUG_H_

@@ -16,7 +16,7 @@
 
 syntax = "proto2";
 
-package cpu_instructions;
+package exegesis;
 
 import "exegesis/proto/x86/encoding_specification.proto";
 import "exegesis/proto/microarchitecture.proto";
@@ -270,7 +270,7 @@ message InstructionProto {
   // The parsed binary encoding specification. Which field is used depends on
   // the platform to which the instruction belongs.
   oneof encoding_specification {
-    cpu_instructions.x86.EncodingSpecification x86_encoding_specification = 30;
+    exegesis.x86.EncodingSpecification x86_encoding_specification = 30;
   }
 
   // The index of the instruction group this instruction belongs to.

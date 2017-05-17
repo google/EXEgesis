@@ -20,7 +20,7 @@
 #include "glog/logging.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
@@ -57,4 +57,4 @@ void AddOperandSizeOverrideToInstructionProto(InstructionProto* instruction) {
 }
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

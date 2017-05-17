@@ -17,10 +17,10 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::StringPiece;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STRING_VIEW_H_

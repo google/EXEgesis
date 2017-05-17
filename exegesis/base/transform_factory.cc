@@ -25,7 +25,7 @@ DEFINE_string(
     "database. This can be a (possibly empty) list of names or "
     "'default' to apply the default list of transforms for the architecture.");
 
-namespace cpu_instructions {
+namespace exegesis {
 
 std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags() {
   static constexpr const char kDefaultSet[] = "default";
@@ -49,4 +49,4 @@ std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags() {
   return transforms;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

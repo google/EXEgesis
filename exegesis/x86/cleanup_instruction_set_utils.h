@@ -19,7 +19,7 @@
 
 #include "exegesis/proto/instructions.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
 // Adds the operand size override prefix to the binary encoding specification of
@@ -28,6 +28,6 @@ namespace x86 {
 void AddOperandSizeOverrideToInstructionProto(InstructionProto* instruction);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_UTILS_H_

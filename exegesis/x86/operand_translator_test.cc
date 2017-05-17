@@ -19,7 +19,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
@@ -51,4 +51,4 @@ TEST(OperandTranslatorTest, Works) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

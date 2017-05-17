@@ -19,12 +19,12 @@
 #include "src/google/protobuf/text_format.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
 using ::google::protobuf::TextFormat;
-using ::cpu_instructions::util::error::INVALID_ARGUMENT;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
   constexpr char kInstructionSetProto[] = R"(
@@ -487,4 +487,4 @@ TEST(ParseEncodingSpecificationsTest, ParseErrors) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

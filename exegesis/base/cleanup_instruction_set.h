@@ -28,10 +28,10 @@
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
 
 // The type of all instruction database transforms.
 // InstructionSetTransformRawFunction is the type of the functions that can be
@@ -91,7 +91,7 @@ Status SortByVendorSyntax(InstructionSetProto* instruction_set);
 // with each build of the code.
 #define REGISTER_INSTRUCTION_SET_TRANSFORM(transform,                      \
                                            rank_in_default_pipeline)       \
-  ::cpu_instructions::internal::RegisterInstructionSetTransform            \
+  ::exegesis::internal::RegisterInstructionSetTransform                    \
       register_transform_##transform(#transform, rank_in_default_pipeline, \
                                      transform)
 
@@ -111,6 +111,6 @@ class RegisterInstructionSetTransform {
 };
 
 }  // namespace internal
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_CLEANUP_INSTRUCTION_SET_H_

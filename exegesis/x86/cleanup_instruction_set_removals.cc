@@ -27,12 +27,12 @@
 #include "util/gtl/map_util.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::gtl::c_linear_search;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
+using ::exegesis::gtl::c_linear_search;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -180,4 +180,4 @@ Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveUndefinedInstructions, 0);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

@@ -16,7 +16,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/Support/SourceMgr.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Represents a function that takes no arguments and does not return any value.
 struct VoidFunction {
@@ -168,6 +168,6 @@ class JitCompiler {
   std::vector<string> compile_errors_;
 };
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_LLVM_INLINE_ASM_H_

@@ -18,7 +18,7 @@
 
 #include "glog/logging.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 void SetCoreAffinity(int core_id) {
   cpu_set_t affinity;
@@ -41,4 +41,4 @@ void PinCoreAffinity() {
   }
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

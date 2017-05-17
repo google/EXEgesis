@@ -21,7 +21,7 @@ syntax = "proto3";
 
 import 'exegesis/proto/x86/instruction_encoding.proto';
 
-package cpu_instructions.x86;
+package exegesis.x86;
 
 message LegacyPrefixEncodingSpecification {
   // The instruction has a mandatory REX prefix where the REX.W bit is set. This

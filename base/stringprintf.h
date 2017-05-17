@@ -17,11 +17,11 @@
 
 #include "src/google/protobuf/stubs/stringprintf.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::StringAppendF;
 using ::google::protobuf::StringPrintf;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // BASE_STRINGPRINTF_H_

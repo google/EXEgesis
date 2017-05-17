@@ -105,10 +105,10 @@
 // where K, kBalancingWeight, kErrorWeight, kMaxErrorWeight, and kNumUopsWeight
 // are appropriately chosen constants.
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace itineraries {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Computes the number of execution ports from 'port_masks'. It is simply 1 +
 // the maximum port number in 'port_masks'.
@@ -272,6 +272,6 @@ std::vector<int> OrderMicroOperations(
     bool* is_order_unique);
 
 }  // namespace itineraries
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_ITINERARIES_DECOMPOSITION_H_

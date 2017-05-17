@@ -21,7 +21,7 @@
 
 #include "exegesis/base/cleanup_instruction_set.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Tests 'transform' by running it on 'input_proto', and comparing the modified
 // proto with 'expected_output_proto'.
@@ -29,6 +29,6 @@ void TestTransform(const InstructionSetTransform& transform,
                    const string& input_proto,
                    const string& expected_output_proto);
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_CLEANUP_INSTRUCTION_SET_TEST_UTILS_H_

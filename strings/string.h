@@ -17,10 +17,10 @@
 
 #include <string>
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using std::string;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STRING_H_

@@ -23,7 +23,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 using ::testing::HasSubstr;
@@ -174,4 +174,4 @@ TEST(JitPerfEvaluatorTest, DebugCPUStateChange) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

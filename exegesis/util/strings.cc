@@ -19,9 +19,9 @@
 #include "strings/str_cat.h"
 #include "util/task/canonical_errors.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::StatusOr;
 
 StatusOr<std::vector<uint8_t>> ParseHexString(const string& hex_string) {
   ::re2::
@@ -41,4 +41,4 @@ StatusOr<std::vector<uint8_t>> ParseHexString(const string& hex_string) {
   return bytes;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

@@ -18,7 +18,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace testing {
 namespace {
 
@@ -85,4 +85,4 @@ TEST(EqualsProtoTupleMatcherTest, InvalidExpectedProto) {
 
 }  // namespace
 }  // namespace testing
-}  // namespace cpu_instructions
+}  // namespace exegesis

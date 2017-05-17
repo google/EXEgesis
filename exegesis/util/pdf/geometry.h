@@ -21,7 +21,7 @@
 
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 typedef std::vector<size_t> Indices;
@@ -193,6 +193,6 @@ Vec2F GetDirectionVector(Orientation orientation);
 Orientation RotateClockwise90(Orientation orientation);
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_PDF_GEOMETRY_H_

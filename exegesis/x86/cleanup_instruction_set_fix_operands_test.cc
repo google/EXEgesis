@@ -20,12 +20,12 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::util::IsInvalidArgument;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::IsInvalidArgument;
+using ::exegesis::util::Status;
 
 TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
   constexpr char kInstructionSetProto[] =
@@ -596,4 +596,4 @@ TEST(RenameOperandsTest, InstructionWithM80Dec) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

@@ -17,7 +17,7 @@
 #ifndef EXEGESIS_UTIL_SYSTEM_H_
 #define EXEGESIS_UTIL_SYSTEM_H_
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Assigns the current thread to core 'core_id'. Dies if the core cannot be
 // bound to.
@@ -29,6 +29,6 @@ void SetCoreAffinity(int core_id);
 // MOE: end_strip
 void PinCoreAffinity();
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_SYSTEM_H_

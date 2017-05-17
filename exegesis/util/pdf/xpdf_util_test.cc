@@ -21,11 +21,11 @@
 #include "strings/str_cat.h"
 #include "util/gtl/ptr_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 const char kTestDataPath[] = "/__main__/exegesis/util/pdf/testdata/";
 
@@ -515,4 +515,4 @@ TEST(ProtobufOutputDeviceTest, TestParseRequestOrDie) {
 
 }  // namespace
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

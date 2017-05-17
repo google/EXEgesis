@@ -30,14 +30,14 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
 using ::google::protobuf::RepeatedPtrField;
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::OkStatus;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 // Mapping from memory operands to their sizes as used in the Intel assembly
 // syntax.
@@ -399,4 +399,4 @@ Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitXmm0Operand, 2000);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

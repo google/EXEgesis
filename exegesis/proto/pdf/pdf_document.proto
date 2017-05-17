@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package cpu_instructions.pdf;
+package exegesis.pdf;
 
 // A unique identifer for a PDF document.
 message PdfDocumentId {

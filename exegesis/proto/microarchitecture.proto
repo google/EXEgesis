@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package cpu_instructions;
+package exegesis;
 
 // Represents a microarchitecture, defined by its id. All models of a
 // microarchitecture have the same execution units and itineraries; they can

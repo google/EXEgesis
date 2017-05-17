@@ -19,7 +19,7 @@
 
 #include "exegesis/proto/instructions.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Parses a code string in assembly format and returns a corresponding
 // InstructionFormat.
@@ -31,6 +31,6 @@ InstructionFormat ParseAssemblyStringOrDie(const string& code);
 // passed as argument.
 string ConvertToCodeString(const InstructionFormat& proto);
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_INSTRUCTION_SYNTAX_H_

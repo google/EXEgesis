@@ -22,7 +22,7 @@
 #include "glog/logging.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 string FPUControlWord::DebugString() const {
   return StringPrintf(
@@ -153,4 +153,4 @@ string FXStateBuffer::DebugString() const {
       GetMXCSR_MASK());
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

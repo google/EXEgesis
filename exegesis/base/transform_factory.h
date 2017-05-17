@@ -24,12 +24,12 @@
 
 DECLARE_string(exegesis_transforms);
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Returns a vector of transforms corresponding to transformations given in
 // --exegesis_transforms.
 std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags();
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_TRANSFORM_FACTORY_H_

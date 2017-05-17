@@ -38,7 +38,7 @@
 #include "xpdf-3.04/xpdf/PDFDocEncoding.h"
 #include "xpdf-3.04/xpdf/UnicodeMap.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 namespace {
@@ -341,4 +341,4 @@ PdfDocument ParseOrDie(const PdfParseRequest& request,
   return document;
 }
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

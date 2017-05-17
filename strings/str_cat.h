@@ -17,11 +17,11 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::StrAppend;
 using ::google::protobuf::StrCat;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STR_CAT_H_

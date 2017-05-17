@@ -20,7 +20,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 TEST(PortMaskTest, Comparison) {
@@ -90,4 +90,4 @@ TEST(PortMaskTest, Iterator) {
 }
 
 }  // anonymous namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

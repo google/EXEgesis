@@ -17,10 +17,10 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::ascii_tolower;
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_ASCII_CTYPE_H_

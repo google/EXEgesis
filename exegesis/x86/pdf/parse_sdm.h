@@ -19,7 +19,7 @@
 
 #include "exegesis/proto/instructions.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 
@@ -35,6 +35,6 @@ InstructionSetProto ParseSdmOrDie(const string& input_spec,
 
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_PDF_PARSE_SDM_H_

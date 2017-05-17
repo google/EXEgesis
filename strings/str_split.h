@@ -17,7 +17,7 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace strings {
 
 inline bool SkipEmpty() { return true; }
@@ -25,6 +25,6 @@ inline bool SkipEmpty() { return true; }
 using ::google::protobuf::Split;
 
 }  // namespace strings
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_STR_SPLIT_H_

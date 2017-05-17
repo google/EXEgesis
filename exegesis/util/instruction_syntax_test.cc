@@ -20,10 +20,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 TEST(InstructionSyntaxTest, BuildFromStrings) {
   constexpr struct {
@@ -70,4 +70,4 @@ TEST(InstructionSyntaxTest, BuildFromStrings) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

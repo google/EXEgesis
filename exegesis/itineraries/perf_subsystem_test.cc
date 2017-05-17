@@ -20,7 +20,7 @@
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 const uint64_t kIter = 1000;
 
@@ -447,4 +447,4 @@ TEST(PerfSubsystemTest, LoopDetectorJL) {
   LOG(INFO) << result.ToString();
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

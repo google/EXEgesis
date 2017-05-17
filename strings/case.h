@@ -17,7 +17,7 @@
 
 #include "src/google/protobuf/stubs/strutil.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::protobuf::LowerString;
 
@@ -27,6 +27,6 @@ using ::google::protobuf::ToUpper;
 
 }  // namespace strings
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // STRINGS_CASE_H_

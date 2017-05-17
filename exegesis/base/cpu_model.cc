@@ -20,7 +20,7 @@
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
     : proto_(proto),
@@ -147,4 +147,4 @@ const CpuModel& CpuModel::FromCpuIdOrDie(const string& cpu_id) {
   return *CHECK_NOTNULL(FromCpuId(cpu_id));
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

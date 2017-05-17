@@ -26,7 +26,7 @@
 #include "src/google/protobuf/repeated_field.h"
 #include "util/gtl/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 // A minimalistic interface to the Linux kernel perf subsystem, based on
 // libpfm4.
 
@@ -87,7 +87,7 @@ class PerfResult {
 
   std::map<string, TimingInfo> timings_;
   uint64_t num_times_ = 1;
-};  // namespace cpu_instructions
+};  // namespace exegesis
 
 // Not thread safe.
 class PerfSubsystem {
@@ -149,19 +149,19 @@ class PerfSubsystem {
   std::vector<TimingInfo> timers_;
 };
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
-#define EXEGESIS_MEASURE_LOOP(result, num_iter, s, events)                  \
-  perf.StartCollectingEvents(&::cpu_instructions::PerfEventsProto::events); \
-  for (int i = 0; i < num_iter; ++i) {                                      \
-    s;                                                                      \
-  }                                                                         \
+#define EXEGESIS_MEASURE_LOOP(result, num_iter, s, events)          \
+  perf.StartCollectingEvents(&::exegesis::PerfEventsProto::events); \
+  for (int i = 0; i < num_iter; ++i) {                              \
+    s;                                                              \
+  }                                                                 \
   (result)->Accumulate(perf.StopAndReadCounters());
 
 // A basic macro that measures a code snippet s.
 #define EXEGESIS_RUN_UNDER_PERF(result, num_iter, s)                \
   {                                                                 \
-    ::cpu_instructions::PerfSubsystem perf;                         \
+    ::exegesis::PerfSubsystem perf;                                 \
     EXEGESIS_MEASURE_LOOP(result, num_iter, s, computation_events); \
     EXEGESIS_MEASURE_LOOP(result, num_iter, s, memory_events);      \
     EXEGESIS_MEASURE_LOOP(result, num_iter, s, cycle_events);       \
@@ -171,7 +171,7 @@ class PerfSubsystem {
 // A basic macro that counts 'event' on a code snippet s. Resets result.
 #define EXEGESIS_COUNT_EVENT_UNDER_PERF(result, num_iter, s, event) \
   {                                                                 \
-    ::cpu_instructions::PerfSubsystem perf;                         \
+    ::exegesis::PerfSubsystem perf;                                 \
     perf.AddEvent(event);                                           \
     perf.StartCollecting();                                         \
     for (int i = 0; i < num_iter; ++i) {                            \

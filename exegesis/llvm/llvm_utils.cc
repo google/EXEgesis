@@ -27,12 +27,12 @@ DEFINE_string(exegesis_llvm_arch, "",
 DEFINE_string(exegesis_llvm_triple, "",
               "The LLVM triple, for which the code is compiled.");
 
-namespace cpu_instructions {
+namespace exegesis {
 
 using ::google::ProgramUsage;
 
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::StatusOr;
 
 void EnsureLLVMWasInitialized() {
   static const bool dummy = []() {
@@ -275,4 +275,4 @@ llvm::MCTargetOptions LLVMInitMCTargetOptionsFromFlags() {
   return InitMCTargetOptionsFromFlags();
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

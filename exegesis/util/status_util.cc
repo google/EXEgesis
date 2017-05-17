@@ -16,13 +16,13 @@
 
 #include "glog/logging.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 void UpdateStatus(Status* status, const Status& new_status) {
   CHECK(status != nullptr);
   if (status->ok() && !new_status.ok()) *status = new_status;
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

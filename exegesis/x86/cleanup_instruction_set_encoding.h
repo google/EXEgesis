@@ -21,10 +21,10 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Fixes the binary encoding specification of instructions that write to or read
 // from a memory address that is specified as segment + fixed offset, and the
@@ -108,6 +108,6 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
 Status ParseEncodingSpecifications(InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_ENCODING_H_

@@ -26,7 +26,7 @@
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // A memory manager that stores the size of the blocks it allocates. This is
 // used to retrieve get the size of generated code.
@@ -266,4 +266,4 @@ void JitCompiler::HandleInlineAsmDiagnostic(
   self->compile_errors_.push_back(error_message_ostream.str());
 }
 
-}  // namespace cpu_instructions
+}  // namespace exegesis

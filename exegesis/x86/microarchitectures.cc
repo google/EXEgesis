@@ -23,7 +23,7 @@
 #include "src/google/protobuf/text_format.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
@@ -590,4 +590,4 @@ REGISTER_MICRO_ARCHITECTURES(GetMicroArchitecturesProto);
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

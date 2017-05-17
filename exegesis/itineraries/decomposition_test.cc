@@ -23,14 +23,14 @@
 #include "src/google/protobuf/text_format.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace itineraries {
 namespace {
 
-using ::cpu_instructions::x86::HaswellMicroArchitecture;
+using ::exegesis::x86::HaswellMicroArchitecture;
 using ::testing::AnyOf;
 using ::testing::Eq;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Synthetic benchmark based in the x86 instruction NEG m8, ADD RSI,16.
 TEST(DecompositionTest, Negate) {
@@ -357,4 +357,4 @@ TEST(DecompositionTest, OrderMicroOperations) {
 
 }  // namespace
 }  // namespace itineraries
-}  // namespace cpu_instructions
+}  // namespace exegesis

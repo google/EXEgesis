@@ -15,7 +15,7 @@
 #ifndef UTIL_GTL_PTR_UTIL_H_
 #define UTIL_GTL_PTR_UTIL_H_
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace gtl {
 
 // A replacement for std::make_unique, which is not available in C++11.
@@ -27,6 +27,6 @@ typename std::unique_ptr<T> MakeUnique(Args&&... args) {
 }
 
 }  // namespace gtl
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // UTIL_GTL_PTR_UTIL_H_

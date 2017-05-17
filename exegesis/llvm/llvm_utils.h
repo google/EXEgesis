@@ -21,9 +21,9 @@
 #include "strings/string_view.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::StatusOr;
 
 // Ensures that LLVM subsystems were initialized for instruction scheduling.
 // This function can be called safely multiple times, all calls except for the
@@ -98,6 +98,6 @@ llvm::TargetOptions LLVMInitTargetOptionsFromCodeGenFlags();
 // Wrapper around LLVM InitMCTargetOptionsFromFlags to avoid linker issues.
 llvm::MCTargetOptions LLVMInitMCTargetOptionsFromFlags();
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_LLVM_LLVM_UTILS_H_

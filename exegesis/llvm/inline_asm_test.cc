@@ -6,7 +6,7 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
 constexpr const char kGenericMcpu[] = "generic";
@@ -124,4 +124,4 @@ TEST(JitCompilerTest, CreateAFunctionAndRunItInJIT) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

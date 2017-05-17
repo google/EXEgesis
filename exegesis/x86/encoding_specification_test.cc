@@ -32,13 +32,13 @@
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::cpu_instructions::testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 using ::testing::UnorderedElementsAreArray;
-using ::cpu_instructions::util::StatusOr;
+using ::exegesis::util::StatusOr;
 
 void CheckParser(const string& specification_str,
                  const string& expected_specification_proto) {
@@ -404,4 +404,4 @@ TEST(GetAvailableEncodingsTest, GetEncodings) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

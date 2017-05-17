@@ -40,16 +40,16 @@
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace itineraries {
 
-using ::cpu_instructions::gtl::c_linear_search;
+using ::exegesis::gtl::c_linear_search;
 using ::operations_research::MPConstraint;
 using ::operations_research::MPModelProto;
 using ::operations_research::MPObjective;
 using ::operations_research::MPSolver;
 using ::operations_research::MPVariable;
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 int ComputeNumExecutionPorts(const std::vector<PortMask>& port_masks) {
   int max_execution_port_num = -1;
@@ -530,4 +530,4 @@ std::vector<int> OrderMicroOperations(
 }
 
 }  // namespace itineraries
-}  // namespace cpu_instructions
+}  // namespace exegesis

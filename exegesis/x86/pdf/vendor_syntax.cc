@@ -24,7 +24,7 @@
 #include "strings/strip.h"
 #include "util/gtl/map_util.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 
@@ -211,4 +211,4 @@ bool ParseVendorSyntax(string content, InstructionFormat* instruction_format) {
 
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

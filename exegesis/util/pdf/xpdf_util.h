@@ -23,7 +23,7 @@
 
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 // Parses a string of the form <path/to/filename>(:<first>-<last>)?
@@ -48,6 +48,6 @@ PdfDocument ParseOrDie(const PdfParseRequest& request,
                        const PdfDocumentsChanges& documents_patches);
 
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_PDF_PARSING_XPDF_UTIL_H_

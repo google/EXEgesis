@@ -21,10 +21,10 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::Status;
+using ::exegesis::util::Status;
 
 // Finds duplicate entries in the instruction set. Two entries are considered
 // duplicate, if they produce exactly the same binary encoding. This is a weak
@@ -68,6 +68,6 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set);
 Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_REMOVALS_H_

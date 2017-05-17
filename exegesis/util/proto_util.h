@@ -19,7 +19,7 @@
 
 #include "src/google/protobuf/message.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // Reads a proto in text format from a file.
 void ReadTextProtoOrDie(const string& filename,
@@ -65,6 +65,6 @@ void WriteTextProtoOrDie(const string& filename,
 void WriteBinaryProtoOrDie(const string& filename,
                            const google::protobuf::Message& message);
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_PROTO_UTIL_H_

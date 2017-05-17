@@ -25,12 +25,12 @@
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
-using ::cpu_instructions::util::InvalidArgumentError;
-using ::cpu_instructions::util::Status;
-using ::cpu_instructions::util::OkStatus;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::Status;
+using ::exegesis::util::OkStatus;
 
 Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -141,4 +141,4 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexOpmaskUsage, 5500);
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

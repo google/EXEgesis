@@ -24,11 +24,11 @@
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 namespace {
 
-using cpu_instructions::testing::EqualsProto;
+using exegesis::testing::EqualsProto;
 
 PdfPage GetFakeDocument() {
   return ParseProtoFromStringOrDie<PdfPage>(R"(
@@ -311,4 +311,4 @@ TEST(PdfDocumentExtractorTest, TransferPatches) {
 
 }  // namespace
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis

@@ -21,13 +21,13 @@
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace pdf {
 namespace {
 
-using cpu_instructions::pdf::PdfDocument;
-using cpu_instructions::testing::EqualsProto;
+using ::exegesis::pdf::PdfDocument;
+using ::exegesis::testing::EqualsProto;
 
 const char kTestDataPath[] = "/__main__/exegesis/x86/pdf/testdata/";
 
@@ -142,4 +142,4 @@ TEST(IntelSdmExtractorTest, ParseOperandEncodingTableCell) {
 }  // namespace
 }  // namespace pdf
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

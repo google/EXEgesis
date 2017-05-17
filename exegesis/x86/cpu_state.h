@@ -24,7 +24,7 @@
 
 #include "glog/logging.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 
 // An aligned buffer allocated on the heap.
 template <int alignement, typename T>
@@ -164,6 +164,6 @@ class FXStateBuffer : public UniqueAlignedStorage<16, uint8_t[512]> {
   }
 };
 
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_BASE_CPU_STATE_H_

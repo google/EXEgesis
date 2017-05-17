@@ -21,7 +21,7 @@
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "strings/string_view.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace pdf {
 
 // Returns the text for the corresponding cell in the page or empty string.
@@ -81,6 +81,6 @@ void TransferPatches(const PdfDocumentChanges& changes,
                      PdfDocumentChanges* successful_patches,
                      PdfDocumentChanges* failed_patches);
 }  // namespace pdf
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_PDF_PDF_DOCUMENT_UTILS_H_

@@ -17,7 +17,7 @@
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 namespace {
 
@@ -496,4 +496,4 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
 
 }  // namespace
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis

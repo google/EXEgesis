@@ -18,10 +18,10 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace {
 
-using ::cpu_instructions::util::OkStatus;
+using ::exegesis::util::OkStatus;
 
 Status TestTransform1(InstructionSetProto*) { return OkStatus(); }
 REGISTER_INSTRUCTION_SET_TRANSFORM(TestTransform1, kNotInDefaultPipeline);
@@ -46,4 +46,4 @@ TEST(TransformFactoryDeathTest, GetTransformsFromCommandLineFlagsDoesNotExist) {
 }
 
 }  // namespace
-}  // namespace cpu_instructions
+}  // namespace exegesis

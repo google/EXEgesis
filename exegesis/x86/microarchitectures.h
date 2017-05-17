@@ -17,7 +17,7 @@
 
 #include "exegesis/base/cpu_model.h"
 
-namespace cpu_instructions {
+namespace exegesis {
 namespace x86 {
 
 // For tests only. These functions return a CPU model that belongs to the
@@ -81,6 +81,6 @@ inline const MicroArchitecture& NehalemMicroArchitecture() {
 }
 
 }  // namespace x86
-}  // namespace cpu_instructions
+}  // namespace exegesis
 
 #endif  // EXEGESIS_X86_MICROARCHITECTURES_H_
