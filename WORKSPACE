@@ -60,7 +60,7 @@ new_git_repository(
 
 new_http_archive(
     name = "xpdf_archive",
-    url = "http://ctan.math.washington.edu/tex-archive/support/xpdf/xpdf-3.04.tar.gz",
+    url = "http://mirrors.ctan.org/support/xpdf/xpdf-3.04.tar.gz",
     sha256 = "11390c74733abcb262aaca4db68710f13ffffd42bfe2a0861a5dfc912b2977e5",
     build_file = "xpdf.BUILD",
 )

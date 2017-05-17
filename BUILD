@@ -13,6 +13,6 @@ exports_files([
 package_group(
     name = "internal_users",
     packages = [
-        "//cpu_instructions/...",
+        "//exegesis/...",
     ],
 )

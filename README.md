@@ -17,7 +17,7 @@ repository and run bazel:
 
 ```
 git clone https://github.com/google/CPU-instructions
-bazel -c opt build //cpu_instructions/tools:parse_sdm
+bazel -c opt build //exegesis/tools:parse_sdm
 ```
 
 You don't need to worry about dependencies since bazel will download and build
@@ -41,12 +41,12 @@ Just add `--define libunwind=true` to the command line like so:
 
 ```
 # Building
-bazel -c opt build //cpu_instructions/tools:parse_sdm --define libunwind=true
+bazel -c opt build //exegesis/tools:parse_sdm --define libunwind=true
 
 # Executing
-bazel -c opt run cpu_instructions/tools:parse_sdm --define libunwind=true -- \
-  --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
-  --cpu_instructions_output_file_base=/tmp/instructions
+bazel -c opt run exegesis/tools:parse_sdm --define libunwind=true -- \
+  --exegesis_input_spec=/path/to/intel-sdm.pdf \
+  --exegesis_output_file_base=/tmp/instructions
 ```
 
 ## Usage
@@ -60,7 +60,7 @@ at least the following versions of the manual:
     Manual Volume 2 (2A, 2B, 2C & 2D): Instruction Set Reference, A-Z
 
 For the complete list of supported and tested versions, see the files in
-[`sdm_patches`](cpu_instructions/x86/pdf/sdm_patches/).
+[`sdm_patches`](exegesis/x86/pdf/sdm_patches/).
 
 The most recent version of the SDM can be downloaded from the [Intel Developer
 Zone](https://software.intel.com/en-us/articles/intel-sdm). The September 2016
@@ -71,15 +71,15 @@ Here's a sample command line to parse all instructions, assuming that the manual
 has been downloaded as `/path/to/intel-sdm.pdf`.
 
 ```
-bazel -c opt run cpu_instructions/tools:parse_sdm -- \
-  --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
-  --cpu_instructions_output_file_base=/tmp/instructions
+bazel -c opt run exegesis/tools:parse_sdm -- \
+  --exegesis_input_spec=/path/to/intel-sdm.pdf \
+  --exegesis_output_file_base=/tmp/instructions
 ```
 
 ## Output
 
 The above command will create a file `/tmp/instructions.pbtxt` that contains an
-[`InstructionSetProto`](cpu_instructions/proto/instructions.proto) in protobuf
+[`InstructionSetProto`](exegesis/proto/instructions.proto) in protobuf
 [text format](https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.text_format).
 
 
@@ -91,16 +91,16 @@ fix these issues. These range from point fixes (e.g. "fix the binary encoding of
 XBEGIN") to more complex heuristics (e.g. "replace use of 'reg' operands
 with the right register depending of the size of the operand").
 
-The transforms to apply can be specified in the `--cpu_instructions_transforms`
+The transforms to apply can be specified in the `--exegesis_transforms`
 flag. The flag can be a comma-separated list of transform names, or `default` to
 apply default transforms. Note that this is different from an empty/unspecified
 flag, where no transform is applied.
 
 ```
-bazel -c opt run cpu_instructions/tools:parse_sdm -- \
-  --cpu_instructions_input_spec=/path/to/intel-sdm.pdf \
-  --cpu_instructions_output_file_base=/tmp/instructions \
-  --cpu_instructions_transforms=default
+bazel -c opt run exegesis/tools:parse_sdm -- \
+  --exegesis_input_spec=/path/to/intel-sdm.pdf \
+  --exegesis_output_file_base=/tmp/instructions \
+  --exegesis_transforms=default
 ```
 
 The result is written to `/tmp/instructions_transformed.pbtxt`.
@@ -116,16 +116,16 @@ code reads the low-level drawing commands to extract the instruction
 information.
 
 *   We first extract a PDF representation into a
-    [`PdfDocument`](cpu_instructions/x86/pdf/pdf_document.proto) protobuf that
+    [`PdfDocument`](exegesis/x86/pdf/pdf_document.proto) protobuf that
     just adds some structure to the PDF data. For each page, characters are
     grouped in blocks of text, then futher organized into tables with rows and
     columns.
 *   We apply a list of patches to the `PdfDocument` to fix some typos and
     formatting errors in the SDM. The patches are given in the file
-    [`pdf_document_patches.pbtxt`](cpu_instructions/x86/pdf/pdf_document_patches.pbtxt).
+    [`pdf_document_patches.pbtxt`](exegesis/x86/pdf/pdf_document_patches.pbtxt).
 *   The `PdfDocument` is then interpreted by detecting and parsing instruction
     and operand encoding tables. The result is an
-    [`SDMDocument`](cpu_instructions/x86/pdf/pdf_document.proto) protobuf that
+    [`SDMDocument`](nexegesis/x86/pdf/pdf_document.proto) protobuf that
     represents the SDM-specific structure. At that point we still keep some
     PDF data for easier debugging.
 *   Finally we convert the `SDMDocument` to the final `InstructionSetProto`
