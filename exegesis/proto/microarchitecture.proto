@@ -191,6 +191,12 @@ message CpuModelProto {
 
   // The description of the L3 cache. Sizes are in bytes.
   CacheProto l3_cache = 10;
+
+  // The names of the features supported by this CPU model. These are the same
+  // names as those used in InstructionProto.feature_name. Unlike
+  // InstructionProto.feature_name, this field does not allow using && and || to
+  // combine features.
+  repeated string feature_names = 11;
 }
 
 // Describes the parameters of a cache.

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_DEBUG_H_
-#define THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_DEBUG_H_
+#ifndef EXEGESIS_BASE_DEBUG_H_
+#define EXEGESIS_BASE_DEBUG_H_
 
 #include "exegesis/base/cpu_model.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -89,4 +89,4 @@ string PrettyPrintMicroOperations(
 
 }  // namespace exegesis
 
-#endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_DEBUG_H_
+#endif  // EXEGESIS_BASE_DEBUG_H_
