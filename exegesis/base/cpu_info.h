@@ -12,20 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXEGESIS_BASE_HOST_CPU_H_
-#define EXEGESIS_BASE_HOST_CPU_H_
+#ifndef EXEGESIS_BASE_CPU_INFO_H_
+#define EXEGESIS_BASE_CPU_INFO_H_
 
 #include <unordered_set>
 #include "strings/string.h"
 
 namespace exegesis {
 
-class HostCpuInfo {
+// Contains the information about the CPU obtained from the CPUID (or
+// equlivalent) instruction of the CPU. Provides access to the list of features
+// supported by the CPU.
+class CpuInfo {
  public:
   // Returns the CPU info for the host we're running on.
-  static const HostCpuInfo& Get();
+  static const CpuInfo& FromHost();
 
-  HostCpuInfo(const string& id, std::unordered_set<string> indexed_features);
+  CpuInfo(const string& id, std::unordered_set<string> indexed_features);
 
   // Returns the CPU model id (e.g. "intel:06_3F").
   const string& cpu_id() const { return cpu_id_; }
@@ -56,4 +59,4 @@ class HostCpuInfo {
 
 }  // namespace exegesis
 
-#endif  // EXEGESIS_BASE_HOST_CPU_H_
+#endif  // EXEGESIS_BASE_CPU_INFO_H_

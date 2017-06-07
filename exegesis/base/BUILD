@@ -140,9 +140,9 @@ cc_library(
 
 # A library for getting host CPU info.
 cc_library(
-    name = "host_cpu",
-    srcs = ["host_cpu.cc"],
-    hdrs = ["host_cpu.h"],
+    name = "cpu_info",
+    srcs = ["cpu_info.cc"],
+    hdrs = ["cpu_info.h"],
     deps = [
         "//base",
         "//exegesis/proto:microarchitecture_cc_proto",
@@ -155,10 +155,10 @@ cc_library(
 )
 
 cc_test(
-    name = "host_cpu_test",
-    srcs = ["host_cpu_test.cc"],
+    name = "cpu_info_test",
+    srcs = ["cpu_info_test.cc"],
     deps = [
-        ":host_cpu",
+        ":cpu_info",
         "//base",
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "exegesis/base/host_cpu.h"
+#include "exegesis/base/cpu_info.h"
 
 #include <cpuid.h>
 #include <algorithm>
@@ -261,7 +261,7 @@ struct Extended2FeatureRegisters {
   EDXStructure edx;
 };
 
-HostCpuInfo CreateHostCpuInfo() {
+CpuInfo CreateHostCpuInfo() {
   const FeatureRegisters features;
   const ExtendedFeatureRegisters ext_features;
   const Extended2FeatureRegisters ext2_features;
@@ -312,15 +312,15 @@ HostCpuInfo CreateHostCpuInfo() {
           ? (features.eax.emodel() << 4) + features.eax.model()
           : features.eax.model();
 
-  return HostCpuInfo(StringPrintf("intel:%02X_%02X", family, model),
-                     std::move(indexed_features));
+  return CpuInfo(StringPrintf("intel:%02X_%02X", family, model),
+                 std::move(indexed_features));
 }
 
 }  // namespace
 }  // namespace intel
 
 namespace {
-HostCpuInfo CreateHostCpuInfo() {
+CpuInfo CreateHostCpuInfo() {
   // Basic checks.
   uint32_t eax;
   uint32_t ebx;
@@ -337,7 +337,7 @@ HostCpuInfo CreateHostCpuInfo() {
   }
   LOG(FATAL) << "Unknown CPU identitification string eax=" << eax
              << " edx=" << edx << " ecx=" << ecx;
-  return HostCpuInfo("unknown", std::unordered_set<string>{});
+  return CpuInfo("unknown", std::unordered_set<string>{});
 }
 #else
 // TODO(courbet): Add support for ARM if needed. The above code should work for
@@ -347,23 +347,22 @@ HostCpuInfo CreateHostCpuInfo() {
 
 }  // namespace
 
-const HostCpuInfo& HostCpuInfo::Get() {
-  static const auto* const cpu_info = new HostCpuInfo(CreateHostCpuInfo());
+const CpuInfo& CpuInfo::FromHost() {
+  static const auto* const cpu_info = new CpuInfo(CreateHostCpuInfo());
   return *cpu_info;
 }
 
-HostCpuInfo::HostCpuInfo(const string& id,
-                         std::unordered_set<string> indexed_features)
+CpuInfo::CpuInfo(const string& id, std::unordered_set<string> indexed_features)
     : cpu_id_(id), indexed_features_(std::move(indexed_features)) {}
 
-bool HostCpuInfo::HasExactFeature(const string& name) const {
+bool CpuInfo::HasExactFeature(const string& name) const {
   return ContainsKey(indexed_features_, name);
 }
 
 // TODO(courbet): Right now strings::Split() does not support a string literal
 // delimiter. Switch to it when it does.
 template <bool is_or>
-bool HostCpuInfo::IsFeatureSet(const string& name, bool* const value) const {
+bool CpuInfo::IsFeatureSet(const string& name, bool* const value) const {
   char kSeparator[5] = " && ";
   if (is_or) {
     kSeparator[1] = kSeparator[2] = '|';
@@ -391,7 +390,7 @@ bool HostCpuInfo::IsFeatureSet(const string& name, bool* const value) const {
   return true;
 }
 
-bool HostCpuInfo::SupportsFeature(const string& feature_name) const {
+bool CpuInfo::SupportsFeature(const string& feature_name) const {
   // We don't support parenthesized features combinations for now.
   CHECK(feature_name.find('(') == string::npos);
   CHECK(feature_name.find(')') == string::npos);
@@ -404,7 +403,7 @@ bool HostCpuInfo::SupportsFeature(const string& feature_name) const {
   return HasExactFeature(feature_name);
 }
 
-string HostCpuInfo::DebugString() const {
+string CpuInfo::DebugString() const {
   string result = StrCat(cpu_id_, "\nfeatures:");
   for (const auto& feature : indexed_features_) {
     StrAppend(&result, "\n", feature);

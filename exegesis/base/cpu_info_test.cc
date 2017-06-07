@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "exegesis/base/host_cpu.h"
+#include "exegesis/base/cpu_info.h"
 
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
@@ -22,14 +22,14 @@
 namespace exegesis {
 namespace {
 
-TEST(HostCpuInfoTest, Print) {
-  const auto cpu_info = HostCpuInfo::Get();
+TEST(CpuInfoTest, Print) {
+  const auto cpu_info = CpuInfo::FromHost();
   LOG(INFO) << cpu_info.DebugString();
   EXPECT_TRUE(strings::StartsWith(cpu_info.cpu_id(), "intel:06_"));
 }
 
-TEST(HostCpuInfoTest, SupportsFeature) {
-  const HostCpuInfo cpu_info("doesnotexist", {"ADX", "SSE", "LZCNT"});
+TEST(CpuInfoTest, SupportsFeature) {
+  const CpuInfo cpu_info("doesnotexist", {"ADX", "SSE", "LZCNT"});
   EXPECT_TRUE(cpu_info.SupportsFeature("ADX"));
   EXPECT_TRUE(cpu_info.SupportsFeature("SSE"));
   EXPECT_TRUE(cpu_info.SupportsFeature("LZCNT"));
