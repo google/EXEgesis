@@ -351,6 +351,7 @@ cc_library(
         ":support",
         ":target_base",
         ":transform_utils",
+        ":scalar_transforms",
     ],
 )
 
