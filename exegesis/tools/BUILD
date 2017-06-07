@@ -5,6 +5,30 @@ package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])  # Apache 2.0
 
+# A library that provides access to instruction sets for all supported architectures.
+
+cc_library(
+    name = "instruction_sets",
+    srcs = ["instruction_sets.cc"],
+    hdrs = ["instruction_sets.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//base",
+        "//exegesis/base:architecture_provider",
+        "//exegesis/base:cleanup_instruction_set",
+        "//exegesis/base:microarchitecture",
+        "//exegesis/base:restrict",
+        "//exegesis/base:transform_factory",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/x86:cleanup_instruction_set_all",
+        "//strings",
+        "//util/gtl:map_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+    ],
+)
+
 # A tool that parses the Intel Software Development Manual.
 
 cc_binary(
