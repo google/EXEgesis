@@ -154,6 +154,23 @@ cc_test(
     ],
 )
 
+# A library for working with structured registers.
+cc_library(
+    name = "structured_register",
+    hdrs = ["structured_register.h"],
+)
+
+cc_test(
+    name = "structured_register_test",
+    size = "small",
+    srcs = ["structured_register_test.cc"],
+    deps = [
+        ":structured_register",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # Utilities for interacting with the host and system.
 
 cc_library(

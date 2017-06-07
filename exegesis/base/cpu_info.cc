@@ -25,6 +25,7 @@
 
 #include "base/stringprintf.h"
 #include "exegesis/proto/x86/cpuid.pb.h"
+#include "exegesis/util/structured_register.h"
 #include "strings/str_cat.h"
 #include "strings/str_split.h"
 #include "util/gtl/map_util.h"
@@ -46,31 +47,9 @@ namespace intel {
 
 using ::exegesis::x86::CpuIdOutputProto;
 
-// Represents a register with access to individual bit ranges.
-class StructuredRegister {
- public:
-  uint32_t* mutable_raw_value() { return &raw_value_; }
-  uint32_t raw_value() const { return raw_value_; }
-
-  // Returns the bit range [msb, lsb] as an integer.
-  template <int msb, int lsb>
-  int ValueAt() const {
-    static_assert(msb >= 0, "msb must be >= 0");
-    static_assert(msb < 32, "msb must be < 32");
-    static_assert(lsb >= 0, "lsb must be >= 0");
-    static_assert(lsb < 32, "lsb must be < 32");
-    static_assert(lsb <= msb, "lsb must be <= msb");
-    return (raw_value_ >> lsb) &
-           static_cast<uint32_t>((1ull << (msb - lsb + 1)) - 1ull);
-  }
-
- private:
-  uint32_t raw_value_ = 0;
-};
-
 // Represents the structure of registers when fetching features (EAX = 1).
 struct FeatureRegisters {
-  class EAXStructure : public StructuredRegister {
+  class EAXStructure : public StructuredRegister<uint32_t> {
    public:
     int step() const { return ValueAt<3, 0>(); }
     int model() const { return ValueAt<7, 4>(); }
@@ -82,7 +61,7 @@ struct FeatureRegisters {
     // 31 - 28 reserved.
   };
 
-  class ECXStructure : public StructuredRegister {
+  class ECXStructure : public StructuredRegister<uint32_t> {
    public:
     int sse3() const { return ValueAt<0, 0>(); }
     int pclmulqdq() const { return ValueAt<1, 1>(); }
@@ -118,7 +97,7 @@ struct FeatureRegisters {
     int hypervisor() const { return ValueAt<31, 31>(); }
   };
 
-  class EDXStructure : public StructuredRegister {
+  class EDXStructure : public StructuredRegister<uint32_t> {
    public:
     int fpu() const { return ValueAt<0, 0>(); }
     int vme() const { return ValueAt<1, 1>(); }
@@ -168,7 +147,7 @@ struct FeatureRegisters {
 // Represents the structure of registers when fetching extended features (EAX =
 // 7).
 struct ExtendedFeatureRegisters {
-  class EBXStructure : public StructuredRegister {
+  class EBXStructure : public StructuredRegister<uint32_t> {
    public:
     int fsgsbase() const { return ValueAt<0, 0>(); }
     int ia32tscadjust() const { return ValueAt<1, 1>(); }
@@ -204,7 +183,7 @@ struct ExtendedFeatureRegisters {
     int avx512vl() const { return ValueAt<31, 31>(); }
   };
 
-  class ECXStructure : public StructuredRegister {
+  class ECXStructure : public StructuredRegister<uint32_t> {
    public:
     int prefetchwt1() const { return ValueAt<0, 0>(); }
     // 1 reserved.
@@ -230,7 +209,7 @@ struct ExtendedFeatureRegisters {
 // Represents the structure of registers when fetching extended features (EAX =
 // 80000001H).
 struct Extended2FeatureRegisters {
-  class ECXStructure : public StructuredRegister {
+  class ECXStructure : public StructuredRegister<uint32_t> {
    public:
     int lahf_sahf() const { return ValueAt<0, 0>(); }
     // 1 - 4 reserved.
@@ -240,7 +219,7 @@ struct Extended2FeatureRegisters {
     // 9 - 31 reserved.
   };
 
-  class EDXStructure : public StructuredRegister {
+  class EDXStructure : public StructuredRegister<uint32_t> {
    public:
     // 0 - 10 reserved.
     int syscall_sysret_64() const { return ValueAt<11, 11>(); }
@@ -266,7 +245,7 @@ struct Extended2FeatureRegisters {
 // Represents the structure of registers when fetching extended CPU states (EAX
 // = 0DH, ECX = 1).
 struct ExtendedStateRegisters {
-  class EAXStructure : public StructuredRegister {
+  class EAXStructure : public StructuredRegister<uint32_t> {
    public:
     int xsaveopt() const { return ValueAt<0, 0>(); }
     int xsavec() const { return ValueAt<1, 1>(); }

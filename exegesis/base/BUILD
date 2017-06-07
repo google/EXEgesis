@@ -145,8 +145,8 @@ cc_library(
     hdrs = ["cpu_info.h"],
     deps = [
         "//base",
-        "//exegesis/proto:microarchitecture_cc_proto",
         "//exegesis/proto/x86:cpuid_proto",
+        "//exegesis/util:structured_register",
         "//exegesis/x86:cpuid",
         "//strings",
         "//util/gtl:map_util",
