@@ -27,18 +27,23 @@
 #include "strings/str_cat.h"
 #include "strings/str_split.h"
 #include "util/gtl/map_util.h"
+#include "util/task/canonical_errors.h"
 
 namespace exegesis {
+
+using ::exegesis::x86::CpuIdDump;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::StatusOr;
 
 #define PROCESS_FEATURE(name, reg, field)  \
   if (reg.field()) {                       \
     InsertOrDie(&indexed_features, #name); \
   }
 
-#ifdef __x86_64__
-
-namespace intel {
 namespace {
+namespace intel {
+
+using ::exegesis::x86::CpuIdOutput;
 
 // Represents a register with access to individual bit ranges.
 class StructuredRegister {
@@ -148,11 +153,10 @@ struct FeatureRegisters {
     int pbe() const { return ValueAt<31, 31>(); }
   };
 
-  FeatureRegisters() {
-    uint32_t ebx = 0;
-
-    __cpuid(0x01, *eax.mutable_raw_value(), ebx, *ecx.mutable_raw_value(),
-            *edx.mutable_raw_value());
+  void SetValue(const CpuIdOutput& cpuid_out) {
+    *eax.mutable_raw_value() = cpuid_out.eax;
+    *ecx.mutable_raw_value() = cpuid_out.ecx;
+    *edx.mutable_raw_value() = cpuid_out.edx;
   }
 
   EAXStructure eax;
@@ -213,10 +217,9 @@ struct ExtendedFeatureRegisters {
     int reserved4() const { return ValueAt<30, 30>(); }
   };
 
-  ExtendedFeatureRegisters() {
-    uint32_t eax = 0;
-    uint32_t edx = 0;
-    __cpuid(0x07, eax, *ebx.mutable_raw_value(), *ecx.mutable_raw_value(), edx);
+  void SetValue(const CpuIdOutput& cpuid_out) {
+    *ebx.mutable_raw_value() = cpuid_out.ebx;
+    *ecx.mutable_raw_value() = cpuid_out.ecx;
   }
 
   EBXStructure ebx;
@@ -250,21 +253,59 @@ struct Extended2FeatureRegisters {
     // 30 - 31 reserved.
   };
 
-  Extended2FeatureRegisters() {
-    uint32_t eax = 0;
-    uint32_t ebx = 0;
-    __cpuid(0x80000001, eax, ebx, *ecx.mutable_raw_value(),
-            *edx.mutable_raw_value());
+  void SetValue(const CpuIdOutput& cpuid_out) {
+    *ecx.mutable_raw_value() = cpuid_out.ecx;
+    *edx.mutable_raw_value() = cpuid_out.edx;
   }
 
   ECXStructure ecx;
   EDXStructure edx;
 };
 
-CpuInfo CreateHostCpuInfo() {
-  const FeatureRegisters features;
-  const ExtendedFeatureRegisters ext_features;
-  const Extended2FeatureRegisters ext2_features;
+// Represents the structure of registers when fetching extended CPU states (EAX
+// = 0DH, ECX = 1).
+struct ExtendedStateRegisters {
+  class EAXStructure : public StructuredRegister {
+   public:
+    int xsaveopt() const { return ValueAt<0, 0>(); }
+    int xsavec() const { return ValueAt<1, 1>(); }
+    int xgetbv() const { return ValueAt<2, 2>(); }
+    int xsaves() const { return ValueAt<3, 3>(); }
+    // 4 - 31 reserved.
+  };
+
+  void SetValue(const CpuIdOutput& cpuid_out) {
+    *eax.mutable_raw_value() = cpuid_out.eax;
+  }
+
+  EAXStructure eax;
+};
+
+StatusOr<CpuInfo> CpuInfoFromDump(const CpuIdDump& cpuid_dump) {
+  if (!cpuid_dump.IsValid()) {
+    return InvalidArgumentError("The CPUID dump is not valid");
+  }
+  FeatureRegisters features;
+  ExtendedFeatureRegisters ext_features;
+  Extended2FeatureRegisters ext2_features;
+  ExtendedStateRegisters ext_state;
+
+  for (const auto& entry : cpuid_dump.entries()) {
+    switch (entry.first.leaf) {
+      case 0x01:
+        features.SetValue(entry.second);
+        break;
+      case 0x07:
+        if (entry.first.subleaf == 0) ext_features.SetValue(entry.second);
+        break;
+      case 0x0D:
+        if (entry.first.subleaf == 1) ext_state.SetValue(entry.second);
+        break;
+      case 0x80000001:
+        ext2_features.SetValue(entry.second);
+        break;
+    }
+  }
 
   std::unordered_set<string> indexed_features;
 
@@ -302,7 +343,7 @@ CpuInfo CreateHostCpuInfo() {
   PROCESS_FEATURE(SSE4_1, features.ecx, sse4_1);
   PROCESS_FEATURE(SSE4_2, features.ecx, sse4_2);
   PROCESS_FEATURE(SSSE3, features.ecx, ssse3);
-  PROCESS_FEATURE(XSAVEOPT, features.ecx, xsave);
+  PROCESS_FEATURE(XSAVEOPT, ext_state.eax, xsaveopt);
 
   // See CPUID doc for the algorithm.
   const int family =
@@ -318,27 +359,21 @@ CpuInfo CreateHostCpuInfo() {
                  std::move(indexed_features));
 }
 
-}  // namespace
 }  // namespace intel
+}  // namespace
 
 namespace {
 CpuInfo CreateHostCpuInfo() {
-  // Basic checks.
-  uint32_t eax;
-  uint32_t ebx;
-  uint32_t ecx;
-  uint32_t edx;
-
-  // Check that we can retrieve extended features.
-  __cpuid(0, eax, ebx, ecx, edx);
-  CHECK_GT(eax, 0x07);
-
-  // Check for "GenuineIntel" (see Intel SDM).
-  if (ebx == 0x756e6547 && edx == 0x49656e69 && ecx == 0x6c65746e) {
-    return intel::CreateHostCpuInfo();
+#if __x86_64__
+  const x86::CpuIdDump cpuid_dump = x86::CpuIdDump::FromHost();
+  const string vendor_string = cpuid_dump.GetVendorString();
+  if (vendor_string == "GenuineIntel") {
+    return intel::CpuInfoFromDump(cpuid_dump).ValueOrDie();
   }
-  LOG(FATAL) << "Unknown CPU identitification string eax=" << eax
-             << " edx=" << edx << " ecx=" << ecx;
+  // TODO(ondrasej): We should support other vendors too. The structure of the
+  // feature and state registers we are using to determine the features should
+  // be the same for all vendors.
+  LOG(FATAL) << "Unknown CPU identitification string: " << vendor_string;
   return CpuInfo("unknown", std::unordered_set<string>{});
 }
 #else
@@ -352,6 +387,10 @@ CpuInfo CreateHostCpuInfo() {
 const CpuInfo& CpuInfo::FromHost() {
   static const auto* const cpu_info = new CpuInfo(CreateHostCpuInfo());
   return *cpu_info;
+}
+
+StatusOr<CpuInfo> CpuInfo::FromCpuIdDump(const x86::CpuIdDump& dump) {
+  return intel::CpuInfoFromDump(dump);
 }
 
 CpuInfo::CpuInfo(const string& id, std::unordered_set<string> indexed_features)
@@ -407,7 +446,7 @@ bool CpuInfo::SupportsFeature(const string& feature_name) const {
 
 string CpuInfo::DebugString() const {
   string result = StrCat(cpu_id_, "\nfeatures:");
-  for (const auto& feature : indexed_features_) {
+  for (const string& feature : indexed_features_) {
     StrAppend(&result, "\n", feature);
   }
   return result;
