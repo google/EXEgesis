@@ -462,31 +462,6 @@ cc_test(
     ],
 )
 
-# A library that converts the CPUID information to feature names.
-cc_library(
-    name = "feature_names_from_cpuid",
-    srcs = ["feature_names_from_cpuid.cc"],
-    hdrs = ["feature_names_from_cpuid.h"],
-    deps = [
-        "//base",
-        "//exegesis/util:bits",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
-        "@com_google_protobuf//:protobuf_lite",
-    ],
-)
-
-cc_test(
-    name = "feature_names_from_cpuid_test",
-    size = "small",
-    srcs = ["feature_names_from_cpuid_test.cc"],
-    deps = [
-        ":feature_names_from_cpuid",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
-    ],
-)
-
 # A library that contains information about the x86-64 microarchitectures.
 cc_library(
     name = "microarchitectures",
