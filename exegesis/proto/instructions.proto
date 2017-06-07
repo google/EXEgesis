@@ -138,53 +138,7 @@ message InstructionOperand {
   // The encoding of the operand.
   optional Encoding encoding = 2;
 
-  // Contains information about the data type of an operand.
-  //
-  // Note that this is the logical data type the instruction uses to perform the
-  // operation, which may be a different size to the location the value is read
-  // from or written to, e.g. instructions which implicitly sign- or zero-extend
-  // operands or results, opmask registers which are only partially used for
-  // smaller vector sizes.
-  message DataType {
-    enum Kind {
-      UNKNOWN = 0;
-
-      FLOATING_POINT = 1;
-
-      UNSIGNED_INTEGER = 2;
-      SIGNED_INTEGER = 3;
-
-      // An aggregate value laid out according to some specified format. This is
-      // usually only used by a few specialised instructions, e.g. LGDT in x86.
-      STRUCT = 4;
-    }
-
-    // The type of the type.
-    optional Kind kind = 1;
-
-    // The number of bits used to represent the value. If the value is a vector,
-    // this is only the size of a single element of the vector.
-    optional int32 bit_width = 2;
-
-    // If this is a vector value, the number of elements contained in the
-    // vector. Each element is typed according to the fields above. For example,
-    // the following DataType represents a 128-bit vector value containing 4
-    // signed 32-bit ints:
-    //    kind: SIGNED_INTEGER
-    //    bit_width: 32
-    //    vector_width: 4
-    optional int32 vector_width = 3;
-  }
-
-  // The data type of the operand.
-  optional DataType data_type = 7;
-
-  // The size of the value in bits. This may differ from the size in data_type
-  // in that it represents the "physical size" rather than the "logical size".
-  // "Logical size" refers to the size of the data type that the instruction
-  // operates on. "Physical size" refers to the size of the location the operand
-  // is read from / written to. These may be different in some cases, such as
-  // when a value is read from a register but only the low bits are used.
+  // The size of the value in bits.
   optional int32 value_size_bits = 3;
 
   // This represents tags to mark masking (e.g. {k1}{z} or {k}), or specific
@@ -483,3 +437,4 @@ message InstructionMnemonicTranslationProto {
 message InstructionMnemonicTranslationListProto {
   repeated InstructionMnemonicTranslationProto translations = 1;
 }
+
