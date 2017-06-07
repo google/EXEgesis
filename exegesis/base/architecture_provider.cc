@@ -74,7 +74,9 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
     CHECK(proto) << "broken contract: GetProtoOrDie() != nullptr";
     return proto;
   }
-  LOG(FATAL) << "Unknown source '" << source << "'";
+  LOG(FATAL) << "Unknown source '" << source
+             << "'. If you meant to read from a text file, use " << kPbTxtSource
+             << ":/path/to/file";
   return nullptr;
 }
 

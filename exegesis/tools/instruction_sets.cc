@@ -11,7 +11,7 @@
 #include "strings/string_view_utils.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_string(exegesis_architecture, "registered:intel",
+DEFINE_string(exegesis_architecture, "",
               "The name of the architecture for which the code is optimized."
               "If 'intel', then the raw parsed output (stright out of SDM) is"
               "returned."
@@ -26,7 +26,13 @@ DEFINE_string(exegesis_last_mnemonic, "ZZZZ", "Last mnemonic (included).");
 
 namespace exegesis {
 
+void CheckArchitectureFlag() {
+  CHECK(!FLAGS_exegesis_architecture.empty())
+      << "Please provide an architecture (e.g. 'pbtxt:/path/to/file.pb.txt')";
+}
+
 InstructionSetProto GetTransformedInstructionSetFromCommandLineFlags() {
+  CheckArchitectureFlag();
   return GetTransformedInstructionSet(FLAGS_exegesis_architecture);
 }
 
@@ -46,6 +52,7 @@ InstructionSetProto GetTransformedInstructionSet(const string& architecture) {
 }
 
 MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
+  CheckArchitectureFlag();
   return MicroArchitectureData::ForCpuId(
              GetArchitectureProtoOrDie(FLAGS_exegesis_architecture),
              FLAGS_exegesis_cpu_model)
