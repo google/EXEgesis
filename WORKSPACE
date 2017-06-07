@@ -30,6 +30,15 @@ new_git_repository(
     build_file = "gmock.BUILD",
 )
 
+# ===== benchmark =====
+
+new_git_repository(
+    name = "com_google_benchmark",
+    remote = "https://github.com/google/benchmark.git",
+    tag = "v1.1.0",
+    build_file = "benchmark.BUILD",
+)
+
 # ===== utf =====
 
 new_http_archive(
