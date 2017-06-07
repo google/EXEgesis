@@ -6,7 +6,6 @@ package(default_visibility = ["//visibility:private"])
 licenses(["notice"])  # Apache 2.0
 
 # A library that provides access to instruction sets for all supported architectures.
-
 cc_library(
     name = "instruction_sets",
     srcs = ["instruction_sets.cc"],
