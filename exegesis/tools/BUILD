@@ -30,10 +30,9 @@ cc_library(
 )
 
 # A tool that parses the Intel Software Development Manual.
-
 cc_binary(
-    name = "parse_sdm",
-    srcs = ["parse_sdm.cc"],
+    name = "parse_intel_sdm",
+    srcs = ["parse_intel_sdm.cc"],
     deps = [
         "//base",
         "//exegesis/base:transform_factory",

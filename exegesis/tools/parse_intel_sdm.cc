@@ -30,8 +30,9 @@ DEFINE_string(exegesis_input_spec, "",
               "'file1.pdf:83-86,file1.pdf:89-0,file2.pdf:1-50'. "
               "Ranges are 1-based and inclusive. The upper bound can be 0 to "
               "process all the pages to the end. If no range is provided, "
-              "the entire PDF is processed.");
-DEFINE_string(exegesis_output_file_base, "", "Where to dump instructions");
+              "the entire PDF is processed. Required.");
+DEFINE_string(exegesis_output_file_base, "",
+              "Where to dump instructions. Required.");
 DEFINE_string(
     exegesis_patches_directory, "exegesis/x86/pdf/sdm_patches/",
     "A folder containing a set of patches to apply to original documents");
@@ -63,7 +64,8 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  InitGoogle("Parser for the Intel SDM", &argc, &argv,
+             /* remove_flags = */ true);
   ::exegesis::Main();
-  return 0;
+  return EXIT_SUCCESS;
 }
