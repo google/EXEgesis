@@ -59,10 +59,10 @@ git_repository(
 # ===== glog =====
 
 new_git_repository(
-    name = "glog_git",
+    name = "com_github_glog_glog",
     build_file = "glog.BUILD",
     remote = "https://github.com/google/glog.git",
-    tag = "v0.3.4",
+    tag = "v0.3.5",
 )
 
 # ===== xpdf =====
@@ -88,7 +88,7 @@ new_git_repository(
 git_repository(
     name = "or_tools_git",
     remote = "https://github.com/google/or-tools.git",
-    commit = "9f906c8a087bf9769129fffa5e04e518afab5083",
+    commit = "df7959fa5a1db1e941a1d7582b0340e1a2e7a8c8",
 )
 
 # ===== LLVM =====

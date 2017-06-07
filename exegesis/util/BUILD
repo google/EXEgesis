@@ -12,8 +12,8 @@ cc_library(
     deps = [
         "//base",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -25,8 +25,8 @@ cc_test(
         "//base",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -42,8 +42,8 @@ cc_library(
         "//exegesis/proto:instructions_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -58,8 +58,8 @@ cc_test(
         "//exegesis/testing:test_util",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -74,9 +74,9 @@ cc_library(
         "//base",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -90,9 +90,9 @@ cc_test(
         "//exegesis/testing:test_util",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -107,8 +107,8 @@ cc_library(
         "//base",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -135,9 +135,9 @@ cc_library(
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@glog_git//:glog",
     ],
 )
 
@@ -163,7 +163,7 @@ cc_library(
     deps = [
         "//base",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )

@@ -24,8 +24,8 @@ cc_library(
         "//strings",
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -43,8 +43,8 @@ cc_binary(
         "//strings",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -58,8 +58,8 @@ cc_binary(
         "//exegesis/util/pdf:xpdf_util",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -74,9 +74,9 @@ cc_binary(
         "//strings",
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@glog_git//:glog",
     ],
 )
 
@@ -92,8 +92,8 @@ cc_binary(
         "//strings",
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@glog_git//:glog",
     ],
 )

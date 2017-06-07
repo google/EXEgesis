@@ -17,8 +17,8 @@ cc_library(
         "//exegesis/proto/x86:encoding_specification_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -71,8 +71,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -101,8 +101,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -135,10 +135,10 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -170,8 +170,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -185,8 +185,8 @@ cc_test(
         "//base",
         "//exegesis/base:cleanup_instruction_set_test_utils",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -205,9 +205,9 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -242,8 +242,8 @@ cc_library(
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -277,8 +277,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -306,8 +306,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -337,9 +337,9 @@ cc_library(
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -356,6 +356,36 @@ cc_test(
     ],
 )
 
+# Utilities for working with CPUID data.
+cc_library(
+    name = "cpuid",
+    srcs = ["cpuid.cc"],
+    hdrs = ["cpuid.h"],
+    deps = [
+        "//base",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
+cc_test(
+    name = "cpuid_test",
+    size = "small",
+    srcs = ["cpuid_test.cc"],
+    deps = [
+        ":cpuid",
+        "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # Utilities to represent to CPU state.
 cc_library(
     name = "cpu_state",
@@ -366,8 +396,8 @@ cc_library(
         "//exegesis/util:bits",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -379,8 +409,8 @@ cc_test(
         "//base",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -403,9 +433,9 @@ cc_library(
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
-        "@glog_git//:glog",
     ],
 )
 
@@ -422,8 +452,33 @@ cc_test(
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# A library that converts the CPUID information to feature names.
+cc_library(
+    name = "feature_names_from_cpuid",
+    srcs = ["feature_names_from_cpuid.cc"],
+    hdrs = ["feature_names_from_cpuid.h"],
+    deps = [
+        "//base",
+        "//exegesis/util:bits",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "feature_names_from_cpuid_test",
+    size = "small",
+    srcs = ["feature_names_from_cpuid_test.cc"],
+    deps = [
+        ":feature_names_from_cpuid",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -440,9 +495,9 @@ cc_library(
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -470,8 +525,8 @@ cc_library(
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 

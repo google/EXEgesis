@@ -13,9 +13,9 @@ cc_library(
         "//base",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
     ],
 )

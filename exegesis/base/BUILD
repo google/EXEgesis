@@ -17,8 +17,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -33,8 +33,8 @@ cc_test(
         "//exegesis/util:proto_util",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -49,8 +49,8 @@ cc_library(
     deps = [
         "//base",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -63,8 +63,8 @@ cc_test(
         "//base",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -82,9 +82,9 @@ cc_library(
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
     alwayslink = 1,
 )
@@ -113,9 +113,9 @@ cc_test(
         "//base",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -133,8 +133,8 @@ cc_library(
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -149,8 +149,8 @@ cc_library(
         "//strings",
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -163,8 +163,8 @@ cc_test(
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -195,8 +195,8 @@ cc_test(
         "//exegesis/x86:microarchitectures",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -212,8 +212,8 @@ cc_library(
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -227,8 +227,8 @@ cc_test(
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -247,8 +247,8 @@ cc_library(
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -263,8 +263,8 @@ cc_test(
         "//exegesis/proto:microarchitecture_cc_proto",
         "//exegesis/util:proto_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -282,8 +282,8 @@ cc_library(
         "//net/proto2/util/public:repeated_field_util",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -298,8 +298,8 @@ cc_test(
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
@@ -316,8 +316,8 @@ cc_library(
         "//strings",
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
     ],
 )
 
@@ -329,8 +329,8 @@ cc_test(
         ":transform_factory",
         "//base",
         "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
-        "@glog_git//:glog",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],
