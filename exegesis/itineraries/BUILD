@@ -93,8 +93,8 @@ cc_library(
     hdrs = ["perf_subsystem.h"],
     deps = [
         "//base",
-        "//exegesis/base:cpu_info",
         "//exegesis/base:cpu_model",
+        "//exegesis/base:host_cpu",
         "//exegesis/proto:microarchitecture_cc_proto",
         "//exegesis/x86:microarchitectures",
         "//strings",

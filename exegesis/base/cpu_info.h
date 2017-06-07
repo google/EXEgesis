@@ -18,9 +18,6 @@
 #include <unordered_set>
 #include "strings/string.h"
 
-#include "exegesis/x86/cpuid.h"
-#include "util/task/statusor.h"
-
 namespace exegesis {
 
 // Contains the information about the CPU obtained from the CPUID (or
@@ -28,16 +25,7 @@ namespace exegesis {
 // supported by the CPU.
 class CpuInfo {
  public:
-  // Returns the CPU info for the host we're running on.
-  static const CpuInfo& FromHost();
-
-  // Parses the x86-64 CPUID dump and returns a CpuInfo structure that
-  // corresponds to the data from the dump.
-  // TODO(ondrasej): Create a platform-independent proto for CPUID dumps to
-  // remove the dependency on ::exegesis::x86 from ::exegesis.
-  static ::util::StatusOr<CpuInfo> FromCpuIdDump(
-      const ::exegesis::x86::CpuIdDump& dump);
-
+  CpuInfo() {}
   CpuInfo(const string& id, std::unordered_set<string> indexed_features);
 
   // Returns the CPU model id (e.g. "intel:06_3F").
@@ -66,9 +54,8 @@ class CpuInfo {
   //    is_or is false.
   template <bool is_or>
   bool IsFeatureSet(const string& name, bool* value) const;
-
-  const string cpu_id_;
-  const std::unordered_set<string> indexed_features_;
+  string cpu_id_;
+  std::unordered_set<string> indexed_features_;
 };
 
 }  // namespace exegesis

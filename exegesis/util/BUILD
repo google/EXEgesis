@@ -171,8 +171,27 @@ cc_test(
     ],
 )
 
-# Utilities for interacting with the host and system.
+# A library of string functions.
+cc_library(
+    name = "text_processing",
+    srcs = ["text_processing.cc"],
+    hdrs = ["text_processing.h"],
+    deps = [
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
 
+cc_test(
+    name = "text_processing_test",
+    size = "small",
+    srcs = ["text_processing_test.cc"],
+    deps = [
+        ":text_processing",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# Utilities for interacting with the host and system.
 cc_library(
     name = "system",
     srcs = ["system.cc"],

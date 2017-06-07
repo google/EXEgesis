@@ -138,20 +138,61 @@ cc_library(
     ],
 )
 
-# A library for getting host CPU info.
+# Utilities for working with CPUID data.
+cc_library(
+    name = "cpuid",
+    srcs = [
+        "cpuid.cc",
+        "cpuid_x86.cc",
+    ],
+    hdrs = [
+        "cpuid.h",
+        "cpuid_x86.h",
+    ],
+    deps = [
+        ":cpu_info",
+        "//base",
+        "//exegesis/proto:cpuid_cc_proto",
+        "//exegesis/proto/x86:cpuid_cc_proto",
+        "//exegesis/util:structured_register",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
+    ],
+)
+
+cc_test(
+    name = "cpuid_test",
+    size = "small",
+    srcs = [
+        "cpuid_test.cc",
+        "cpuid_x86_test.cc",
+    ],
+    deps = [
+        ":cpu_info",
+        ":cpuid",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//util/task:status",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# A library that represents the host CPU info.
 cc_library(
     name = "cpu_info",
     srcs = ["cpu_info.cc"],
     hdrs = ["cpu_info.h"],
     deps = [
         "//base",
-        "//exegesis/proto/x86:cpuid_proto",
-        "//exegesis/util:structured_register",
-        "//exegesis/x86:cpuid",
         "//strings",
         "//util/gtl:map_util",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
@@ -163,13 +204,14 @@ cc_test(
     srcs = ["cpu_info_test.cc"],
     deps = [
         ":cpu_info",
+        ":cpuid",
         "//base",
-        "//exegesis/proto:cpuid_proto",
+        "//exegesis/proto:cpuid_cc_proto",
         "//exegesis/proto:microarchitecture_cc_proto",
-        "//exegesis/proto/x86:cpuid_proto",
+        "//exegesis/proto/x86:cpuid_cc_proto",
         "//exegesis/util:proto_util",
-        "//exegesis/x86:cpuid",
         "//strings",
+        "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
@@ -205,6 +247,36 @@ cc_test(
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# A library that provides information about the host CPU. Note that this library
+# compiles only on platform where reading the host CPU is supported.
+cc_library(
+    name = "host_cpu",
+    srcs = ["host_cpu.cc"],
+    hdrs = ["host_cpu.h"],
+    deps = [
+        ":cpu_info",
+        ":cpuid",
+        "//base",
+        "//exegesis/proto:cpuid_cc_proto",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "host_cpu_test",
+    size = "small",
+    srcs = ["host_cpu_test.cc"],
+    deps = [
+        ":cpu_info",
+        ":host_cpu",
+        "//exegesis/proto:cpuid_cc_proto",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],

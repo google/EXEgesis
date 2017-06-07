@@ -16,7 +16,7 @@ proto_library(
     ],
 )
 
-proto_library(
+cc_proto_library(
     name = "cpuid_cc_proto",
     deps = [":cpuid_proto"],
 )

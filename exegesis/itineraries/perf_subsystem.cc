@@ -23,7 +23,8 @@
 #include <utility>
 
 #include "base/stringprintf.h"
-#include "exegesis/base/cpu_info.h"
+#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/host_cpu.h"
 #include "glog/logging.h"
 #include "include/perfmon/pfmlib_perf_event.h"
 #include "strings/str_cat.h"
@@ -80,7 +81,7 @@ bool Contains(const string& big, const string& small) {
 
 PerfSubsystem::PerfSubsystem()
     : microarchitecture_(
-          CHECK_NOTNULL(CpuModel::FromCpuId(CpuInfo::FromHost().cpu_id()))
+          CHECK_NOTNULL(CpuModel::FromCpuId(HostCpuInfoOrDie().cpu_id()))
               ->microarchitecture()) {
   counter_fds_.reserve(kMaxNumCounters);
   event_names_.reserve(kMaxNumCounters);

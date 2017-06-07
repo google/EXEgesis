@@ -356,39 +356,6 @@ cc_test(
     ],
 )
 
-# Utilities for working with CPUID data.
-cc_library(
-    name = "cpuid",
-    srcs = ["cpuid.cc"],
-    hdrs = ["cpuid.h"],
-    deps = [
-        "//base",
-        "//exegesis/proto:cpuid_proto",
-        "//exegesis/proto/x86:cpuid_proto",
-        "//strings",
-        "//util/gtl:map_util",
-        "//util/task:status",
-        "//util/task:statusor",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
-        "@com_google_protobuf//:protobuf_lite",
-        "@com_googlesource_code_re2//:re2",
-    ],
-)
-
-cc_test(
-    name = "cpuid_test",
-    size = "small",
-    srcs = ["cpuid_test.cc"],
-    deps = [
-        ":cpuid",
-        "//exegesis/util:proto_util",
-        "//util/task:status",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
-    ],
-)
-
 # Utilities to represent to CPU state.
 cc_library(
     name = "cpu_state",
