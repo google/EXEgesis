@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "exegesis/util/pdf/pdf_document_utils.h"
+#include "exegesis/util/text_processing.h"
 #include "exegesis/x86/pdf/vendor_syntax.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
@@ -302,21 +303,6 @@ bool IsValidMode(const string& text) {
   return false;
 }
 
-string CleanupDescription(string input) {
-  Cleanup(&input);
-  string output;
-  for (const char c : input) {
-    if (c == '\n') {
-      if (!output.empty() && output.back() == '-') {
-        output.back() = ' ';
-      }
-    } else {
-      output += c;
-    }
-  }
-  return output;
-}
-
 // We want to normalize features to the set defined by GetValidFeatureSet or
 // logical composition of them (several features separated by '&&' or '||')
 // TODO(gchatelet): Move this to configuration file.
@@ -395,9 +381,7 @@ void ParseCell(const InstructionTable::Column column, string text,
       break;
     }
     case InstructionTable::IT_DESCRIPTION:
-      // 'text' is multiline, CleanupDescription joins lines and erase
-      // hyphenations and removes trailing asterix.
-      instruction->set_description(CleanupDescription(text));
+      instruction->set_description(CleanupParagraph(text));
       break;
     case InstructionTable::IT_MODE_COMPAT_LEG:
       instruction->set_legacy_instruction(IsValidMode(text));
@@ -780,6 +764,7 @@ bool ToString(const InstructionSection& section, const SubSection::Type type,
     if (!output->empty()) StrAppend(output, "\n");
     ToString(row, output);
   }
+  *output = CleanupParagraph(*output);
   return true;
 }
 

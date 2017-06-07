@@ -42,6 +42,7 @@ cc_library(
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/pdf:pdf_document_cc_proto",
         "//exegesis/proto/pdf/x86:intel_sdm_cc_proto",
+        "//exegesis/util:text_processing",
         "//exegesis/util/pdf:pdf_document_utils",
         "//strings",
         "//util/gtl:map_util",

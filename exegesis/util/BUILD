@@ -177,6 +177,7 @@ cc_library(
     srcs = ["text_processing.cc"],
     hdrs = ["text_processing.h"],
     deps = [
+        "//strings",
         "@com_googlesource_code_re2//:re2",
     ],
 )
