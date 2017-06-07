@@ -268,6 +268,7 @@ CpuInfo CreateHostCpuInfo() {
 
   std::unordered_set<string> indexed_features;
 
+  PROCESS_FEATURE(3DNOW, ext_features.ecx, prefetchwt1);
   PROCESS_FEATURE(ADX, ext_features.ebx, adx);
   PROCESS_FEATURE(CLFLUSHOPT, ext_features.ebx, clflushopt);
   PROCESS_FEATURE(AES, features.ecx, aes);
@@ -275,7 +276,7 @@ CpuInfo CreateHostCpuInfo() {
   PROCESS_FEATURE(AVX2, ext_features.ebx, avx2);
   PROCESS_FEATURE(BMI1, ext_features.ebx, bmi1);
   PROCESS_FEATURE(BMI2, ext_features.ebx, bmi2);
-  PROCESS_FEATURE(PCLMULQDQ, features.ecx, pclmulqdq);
+  PROCESS_FEATURE(CLMUL, features.ecx, pclmulqdq);
   PROCESS_FEATURE(F16C, features.ecx, f16c);
   PROCESS_FEATURE(FMA, features.ecx, fma);
   PROCESS_FEATURE(FPU, features.edx, fpu);
@@ -288,12 +289,13 @@ CpuInfo CreateHostCpuInfo() {
   PROCESS_FEATURE(MOVBE, features.ecx, movbe);
   PROCESS_FEATURE(MPX, ext_features.ebx, mpx);
   PROCESS_FEATURE(OSPKE, ext_features.ecx, ospke);
-  PROCESS_FEATURE(PRFCHW, ext_features.ecx, prefetchwt1);
+  PROCESS_FEATURE(PRFCHW, ext2_features.ecx, prefetchw);
   PROCESS_FEATURE(RDPID, ext_features.ecx, rdpid);
   PROCESS_FEATURE(RDRAND, features.ecx, rdrand);
   PROCESS_FEATURE(RDSEED, ext_features.ebx, rdseed);
   PROCESS_FEATURE(RTM, ext_features.ebx, rtm);
   PROCESS_FEATURE(SHA, ext_features.ebx, sha);
+  PROCESS_FEATURE(SMAP, ext_features.ebx, smap);
   PROCESS_FEATURE(SSE, features.edx, sse);
   PROCESS_FEATURE(SSE2, features.edx, sse2);
   PROCESS_FEATURE(SSE3, features.ecx, sse3);
