@@ -5,6 +5,22 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# Represents information about CPU models coming from the CPUID
+# instructions/registers of the chips.
+
+proto_library(
+    name = "cpuid_proto",
+    srcs = ["cpuid.proto"],
+    deps = [
+        "//exegesis/proto/x86:cpuid_proto",
+    ],
+)
+
+proto_library(
+    name = "cpuid_cc_proto",
+    deps = [":cpuid_proto"],
+)
+
 # Represents CPU microarchitectures and models.
 
 proto_library(

@@ -146,6 +146,7 @@ cc_library(
     deps = [
         "//base",
         "//exegesis/proto:microarchitecture_cc_proto",
+        "//exegesis/proto/x86:cpuid_proto",
         "//exegesis/x86:cpuid",
         "//strings",
         "//util/gtl:map_util",
@@ -163,7 +164,10 @@ cc_test(
     deps = [
         ":cpu_info",
         "//base",
+        "//exegesis/proto:cpuid_proto",
         "//exegesis/proto:microarchitecture_cc_proto",
+        "//exegesis/proto/x86:cpuid_proto",
+        "//exegesis/util:proto_util",
         "//exegesis/x86:cpuid",
         "//strings",
         "@com_github_gflags_gflags//:gflags",

@@ -24,6 +24,7 @@
 #include "glog/logging.h"
 
 #include "base/stringprintf.h"
+#include "exegesis/proto/x86/cpuid.pb.h"
 #include "strings/str_cat.h"
 #include "strings/str_split.h"
 #include "util/gtl/map_util.h"
@@ -43,7 +44,7 @@ using ::exegesis::util::StatusOr;
 namespace {
 namespace intel {
 
-using ::exegesis::x86::CpuIdOutput;
+using ::exegesis::x86::CpuIdOutputProto;
 
 // Represents a register with access to individual bit ranges.
 class StructuredRegister {
@@ -153,10 +154,10 @@ struct FeatureRegisters {
     int pbe() const { return ValueAt<31, 31>(); }
   };
 
-  void SetValue(const CpuIdOutput& cpuid_out) {
-    *eax.mutable_raw_value() = cpuid_out.eax;
-    *ecx.mutable_raw_value() = cpuid_out.ecx;
-    *edx.mutable_raw_value() = cpuid_out.edx;
+  void SetValue(const CpuIdOutputProto& cpuid_out) {
+    *eax.mutable_raw_value() = cpuid_out.eax();
+    *ecx.mutable_raw_value() = cpuid_out.ecx();
+    *edx.mutable_raw_value() = cpuid_out.edx();
   }
 
   EAXStructure eax;
@@ -217,9 +218,9 @@ struct ExtendedFeatureRegisters {
     int reserved4() const { return ValueAt<30, 30>(); }
   };
 
-  void SetValue(const CpuIdOutput& cpuid_out) {
-    *ebx.mutable_raw_value() = cpuid_out.ebx;
-    *ecx.mutable_raw_value() = cpuid_out.ecx;
+  void SetValue(const CpuIdOutputProto& cpuid_out) {
+    *ebx.mutable_raw_value() = cpuid_out.ebx();
+    *ecx.mutable_raw_value() = cpuid_out.ecx();
   }
 
   EBXStructure ebx;
@@ -253,9 +254,9 @@ struct Extended2FeatureRegisters {
     // 30 - 31 reserved.
   };
 
-  void SetValue(const CpuIdOutput& cpuid_out) {
-    *ecx.mutable_raw_value() = cpuid_out.ecx;
-    *edx.mutable_raw_value() = cpuid_out.edx;
+  void SetValue(const CpuIdOutputProto& cpuid_out) {
+    *ecx.mutable_raw_value() = cpuid_out.ecx();
+    *edx.mutable_raw_value() = cpuid_out.edx();
   }
 
   ECXStructure ecx;
@@ -274,8 +275,8 @@ struct ExtendedStateRegisters {
     // 4 - 31 reserved.
   };
 
-  void SetValue(const CpuIdOutput& cpuid_out) {
-    *eax.mutable_raw_value() = cpuid_out.eax;
+  void SetValue(const CpuIdOutputProto& cpuid_out) {
+    *eax.mutable_raw_value() = cpuid_out.eax();
   }
 
   EAXStructure eax;
@@ -290,19 +291,19 @@ StatusOr<CpuInfo> CpuInfoFromDump(const CpuIdDump& cpuid_dump) {
   Extended2FeatureRegisters ext2_features;
   ExtendedStateRegisters ext_state;
 
-  for (const auto& entry : cpuid_dump.entries()) {
-    switch (entry.first.leaf) {
+  for (const auto& entry : cpuid_dump.dump_proto().x86_cpuid_dump().entries()) {
+    switch (entry.input().leaf()) {
       case 0x01:
-        features.SetValue(entry.second);
+        features.SetValue(entry.output());
         break;
       case 0x07:
-        if (entry.first.subleaf == 0) ext_features.SetValue(entry.second);
+        if (entry.input().subleaf() == 0) ext_features.SetValue(entry.output());
         break;
       case 0x0D:
-        if (entry.first.subleaf == 1) ext_state.SetValue(entry.second);
+        if (entry.input().subleaf() == 1) ext_state.SetValue(entry.output());
         break;
       case 0x80000001:
-        ext2_features.SetValue(entry.second);
+        ext2_features.SetValue(entry.output());
         break;
     }
   }

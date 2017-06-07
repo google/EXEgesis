@@ -363,6 +363,8 @@ cc_library(
     hdrs = ["cpuid.h"],
     deps = [
         "//base",
+        "//exegesis/proto:cpuid_proto",
+        "//exegesis/proto/x86:cpuid_proto",
         "//strings",
         "//util/gtl:map_util",
         "//util/task:status",
@@ -380,6 +382,7 @@ cc_test(
     srcs = ["cpuid_test.cc"],
     deps = [
         ":cpuid",
+        "//exegesis/util:proto_util",
         "//util/task:status",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",

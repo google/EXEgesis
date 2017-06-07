@@ -6,6 +6,17 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# Protocol buffers for storing the CPUID information.
+proto_library(
+    name = "cpuid_proto",
+    srcs = ["cpuid.proto"],
+)
+
+cc_proto_library(
+    name = "cpuid_cc_proto",
+    deps = [":cpuid_proto"],
+)
+
 # Protocol buffer library with the definitions of enums and constants for the
 # x86-64 binary encoding.
 proto_library(
