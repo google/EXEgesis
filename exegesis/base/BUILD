@@ -170,6 +170,38 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "microarchitecture",
+    srcs = ["microarchitecture.cc"],
+    hdrs = ["microarchitecture.h"],
+    deps = [
+        "//exegesis/base:cpu_model",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto:microarchitecture_cc_proto",
+        "//strings",
+        "//util/task:status",
+        "//util/task:statusor",
+    ],
+)
+
+cc_test(
+    name = "microarchitecture_test",
+    srcs = ["microarchitecture_test.cc"],
+    deps = [
+        ":microarchitecture",
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:proto_util",
+        "//exegesis/x86:microarchitectures",
+        "//strings",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_google_protobuf//:protobuf_lite",
+        "@glog_git//:glog",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # An efficient representation of the execution unit port mask.
 cc_library(
     name = "port_mask",
