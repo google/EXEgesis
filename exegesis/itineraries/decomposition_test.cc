@@ -242,7 +242,7 @@ std::vector<int> MeasurementGenerator::GenerateHistogram(int num_uops) {
 
 void MeasurementGenerator::Add(const std::vector<double>& loads,
                                std::vector<double>* measurements) {
-  CHECK_NE(measurements, nullptr);
+  CHECK(measurements);
   CHECK_EQ(loads.size(), measurements->size());
   for (int i = 0; i < loads.size(); ++i) {
     (*measurements)[i] += loads[i];
