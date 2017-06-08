@@ -32,6 +32,32 @@ cc_test(
     ],
 )
 
+# Helper functions for working with files.
+cc_library(
+    name = "file_util",
+    srcs = ["file_util.cc"],
+    hdrs = ["file_util.h"],
+    deps = [
+        "//base",
+        "//strings",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "file_util_test",
+    size = "small",
+    srcs = ["file_util_test.cc"],
+    deps = [
+        ":file_util",
+        "//strings",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # Helper functions for working with instruction syntax.
 cc_library(
     name = "instruction_syntax",
