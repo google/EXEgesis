@@ -63,6 +63,27 @@ cc_binary(
     ],
 )
 
+# A tool that parses the a CPUID dumps and converts the information to
+# EXEgesis formats.
+cc_binary(
+    name = "parse_cpuid_dump",
+    srcs = ["parse_cpuid_dump.cc"],
+    deps = [
+        "//base",
+        "//exegesis/base:cpuid",
+        "//exegesis/proto:cpuid_cc_proto",
+        "//exegesis/proto:microarchitecture_cc_proto",
+        "//exegesis/util:file_util",
+        "//exegesis/util:proto_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
 cc_binary(
     name = "pdf2proto",
     srcs = ["pdf2proto.cc"],
