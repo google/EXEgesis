@@ -5,6 +5,61 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# A library to compute itineraries for an instruction set.
+cc_library(
+    name = "compute_itineraries",
+    srcs = ["compute_itineraries.cc"],
+    hdrs = ["compute_itineraries.h"],
+    deps = [
+        "//base",
+        "//exegesis/base:category_utils",
+        "//exegesis/base:cpu_info",
+        "//exegesis/base:cpu_model",
+        "//exegesis/base:host_cpu",
+        "//exegesis/base:prettyprint",
+        "//exegesis/itineraries:decomposition",
+        "//exegesis/itineraries:jit_perf_evaluator",
+        "//exegesis/itineraries:perf_subsystem",
+        "//exegesis/llvm:inline_asm",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:instruction_syntax",
+        "//exegesis/x86:cpu_state",
+        "//exegesis/x86:microarchitectures",
+        "//exegesis/x86:operand_translator",
+        "//net/proto2/util/public:repeated_field_util",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/gtl:ptr_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
+        "@llvm_git//:ir",
+        "@llvm_git//:support",
+    ],
+)
+
+cc_test(
+    name = "compute_itineraries_test",
+    srcs = ["compute_itineraries_test.cc"],
+    deps = [
+        "//exegesis/base:cpu_model",
+        "//exegesis/base:host_cpu",
+        "//exegesis/itineraries:compute_itineraries",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//exegesis/util:system",
+        "//util/task:status",
+        "@com_google_protobuf//:protobuf",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # A library that decomposes instructions into micro-operations based on measurements made
 # using the performance counters.
 cc_library(

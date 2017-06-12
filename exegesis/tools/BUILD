@@ -5,6 +5,23 @@ package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])  # Apache 2.0
 
+# A tool that computes itineraries for the host cpu microarchitecture.
+cc_binary(
+    name = "compute_itineraries",
+    srcs = ["compute_itineraries.cc"],
+    deps = [
+        ":instruction_sets",
+        "//base",
+        "//exegesis/base:cpu_model",
+        "//exegesis/itineraries:compute_itineraries",
+        "//exegesis/util:proto_util",
+        "//exegesis/util:system",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
 # A library that provides access to instruction sets for all supported architectures.
 cc_library(
     name = "instruction_sets",
