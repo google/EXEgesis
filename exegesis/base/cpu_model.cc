@@ -24,11 +24,7 @@ namespace exegesis {
 
 MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
     : proto_(proto),
-      port_masks_(proto_.port_masks().begin(), proto_.port_masks().end()) {
-  for (const CpuModelProto& model_proto : proto_.cpu_models()) {
-    cpu_models_.push_back(CpuModel(&model_proto, this));
-  }
-}
+      port_masks_(proto_.port_masks().begin(), proto_.port_masks().end()) {}
 
 const PortMask* MicroArchitecture::load_store_address_generation() const {
   return GetPortMaskOrNull(
@@ -70,19 +66,19 @@ bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
 
 namespace {
 
-using MicroArchitectureRegistry =
-    std::unordered_map<string, std::unique_ptr<MicroArchitecture>>;
-
-MicroArchitectureRegistry* KnownMicroArchitectures() {
-  static auto* const registry = new MicroArchitectureRegistry();
-  return registry;
+std::unordered_map<string, std::unique_ptr<const MicroArchitecture>>*
+MicroArchitecturesById() {
+  static auto* const result =
+      new std::unordered_map<string,
+                             std::unique_ptr<const MicroArchitecture>>();
+  return result;
 }
 
-using CpuModelRegistry = std::unordered_map<string, const CpuModel*>;
-
-CpuModelRegistry* KnownCpuModels() {
-  static auto* const registry = new CpuModelRegistry();
-  return registry;
+std::unordered_map<string, const MicroArchitecture*>*
+MicroArchitecturesByCpuModelId() {
+  static auto* const result =
+      new std::unordered_map<string, const MicroArchitecture*>();
+  return result;
 }
 
 }  // namespace
@@ -91,18 +87,19 @@ namespace internal {
 
 void RegisterMicroArchitectures::RegisterFromProto(
     const MicroArchitecturesProto& microarchitectures) {
-  MicroArchitectureRegistry* const microarchitecture_registry =
-      KnownMicroArchitectures();
-  CpuModelRegistry* const cpu_registry = KnownCpuModels();
+  auto* const microarchitectures_by_id = MicroArchitecturesById();
+  auto* const microarchitectures_by_cpu_model_id =
+      MicroArchitecturesByCpuModelId();
   for (const MicroArchitectureProto& microarchitecture_proto :
        microarchitectures.microarchitectures()) {
     auto microarchitecture =
         gtl::MakeUnique<MicroArchitecture>(microarchitecture_proto);
-    for (const CpuModel& model : microarchitecture->cpu_models()) {
-      InsertOrDie(cpu_registry, model.proto().id(), &model);
+    for (const string& model_id : microarchitecture_proto.model_ids()) {
+      InsertOrDie(microarchitectures_by_cpu_model_id, model_id,
+                  microarchitecture.get());
     }
     const string& microarchitecture_id = microarchitecture_proto.id();
-    const auto insert_result = microarchitecture_registry->emplace(
+    const auto insert_result = microarchitectures_by_id->emplace(
         microarchitecture_id, std::move(microarchitecture));
     if (!insert_result.second) {
       LOG(FATAL) << "Duplicate micro-architecture: " << microarchitecture_id;
@@ -114,8 +111,8 @@ void RegisterMicroArchitectures::RegisterFromProto(
 
 const MicroArchitecture* MicroArchitecture::FromId(
     const string& microarchitecture_id) {
-  const std::unique_ptr<MicroArchitecture>* const result =
-      FindOrNull(*KnownMicroArchitectures(), microarchitecture_id);
+  const std::unique_ptr<const MicroArchitecture>* const result =
+      FindOrNull(*MicroArchitecturesById(), microarchitecture_id);
   return result ? result->get() : nullptr;
 }
 
@@ -124,27 +121,19 @@ const MicroArchitecture& MicroArchitecture::FromIdOrDie(
   return *CHECK_NOTNULL(FromId(microarchitecture_id));
 }
 
-CpuModel::CpuModel(const CpuModelProto* proto,
-                   const MicroArchitecture* microarchitecture)
-    : proto_(CHECK_NOTNULL(proto)),
-      microarchitecture_(CHECK_NOTNULL(microarchitecture)) {}
-
-const MicroArchitecture& CpuModel::microarchitecture() const {
-  return *microarchitecture_;
-}
-
-namespace {}  // namespace
-
-const CpuModel* CpuModel::FromCpuId(const string& cpu_id) {
-  const auto* const result = FindPtrOrNull(*KnownCpuModels(), cpu_id);
+const MicroArchitecture* MicroArchitecture::FromCpuModelId(
+    const string& cpu_model_id) {
+  const auto* const result =
+      FindPtrOrNull(*MicroArchitecturesByCpuModelId(), cpu_model_id);
   if (result == nullptr) {
-    LOG(WARNING) << "Unknown CPU with id '" << cpu_id << "'";
+    LOG(WARNING) << "Unknown CPU model '" << cpu_model_id << "'";
   }
   return result;
 }
 
-const CpuModel& CpuModel::FromCpuIdOrDie(const string& cpu_id) {
-  return *CHECK_NOTNULL(FromCpuId(cpu_id));
+const MicroArchitecture& MicroArchitecture::FromCpuModelIdOrDie(
+    const string& cpu_model_id) {
+  return *CHECK_NOTNULL(FromCpuModelId(cpu_model_id));
 }
 
 }  // namespace exegesis

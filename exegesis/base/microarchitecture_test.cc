@@ -46,7 +46,7 @@ TEST(MicroArchitectureDataTest, Works) {
       )"));
 
   const auto microarchitecture =
-      MicroArchitectureData::ForCpuId(architecture_proto, "intel:06_3F");
+      MicroArchitectureData::ForCpuModelId(architecture_proto, "intel:06_3F");
 
   ASSERT_TRUE(microarchitecture.ok());
   ASSERT_EQ(

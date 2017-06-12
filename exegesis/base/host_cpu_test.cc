@@ -16,7 +16,7 @@ TEST(HostCpuIdDumpTest, X86) {
 
 TEST(HostCpuInfoTest, X86) {
   const CpuInfo& cpu_info = HostCpuInfoOrDie();
-  EXPECT_FALSE(cpu_info.cpu_id().empty());
+  EXPECT_FALSE(cpu_info.cpu_model_id().empty());
   EXPECT_FALSE(cpu_info.supported_features().empty());
 }
 #endif  // __x86_64__

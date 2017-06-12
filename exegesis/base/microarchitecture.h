@@ -34,17 +34,20 @@ class MicroArchitectureData {
  public:
   // Given an architecture and a CPU model id, retrieves the data for the given
   // model id.
-  static StatusOr<MicroArchitectureData> ForCpuId(
+  static StatusOr<MicroArchitectureData> ForCpuModelId(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
       const string& cpu_model_id);
 
-  static StatusOr<MicroArchitectureData> ForCpu(
-      std::shared_ptr<const ArchitectureProto> architecture_proto,
-      const CpuModel& cpu_model);
-
   // StatusOr<T> requires T to be default-constructible.
   // TODO(courbet): Remove when StatusOr is fixed.
-  MicroArchitectureData() : cpu_model_(nullptr), itineraries_(nullptr) {}
+  MicroArchitectureData()
+      : microarchitecture_(nullptr), itineraries_(nullptr) {}
+
+  // For tests.
+  MicroArchitectureData(
+      std::shared_ptr<const ArchitectureProto> architecture_proto,
+      const MicroArchitecture* microarchitecture,
+      const InstructionSetItinerariesProto* itineraries);
 
   const InstructionSetProto& instruction_set() const {
     return architecture_proto_->instruction_set();
@@ -54,19 +57,16 @@ class MicroArchitectureData {
     return *itineraries_;
   }
 
-  const CpuModel& cpu_model() const { return *cpu_model_; }
+  const MicroArchitecture& microarchitecture() const {
+    return *microarchitecture_;
+  }
 
  private:
-  MicroArchitectureData(
-      std::shared_ptr<const ArchitectureProto> architecture_proto,
-      const CpuModel* cpu_model,
-      const InstructionSetItinerariesProto* itineraries);
-
   // Keep a reference to the underlying data (instruction_set and itineraries
   // point into architecture_proto).
   // The following fields are never nullptr.
   std::shared_ptr<const ArchitectureProto> architecture_proto_;
-  const CpuModel* cpu_model_;
+  const MicroArchitecture* microarchitecture_;
   const InstructionSetItinerariesProto* itineraries_;
 };
 

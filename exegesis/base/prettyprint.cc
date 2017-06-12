@@ -20,13 +20,18 @@
 
 namespace exegesis {
 
-string PrettyPrintCpuModel(const CpuModel& cpu_model,
-                           const PrettyPrintOptions& options) {
-  string result = StrCat(cpu_model.proto().id(), " (name: '",
-                         cpu_model.proto().code_name(), "')");
+string PrettyPrintCpuInfo(const CpuInfo& cpu_info,
+                          const PrettyPrintOptions& options) {
+  return StrCat(cpu_info.proto().model_id(), " (name: '",
+                cpu_info.proto().code_name(), "')");
+}
+
+string PrettyPrintMicroArchitecture(const MicroArchitecture& microarchitecture,
+                                    const PrettyPrintOptions& options) {
+  string result = microarchitecture.proto().id();
   if (options.cpu_details_) {
     StrAppend(&result, "\nport masks:\n  ",
-              strings::Join(cpu_model.microarchitecture().port_masks(), "\n  ",
+              strings::Join(microarchitecture.port_masks(), "\n  ",
                             [](string* out, const PortMask& mask) {
                               out->append(mask.ToString());
                             }));

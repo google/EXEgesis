@@ -29,9 +29,6 @@ namespace itineraries {
 namespace {
 
 TEST(ComputeItinerariesTest, ADC) {
-  // Always compute itineraries for the host CPU.
-  const string& host_cpu_id = HostCpuInfoOrDie().cpu_id();
-
   // Restrict instructions to the given range.
   const auto instruction_set =
       ParseProtoFromStringOrDie<InstructionSetProto>(R"(
@@ -65,12 +62,14 @@ TEST(ComputeItinerariesTest, ADC) {
           }
         }
       )");
-  // Compute itineraries for the host CPU.
+  // Always compute itineraries for the host CPU.
+  const string& host_cpu_model_id = HostCpuInfoOrDie().cpu_model_id();
   InstructionSetItinerariesProto itineraries;
-  const auto* cpu_model = CpuModel::FromCpuId(host_cpu_id);
-  CHECK(cpu_model) << "Unknown CPU id '" << host_cpu_id << "'";
-  itineraries.set_microarchitecture_id(
-      cpu_model->microarchitecture().proto().id());
+  const auto* const microarchitecture =
+      MicroArchitecture::FromCpuModelId(host_cpu_model_id);
+  CHECK(microarchitecture != nullptr)
+      << "Unknown CPU model '" << host_cpu_model_id << "'";
+  itineraries.set_microarchitecture_id(microarchitecture->proto().id());
   itineraries.add_itineraries();
 
   const Status status = ComputeItineraries(instruction_set, &itineraries);

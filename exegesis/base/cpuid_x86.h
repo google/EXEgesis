@@ -41,6 +41,10 @@ using ::exegesis::util::StatusOr;
 // inspecting the contents of the dump.
 class CpuIdDump {
  public:
+  // Possible values of the vendor string used in leaf 0.
+  static constexpr char kVendorStringAMD[] = "AuthenticAMD";
+  static constexpr char kVendorStringIntel[] = "GenuineIntel";
+
   // Returns the CPUID dump for the CPU that runs the code. Returns an empty
   // CPUID dump if ran on platforms other than x86-64.
   static CpuIdDump FromHost();
@@ -66,6 +70,10 @@ class CpuIdDump {
   // Returns true if the CPUID dump is valid, i.e. it contains at least the main
   // entry (leaf = 0).
   bool IsValid() const { return GetEntryOrNull(0, 0) != nullptr; }
+
+  // Returns the processor brand string extracted from subleafs
+  // 80000002 - 80000004.
+  string GetProcessorBrandString() const;
 
   // Returns the vendor string extracted from the main leaf.
   string GetVendorString() const;

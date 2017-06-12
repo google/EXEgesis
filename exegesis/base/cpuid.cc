@@ -20,7 +20,6 @@
 namespace exegesis {
 
 CpuInfo CpuInfoFromCpuIdDump(const CpuIdDumpProto& cpuid_dump_proto) {
-  CpuInfo cpu_info;
   switch (cpuid_dump_proto.dump_case()) {
     case CpuIdDumpProto::kX86CpuidDump: {
       x86::CpuIdDump dump(cpuid_dump_proto);
@@ -30,7 +29,7 @@ CpuInfo CpuInfoFromCpuIdDump(const CpuIdDumpProto& cpuid_dump_proto) {
     case CpuIdDumpProto::DUMP_NOT_SET:
       break;
   }
-  return cpu_info;
+  return CpuInfo(CpuInfoProto());
 }
 
 }  // namespace exegesis

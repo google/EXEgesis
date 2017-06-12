@@ -25,40 +25,18 @@ namespace exegesis {
 
 class MicroArchitecture;
 
-// Represents a CpuModelProto in memory. See the proto documentation for
-// details.
-class CpuModel {
- public:
-  // Returns nullptr if the CPU model is unknown.
-  static const CpuModel* FromCpuId(const string& cpu_id);
-  // Dies when the CPU model is unknown.
-  static const CpuModel& FromCpuIdOrDie(const string& cpu_id);
-
-  CpuModel(const CpuModelProto* proto,
-           const MicroArchitecture* microarchitecture);
-  CpuModel(CpuModel&&) = default;
-
-  const CpuModelProto& proto() const { return *proto_; }
-
-  const MicroArchitecture& microarchitecture() const;
-
- private:
-  CpuModel() = delete;
-  CpuModel(const CpuModel&) = delete;
-
-  const CpuModelProto* const proto_;
-  const MicroArchitecture* const microarchitecture_;
-};
-
 // Represents a MicroArchitectureProto in memory. See the proto documentation
 // for details.
 class MicroArchitecture {
  public:
   // Returns nullptr if unknown.
   static const MicroArchitecture* FromId(const string& microarchitecture_id);
+  static const MicroArchitecture* FromCpuModelId(const string& cpu_model_id);
   // Dies if unknown.
   static const MicroArchitecture& FromIdOrDie(
       const string& microarchitecture_id);
+  static const MicroArchitecture& FromCpuModelIdOrDie(
+      const string& cpu_model_id);
 
   explicit MicroArchitecture(const MicroArchitectureProto& proto);
 
@@ -76,8 +54,6 @@ class MicroArchitecture {
   // protected in x86 but 3 is not). protection_mode < 0 is the default.
   bool IsProtectedMode(int protection_mode) const;
 
-  const std::vector<CpuModel>& cpu_models() const { return cpu_models_; }
-
  private:
   MicroArchitecture() = delete;
   MicroArchitecture(const MicroArchitecture&) = delete;
@@ -86,7 +62,6 @@ class MicroArchitecture {
 
   const MicroArchitectureProto proto_;
   const std::vector<PortMask> port_masks_;
-  std::vector<CpuModel> cpu_models_;
 };
 
 // Registers a list of micro-architectures to make them and their CPU models

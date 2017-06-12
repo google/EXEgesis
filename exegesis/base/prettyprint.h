@@ -15,6 +15,7 @@
 #ifndef EXEGESIS_BASE_DEBUG_H_
 #define EXEGESIS_BASE_DEBUG_H_
 
+#include "exegesis/base/cpu_info.h"
 #include "exegesis/base/cpu_model.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
@@ -71,10 +72,13 @@ string PrettyPrintItinerary(
     const ItineraryProto& instruction,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintCpuModel(
-    const CpuModel& cpu_model,
+string PrettyPrintCpuInfo(
+    const CpuInfo& cpu_info,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
+string PrettyPrintMicroArchitecture(
+    const MicroArchitecture& microarchitecture,
+    const PrettyPrintOptions& options = PrettyPrintOptions());
 string PrettyPrintSyntax(
     const InstructionFormat& syntax,
     const PrettyPrintOptions& options = PrettyPrintOptions());

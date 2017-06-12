@@ -22,42 +22,37 @@
 
 namespace exegesis {
 
-StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuId(
+StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuModelId(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
     const string& cpu_model_id) {
-  if (const auto* const cpu_model = CpuModel::FromCpuId(cpu_model_id)) {
-    return ForCpu(std::move(architecture_proto), *cpu_model);
+  const auto* const microarchitecture =
+      MicroArchitecture::FromCpuModelId(cpu_model_id);
+  if (microarchitecture == nullptr) {
+    return util::InvalidArgumentError(
+        StrCat("Unknown CPU model '", cpu_model_id, "'"));
   }
-  return util::InvalidArgumentError(
-      StrCat("Unknown CPU model '", cpu_model_id, "'"));
-}
-
-StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpu(
-    std::shared_ptr<const ArchitectureProto> architecture_proto,
-    const CpuModel& cpu_model) {
   for (const InstructionSetItinerariesProto& itineraries :
        architecture_proto->per_microarchitecture_itineraries()) {
-    if (cpu_model.microarchitecture().proto().id() ==
-        itineraries.microarchitecture_id()) {
+    if (microarchitecture->proto().id() == itineraries.microarchitecture_id()) {
       // Sanity checks.
       CHECK_EQ(itineraries.itineraries_size(),
                architecture_proto->instruction_set().instructions_size());
-      return MicroArchitectureData(std::move(architecture_proto), &cpu_model,
-                                   &itineraries);
+      return MicroArchitectureData(std::move(architecture_proto),
+                                   microarchitecture, &itineraries);
     }
   }
 
   return util::InvalidArgumentError(
       StrCat("No itineraries for microarchitecture '",
-             cpu_model.microarchitecture().proto().id(), "'"));
+             microarchitecture->proto().id(), "'"));
 }
 
 MicroArchitectureData::MicroArchitectureData(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
-    const CpuModel* const cpu_model,
+    const MicroArchitecture* const microarchitecture,
     const InstructionSetItinerariesProto* const itineraries)
     : architecture_proto_(std::move(architecture_proto)),
-      cpu_model_(CHECK_NOTNULL(cpu_model)),
+      microarchitecture_(CHECK_NOTNULL(microarchitecture)),
       itineraries_(CHECK_NOTNULL(itineraries)) {}
 
 }  // namespace exegesis

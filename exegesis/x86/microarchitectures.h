@@ -23,33 +23,13 @@ namespace x86 {
 // For tests only. These functions return a CPU model that belongs to the
 // microarchitecture in the name of the function. They are sorted in reverse
 // chronological order.
-inline const CpuModel& SkylakeCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_4E");
-}
-
-inline const CpuModel& BroadwellCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_3D");
-}
-
-inline const CpuModel& HaswellCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_3C");
-}
-
-inline const CpuModel& IvyBridgeCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_3A");
-}
-
-inline const CpuModel& SandyBridgeCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_2A");
-}
-
-inline const CpuModel& WestmereCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_25");
-}
-
-inline const CpuModel& NehalemCpuModel() {
-  return CpuModel::FromCpuIdOrDie("intel:06_1A");
-}
+extern const char* const kExampleSkylakeCpuModelId;
+extern const char* const kExampleBroadwellCpuModelId;
+extern const char* const kExampleHaswellCpuModelId;
+extern const char* const kExampleIvyBridgeCpuModelId;
+extern const char* const kExampleSandyBridgeCpuModelId;
+extern const char* const kExampleWestmereCpuModelId;
+extern const char* const kExampleNehalemCpuModelId;
 
 // The microarchitectures in reverse chronological order.
 inline const MicroArchitecture& SkylakeMicroArchitecture() {

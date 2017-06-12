@@ -191,6 +191,7 @@ cc_library(
     hdrs = ["cpu_info.h"],
     deps = [
         "//base",
+        "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
@@ -320,6 +321,7 @@ cc_library(
     srcs = ["prettyprint.cc"],
     hdrs = ["prettyprint.h"],
     deps = [
+        ":cpu_info",
         ":cpu_model",
         ":port_mask",
         "//base",

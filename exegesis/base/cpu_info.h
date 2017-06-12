@@ -18,6 +18,8 @@
 #include <unordered_set>
 #include "strings/string.h"
 
+#include "exegesis/proto/microarchitecture.pb.h"
+
 namespace exegesis {
 
 // Contains the information about the CPU obtained from the CPUID (or
@@ -25,11 +27,13 @@ namespace exegesis {
 // supported by the CPU.
 class CpuInfo {
  public:
-  CpuInfo() {}
-  CpuInfo(const string& id, std::unordered_set<string> indexed_features);
+  CpuInfo(const CpuInfoProto& proto)
+      : proto_(proto),
+        indexed_features_(proto_.feature_names().begin(),
+                          proto_.feature_names().end()) {}
 
   // Returns the CPU model id (e.g. "intel:06_3F").
-  const string& cpu_id() const { return cpu_id_; }
+  const string& cpu_model_id() const { return proto_.model_id(); }
 
   // Returns true if the CPU supports this feature. See
   // exegesis.InstructionProto.feature_name for the syntax.
@@ -40,6 +44,8 @@ class CpuInfo {
   }
 
   string DebugString() const;
+
+  const CpuInfoProto& proto() const { return proto_; }
 
  private:
   // Returns true if the host CPU suports a feature with this exact name.
@@ -54,8 +60,9 @@ class CpuInfo {
   //    is_or is false.
   template <bool is_or>
   bool IsFeatureSet(const string& name, bool* value) const;
-  string cpu_id_;
-  std::unordered_set<string> indexed_features_;
+
+  const CpuInfoProto proto_;
+  const std::unordered_set<string> indexed_features_;
 };
 
 }  // namespace exegesis

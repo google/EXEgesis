@@ -23,9 +23,6 @@
 
 namespace exegesis {
 
-CpuInfo::CpuInfo(const string& id, std::unordered_set<string> indexed_features)
-    : cpu_id_(id), indexed_features_(std::move(indexed_features)) {}
-
 bool CpuInfo::HasExactFeature(const string& name) const {
   return ContainsKey(indexed_features_, name);
 }
@@ -75,7 +72,7 @@ bool CpuInfo::SupportsFeature(const string& feature_name) const {
 }
 
 string CpuInfo::DebugString() const {
-  string result = StrCat(cpu_id_, "\nfeatures:");
+  string result = StrCat(proto_.model_id(), "\nfeatures:");
   for (const string& feature : indexed_features_) {
     StrAppend(&result, "\n", feature);
   }

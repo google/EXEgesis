@@ -80,9 +80,8 @@ bool Contains(const string& big, const string& small) {
 }  // namespace
 
 PerfSubsystem::PerfSubsystem()
-    : microarchitecture_(
-          CHECK_NOTNULL(CpuModel::FromCpuId(HostCpuInfoOrDie().cpu_id()))
-              ->microarchitecture()) {
+    : microarchitecture_(MicroArchitecture::FromCpuModelIdOrDie(
+          HostCpuInfoOrDie().cpu_model_id())) {
   counter_fds_.reserve(kMaxNumCounters);
   event_names_.reserve(kMaxNumCounters);
   timers_.resize(kMaxNumCounters);

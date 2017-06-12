@@ -25,20 +25,16 @@ namespace {
 TEST(PrettyPrintTest, CpuModel) {
   const MicroArchitecture microarchitecture(
       ParseProtoFromStringOrDie<MicroArchitectureProto>(R"(
-      id: 'haswell'
+      id: 'hsw'
       port_masks { port_numbers: [0, 1, 5, 6] }
       port_masks { port_numbers: [2, 3, 7] }
       protected_mode { user_modes: 3 }
-      cpu_models {
-        id: 'intel:06_3F'
-        code_name: 'haswell'
-      }
+      model_ids: 'intel:06_3F'
   )"));
-  EXPECT_EQ(PrettyPrintCpuModel(microarchitecture.cpu_models()[0]),
-            "intel:06_3F (name: 'haswell')");
-  EXPECT_EQ(PrettyPrintCpuModel(microarchitecture.cpu_models()[0],
-                                PrettyPrintOptions().WithCpuDetails(true)),
-            "intel:06_3F (name: 'haswell')\n"
+  EXPECT_EQ(PrettyPrintMicroArchitecture(microarchitecture), "hsw");
+  EXPECT_EQ(PrettyPrintMicroArchitecture(
+                microarchitecture, PrettyPrintOptions().WithCpuDetails(true)),
+            "hsw\n"
             "port masks:\n"
             "  P0156\n"
             "  P237");

@@ -36,7 +36,12 @@ using ::testing::UnorderedElementsAreArray;
 using ::exegesis::util::StatusOr;
 
 TEST(CpuInfoTest, SupportsFeature) {
-  const CpuInfo cpu_info("doesnotexist", {"ADX", "SSE", "LZCNT"});
+  const CpuInfo cpu_info(ParseProtoFromStringOrDie<CpuInfoProto>(R"(
+      model_id: "doesnotexist"
+      feature_names: "ADX"
+      feature_names: "SSE"
+      feature_names: "LZCNT"
+  )"));
   EXPECT_TRUE(cpu_info.SupportsFeature("ADX"));
   EXPECT_TRUE(cpu_info.SupportsFeature("SSE"));
   EXPECT_TRUE(cpu_info.SupportsFeature("LZCNT"));

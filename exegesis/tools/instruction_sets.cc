@@ -53,7 +53,7 @@ InstructionSetProto GetTransformedInstructionSet(const string& architecture) {
 
 MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
   CheckArchitectureFlag();
-  return MicroArchitectureData::ForCpuId(
+  return MicroArchitectureData::ForCpuModelId(
              GetArchitectureProtoOrDie(FLAGS_exegesis_architecture),
              FLAGS_exegesis_cpu_model)
       .ValueOrDie();

@@ -167,7 +167,7 @@ void TestToCpuInfo(
   const CpuIdDump& dump = dump_or_status.ValueOrDie();
   ASSERT_TRUE(dump.IsValid());
   const CpuInfo cpu_info = dump.ToCpuInfo();
-  EXPECT_EQ(cpu_info.cpu_id(), expected_cpu_model);
+  EXPECT_EQ(cpu_info.cpu_model_id(), expected_cpu_model);
   EXPECT_THAT(cpu_info.supported_features(),
               UnorderedElementsAreArray(expected_features));
 }

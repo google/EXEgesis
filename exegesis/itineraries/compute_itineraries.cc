@@ -595,28 +595,28 @@ Status ComputeItineraries(const InstructionSetProto& instruction_set,
            itineraries->itineraries_size());
   const CpuInfo& host_cpu_info = HostCpuInfoOrDie();
   LOG(INFO) << "Host CPU info: " << host_cpu_info.DebugString();
-  const string& host_cpu_id = host_cpu_info.cpu_id();
+  const string& host_cpu_model_id = host_cpu_info.cpu_model_id();
 
   // Check that we know the details (port masks, ...) of the CPU model.
-  const CpuModel* const host_cpu_details = CpuModel::FromCpuId(host_cpu_id);
-  if (!host_cpu_details) {
+  const MicroArchitecture* const microarchitecture =
+      MicroArchitecture::FromCpuModelId(host_cpu_model_id);
+  if (microarchitecture == nullptr) {
     return InternalError(StrCat("Nothing known about host CPU model id '",
-                                host_cpu_id, "', cannot compute itineraries."));
+                                host_cpu_model_id,
+                                "', cannot compute itineraries."));
   }
 
   // We can only guarantee that the computed itineraries are going to be valid
   // for the host microarchitecture.
-  if (host_cpu_details->microarchitecture().proto().id() !=
-      itineraries->microarchitecture_id()) {
+  if (microarchitecture->proto().id() != itineraries->microarchitecture_id()) {
     return InvalidArgumentError(
-        StrCat("Host CPU model id '", host_cpu_id,
+        StrCat("Host CPU model id '", host_cpu_model_id,
                "' is not the requested microarchitecture ('",
-               host_cpu_details->microarchitecture().proto().id(), "' vs '",
+               microarchitecture->proto().id(), "' vs '",
                itineraries->microarchitecture_id(), "'"));
   }
 
-  ComputeItinerariesHelper helper(host_cpu_info,
-                                  host_cpu_details->microarchitecture(),
+  ComputeItinerariesHelper helper(host_cpu_info, *microarchitecture,
                                   ComputeItinerariesHelper::Parameters());
   return helper.ComputeItineraries(instruction_set, itineraries);
 }

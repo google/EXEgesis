@@ -55,8 +55,8 @@ message MicroArchitectureProto {
   }
   ProtectedMode protected_mode = 7;
 
-  // The list of CPU models of the microarchitecture.
-  repeated CpuModelProto cpu_models = 13;
+  // The list of CPU model ids of the microarchitecture.
+  repeated string model_ids = 37;
 
   // Hardware parameters of the microarchitecture. Note that that these
   // parameters are not necessarily well-defined for all architectures, and they
@@ -148,17 +148,14 @@ message MicroArchitecturesProto {
 
 // Represents a single model of a CPU. Most parameters of the CPU are determined
 // by the microarchitecture of the CPU.
-message CpuModelProto {
+message CpuInfoProto {
   // The model identifier.
   // For intel, this is "intel:<family>_<model>", where <family> and <model> are
   // the values returned by the CPUID instruction in hexadecimal format without
   // a leading 0x. See:
   // https://en.wikipedia.org/wiki/CPUID#EAX.3D1:_Processor_Info_and_Feature_Bits
   // for a more complete explanation.
-  string id = 1;
-
-  // The identifier of the MicroArchitecture of this model.
-  string microarchitecture_id = 2;
+  string model_id = 1;
 
   // The code name for the architecture. For example "Haswell" or "Skylake".
   // It is a mapping from the pair (family, model) to code_name.

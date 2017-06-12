@@ -27,6 +27,17 @@
 namespace exegesis {
 namespace x86 {
 
+// The CPUID code is based on the information provided in:
+// * Intel 64 and IA-32 Architectures Software Developer's Manual (March 2017),
+//   combined volumes 1-4, and
+// * AMD64 Architecture Programmer's Manual, Volume 3 (March 2017, rev. 3.23).
+//
+// As of 2017-06-09, the information returned by CPUID is - for the purposes of
+// this code - almost equivalent on both platforms. The following differences
+// are relevant to this library:
+// * ExtendedFeatureRegisters.ecx.prefetchw1() is marked as reserved on AMD.
+// * The bits used to indicate AVX512 support are marked as reserved on AMD.
+
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::StatusOr;
 
@@ -53,8 +64,9 @@ struct FeatureRegisters {
     int step() const { return ValueAt<3, 0>(); }
     int model() const { return ValueAt<7, 4>(); }
     int family() const { return ValueAt<11, 8>(); }
-    int type() const { return ValueAt<13, 12>(); }
-    // 15-14 reserved.
+    // 12 is reserved ond AMD CPUs.
+    int intel_only_type() const { return ValueAt<13, 12>(); }
+    // 15 - 14 reserved.
     int emodel() const { return ValueAt<19, 16>(); }
     int efamily() const { return ValueAt<27, 20>(); }
     // 31 - 28 reserved.
@@ -64,29 +76,35 @@ struct FeatureRegisters {
    public:
     int sse3() const { return ValueAt<0, 0>(); }
     int pclmulqdq() const { return ValueAt<1, 1>(); }
-    int dtes64() const { return ValueAt<2, 2>(); }
+    // 2 is reserved on AMD CPUs.
+    int intel_only_dtes64() const { return ValueAt<2, 2>(); }
     int monitor() const { return ValueAt<3, 3>(); }
-    int dscpl() const { return ValueAt<4, 4>(); }
-    int vmx() const { return ValueAt<5, 5>(); }
-    int smx() const { return ValueAt<6, 6>(); }
-    int est() const { return ValueAt<7, 7>(); }
-    int tm2() const { return ValueAt<8, 8>(); }
+    // 4 - 8 are reserved on AMD CPUs.
+    int intel_only_dscpl() const { return ValueAt<4, 4>(); }
+    int intel_only_vmx() const { return ValueAt<5, 5>(); }
+    int intel_only_smx() const { return ValueAt<6, 6>(); }
+    int intel_only_est() const { return ValueAt<7, 7>(); }
+    int intel_only_tm2() const { return ValueAt<8, 8>(); }
     int ssse3() const { return ValueAt<9, 9>(); }
-    int cntxid() const { return ValueAt<10, 10>(); }
-    int sdbg() const { return ValueAt<11, 11>(); }
+    // 10 - 11 are reserved on AMD CPUs.
+    int intel_only_cntxid() const { return ValueAt<10, 10>(); }
+    int intel_only_sdbg() const { return ValueAt<11, 11>(); }
     int fma() const { return ValueAt<12, 12>(); }
     int cx16() const { return ValueAt<13, 13>(); }
-    int xtpr() const { return ValueAt<14, 14>(); }
-    int pdcm() const { return ValueAt<15, 15>(); }
+    // 14 - 18 are reserved on AMD CPUs.
+    int intel_only_xtpr() const { return ValueAt<14, 14>(); }
+    int intel_only_pdcm() const { return ValueAt<15, 15>(); }
     // 16 reserved.
-    int pcid() const { return ValueAt<17, 17>(); }
-    int dca() const { return ValueAt<18, 18>(); }
+    int intel_only_pcid() const { return ValueAt<17, 17>(); }
+    int intel_only_dca() const { return ValueAt<18, 18>(); }
     int sse4_1() const { return ValueAt<19, 19>(); }
     int sse4_2() const { return ValueAt<20, 20>(); }
-    int x2apic() const { return ValueAt<21, 21>(); }
+    // 21 is reserved on AMD CPUs.
+    int intel_only_x2apic() const { return ValueAt<21, 21>(); }
     int movbe() const { return ValueAt<22, 22>(); }
     int popcnt() const { return ValueAt<23, 23>(); }
-    int tscdadline() const { return ValueAt<24, 24>(); }
+    // 24 is reserved on AMD CPUs.
+    int intel_only_tscdadline() const { return ValueAt<24, 24>(); }
     int aes() const { return ValueAt<25, 25>(); }
     int xsave() const { return ValueAt<26, 26>(); }
     int osxsave() const { return ValueAt<27, 27>(); }
@@ -116,20 +134,24 @@ struct FeatureRegisters {
     int cmov() const { return ValueAt<15, 15>(); }
     int pat() const { return ValueAt<16, 16>(); }
     int pse36() const { return ValueAt<17, 17>(); }
-    int psn() const { return ValueAt<18, 18>(); }
+    // 18 is reserved on AMD CPUs.
+    int intel_only_psn() const { return ValueAt<18, 18>(); }
     int clfsh() const { return ValueAt<19, 19>(); }
     // 20 reserved.
-    int ds() const { return ValueAt<21, 21>(); }
-    int acpi() const { return ValueAt<22, 22>(); }
+    // 20 - 22 is reserved on AMD CPUs.
+    int intel_only_ds() const { return ValueAt<21, 21>(); }
+    int intel_only_acpi() const { return ValueAt<22, 22>(); }
     int mmx() const { return ValueAt<23, 23>(); }
     int fxsr() const { return ValueAt<24, 24>(); }
     int sse() const { return ValueAt<25, 25>(); }
     int sse2() const { return ValueAt<26, 26>(); }
-    int ss() const { return ValueAt<27, 27>(); }
+    // 27 is reserved on AMD CPUs.
+    int intel_only_ss() const { return ValueAt<27, 27>(); }
     int htt() const { return ValueAt<28, 28>(); }
-    int tm() const { return ValueAt<29, 29>(); }
-    int ia64() const { return ValueAt<30, 30>(); }
-    int pbe() const { return ValueAt<31, 31>(); }
+    // 29 - 31 is reserved on AMD CPUs.
+    int intel_only_tm() const { return ValueAt<29, 29>(); }
+    int intel_only_ia64() const { return ValueAt<30, 30>(); }
+    int intel_only_pbe() const { return ValueAt<31, 31>(); }
   };
 
   void SetValue(const CpuIdOutputProto& cpuid_out) {
@@ -149,51 +171,57 @@ struct ExtendedFeatureRegisters {
   class EBXStructure : public StructuredRegister<uint32_t> {
    public:
     int fsgsbase() const { return ValueAt<0, 0>(); }
-    int ia32tscadjust() const { return ValueAt<1, 1>(); }
-    int sgx() const { return ValueAt<2, 2>(); }
+    // 1 - 2 is reserved on AMD CPUs.
+    int intel_only_ia32tscadjust() const { return ValueAt<1, 1>(); }
+    int intel_only_sgx() const { return ValueAt<2, 2>(); }
     int bmi1() const { return ValueAt<3, 3>(); }
-    int hle() const { return ValueAt<4, 4>(); }
+    // 4 is reserved on AMD CPUs.
+    int intel_only_hle() const { return ValueAt<4, 4>(); }
     int avx2() const { return ValueAt<5, 5>(); }
-    int reserved1() const { return ValueAt<6, 6>(); }
+    // 6 is reserved.
     int smep() const { return ValueAt<7, 7>(); }
     int bmi2() const { return ValueAt<8, 8>(); }
-    int erms() const { return ValueAt<9, 9>(); }
-    int invpcid() const { return ValueAt<10, 10>(); }
-    int rtm() const { return ValueAt<11, 11>(); }
-    int pqm() const { return ValueAt<12, 12>(); }
-    int fpucsdsdeprecated() const { return ValueAt<13, 13>(); }
-    int mpx() const { return ValueAt<14, 14>(); }
-    int pqe() const { return ValueAt<15, 15>(); }
-    int avx512f() const { return ValueAt<16, 16>(); }
-    int avx512dq() const { return ValueAt<17, 17>(); }
+    // 9 - 17 is reserved on AMD CPUs.
+    int intel_only_erms() const { return ValueAt<9, 9>(); }
+    int intel_only_invpcid() const { return ValueAt<10, 10>(); }
+    int intel_only_rtm() const { return ValueAt<11, 11>(); }
+    int intel_only_pqm() const { return ValueAt<12, 12>(); }
+    int intel_only_fpucsdsdeprecated() const { return ValueAt<13, 13>(); }
+    int intel_only_mpx() const { return ValueAt<14, 14>(); }
+    int intel_only_pqe() const { return ValueAt<15, 15>(); }
+    int intel_only_avx512f() const { return ValueAt<16, 16>(); }
+    int intel_only_avx512dq() const { return ValueAt<17, 17>(); }
     int rdseed() const { return ValueAt<18, 18>(); }
     int adx() const { return ValueAt<19, 19>(); }
     int smap() const { return ValueAt<20, 20>(); }
-    int avx512ifma() const { return ValueAt<21, 21>(); }
-    int pcommit() const { return ValueAt<22, 22>(); }
+    // 21 - 22 is reserved on AMD CPUs.
+    int intel_only_avx512ifma() const { return ValueAt<21, 21>(); }
+    int intel_only_pcommit() const { return ValueAt<22, 22>(); }
     int clflushopt() const { return ValueAt<23, 23>(); }
-    int clwb() const { return ValueAt<24, 24>(); }
-    int intelproctrace() const { return ValueAt<25, 25>(); }
-    int avx512pf() const { return ValueAt<26, 26>(); }
-    int avx512er() const { return ValueAt<27, 27>(); }
-    int avx512cd() const { return ValueAt<28, 28>(); }
+    // 24 - 28 is reserved on AMD CPUs.
+    int intel_only_clwb() const { return ValueAt<24, 24>(); }
+    int intel_only_intelproctrace() const { return ValueAt<25, 25>(); }
+    int intel_only_avx512pf() const { return ValueAt<26, 26>(); }
+    int intel_only_avx512er() const { return ValueAt<27, 27>(); }
+    int intel_only_avx512cd() const { return ValueAt<28, 28>(); }
     int sha() const { return ValueAt<29, 29>(); }
-    int avx512bw() const { return ValueAt<30, 30>(); }
-    int avx512vl() const { return ValueAt<31, 31>(); }
+    // 30 - 31 is reserved on AMD CPUs.
+    int intel_only_avx512bw() const { return ValueAt<30, 30>(); }
+    int intel_only_avx512vl() const { return ValueAt<31, 31>(); }
   };
 
   class ECXStructure : public StructuredRegister<uint32_t> {
    public:
-    int prefetchwt1() const { return ValueAt<0, 0>(); }
+    // 0 - 31 are reserved on AMD CPUs.
+    int intel_only_prefetchwt1() const { return ValueAt<0, 0>(); }
     // 1 reserved.
-    int umip() const { return ValueAt<2, 2>(); }
-    int pku() const { return ValueAt<3, 3>(); }
-    int ospke() const { return ValueAt<4, 4>(); }
+    int intel_only_umip() const { return ValueAt<2, 2>(); }
+    int intel_only_pku() const { return ValueAt<3, 3>(); }
+    int intel_only_ospke() const { return ValueAt<4, 4>(); }
     // 5 - 21 reserved.
-    int rdpid() const { return ValueAt<22, 22>(); }
+    int intel_only_rdpid() const { return ValueAt<22, 22>(); }
     // 23 - 29 reserved.
-    int sgx_lc() const { return ValueAt<30, 30>(); }
-    int reserved4() const { return ValueAt<30, 30>(); }
+    int intel_only_sgx_lc() const { return ValueAt<30, 30>(); }
   };
 
   void SetValue(const CpuIdOutputProto& cpuid_out) {
@@ -247,6 +275,7 @@ struct ExtendedStateRegisters {
   class EAXStructure : public StructuredRegister<uint32_t> {
    public:
     int xsaveopt() const { return ValueAt<0, 0>(); }
+    // 1 - 31 are reserved on AMD CPUs.
     int xsavec() const { return ValueAt<1, 1>(); }
     int xgetbv() const { return ValueAt<2, 2>(); }
     int xsaves() const { return ValueAt<3, 3>(); }
@@ -274,6 +303,9 @@ CpuIdEntryProto GetHostCpuIdDumpEntry(uint32_t leaf, uint32_t subleaf) {
 }
 
 }  // namespace
+
+constexpr char CpuIdDump::kVendorStringAMD[];
+constexpr char CpuIdDump::kVendorStringIntel[];
 
 StatusOr<CpuIdDump> CpuIdDump::FromString(const string& source) {
   static const LazyRE2 regex = {
@@ -333,6 +365,10 @@ string CpuIdDump::GetVendorString() const {
   if (reg.field()) {                       \
     InsertOrDie(&indexed_features, #name); \
   }
+#define PROCESS_FEATURE_IF(condition, name, reg, field) \
+  if ((condition) && reg.field()) {                     \
+    InsertOrDie(&indexed_features, #name);              \
+  }
 
 CpuInfo CpuIdDump::ToCpuInfo() const {
   CHECK(IsValid());
@@ -358,9 +394,17 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
     }
   }
 
+  const string vendor = GetVendorString();
+  const bool is_intel = vendor == kVendorStringIntel;
+  const bool is_amd = vendor == kVendorStringAMD;
+
   std::unordered_set<string> indexed_features;
 
-  PROCESS_FEATURE(3DNOW, ext_features.ecx, prefetchwt1);
+  if (is_intel) {
+    PROCESS_FEATURE(3DNOW, ext_features.ecx, intel_only_prefetchwt1);
+  } else if (is_amd) {
+    indexed_features.insert("3DNOW");
+  }
   PROCESS_FEATURE(ADX, ext_features.ebx, adx);
   PROCESS_FEATURE(CLFLUSHOPT, ext_features.ebx, clflushopt);
   PROCESS_FEATURE(AES, features.ecx, aes);
@@ -374,18 +418,18 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
   PROCESS_FEATURE(FPU, features.edx, fpu);
   PROCESS_FEATURE(CLFSH, features.edx, clfsh);
   PROCESS_FEATURE(FSGSBASE, ext_features.ebx, fsgsbase);
-  PROCESS_FEATURE(HLE, ext_features.ebx, hle);
-  PROCESS_FEATURE(INVPCID, ext_features.ebx, invpcid);
+  PROCESS_FEATURE_IF(is_intel, HLE, ext_features.ebx, intel_only_hle);
+  PROCESS_FEATURE_IF(is_intel, INVPCID, ext_features.ebx, intel_only_invpcid);
   PROCESS_FEATURE(LZCNT, ext2_features.ecx, lzcnt);
   PROCESS_FEATURE(MMX, features.edx, mmx);
   PROCESS_FEATURE(MOVBE, features.ecx, movbe);
-  PROCESS_FEATURE(MPX, ext_features.ebx, mpx);
-  PROCESS_FEATURE(OSPKE, ext_features.ecx, ospke);
+  PROCESS_FEATURE_IF(is_intel, MPX, ext_features.ebx, intel_only_mpx);
+  PROCESS_FEATURE_IF(is_intel, OSPKE, ext_features.ecx, intel_only_ospke);
   PROCESS_FEATURE(PRFCHW, ext2_features.ecx, prefetchw);
-  PROCESS_FEATURE(RDPID, ext_features.ecx, rdpid);
+  PROCESS_FEATURE_IF(is_intel, RDPID, ext_features.ecx, intel_only_rdpid);
   PROCESS_FEATURE(RDRAND, features.ecx, rdrand);
   PROCESS_FEATURE(RDSEED, ext_features.ebx, rdseed);
-  PROCESS_FEATURE(RTM, ext_features.ebx, rtm);
+  PROCESS_FEATURE_IF(is_intel, RTM, ext_features.ebx, intel_only_rtm);
   PROCESS_FEATURE(SHA, ext_features.ebx, sha);
   PROCESS_FEATURE(SMAP, ext_features.ebx, smap);
   PROCESS_FEATURE(SSE, features.edx, sse);
@@ -406,11 +450,16 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
           ? (features.eax.emodel() << 4) + features.eax.model()
           : features.eax.model();
 
-  return CpuInfo(StringPrintf("intel:%02X_%02X", family, model),
-                 std::move(indexed_features));
+  CpuInfoProto proto;
+  proto.set_model_id(StringPrintf("intel:%02X_%02X", family, model));
+  for (const auto& feature_name : indexed_features) {
+    proto.add_feature_names(feature_name);
+  }
+  return CpuInfo(proto);
 }
 
 #undef PROCESS_FEATURE
+#undef PROCESS_FEATURE_IF
 
 string CpuIdDump::ToString() const {
   string buffer;

@@ -25,6 +25,15 @@
 
 namespace exegesis {
 namespace x86 {
+
+const char* const kExampleSkylakeCpuModelId = "intel:06_4E";
+const char* const kExampleBroadwellCpuModelId = "intel:06_3D";
+const char* const kExampleHaswellCpuModelId = "intel:06_3C";
+const char* const kExampleIvyBridgeCpuModelId = "intel:06_3A";
+const char* const kExampleSandyBridgeCpuModelId = "intel:06_2A";
+const char* const kExampleWestmereCpuModelId = "intel:06_25";
+const char* const kExampleNehalemCpuModelId = "intel:06_1A";
+
 namespace {
 
 // This is derived from Figure 2-1 "CPU Core Pipeline Functionality of the
@@ -173,19 +182,13 @@ constexpr const char kSkylakeMicroarchitecture[] = R"(
 
 constexpr const char kSkylakeConsumerModels[] = R"(
     id: "skl"
-    cpu_models {
-      id: 'intel:06_4E'
-    }
-    cpu_models {
-      id: 'intel:06_5E'
-    }
+    model_ids: 'intel:06_4E'
+    model_ids: 'intel:06_5E'
     )";
 
 constexpr const char kSkylakeXeonModels[] = R"(
     id: "skx"
-    cpu_models {
-      id: 'intel:06_55'
-    }
+    model_ids: 'intel:06_55'
     )";
 
 // The Haswell CPU microarchitecture.
@@ -307,31 +310,17 @@ constexpr const char kHaswellMicroarchitecture[] = R"(
 
 constexpr const char kHaswellModels[] = R"(
     id: "hsw"
-    cpu_models {
-      id: 'intel:06_3C'
-    }
-    cpu_models {
-      id: 'intel:06_3F'
-    }
-    cpu_models {
-      id: 'intel:06_45'
-    }
-    cpu_models {
-      id: 'intel:06_46'
-    }
+    model_ids: 'intel:06_3C'
+    model_ids: 'intel:06_3F'
+    model_ids: 'intel:06_45'
+    model_ids: 'intel:06_46'
     )";
 
 constexpr const char kBroadwellModels[] = R"(
     id: "bdw"
-    cpu_models {
-      id: 'intel:06_3D'
-    }
-    cpu_models {
-      id: 'intel:06_47'
-    }
-    cpu_models {
-      id: 'intel:06_56'
-    }
+    model_ids: 'intel:06_3D'
+    model_ids: 'intel:06_47'
+    model_ids: 'intel:06_56'
     )";
 
 constexpr const char kSandyBridgeMicroarchitecture[] = R"(
@@ -415,22 +404,14 @@ constexpr const char kSandyBridgeMicroarchitecture[] = R"(
 
 constexpr const char kIvyBridgeModels[] = R"(
     id: "ivb"
-    cpu_models {
-      id: 'intel:06_3A'
-    }
-    cpu_models {
-      id: 'intel:06_3E'
-    }
+    model_ids: 'intel:06_3A'
+    model_ids: 'intel:06_3E'
     )";
 
 constexpr const char kSandyBridgeModels[] = R"(
     id: "snb"
-    cpu_models {
-      id: 'intel:06_2A'
-    }
-    cpu_models {
-      id: 'intel:06_2D'
-    }
+    model_ids: 'intel:06_2A'
+    model_ids: 'intel:06_2D'
     )";
 
 constexpr const char kNehalemMicroarchitecture[] = R"(
@@ -519,48 +500,28 @@ constexpr const char kNehalemMicroarchitecture[] = R"(
 
 constexpr const char kWestmireModels[] = R"(
     id: "wsm"
-    cpu_models {
-      id: 'intel:06_25'
-    }
-    cpu_models {
-      id: 'intel:06_2C'
-    }
-    cpu_models {
-      id: 'intel:06_2F'
-    }
+    model_ids: 'intel:06_25'
+    model_ids: 'intel:06_2C'
+    model_ids: 'intel:06_2F'
     )";
 
 constexpr const char kNehalemModels[] = R"(
     id: "nhm"
-    cpu_models {
-      id: 'intel:06_1A'
-    }
-    cpu_models {
-      id: 'intel:06_1E'
-    }
-    cpu_models {
-      id: 'intel:06_1F'
-    }
-    cpu_models {
-      id: 'intel:06_2E'
-    }
+    model_ids: 'intel:06_1A'
+    model_ids: 'intel:06_1E'
+    model_ids: 'intel:06_1F'
+    model_ids: 'intel:06_2E'
     )";
 
 constexpr const char kEnhancedCoreModels[] = R"(
     id: "enhanced_core"
-    cpu_models {
-      id: 'intel:06_17'
-    }
-    cpu_models {
-      id: 'intel:06_1D'
-    }
+    model_ids: 'intel:06_17'
+    model_ids: 'intel:06_1D'
     )";
 
 constexpr const char kCoreModels[] = R"(
     id: "core"
-    cpu_models {
-      id: 'intel:06_0F'
-    }
+    model_ids: 'intel:06_0F'
     )";
 
 const MicroArchitecturesProto& GetMicroArchitecturesProto() {
