@@ -64,8 +64,7 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
-  InitGoogle("Parser for the Intel SDM", &argc, &argv,
-             /* remove_flags = */ true);
+  google::ParseCommandLineFlags(&argc, &argv, true);
   ::exegesis::Main();
   return EXIT_SUCCESS;
 }

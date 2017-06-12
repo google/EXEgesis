@@ -66,11 +66,11 @@ TEST(PerfSubsystemTest, BasicInlineAsmSyntax) {
 TEST(PerfSubsystemTest, CpuId) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          xor %%eax,%%eax
-          cpuid
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    xor %%eax,%%eax\n"
+      "    cpuid\n"
+      ".endr"
       :
       :
       : "%eax", "%ebx", "%ecx", "%edx"));
@@ -81,13 +81,13 @@ TEST(PerfSubsystemTest, CpuId) {
 TEST(PerfSubsystemTest, Xor) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          xor %%eax,%%eax
-          xor %%ebx,%%ebx
-          xor %%ecx,%%ecx
-          xor %%edx,%%edx
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    xor %%eax,%%eax\n"
+      "    xor %%ebx,%%ebx\n"
+      "    xor %%ecx,%%ecx\n"
+      "    xor %%edx,%%edx\n"
+      ".endr"
       :
       :
       : "%eax", "%ebx", "%ecx", "%edx"));
@@ -103,11 +103,11 @@ TEST(PerfSubsystemTest, Cvtpd2psLatency) {
   // Latency.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.
-          cvtpd2ps %%xmm1,%%xmm0;  # 3 cycles on port 1, 1 on port 5.
-       .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.\n"
+      "    cvtpd2ps %%xmm1,%%xmm0;  # 3 cycles on port 1, 1 on port 5.\n"
+      ".endr"
       :
       :
       :));
@@ -119,10 +119,10 @@ TEST(PerfSubsystemTest, Cvtpd2psLatency) {
 TEST(PerfSubsystemTest, Cvtpd2psReciprocalThroughput) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-          .rept 1000
-          cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.\n"
+      ".endr"
       :
       :
       :));
@@ -135,12 +135,12 @@ TEST(PerfSubsystemTest, Cvtpd2psReciprocalThroughput) {
 TEST(PerfSubsystemTest, AddXorAdd) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          xor %%r11,%%r11
-          add %%r10,%%r10
-          add %%r10,%%r11
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    xor %%r11,%%r11\n"
+      "    add %%r10,%%r10\n"
+      "    add %%r10,%%r11\n"
+      ".endr"
       :
       :
       :));
@@ -157,11 +157,11 @@ TEST(PerfSubsystemTest, Cvtdq2psShufpd) {
   //      shufpd clobbers xmm1, cvtdq2ps is aborted.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtdq2ps %%xmm0,%%xmm1;           # 3 cycles on port 1.
-          shufpd %[shuffle],%%xmm0,%%xmm1;  # 1 cycle on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtdq2ps %%xmm0,%%xmm1;           # 3 cycles on port 1.\n"
+      "    shufpd %[shuffle],%%xmm0,%%xmm1;  # 1 cycle on port 5.\n"
+      ".endr"
       :
       : [shuffle] "I"(3)
       :));
@@ -178,11 +178,11 @@ TEST(PerfSubsystemTest, Cvtpd2psShufpd) {
   // Total: 2 cycles.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtpd2ps %%xmm0,%%xmm1;          # 3 cycles on port 1, 1 on port 5.
-         shufpd %[shuffle],%%xmm0,%%xmm1;  # 1 cycle on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtpd2ps %%xmm0,%%xmm1;         # 3 cycles on port 1, 1 on port 5.\n"
+      "   shufpd %[shuffle],%%xmm0,%%xmm1; # 1 cycle on port 5.\n"
+      ".endr"
       :
       : [shuffle] "I"(3)
       :));
@@ -194,11 +194,11 @@ TEST(PerfSubsystemTest, Cvtpd2psCvtdq2ps) {
   // 2 cycles average.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.
-          cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.\n"
+      "    cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.\n"
+      ".endr"
       :
       :
       :));
@@ -214,11 +214,11 @@ TEST(PerfSubsystemTest, Cvtsd2siLatency) {
   // Latency.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtsi2sd %%eax,%%xmm1;  # 3 cycles on port 1, 1 on port 5.
-          cvtsd2si %%xmm1,%%eax;  # 3 cycles on port 1, 1 on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsi2sd %%eax,%%xmm1;  # 3 cycles on port 1, 1 on port 5.\n"
+      "    cvtsd2si %%xmm1,%%eax;  # 3 cycles on port 1, 1 on port 5.\n"
+      ".endr"
       :
       :
       :));
@@ -230,10 +230,10 @@ TEST(PerfSubsystemTest, Cvtsd2siLatency) {
 TEST(PerfSubsystemTest, Cvtsd2siReciprocalThroughput) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtsi2sd %%eax,%%xmm1;  # 3 cycles on port 1, 1 on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsi2sd %%eax,%%xmm1;  # 3 cycles on port 1, 1 on port 5.\n"
+      ".endr"
       :
       :
       :));
@@ -250,11 +250,11 @@ TEST(PerfSubsystemTest, Cvtsi2sdShufpd) {
   // Total: 2 cycles.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtsi2sdq %%rax,%%xmm1;           # 1 cycle on port 1, 3 on port 5.
-          shufpd %[shuffle],%%xmm0,%%xmm1;  # 1 cycle on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsi2sdq %%rax,%%xmm1;          # 1 cycle on port 1, 3 on port 5.\n"
+      "    shufpd %[shuffle],%%xmm0,%%xmm1; # 1 cycle on port 5.\n"
+      ".endr"
       :
       : [shuffle] "I"(15)
       :));
@@ -266,11 +266,11 @@ TEST(PerfSubsystemTest, Cvtsi2sdCvtdq2ps) {
   // 2 cycles average.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtsi2sd %%rax,%%xmm1 ;  # 1 cycle on port 1, 3 on port 5.
-          cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsi2sd %%rax,%%xmm1 ;  # 1 cycle on port 1, 3 on port 5.\n"
+      "    cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.\n"
+      ".endr"
       :
       :
       :));
@@ -282,11 +282,11 @@ TEST(PerfSubsystemTest, Cvtdq2psCvtpd2ps) {
   // 2 cycles average.
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.
-          cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.\n"
+      "    cvtpd2ps %%xmm0,%%xmm1;  # 3 cycles on port 1, 1 on port 5.\n"
+      ".endr"
       :
       :
       :));
@@ -297,11 +297,11 @@ TEST(PerfSubsystemTest, Cvtdq2psCvtpd2ps) {
 TEST(PerfSubsystemTest, Shufpd) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          shufpd %[shuffle],%%xmm0,%%xmm1;  # 1 cycle on port 5.
-          shufpd %[shuffle],%%xmm1,%%xmm0;  # 1 cycle on port 5.
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    shufpd %[shuffle],%%xmm0,%%xmm1;  # 1 cycle on port 5.\n"
+      "    shufpd %[shuffle],%%xmm1,%%xmm0;  # 1 cycle on port 5.\n"
+      ".endr"
       :
       : [shuffle] "I"(3)));
   // clang-format on
@@ -312,10 +312,10 @@ TEST(PerfSubsystemTest, MOV64mi32) {
   PerfResult result;
   uint64_t memory;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          movl $123, %[memory]
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    movl $123, %[memory]\n"
+      ".endr"
       :
       : [memory] "m"(memory)));
   // clang-format on
@@ -326,10 +326,10 @@ TEST(PerfSubsystemTest, ADDSDrm) {
   PerfResult result;
   double memory;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-      .rept 1000
-          addsd %[memory], %%xmm0
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    addsd %[memory], %%xmm0\n"
+      ".endr"
       :
       : [memory] "m"(memory)
       : "%xmm0"));
@@ -351,16 +351,16 @@ TEST(PerfSubsystemTest, BlockThroughput) {
   uint64_t memory;
   uint64_t address = reinterpret_cast<uint64_t>(&memory);
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-          movq %[address], %%rsi
-      .rept 1000
-          cvtsi2sdq %%rdi, %%xmm2
-          movsd (%%rsi), %%xmm1
-          andpd %%xmm1, %%xmm2
-          movsd (%%rsi),%%xmm0
-          movaps %%xmm2, %%xmm3
-          subsd %%xmm0, %%xmm3
-      .endr)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    movq %[address], %%rsi\n"
+      ".rept 1000\n"
+      "    cvtsi2sdq %%rdi, %%xmm2\n"
+      "    movsd (%%rsi), %%xmm1\n"
+      "    andpd %%xmm1, %%xmm2\n"
+      "    movsd (%%rsi),%%xmm0\n"
+      "    movaps %%xmm2, %%xmm3\n"
+      "    subsd %%xmm0, %%xmm3\n"
+      ".endr"
       :
       : [address] "r"(address)
       : "%rsi", "%xmm0", "%xmm1", "%xmm2", "%xmm3"));
@@ -371,14 +371,14 @@ TEST(PerfSubsystemTest, BlockThroughput) {
 TEST(PerfSubsystemTest, LoopDetectorJAE) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-          mov $0xFFFF, %%ecx
-      1:
-          cvtsi2sdq %%rdi, %%xmm2
-          cvtsi2sdq %%rsp, %%xmm3
-          decl %%ecx
-          cmpl $0x1, %%ecx
-          jae 1b)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    mov $0xFFFF, %%ecx\n"
+      "1:\n"
+      "    cvtsi2sdq %%rdi, %%xmm2\n"
+      "    cvtsi2sdq %%rsp, %%xmm3\n"
+      "    decl %%ecx\n"
+      "    cmpl $0x1, %%ecx\n"
+      "    jae 1b"
       :
       :
       : "%rcx", "%xmm2", "%xmm3"));
@@ -389,13 +389,13 @@ TEST(PerfSubsystemTest, LoopDetectorJAE) {
 TEST(PerfSubsystemTest, LoopDetectorJNE) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-          mov $0xFFFF, %%rcx
-      2:
-          cvtsi2sdq %%rdi, %%xmm2
-          cvtsi2sdq %%rsp, %%xmm3
-          dec %%rcx
-          jne 2b)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    mov $0xFFFF, %%rcx\n"
+      "2:\n"
+      "    cvtsi2sdq %%rdi, %%xmm2\n"
+      "    cvtsi2sdq %%rsp, %%xmm3\n"
+      "    dec %%rcx\n"
+      "    jne 2b"\
       :
       :
       : "%rcx", "%xmm2", "%xmm3"));
@@ -406,14 +406,14 @@ TEST(PerfSubsystemTest, LoopDetectorJNE) {
 TEST(PerfSubsystemTest, LoopDetectorJLE) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-          xor %%rcx, %%rcx
-      2:
-          cvtsi2sdq %%rdi, %%xmm2
-          cvtsi2sdq %%rsp, %%xmm3
-          inc %%rcx
-          cmpq $0xFFFF, %%rcx
-          jle 2b)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "2:\n"
+      "    cvtsi2sdq %%rdi, %%xmm2\n"
+      "    cvtsi2sdq %%rsp, %%xmm3\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jle 2b"
       :
       :
       : "%rcx", "%xmm2", "%xmm3"));
@@ -424,14 +424,14 @@ TEST(PerfSubsystemTest, LoopDetectorJLE) {
 TEST(PerfSubsystemTest, LoopDetectorJL) {
   PerfResult result;
   // clang-format off
-  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(R"(
-          xor %%rcx, %%rcx
-      2:
-          cvtsi2sdq %%rdi, %%xmm2
-          cvtsi2sdq %%rsp, %%xmm3
-          inc %%rcx
-          cmpq $0xFFFF, %%rcx
-          jl 2b)"
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "2:\n"
+      "    cvtsi2sdq %%rdi, %%xmm2\n"
+      "    cvtsi2sdq %%rsp, %%xmm3\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b"
       :
       :
       : "%rcx", "%xmm2", "%xmm3"));
