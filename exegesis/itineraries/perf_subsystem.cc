@@ -85,8 +85,7 @@ PerfSubsystem::PerfSubsystem()
   counter_fds_.reserve(kMaxNumCounters);
   event_names_.reserve(kMaxNumCounters);
   timers_.resize(kMaxNumCounters);
-  const int ret = pfm_initialize();
-  CHECK_EQ(PFM_SUCCESS, ret);
+
   // Check the consistency between CPUs that p4lib and we detect.
   // p4lib does not make a difference between skl and skx.
   const string cpu_id = microarchitecture_.proto().id() == "skx"
@@ -94,13 +93,10 @@ PerfSubsystem::PerfSubsystem()
                             : microarchitecture_.proto().id();
   CHECK(Contains(Info(), cpu_id))
       << "'" << Info() << "' vs '" << cpu_id << "' ('"
-      << microarchitecture_.proto().id() << ")'";
+      << microarchitecture_.proto().id() << "')";
 }
 
-PerfSubsystem::~PerfSubsystem() {
-  CleanUp();
-  pfm_terminate();
-}
+PerfSubsystem::~PerfSubsystem() { CleanUp(); }
 
 void PerfSubsystem::CleanUp() {
   for (const int fd : counter_fds_) {
@@ -213,6 +209,23 @@ PerfResult PerfSubsystem::ReadCounters() {
     InsertOrDie(&timings, event_names_[i], timers_[i]);
   }
   return PerfResult(std::move(timings));
+}
+
+Mutex PerfSubsystem::ScopedLibPfmInitialization::refcount_mutex_;
+int PerfSubsystem::ScopedLibPfmInitialization::refcount_ = 0;
+
+PerfSubsystem::ScopedLibPfmInitialization::ScopedLibPfmInitialization() {
+  MutexLock l(&refcount_mutex_);
+  if (refcount_++ == 0) {
+    CHECK_EQ(PFM_SUCCESS, pfm_initialize());
+  }
+}
+
+PerfSubsystem::ScopedLibPfmInitialization::~ScopedLibPfmInitialization() {
+  MutexLock l(&refcount_mutex_);
+  if (--refcount_ == 0) {
+    pfm_terminate();
+  }
 }
 
 }  // namespace exegesis

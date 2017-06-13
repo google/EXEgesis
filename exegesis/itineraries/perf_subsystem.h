@@ -20,6 +20,7 @@
 #include <vector>
 #include "strings/string.h"
 
+#include "base/mutex.h"
 #include "exegesis/base/cpu_model.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
@@ -129,6 +130,22 @@ class PerfSubsystem {
   }
 
  private:
+  // A class that ensures that we always manipulate libpfm initialization in a
+  // thread-safe way, and that we do not initialize/terminate concurrently.
+  class ScopedLibPfmInitialization {
+   public:
+    ScopedLibPfmInitialization();
+    ~ScopedLibPfmInitialization();
+
+   private:
+    static Mutex refcount_mutex_;
+    static int refcount_;
+  };
+
+  // This interface can handle at most kMaxNumCounters counters at the same
+  // time.
+  static constexpr const int kMaxNumCounters = 128;
+
   // Stops collecting data, i.e. hardware counters will be stop being updated
   // from here.
   void StopCollecting();
@@ -137,9 +154,6 @@ class PerfSubsystem {
   // useful information, independently of the PerfSubsystem.
   PerfResult ReadCounters();
 
-  // This interface can handle at most kMaxNumCounters counters at the same
-  // time.
-  static constexpr const int kMaxNumCounters = 128;
   const MicroArchitecture& microarchitecture_;
   // File descriptor for each counter.
   std::vector<int> counter_fds_;
@@ -147,6 +161,7 @@ class PerfSubsystem {
   std::vector<string> event_names_;
   // Used to store the result of the profiling.
   std::vector<TimingInfo> timers_;
+  ScopedLibPfmInitialization scoped_libpfm_;
 };
 
 }  // namespace exegesis
