@@ -16,6 +16,8 @@
 
 #include <cpuid.h>
 
+#include <unordered_map>
+
 #include "base/stringprintf.h"
 #include "exegesis/proto/x86/cpuid.pb.h"
 #include "exegesis/util/structured_register.h"
@@ -302,6 +304,47 @@ CpuIdEntryProto GetHostCpuIdDumpEntry(uint32_t leaf, uint32_t subleaf) {
   return MakeCpuIdEntry(leaf, subleaf, eax, ebx, ecx, edx);
 }
 
+constexpr int kMaxSubleafStoredInEax = -1;
+
+// Returns the maximal index of a subleaf of the given leaf. For most leafs,
+// there is only one subleaf (the main subleaf); for others, the maximal index
+// is either stored in the subleaf 0 of that leaf, or the maximal index is
+// obtained from the documentation.
+// NOTE(ondrasej): This function handles only the cases that are relevant to
+// feature detection. There are other leafs that have more than one subleaf that
+// are not considered by this function.
+int GetMaxSubleaf(int leaf) {
+  switch (leaf) {
+    case 7:
+      return kMaxSubleafStoredInEax;
+    case 0x0D:
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+// Adds leaf from a leaf range starting with 'seed' to 'dump_proto'. Assumes
+// that 'seed' is the first leaf of the range, and that the index of the
+// last leaf of the range is returned in
+// GetHostCpuIdDumpEntry(seed, 0).output().eax().
+void AddHostCpuIdEntriesFromSeed(uint32_t seed, X86CpuIdDumpProto* dump_proto) {
+  CHECK(dump_proto != nullptr);
+  const CpuIdEntryProto seed_leaf = GetHostCpuIdDumpEntry(seed, 0);
+  *dump_proto->add_entries() = seed_leaf;
+  const uint32_t num_leafs = seed_leaf.output().eax();
+  for (uint32_t leaf = seed + 1; leaf <= num_leafs; ++leaf) {
+    *dump_proto->add_entries() = GetHostCpuIdDumpEntry(leaf, 0);
+    int max_subleaf = GetMaxSubleaf(leaf);
+    if (max_subleaf == kMaxSubleafStoredInEax) {
+      max_subleaf = dump_proto->entries().rbegin()->output().eax();
+    }
+    for (int subleaf = 1; subleaf <= max_subleaf; ++subleaf) {
+      *dump_proto->add_entries() = GetHostCpuIdDumpEntry(leaf, subleaf);
+    }
+  }
+}
+
 }  // namespace
 
 constexpr char CpuIdDump::kVendorStringAMD[];
@@ -339,15 +382,39 @@ CpuIdDump CpuIdDump::FromHost() {
   X86CpuIdDumpProto* const dump_proto =
       dump.dump_proto_.mutable_x86_cpuid_dump();
 #ifdef __x86_64__
-  const CpuIdEntryProto root_leaf = GetHostCpuIdDumpEntry(0, 0);
-  *dump_proto->add_entries() = root_leaf;
-  const uint32_t num_leafs = root_leaf.output().eax();
-  for (uint32_t leaf = 1; leaf < num_leafs; ++leaf) {
-    // TODO(ondrasej): Handle subleafs properly.
-    *dump_proto->add_entries() = GetHostCpuIdDumpEntry(leaf, 0);
-  }
+  AddHostCpuIdEntriesFromSeed(0, dump_proto);
+  AddHostCpuIdEntriesFromSeed(0x80000000, dump_proto);
 #endif  // __x86_64__
   return dump;
+}
+
+string CpuIdDump::GetProcessorBrandString() const {
+  constexpr uint32_t kStartLeaf = 0x80000002;
+  constexpr uint32_t kEndLeaf = 0x80000004;
+  constexpr int kBytesPerLeaf = 16;
+  // There are 16 bytes of data per leaf (four 32-bit registers), and the leaf
+  // range is inclusive on both ends. We reserve space for one additional char
+  // at the end of the buffer for a null character that turns the buffer into
+  // a valid null-terminated C string if it wasn't already.
+  constexpr int kBufferSize = kBytesPerLeaf * (kEndLeaf - kStartLeaf + 1) + 1;
+  char buffer[49];
+  uint32_t* const data = reinterpret_cast<uint32_t*>(buffer);
+  int entry = 0;
+  for (uint32_t leaf = kStartLeaf; leaf <= kEndLeaf; ++leaf) {
+    const CpuIdOutputProto* const leaf_data = GetEntryOrNull(leaf, 0);
+    if (leaf_data == nullptr) return string();
+    data[entry] = leaf_data->eax();
+    data[entry + 1] = leaf_data->ebx();
+    data[entry + 2] = leaf_data->ecx();
+    data[entry + 3] = leaf_data->edx();
+    entry += 4;
+  }
+  // Depending on the vendor and model, the data in buffer may or may not be
+  // padded with zeros at the end. By adding a sentinel right after the 48 bytes
+  // obtained from CPUID, we ensure that the data in buffer is always null
+  // terminated, and can be safely used as a C string.
+  buffer[kBufferSize - 1] = 0;
+  return buffer;
 }
 
 string CpuIdDump::GetVendorString() const {

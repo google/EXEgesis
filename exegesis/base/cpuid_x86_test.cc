@@ -14,6 +14,11 @@
 
 #include "exegesis/base/cpuid_x86.h"
 
+#include <initializer_list>
+#include <unordered_set>
+#include <utility>
+#include "strings/string.h"
+
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
@@ -87,15 +92,46 @@ TEST(CpuIdDumpTest, FromHost) {
   const CpuIdDump dump = CpuIdDump::FromHost();
   ASSERT_TRUE(dump.IsValid());
   EXPECT_THAT(dump.GetVendorString(), Not(IsEmpty()));
+  EXPECT_THAT(dump.GetProcessorBrandString(), Not(IsEmpty()));
   const CpuIdDumpProto& dump_proto = dump.dump_proto();
   ASSERT_TRUE(dump_proto.has_x86_cpuid_dump());
-  EXPECT_GT(dump_proto.x86_cpuid_dump().entries_size(), 1);
+  // Checks that all leafs and subleafs are returned only once in the proto.
+  std::set<std::pair<uint32_t, uint32_t>> leafs_and_subleafs;
+  for (const auto& entry : dump_proto.x86_cpuid_dump().entries()) {
+    const std::pair<uint32_t, uint32_t> leaf_and_subleaf =
+        std::make_pair(entry.input().leaf(), entry.input().subleaf());
+    EXPECT_TRUE(InsertIfNotPresent(&leafs_and_subleafs, leaf_and_subleaf));
+  }
 }
 #endif  // __x86_64__
 
 TEST(CpuIdDumpTest, DefaultConstructor) {
   const CpuIdDump dump;
   EXPECT_FALSE(dump.IsValid());
+}
+
+TEST(CpuIdDumpTest, VendorAndBrandString) {
+  const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(R"(
+      CPUID 00000000: 00000016-756E6547-6C65746E-49656E69
+      CPUID 00000001: 000906E9-00100800-7FFAFBBF-BFEBFBFF
+      CPUID 00000007: 00000000-029C6FBF-00000000-00000000
+      CPUID 0000000D: 0000001F-00000440-00000440-00000000
+      CPUID 0000000D: 0000000F-000003C0-00000100-00000000
+      CPUID 0000000D: 00000100-00000240-00000000-00000000
+      CPUID 0000000D: 00000040-000003C0-00000000-00000000
+      CPUID 0000000D: 00000040-00000400-00000000-00000000
+      CPUID 80000000: 80000008-00000000-00000000-00000000
+      CPUID 80000001: 00000000-00000000-00000121-2C100000
+      CPUID 80000002: 65746E49-2952286C-726F4320-4D542865
+      CPUID 80000003: 35692029-3036372D-43204B30-40205550
+      CPUID 80000004: 382E3320-7A484730-00000000-00000000
+      )");
+  ASSERT_OK(dump_or_status.status());
+  const CpuIdDump& dump = dump_or_status.ValueOrDie();
+  ASSERT_TRUE(dump.IsValid());
+  EXPECT_EQ(dump.GetVendorString(), "GenuineIntel");
+  EXPECT_EQ(dump.GetProcessorBrandString(),
+            "Intel(R) Core(TM) i5-7600K CPU @ 3.80GHz");
 }
 
 TEST(CpuIdDumpTest, FromProto) {
