@@ -9,6 +9,7 @@ cc_library(
     name = "base",
     hdrs = [
         "macros.h",
+        "mutex.h",
         "stringprintf.h",
     ],
     deps = [
