@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <map>
-#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -45,8 +44,8 @@ namespace {
 
 using exegesis::pdf::PdfDocument;
 using exegesis::pdf::PdfPage;
-using exegesis::pdf::PdfTextTableRow;
 using exegesis::pdf::PdfTextBlock;
+using exegesis::pdf::PdfTextTableRow;
 
 using re2::StringPiece;
 
@@ -741,7 +740,7 @@ void ToString(const PdfTextTableRow& row, string* output) {
   bool first_block = true;
   for (const auto& block : row.blocks()) {
     if (!first_block) StrAppend(output, "\t");
-    StrAppend(output, block.text());
+    StrAppend(output, CleanupParagraph(block.text()));
     first_block = false;
   }
 }
@@ -764,7 +763,6 @@ bool ToString(const InstructionSection& section, const SubSection::Type type,
     if (!output->empty()) StrAppend(output, "\n");
     ToString(row, output);
   }
-  *output = CleanupParagraph(*output);
   return true;
 }
 
