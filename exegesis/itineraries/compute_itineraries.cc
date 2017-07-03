@@ -62,11 +62,11 @@ namespace exegesis {
 namespace itineraries {
 namespace {
 
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::OkStatus;
 using ::exegesis::util::InternalError;
 using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
 
 const std::unordered_set<
     string>* const kExcludedInstructions = new std::unordered_set<string>({
