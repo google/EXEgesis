@@ -34,10 +34,10 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::google::protobuf::RepeatedPtrField;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
+using ::google::protobuf::RepeatedPtrField;
 
 // Mapping from memory operands to their sizes as used in the Intel assembly
 // syntax.

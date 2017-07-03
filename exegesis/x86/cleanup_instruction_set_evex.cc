@@ -29,8 +29,8 @@ namespace exegesis {
 namespace x86 {
 
 using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::Status;
 using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
 
 Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);

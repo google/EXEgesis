@@ -23,8 +23,8 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::google::protobuf::TextFormat;
 using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::google::protobuf::TextFormat;
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
   constexpr char kInstructionSetProto[] = R"(
