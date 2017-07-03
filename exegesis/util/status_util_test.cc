@@ -22,8 +22,8 @@
 namespace exegesis {
 namespace {
 
-using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::FailedPreconditionError;
+using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 using ::exegesis::util::error::FAILED_PRECONDITION;

@@ -225,8 +225,8 @@ TEST(GeometryTest, QuadTreeQuadrant) {
 ////////////////////////////////////////////////////////////////////////////////
 // Span
 
-using testing::Field;
 using testing::AllOf;
+using testing::Field;
 using testing::FloatEq;
 
 TEST(GeometryTest, Span) {
