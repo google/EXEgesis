@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_BASE_MACROS_H_
 #define EXEGESIS_BASE_MACROS_H_
 
-#include <mutex>
+#include <mutex>  // NOLINT
 
 namespace exegesis {
 
