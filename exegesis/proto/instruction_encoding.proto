@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package exegesis;
+
+// Describes a fixed length instruction encoding.
+// According to
+// https://en.wikipedia.org/wiki/Comparison_of_instruction_set_architectures#Instruction_sets
+// this should cover the following instruction sets:
+// ARMv8-A, Alpha, DLX, Elbrus, M32R, MIPS, MMIX, Mico32, PA-RISC, PDP-11,
+// PowerPC, SPARC, SuperH, openRISC.
+//
+// TODO(gchatelet): Add validation code.
+message FixedSizeInstructionLayout {
+  // A sequence of bits indexed by [msb, lsb].
+  message BitRange {
+    // Invariant: msb >= lsb && lsb >= 0.
+
+    int32 msb = 1;  // 0 based index, inclusive.
+    int32 lsb = 2;  // 0 based index, inclusive.
+
+    enum Bit {
+      UNKNOWN = 0;        // Needed by proto3, do not use.
+      CONSTANT_ONE = 1;   // Bit is 0.
+      CONSTANT_ZERO = 2;  // Bit is 1.
+      VARIABLE = 3;       // Bit value is set at runtime.
+    }
+
+    repeated Bit bits = 3;  // The value for the bits.
+                            // Invariant: bits.size() == (msb-lsb+1).
+
+    string name = 4;  // The name of the range as specified by the manual.
+
+    enum Constraint {
+      NONE = 0;
+      NOT_ALL_ONES = 1;
+    }
+    Constraint constraint = 5;  // An additional constraint when some logic is
+                                // needed to validate the range.
+  }
+
+  repeated BitRange bit_ranges = 1;  // Sorted by decreasing msb.
+}
