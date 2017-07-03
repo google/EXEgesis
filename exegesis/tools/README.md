@@ -125,7 +125,7 @@ Transforms a PDF file into a
 [PdfDocument](exegesis/proto/pdf/pdf_document.proto).
 
 ```shell
-blaze run -c opt //exegesis/tools:pdf2proto --    \
+bazel run -c opt //exegesis/tools:pdf2proto --    \
   --exegesis_pdf_input_file=/path/to/pdf_file.pdf \
   --exegesis_pdf_output_file=/tmp/pdf_file.pdf.pb
 ```
@@ -137,7 +137,7 @@ displays a [PdfDocumentChange](exegesis/proto/pdf/pdf_document.proto) for all
 the matching [PdfTextBlock](exegesis/proto/pdf/pdf_document.proto)s.
 
 ```shell
-blaze run -c opt //exegesis/tools::proto_patch_helper -- \
+bazel run -c opt //exegesis/tools::proto_patch_helper -- \
   --exegesis_proto_input_file=/path/to/pdf_file.pdf.pb  \
   --exegesis_match_expression='<regex pattern>'
 ```
@@ -148,7 +148,7 @@ Migrates a set of [PdfDocumentChanges](exegesis/proto/pdf/pdf_document.proto)
 from PdfDocument to PdfDocument.
 
 ```shell
-blaze run -c opt  //exegesis/tools:proto_patch_migrate -- \
+bazel run -c opt  //exegesis/tools:proto_patch_migrate -- \
   --exegesis_from_proto_file=/path/from_pdf_file.pdf.pb \
   --exegesis_to_proto_file=/path/to_pdf_file.pdf.pb \
   --exegesis_output_file_base=/tmp/migration_base
