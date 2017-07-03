@@ -31,9 +31,9 @@
 namespace exegesis {
 namespace {
 
+using ::exegesis::util::StatusOr;
 using ::exegesis::x86::CpuIdDump;
 using ::testing::UnorderedElementsAreArray;
-using ::exegesis::util::StatusOr;
 
 TEST(CpuInfoTest, SupportsFeature) {
   const CpuInfo cpu_info(ParseProtoFromStringOrDie<CpuInfoProto>(R"(

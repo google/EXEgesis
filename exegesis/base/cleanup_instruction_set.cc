@@ -39,12 +39,12 @@ DEFINE_bool(exegesis_print_transform_diffs_to_log, false,
 
 namespace exegesis {
 
-using ::google::protobuf::FieldDescriptor;
-using ::google::protobuf::Message;
-using ::google::protobuf::util::MessageDifferencer;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
+using ::google::protobuf::FieldDescriptor;
+using ::google::protobuf::Message;
+using ::google::protobuf::util::MessageDifferencer;
 
 using InstructionSetTransformOrder =
     std::multimap<int, InstructionSetTransform>;

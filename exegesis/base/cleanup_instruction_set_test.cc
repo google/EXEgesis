@@ -29,12 +29,12 @@ namespace {
 
 using ::exegesis::InstructionProto;
 using ::exegesis::InstructionSetProto;
-using ::google::protobuf::RepeatedPtrField;
-using ::google::protobuf::TextFormat;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::google::protobuf::RepeatedPtrField;
+using ::google::protobuf::TextFormat;
 
 TEST(GetTransformsByNameTest, ReturnedMapIsNotEmpty) {
   const InstructionSetTransformsByName& transforms = GetTransformsByName();
