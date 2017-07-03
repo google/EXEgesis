@@ -18,8 +18,10 @@ syntax = "proto2";
 
 package exegesis;
 
-import "exegesis/proto/x86/encoding_specification.proto";
+import "exegesis/proto/instruction_encoding.proto";
 import "exegesis/proto/microarchitecture.proto";
+import "exegesis/proto/registers.proto";
+import "exegesis/proto/x86/encoding_specification.proto";
 
 // The Intel documentation referred to here can be found at:
 // http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf
@@ -316,7 +318,11 @@ message InstructionProto {
   // The parsed binary encoding specification. Which field is used depends on
   // the platform to which the instruction belongs.
   oneof encoding_specification {
+    // x86 specific encoding.
     exegesis.x86.EncodingSpecification x86_encoding_specification = 30;
+
+    // This specification is used for ARM and POWER architectures.
+    exegesis.FixedSizeInstructionLayout fixed_size_encoding_specification = 31;
   }
 
   // The index of the instruction group this instruction belongs to.
@@ -366,7 +372,6 @@ message InstructionSetProto {
 
   repeated InstructionGroupProto instruction_groups = 5;
 }
-
 
 // The MicroOperation message describes a single micro-operation of the
 // instruction. It describes the micro-operation in terms of the set of
@@ -465,6 +470,9 @@ message ArchitectureProto {
   // The raw instruction set, for reference. This might not have the same number
   // of instructions as unannotated_instruction_set.
   optional InstructionSetProto raw_instruction_set = 2;
+
+  // The list of registers available in the instruction set.
+  optional RegisterSetProto register_set = 6;
 }
 
 // Allows defining translation of instruction mnemonics from one or more source
