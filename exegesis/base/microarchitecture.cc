@@ -14,13 +14,131 @@
 
 #include "exegesis/base/microarchitecture.h"
 
+#include <unordered_map>
 #include <utility>
 
+#include "glog/logging.h"
 #include "strings/str_cat.h"
 #include "strings/str_split.h"
+#include "util/gtl/map_util.h"
+#include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
 
 namespace exegesis {
+
+MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
+    : proto_(proto),
+      port_masks_(proto_.port_masks().begin(), proto_.port_masks().end()) {}
+
+const PortMask* MicroArchitecture::load_store_address_generation() const {
+  return GetPortMaskOrNull(
+      proto_.load_store_address_generation_port_mask_index() - 1);
+}
+
+const PortMask* MicroArchitecture::store_address_generation() const {
+  return GetPortMaskOrNull(proto_.store_address_generation_port_mask_index() -
+                           1);
+}
+
+const PortMask* MicroArchitecture::store_data() const {
+  return GetPortMaskOrNull(proto_.store_data_port_mask_index() - 1);
+}
+
+const PortMask* MicroArchitecture::GetPortMaskOrNull(const int index) const {
+  return index < 0 ? nullptr : &port_masks_[index];
+}
+
+bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
+  CHECK_NE(proto_.protected_mode().protected_modes().empty(),
+           proto_.protected_mode().user_modes().empty());
+  if (proto_.protected_mode().protected_modes().empty()) {
+    for (int mode : proto_.protected_mode().user_modes()) {
+      if (protection_mode == mode) {
+        return false;
+      }
+    }
+    return true;
+  } else {
+    for (int mode : proto_.protected_mode().protected_modes()) {
+      if (protection_mode == mode) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+namespace {
+
+std::unordered_map<string, std::unique_ptr<const MicroArchitecture>>*
+MicroArchitecturesById() {
+  static auto* const result =
+      new std::unordered_map<string,
+                             std::unique_ptr<const MicroArchitecture>>();
+  return result;
+}
+
+std::unordered_map<string, const MicroArchitecture*>*
+MicroArchitecturesByCpuModelId() {
+  static auto* const result =
+      new std::unordered_map<string, const MicroArchitecture*>();
+  return result;
+}
+
+}  // namespace
+
+namespace internal {
+
+void RegisterMicroArchitectures::RegisterFromProto(
+    const MicroArchitecturesProto& microarchitectures) {
+  auto* const microarchitectures_by_id = MicroArchitecturesById();
+  auto* const microarchitectures_by_cpu_model_id =
+      MicroArchitecturesByCpuModelId();
+  for (const MicroArchitectureProto& microarchitecture_proto :
+       microarchitectures.microarchitectures()) {
+    auto microarchitecture =
+        gtl::MakeUnique<MicroArchitecture>(microarchitecture_proto);
+    for (const string& model_id : microarchitecture_proto.model_ids()) {
+      InsertOrDie(microarchitectures_by_cpu_model_id, model_id,
+                  microarchitecture.get());
+    }
+    const string& microarchitecture_id = microarchitecture_proto.id();
+    const auto insert_result = microarchitectures_by_id->emplace(
+        microarchitecture_id, std::move(microarchitecture));
+    if (!insert_result.second) {
+      LOG(FATAL) << "Duplicate micro-architecture: " << microarchitecture_id;
+    }
+  }
+}
+
+}  // namespace internal
+
+const MicroArchitecture* MicroArchitecture::FromId(
+    const string& microarchitecture_id) {
+  const std::unique_ptr<const MicroArchitecture>* const result =
+      FindOrNull(*MicroArchitecturesById(), microarchitecture_id);
+  return result ? result->get() : nullptr;
+}
+
+const MicroArchitecture& MicroArchitecture::FromIdOrDie(
+    const string& microarchitecture_id) {
+  return *CHECK_NOTNULL(FromId(microarchitecture_id));
+}
+
+const MicroArchitecture* MicroArchitecture::FromCpuModelId(
+    const string& cpu_model_id) {
+  const auto* const result =
+      FindPtrOrNull(*MicroArchitecturesByCpuModelId(), cpu_model_id);
+  if (result == nullptr) {
+    LOG(WARNING) << "Unknown CPU model '" << cpu_model_id << "'";
+  }
+  return result;
+}
+
+const MicroArchitecture& MicroArchitecture::FromCpuModelIdOrDie(
+    const string& cpu_model_id) {
+  return *CHECK_NOTNULL(FromCpuModelId(cpu_model_id));
+}
 
 StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuModelId(
     std::shared_ptr<const ArchitectureProto> architecture_proto,

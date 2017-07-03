@@ -14,8 +14,8 @@
 
 #include "exegesis/itineraries/compute_itineraries.h"
 
-#include "exegesis/base/cpu_model.h"
 #include "exegesis/base/host_cpu.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"

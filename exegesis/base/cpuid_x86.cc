@@ -24,6 +24,7 @@
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "strings/str_split.h"
+#include "strings/string_view_utils.h"
 #include "util/task/canonical_errors.h"
 
 namespace exegesis {
@@ -397,7 +398,7 @@ string CpuIdDump::GetProcessorBrandString() const {
   // at the end of the buffer for a null character that turns the buffer into
   // a valid null-terminated C string if it wasn't already.
   constexpr int kBufferSize = kBytesPerLeaf * (kEndLeaf - kStartLeaf + 1) + 1;
-  char buffer[49];
+  char buffer[kBufferSize];
   uint32_t* const data = reinterpret_cast<uint32_t*>(buffer);
   int entry = 0;
   for (uint32_t leaf = kStartLeaf; leaf <= kEndLeaf; ++leaf) {
@@ -408,6 +409,7 @@ string CpuIdDump::GetProcessorBrandString() const {
     data[entry + 2] = leaf_data->ecx();
     data[entry + 3] = leaf_data->edx();
     entry += 4;
+    CHECK_LT(entry * 4, kBufferSize);
   }
   // Depending on the vendor and model, the data in buffer may or may not be
   // padded with zeros at the end. By adding a sentinel right after the 48 bytes
@@ -477,6 +479,13 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
   PROCESS_FEATURE(AES, features.ecx, aes);
   PROCESS_FEATURE(AVX, features.ecx, avx);
   PROCESS_FEATURE(AVX2, ext_features.ebx, avx2);
+  PROCESS_FEATURE_IF(is_intel, AVX512BW, ext_features.ebx, intel_only_avx512bw);
+  PROCESS_FEATURE_IF(is_intel, AVX512CD, ext_features.ebx, intel_only_avx512cd);
+  PROCESS_FEATURE_IF(is_intel, AVX512DQ, ext_features.ebx, intel_only_avx512dq);
+  PROCESS_FEATURE_IF(is_intel, AVX512ER, ext_features.ebx, intel_only_avx512er);
+  PROCESS_FEATURE_IF(is_intel, AVX512F, ext_features.ebx, intel_only_avx512f);
+  PROCESS_FEATURE_IF(is_intel, AVX512PF, ext_features.ebx, intel_only_avx512pf);
+  PROCESS_FEATURE_IF(is_intel, AVX512VL, ext_features.ebx, intel_only_avx512vl);
   PROCESS_FEATURE(BMI1, ext_features.ebx, bmi1);
   PROCESS_FEATURE(BMI2, ext_features.ebx, bmi2);
   PROCESS_FEATURE(CLMUL, features.ecx, pclmulqdq);
@@ -506,6 +515,15 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
   PROCESS_FEATURE(SSE4_2, features.ecx, sse4_2);
   PROCESS_FEATURE(SSSE3, features.ecx, ssse3);
   PROCESS_FEATURE(XSAVEOPT, ext_state.eax, xsaveopt);
+
+  // If there is any AVX-512 feature, also add a meta-feature AVX512.
+  constexpr char kAvx512[] = "AVX512";
+  for (const string& feature_name : indexed_features) {
+    if (strings::StartsWith(feature_name, kAvx512)) {
+      indexed_features.insert(kAvx512);
+      break;
+    }
+  }
 
   // See CPUID doc for the algorithm.
   const int family =

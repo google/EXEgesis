@@ -16,7 +16,7 @@
 #define EXEGESIS_BASE_DEBUG_H_
 
 #include "exegesis/base/cpu_info.h"
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 

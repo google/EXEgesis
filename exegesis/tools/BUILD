@@ -12,7 +12,7 @@ cc_binary(
     deps = [
         ":instruction_sets",
         "//base",
-        "//exegesis/base:cpu_model",
+        "//exegesis/base:microarchitecture",
         "//exegesis/itineraries:compute_itineraries",
         "//exegesis/util:proto_util",
         "//exegesis/util:system",

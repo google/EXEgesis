@@ -14,7 +14,7 @@
 
 #include "exegesis/x86/microarchitectures.h"
 
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "gtest/gtest.h"
 
 namespace exegesis {

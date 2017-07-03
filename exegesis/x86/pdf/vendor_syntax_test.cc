@@ -23,7 +23,7 @@ namespace x86 {
 namespace pdf {
 namespace {
 
-using ::exegesis::testing::EqualsProto;
+using testing::EqualsProto;
 
 TEST(ParseVendorSyntaxTest, Simple) {
   InstructionFormat vendor_syntax;

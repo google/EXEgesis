@@ -17,7 +17,7 @@
 
 #include <algorithm>
 #include <vector>
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/base/port_mask.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"

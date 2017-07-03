@@ -23,7 +23,7 @@
 namespace exegesis {
 namespace {
 
-using ::exegesis::testing::EqualsProto;
+using testing::EqualsProto;
 
 TEST(InstructionSyntaxTest, BuildFromStrings) {
   constexpr struct {

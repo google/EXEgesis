@@ -23,8 +23,8 @@
 #include <utility>
 
 #include "base/stringprintf.h"
-#include "exegesis/base/cpu_model.h"
 #include "exegesis/base/host_cpu.h"
+#include "exegesis/base/microarchitecture.h"
 #include "glog/logging.h"
 #include "include/perfmon/pfmlib_perf_event.h"
 #include "strings/str_cat.h"
@@ -211,7 +211,8 @@ PerfResult PerfSubsystem::ReadCounters() {
   return PerfResult(std::move(timings));
 }
 
-Mutex PerfSubsystem::ScopedLibPfmInitialization::refcount_mutex_;
+Mutex PerfSubsystem::ScopedLibPfmInitialization::  // NOLINT
+    refcount_mutex_;
 int PerfSubsystem::ScopedLibPfmInitialization::refcount_ = 0;
 
 PerfSubsystem::ScopedLibPfmInitialization::ScopedLibPfmInitialization() {

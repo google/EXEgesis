@@ -20,6 +20,7 @@
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
 #include "strings/str_cat.h"
+#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -32,14 +33,6 @@ GetProviders() {
   static auto* const registry = new std::unordered_map<
       string, std::unique_ptr<const ArchitectureProtoProvider>>();
   return registry;
-}
-
-string GetRegisteredProviderNames() {
-  string result;
-  for (const auto& name_provider : *GetProviders()) {
-    StrAppend(&result, name_provider.first, "\n");
-  }
-  return result;
 }
 
 // Architecture provider for proto files.
@@ -69,7 +62,7 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
     const auto* provider = FindOrNull(*GetProviders(), id);
     CHECK(provider) << "No ArchitectureProtoProvider registered for id '" << id
                     << "'. Known ids are:\n"
-                    << GetRegisteredProviderNames();
+                    << strings::Join(GetRegisteredArchitectureIds(), "\n");
     auto proto = (*provider)->GetProtoOrDie();
     CHECK(proto) << "broken contract: GetProtoOrDie() != nullptr";
     return proto;
@@ -78,6 +71,14 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
              << "'. If you meant to read from a text file, use " << kPbTxtSource
              << ":/path/to/file";
   return nullptr;
+}
+
+std::vector<string> GetRegisteredArchitectureIds() {
+  std::vector<string> result;
+  for (const auto& name_provider : *GetProviders()) {
+    result.push_back(name_provider.first);
+  }
+  return result;
 }
 
 ArchitectureProtoProvider::~ArchitectureProtoProvider() {}

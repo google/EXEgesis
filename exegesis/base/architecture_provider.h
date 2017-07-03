@@ -47,6 +47,9 @@ constexpr const char kRegisteredSource[] = "registered";
 std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
     const string& uri);
 
+// Returns the list of registered architectures.
+std::vector<string> GetRegisteredArchitectureIds();
+
 // See top comment.
 class ArchitectureProtoProvider {
  public:

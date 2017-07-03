@@ -25,7 +25,7 @@ namespace exegesis {
 namespace pdf {
 namespace {
 
-using ::exegesis::testing::EqualsProto;
+using testing::EqualsProto;
 
 const char kTestDataPath[] = "/__main__/exegesis/util/pdf/testdata/";
 

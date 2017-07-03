@@ -14,8 +14,8 @@ cc_library(
         "//base",
         "//exegesis/base:category_utils",
         "//exegesis/base:cpu_info",
-        "//exegesis/base:cpu_model",
         "//exegesis/base:host_cpu",
+        "//exegesis/base:microarchitecture",
         "//exegesis/base:prettyprint",
         "//exegesis/itineraries:decomposition",
         "//exegesis/itineraries:jit_perf_evaluator",
@@ -45,9 +45,10 @@ cc_library(
 cc_test(
     name = "compute_itineraries_test",
     srcs = ["compute_itineraries_test.cc"],
+    tags = ["notap"],
     deps = [
-        "//exegesis/base:cpu_model",
         "//exegesis/base:host_cpu",
+        "//exegesis/base:microarchitecture",
         "//exegesis/itineraries:compute_itineraries",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
@@ -68,7 +69,7 @@ cc_library(
     hdrs = ["decomposition.h"],
     deps = [
         "//base",
-        "//exegesis/base:cpu_model",
+        "//exegesis/base:microarchitecture",
         "//exegesis/base:port_mask",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto:microarchitecture_cc_proto",
@@ -148,8 +149,8 @@ cc_library(
     hdrs = ["perf_subsystem.h"],
     deps = [
         "//base",
-        "//exegesis/base:cpu_model",
         "//exegesis/base:host_cpu",
+        "//exegesis/base:microarchitecture",
         "//exegesis/proto:microarchitecture_cc_proto",
         "//exegesis/x86:microarchitectures",
         "//strings",

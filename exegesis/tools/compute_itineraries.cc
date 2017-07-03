@@ -5,7 +5,7 @@
 
 #include "gflags/gflags.h"
 
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/itineraries/compute_itineraries.h"
 #include "exegesis/tools/instruction_sets.h"
 #include "exegesis/util/proto_util.h"

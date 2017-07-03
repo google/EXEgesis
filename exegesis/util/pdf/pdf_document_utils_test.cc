@@ -28,7 +28,7 @@ namespace exegesis {
 namespace pdf {
 namespace {
 
-using exegesis::testing::EqualsProto;
+using testing::EqualsProto;
 
 PdfPage GetFakeDocument() {
   return ParseProtoFromStringOrDie<PdfPage>(R"(

@@ -76,5 +76,10 @@ TEST(ArchitectureProtoProviderDeathTest, UnknownProvider) {
       "test:provider");
 }
 
+TEST(ArchitectureProtoProviderTest, TestRegisteredProviders) {
+  EXPECT_THAT(GetRegisteredArchitectureIds(),
+              ::testing::ElementsAre("test:provider:with:colon"));
+}
+
 }  // namespace
 }  // namespace exegesis

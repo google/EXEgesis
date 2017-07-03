@@ -17,7 +17,7 @@
 #include <vector>
 #include "strings/string.h"
 
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/text_format.h"

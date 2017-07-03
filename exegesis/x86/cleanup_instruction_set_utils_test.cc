@@ -24,7 +24,7 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::testing::EqualsProto;
+using testing::EqualsProto;
 
 TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
   constexpr char kInstructionProto[] = R"(

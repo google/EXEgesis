@@ -21,7 +21,7 @@
 #include "strings/string.h"
 
 #include "base/mutex.h"
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
@@ -129,6 +129,10 @@ class PerfSubsystem {
     return ReadCounters();
   }
 
+  // Reads the hardware counters and returns a PerfResult that contains all the
+  // useful information, independently of the PerfSubsystem.
+  PerfResult ReadCounters();
+
  private:
   // A class that ensures that we always manipulate libpfm initialization in a
   // thread-safe way, and that we do not initialize/terminate concurrently.
@@ -149,10 +153,6 @@ class PerfSubsystem {
   // Stops collecting data, i.e. hardware counters will be stop being updated
   // from here.
   void StopCollecting();
-
-  // Reads the hardware counters and returns a PerfResult that contains all the
-  // useful information, independently of the PerfSubsystem.
-  PerfResult ReadCounters();
 
   const MicroArchitecture& microarchitecture_;
   // File descriptor for each counter.
@@ -180,6 +180,7 @@ class PerfSubsystem {
     EXEGESIS_MEASURE_LOOP(result, num_iter, s, computation_events); \
     EXEGESIS_MEASURE_LOOP(result, num_iter, s, memory_events);      \
     EXEGESIS_MEASURE_LOOP(result, num_iter, s, cycle_events);       \
+    EXEGESIS_MEASURE_LOOP(result, num_iter, s, uops_events);        \
     (result)->SetScaleFactor(num_iter);                             \
   }
 

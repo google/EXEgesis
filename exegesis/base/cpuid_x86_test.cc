@@ -29,11 +29,11 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
+using ::exegesis::util::StatusOr;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::UnorderedElementsAreArray;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using testing::EqualsProto;
 
 constexpr char kDumpString[] = R"(

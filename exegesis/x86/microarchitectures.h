@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_X86_MICROARCHITECTURES_H_
 #define EXEGESIS_X86_MICROARCHITECTURES_H_
 
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 
 namespace exegesis {
 namespace x86 {

@@ -21,7 +21,7 @@
 #include <vector>
 #include "strings/string.h"
 
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"

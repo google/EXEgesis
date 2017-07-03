@@ -121,23 +121,6 @@ cc_test(
     ],
 )
 
-# A library to represent known CPU microarchitectures and models.
-cc_library(
-    name = "cpu_model",
-    srcs = ["cpu_model.cc"],
-    hdrs = ["cpu_model.h"],
-    deps = [
-        ":port_mask",
-        "//base",
-        "//exegesis/proto:microarchitecture_cc_proto",
-        "//util/gtl:map_util",
-        "//util/gtl:ptr_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
-        "@com_google_protobuf//:protobuf_lite",
-    ],
-)
-
 # Utilities for working with CPUID data.
 cc_library(
     name = "cpuid",
@@ -221,17 +204,24 @@ cc_test(
     ],
 )
 
+# A library to represent known CPU microarchitectures and models.
 cc_library(
     name = "microarchitecture",
     srcs = ["microarchitecture.cc"],
     hdrs = ["microarchitecture.h"],
     deps = [
-        "//exegesis/base:cpu_model",
+        ":port_mask",
+        "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
+        "//util/gtl:map_util",
+        "//util/gtl:ptr_util",
         "//util/task:status",
         "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -322,7 +312,7 @@ cc_library(
     hdrs = ["prettyprint.h"],
     deps = [
         ":cpu_info",
-        ":cpu_model",
+        ":microarchitecture",
         ":port_mask",
         "//base",
         "//exegesis/proto:instructions_cc_proto",
@@ -352,8 +342,38 @@ cc_test(
     ],
 )
 
-# Utilities for restrict instruction set to a certain range.
+# A library for working with register protos.
+cc_library(
+    name = "registers",
+    srcs = ["registers.cc"],
+    hdrs = ["registers.h"],
+    deps = [
+        "//base",
+        "//exegesis/proto:registers_cc_proto",
+        "//strings",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
 
+cc_test(
+    name = "registers_test",
+    size = "small",
+    srcs = ["registers_test.cc"],
+    deps = [
+        ":registers",
+        "//base",
+        "//exegesis/testing:test_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# Utilities for restrict instruction set to a certain range.
 cc_library(
     name = "restrict",
     srcs = ["restrict.cc"],

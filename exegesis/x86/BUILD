@@ -436,7 +436,7 @@ cc_library(
     hdrs = ["microarchitectures.h"],
     deps = [
         "//base",
-        "//exegesis/base:cpu_model",
+        "//exegesis/base:microarchitecture",
         "//exegesis/proto:microarchitecture_cc_proto",
         "//strings",
         "@com_github_gflags_gflags//:gflags",
@@ -452,7 +452,35 @@ cc_test(
     srcs = ["microarchitectures_test.cc"],
     deps = [
         ":microarchitectures",
-        "//exegesis/base:cpu_model",
+        "//exegesis/base:microarchitecture",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# A library that contains information about the x86-64 registers.
+cc_library(
+    name = "registers",
+    srcs = ["registers.cc"],
+    hdrs = ["registers.h"],
+    deps = [
+        "//exegesis/base:registers",
+        "//exegesis/proto:registers_cc_proto",
+        "//exegesis/util:proto_util",
+        "//strings",
+    ],
+)
+
+cc_test(
+    name = "registers_test",
+    size = "small",
+    srcs = ["registers_test.cc"],
+    deps = [
+        ":registers",
+        "//exegesis/proto:registers_cc_proto",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//strings",
         "@googletest_git//:gtest",
         "@googletest_git//:gtest_main",
     ],

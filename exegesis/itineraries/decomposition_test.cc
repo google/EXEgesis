@@ -27,10 +27,10 @@ namespace exegesis {
 namespace itineraries {
 namespace {
 
+using ::exegesis::util::Status;
 using ::exegesis::x86::HaswellMicroArchitecture;
 using ::testing::AnyOf;
 using ::testing::Eq;
-using ::exegesis::util::Status;
 
 // Synthetic benchmark based in the x86 instruction NEG m8, ADD RSI,16.
 TEST(DecompositionTest, Negate) {

@@ -24,7 +24,7 @@
 #include "strings/string.h"
 
 #include "base/stringprintf.h"
-#include "exegesis/base/cpu_model.h"
+#include "exegesis/base/microarchitecture.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "ortools/linear_solver/linear_solver.h"
@@ -44,12 +44,12 @@ namespace exegesis {
 namespace itineraries {
 
 using ::exegesis::gtl::c_linear_search;
+using ::exegesis::util::Status;
 using ::operations_research::MPConstraint;
 using ::operations_research::MPModelProto;
 using ::operations_research::MPObjective;
 using ::operations_research::MPSolver;
 using ::operations_research::MPVariable;
-using ::exegesis::util::Status;
 
 int ComputeNumExecutionPorts(const std::vector<PortMask>& port_masks) {
   int max_execution_port_num = -1;

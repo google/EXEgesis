@@ -36,9 +36,9 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::testing::EqualsProto;
 using ::exegesis::util::StatusOr;
 using ::testing::UnorderedElementsAreArray;
+using testing::EqualsProto;
 
 void CheckParser(const string& specification_str,
                  const string& expected_specification_proto) {

@@ -22,7 +22,7 @@
 
 namespace exegesis {
 
-using ::exegesis::testing::EqualsProto;
+using testing::EqualsProto;
 
 void TestTransform(const InstructionSetTransform& transform,
                    const string& input_proto, const string& expected_output) {
