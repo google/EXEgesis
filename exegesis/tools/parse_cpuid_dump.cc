@@ -57,9 +57,9 @@ DEFINE_string(exegesis_output_cpuid_dump, "",
 namespace exegesis {
 namespace {
 
+using ::exegesis::util::StatusOr;
 using ::google::protobuf::RepeatedFieldBackInserter;
 using ::google::protobuf::RepeatedPtrField;
-using ::exegesis::util::StatusOr;
 
 CpuIdDumpProto ParseX86CpuIdDumpOrDie(const string& input) {
   const string cpuid_dump_text = ReadTextFromFileOrStdInOrDie(input);
