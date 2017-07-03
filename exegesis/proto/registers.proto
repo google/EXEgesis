@@ -1,0 +1,118 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Contains definitions of protocol buffers that define the registers of an
+// architecture.
+
+syntax = "proto3";
+
+package exegesis;
+
+// Represents a range of bits in an unsigned number or a bit vector. Both
+// indices used in the bit range are zero based and inclusive, i.e. the
+// following proto represents the least significant bit:
+//   hi_bit: 0 lo_bit: 0.
+// The following requirements must hold in the data:
+//   hi_bit >= 0, lo_bit >= 0, hi_bit >= lo_bit.
+message BitRange {
+  // The index of the most significant bit of the range.
+  int32 msb = 1;
+
+  // The index of the least significant bit of the range.
+  int32 lsb = 2;
+}
+
+// Represents a subfield of a register. A field is a bit range that has an
+// interpretation on its own. For example, the condition bits of the RFLAGS
+// register on x86-64 are each such a subfield.
+message RegisterSubfield {
+  // The bit range of the subfield within the register.
+  BitRange bit_range = 1;
+
+  // Optional. The name of the field.
+  string name = 2;
+
+  // Optional. A human-readable description of the field.
+  string description = 3;
+
+  // When the subfield is available only on a certain model, this field contains
+  // the name of the feature or features that provide this subfield. The names
+  // of the features are the same as the names used in
+  // InstructionProto.feature_name. The operators '&&' and '||' may be used when
+  // the register is not connected to a single feature.
+  string feature_name = 4;
+}
+
+// Contains information about a single register.
+message RegisterProto {
+  // The name of the register, as used in the reference manual and/or the
+  // assembly language.
+  string name = 1;
+
+  // Set to true if the register does not have an explicit binary encoding, i.e.
+  // it can only be an implicit operand of an instruction. For example, this is
+  // the case of the RFLAGS register on x86-64.
+  bool implicit_encoding_only = 2;
+
+  // When implicit_encoding_only is false, this field contains the value
+  // representing the register in the binary encoding of an instruction. For
+  // example on x86-64, these are the values used in the fields of the ModR/M
+  // and SIB bytes.
+  uint32 binary_encoding = 3;
+
+  // Optional. A human-readable description of the register.
+  string description = 4;
+
+  // Contains the bit range within the register group occupied by this register.
+  // The width of the bit range must be equal to the number of bits of the
+  // register. For registers that are not part of a group, i.e. they are not
+  // aliased with any other register, the index of the least significant bit
+  // must be zero.
+  BitRange position_in_group = 5;
+
+  // Optional. For special registers, this field contains the definitions of the
+  // fields of the register. Note that the subfields cover only documented/used
+  // parts of the register; reserved and undocumented bits and bit ranges might
+  // not be covered.
+  repeated RegisterSubfield subfields = 6;
+
+  // When the register is available only on certain model, this field contains
+  // the name of the feature or features that provide this register. The names
+  // of the features are the same as the names used in
+  // InstructionProto.feature_name. The operators '&&' and '||' may be used when
+  // the register is not connected to a single feature.
+  string feature_name = 7;
+}
+
+// Represents a group of registers that are aliased, i.e. that use the same
+// "physical" storage on the CPU. For example, the x86-64 registers AL, AH,
+// AX, EAX and RAX form such a group.
+// For consistency, registers that are not aliased with other registers of the
+// instruction set are represented as register groups containing only one
+// register.
+message RegisterGroupProto {
+  // The name of the register group.
+  string name = 1;
+
+  // Optional. A human-readable description of the register group.
+  string description = 2;
+
+  // The list of registers that belong to the group.
+  repeated RegisterProto registers = 3;
+}
+
+// Contains a list of register groups.
+message RegisterSetProto {
+  repeated RegisterGroupProto register_groups = 1;
+}
