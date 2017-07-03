@@ -23,7 +23,7 @@
 namespace exegesis {
 namespace {
 
-using testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 constexpr const char kTestArchitectureProto[] = R"(
   name: "some_arch"

@@ -102,7 +102,7 @@ TEST(DecompositionTest, Negate) {
         latency: 1
       }
     )";
-  EXPECT_THAT(proto, testing::EqualsProto(kExpected));
+  EXPECT_THAT(proto, ::exegesis::testing::EqualsProto(kExpected));
 }
 
 // Class for generating random measurements to be decomposed by the MIP

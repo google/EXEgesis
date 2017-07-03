@@ -24,7 +24,7 @@
 namespace exegesis {
 namespace {
 
-using testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 TEST(RegistersTest, MakeRegistersFromBaseNames) {
   constexpr char kExpectedRegisters[] = R"(

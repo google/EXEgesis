@@ -23,6 +23,8 @@
 namespace exegesis {
 namespace {
 
+using ::exegesis::testing::EqualsProto;
+
 class InstructionSetTest : public ::testing::Test {
  protected:
   InstructionSetTest()
@@ -55,7 +57,7 @@ TEST_F(InstructionSetTest, RestrictToMnemonicRange) {
         encoding_scheme: 'NP'
         raw_encoding_specification: '6C'
       })";
-  EXPECT_THAT(instruction_set_, testing::EqualsProto(kExpected));
+  EXPECT_THAT(instruction_set_, EqualsProto(kExpected));
 }
 
 TEST_F(InstructionSetTest, RestrictToMnemonicRangeNoop) {
@@ -74,7 +76,7 @@ TEST_F(InstructionSetTest, RestrictToMnemonicRangeNoop) {
         encoding_scheme: 'NP'
         raw_encoding_specification: '6C'
       })";
-  EXPECT_THAT(instruction_set_, testing::EqualsProto(kExpected));
+  EXPECT_THAT(instruction_set_, EqualsProto(kExpected));
 }
 
 TEST_F(InstructionSetTest, RestrictToIndex) {
@@ -86,7 +88,7 @@ TEST_F(InstructionSetTest, RestrictToIndex) {
         raw_encoding_specification: 'AE'
       }
   )";
-  EXPECT_THAT(instruction_set_, testing::EqualsProto(kExpected));
+  EXPECT_THAT(instruction_set_, EqualsProto(kExpected));
 }
 
 TEST_F(InstructionSetTest, RestrictToIndexRangeEmptyFront) {

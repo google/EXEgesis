@@ -1,8 +1,4 @@
-# MOE: begin_strip
-# This was ported from //third_party/llvm. Note that we cannot reuse the
-# third_party build files directly because of inconsistencies in how
-# blaze and bazel handle srcs, headers, and layering.
-# MOE: end_strip
+
 
 # TODO(courbet): Make this configurable with select() statements.
 llvm_host_triple = "x86_64"

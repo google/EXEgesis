@@ -56,10 +56,10 @@ class JitCompiler {
   // 'dialect'.
   // mcpu is the CPU used for compiling the inline assembly. The value must be
   // one of the CPU microarchitecture names accepted by LLVM. To get the full
-  // list, run "blaze run @llvm_git//:llc -- --mcpu=help". Picking
-  // the most generic processor ("generic" for x86) means that the generated
-  // code will be able to run all hosts, but that the compiler wil refuse to
-  // compile newer instructions (since all processors might not support them).
+  // list, run "llc --mcpu=help". Picking the most generic processor
+  // ("generic" for x86) means that the generated code will be able to run all
+  // hosts, but that the compiler wil refuse to compile newer instructions
+  // (since all processors might not support them).
   JitCompiler(llvm::InlineAsm::AsmDialect dialect, const string& mcpu,
               ErrorHandlingMode error_mode);
 

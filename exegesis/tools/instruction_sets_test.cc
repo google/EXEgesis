@@ -10,8 +10,8 @@ DECLARE_string(exegesis_architecture);
 namespace exegesis {
 namespace {
 
+using ::exegesis::testing::EqualsProto;
 using ::testing::Not;
-using testing::EqualsProto;
 
 // Make sure that the default value of the command-line flag
 // --exegesis_architecture always resolves to an existing instruction

@@ -28,8 +28,8 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
+using ::exegesis::testing::EqualsProto;
 using ::testing::Not;
-using testing::EqualsProto;
 
 RegisterGroupProto FindGroupByRegister(const RegisterSetProto& registers,
                                        const string& register_name) {

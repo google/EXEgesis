@@ -29,12 +29,12 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
+using ::exegesis::testing::EqualsProto;
 using ::exegesis::util::StatusOr;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::UnorderedElementsAreArray;
-using testing::EqualsProto;
 
 constexpr char kDumpString[] = R"(
     This line is a comment. It does not have any effect on the result.

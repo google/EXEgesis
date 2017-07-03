@@ -28,7 +28,7 @@
 namespace exegesis {
 namespace {
 
-using testing::EqualsProto;
+using ::exegesis::testing::EqualsProto;
 
 TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   constexpr char kExpected[] = R"(
