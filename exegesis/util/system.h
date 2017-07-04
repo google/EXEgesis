@@ -24,9 +24,6 @@ namespace exegesis {
 void SetCoreAffinity(int core_id);
 
 // Same as above, but picks the first available core.
-// MOE: begin_strip
-// Useful for borg jobs (in particular forge, see b/34445306).
-// MOE: end_strip
 void PinCoreAffinity();
 
 }  // namespace exegesis
