@@ -124,8 +124,8 @@ TEST(PrettyPrintTest, Itinerary) {
   )");
   EXPECT_EQ(PrettyPrintItinerary(proto, PrettyPrintOptions()),
             "  P0156 (lat:2)\n"
-            "  P237\n"
-            "  P4 (deps:0,1)");
+            "  P237 (lat:0)\n"
+            "  P4 (lat:0) (deps:0,1)");
 }
 
 TEST(PrettyPrintTest, ItineraryOneLine) {

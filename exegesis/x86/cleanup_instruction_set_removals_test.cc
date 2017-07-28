@@ -217,11 +217,13 @@ TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
          instructions { vendor_syntax {
            mnemonic: 'CALL' operands { name: 'm16:32' }}
            encoding_scheme: 'M'
+           available_in_64_bit: true
            raw_encoding_specification: 'FF /3' }
          instructions {
            description: 'Clears TS flag in CR0.'
            vendor_syntax { mnemonic: 'CLTS' }
            encoding_scheme: 'NP'
+           available_in_64_bit: true
            raw_encoding_specification: '0F 06' }
          instructions {
            vendor_syntax { mnemonic: 'DEC' operands { name: 'r16' }}
@@ -232,11 +234,13 @@ TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
       R"(instructions {
            vendor_syntax { mnemonic: 'CALL' operands { name: 'm16:32' }}
            encoding_scheme: 'M'
+           available_in_64_bit: true
            raw_encoding_specification: 'FF /3' }
          instructions {
            description: 'Clears TS flag in CR0.'
            vendor_syntax { mnemonic: 'CLTS' }
            encoding_scheme: 'NP'
+           available_in_64_bit: true
            raw_encoding_specification: '0F 06' })";
   TestTransform(RemoveNonEncodableInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);

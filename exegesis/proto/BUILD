@@ -24,6 +24,9 @@ cc_proto_library(
 proto_library(
     name = "microarchitecture_proto",
     srcs = ["microarchitecture.proto"],
+    visibility = [
+        "//visibility:public",
+    ],
 )
 
 cc_proto_library(

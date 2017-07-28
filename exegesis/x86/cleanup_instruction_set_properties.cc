@@ -119,6 +119,9 @@ Status AddProtectionModes(InstructionSetProto* instruction_set) {
   for (auto& instruction : *instruction_set->mutable_instructions()) {
     const int* mode = FindOrNull(GetProtectionModes(),
                                  instruction.vendor_syntax().mnemonic());
+    // Set default protection_mode to something negative to make sure
+    // instruction is not marked as protected.
+    instruction.set_protection_mode(-1);
     if (mode) {
       instruction.set_protection_mode(*mode);
     }

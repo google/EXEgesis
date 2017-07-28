@@ -55,7 +55,7 @@ string PrettyPrintSyntax(const InstructionFormat& syntax,
 string PrettyPrintMicroOperation(const MicroOperationProto& uop,
                                  const PrettyPrintOptions& options) {
   string result = PortMask(uop.port_mask()).ToString();
-  if (uop.has_latency() && options.microop_latencies_) {
+  if (options.microop_latencies_) {
     StrAppend(&result, " (lat:", uop.latency(), ")");
   }
   if (!uop.dependencies().empty() && options.microop_dependencies_) {
@@ -67,7 +67,7 @@ string PrettyPrintMicroOperation(const MicroOperationProto& uop,
 string PrettyPrintInstruction(const InstructionProto& instruction,
                               const PrettyPrintOptions& options) {
   string result = StrCat(PrettyPrintSyntax(instruction.vendor_syntax()));
-  if (instruction.has_llvm_mnemonic()) {
+  if (!instruction.llvm_mnemonic().empty()) {
     StrAppend(&result, "\nllvm: ", instruction.llvm_mnemonic(), "");
   }
   if (options.alternative_syntax_) {

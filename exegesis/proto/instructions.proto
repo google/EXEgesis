@@ -14,7 +14,7 @@
 
 // The protocol buffers below are used to store information about instructions.
 
-syntax = "proto2";
+syntax = "proto3";
 
 package exegesis;
 
@@ -29,7 +29,7 @@ import "exegesis/proto/x86/encoding_specification.proto";
 // Contains information about a single operand of a function.
 message InstructionOperand {
   // The name of the operand, as listed by the vendor.
-  optional string name = 4;
+  string name = 4;
 
   // Defines the possible addressing modes of an operand.
   // clang-format off
@@ -135,10 +135,10 @@ message InstructionOperand {
   // clang-format on
 
   // The addressing mode used (allowed) by the operand.
-  optional AddressingMode addressing_mode = 1;
+  AddressingMode addressing_mode = 1;
 
   // The encoding of the operand.
-  optional Encoding encoding = 2;
+  Encoding encoding = 2;
 
   // Contains information about the data type of an operand.
   //
@@ -153,20 +153,24 @@ message InstructionOperand {
 
       FLOATING_POINT = 1;
 
-      UNSIGNED_INTEGER = 2;
-      SIGNED_INTEGER = 3;
-
       // An aggregate value laid out according to some specified format. This is
       // usually only used by a few specialised instructions, e.g. LGDT in x86.
       STRUCT = 4;
+
+      INTEGER = 5;
+
+      // Values which are used purely as opaque collections of bits. For
+      // example, the operands to instructions which just move data between
+      // registers or memory.
+      NONE = 6;
     }
 
     // The type of the type.
-    optional Kind kind = 1;
+    Kind kind = 1;
 
     // The number of bits used to represent the value. If the value is a vector,
     // this is only the size of a single element of the vector.
-    optional int32 bit_width = 2;
+    int32 bit_width = 2;
 
     // If this is a vector value, the number of elements contained in the
     // vector. Each element is typed according to the fields above. For example,
@@ -175,11 +179,11 @@ message InstructionOperand {
     //    kind: SIGNED_INTEGER
     //    bit_width: 32
     //    vector_width: 4
-    optional int32 vector_width = 3;
+    int32 vector_width = 3;
   }
 
   // The data type of the operand.
-  optional DataType data_type = 7;
+  DataType data_type = 7;
 
   // The size of the value in bits. This may differ from the size in data_type
   // in that it represents the "physical size" rather than the "logical size".
@@ -187,13 +191,13 @@ message InstructionOperand {
   // operates on. "Physical size" refers to the size of the location the operand
   // is read from / written to. These may be different in some cases, such as
   // when a value is read from a register but only the low bits are used.
-  optional int32 value_size_bits = 3;
+  int32 value_size_bits = 3;
 
   // This represents tags to mark masking (e.g. {k1}{z} or {k}), or specific
   // support (e.g. {er} or {sae}).
   message Tag {
     // Name, e.g. "k1", "er", ...
-    optional string name = 1;
+    string name = 1;
   }
   repeated Tag tags = 5;
 
@@ -204,7 +208,7 @@ message InstructionOperand {
     USAGE_WRITE = 2;
     USAGE_READ_WRITE = 3;
   }
-  optional Usage usage = 6;
+  Usage usage = 6;
 }
 
 // Contains a list of measurements of the CPU events like the number of uoos
@@ -213,10 +217,10 @@ message InstructionOperand {
 message ObservationVector {
   message Observation {
     // The name of the event. Added by PerfSubsystem::PopulateEventLists().
-    optional string event_name = 1;
+    string event_name = 1;
 
     // The measured value corresponding to the event.
-    optional double measurement = 2;
+    double measurement = 2;
   }
   repeated Observation observations = 1;
 }
@@ -226,7 +230,7 @@ message InstructionFormat {
   // instructions with the same name, but differing opcodes, depending on the
   // addressing. There can also be instructions with different names and the
   // same opcode.
-  optional string mnemonic = 1;
+  string mnemonic = 1;
 
   // The information about the operands of the instructions. The operands are
   // listed in the order in which they appear in the vendor syntax
@@ -239,26 +243,26 @@ message InstructionFormat {
 message InstructionProto {
   // A human-readable description of what the instruction actually does.
   // See the abovementioned Intel document, sections 3.1 and later.
-  optional string description = 1;
+  string description = 1;
 
   // This is the key field for an instruction as there can be several
   // instructions with the same name, but differing opcodes, depending on the
   // addressing. There can also be instructions with different names and the
   // same opcode.
-  optional string llvm_mnemonic = 2;
+  string llvm_mnemonic = 2;
 
   // The instruction as defined in the manuals of the chip vendor. Note that
   // this field serves as a documentation/comment rather than for practical use,
   // and it might not compile with LLVM. To emit this instruction with LLVM, use
   // the data from 'syntax' instead.
-  optional InstructionFormat vendor_syntax = 3;
+  InstructionFormat vendor_syntax = 3;
 
   // The instruction in the LLVM variant of the assembly syntax used by the
   // chip vendor.
-  optional InstructionFormat syntax = 4;
+  InstructionFormat syntax = 4;
 
   // The instruction in the AT&T syntax of LLVM.
-  optional InstructionFormat att_syntax = 5;
+  InstructionFormat att_syntax = 5;
 
   // Contains the name of the instruction set extension the instruction belongs
   // to, for example "SSE2" or "AVX". Note that this is a string and not an enum
@@ -267,27 +271,27 @@ message InstructionProto {
   // This can also hold combinations for feature names: "A && B" and "A || B"
   // respectively denote that the instruction requires both or any of features
   // A and B.
-  optional string feature_name = 17;
+  string feature_name = 17;
 
   // Whether the instruction is available in 64-bit mode. This is not the
   // case for example for AAA.
   // TODO(bdb): use an enum to encode the reason why the instruction is not
   // available in 64-bit mode.
-  optional bool available_in_64_bit = 18 [default = true];
+  bool available_in_64_bit = 18;
 
   // True if the instruction is usable in "legacy" mode.
   // TODO(bdb): use an enum to encode the reason why the instruction is not
   // usable in legacy mode.
-  optional bool legacy_instruction = 19 [default = true];
+  bool legacy_instruction = 19;
 
   // The encoding scheme for the instruction, as defined in the hereabove
   // mentioned Intel manual, section 2.1.5.
-  optional string encoding_scheme = 20;
+  string encoding_scheme = 20;
 
-  // The minimum required protected mode. The exact meaning depends on the
+  // The minimum  protected mode. The exact meaning depends on the
   // architecture (e.g. x86-64 has 4 levels [0-3] and ARM has 8). The default is
   // to assume the least priviledged mode.
-  optional int32 protection_mode = 29 [default = -1];
+  int32 protection_mode = 29;
 
   // The size of the binary encoding of the instruction, in bytes.
   // TODO(ondrasej): The encoding size might or might not depend on the operands
@@ -298,14 +302,14 @@ message InstructionProto {
   //                 three registers. We need to verify whether the size of the
   //                 encoding depends on the encoding and if it does, compute
   //                 the encoding size correctly.
-  optional int32 binary_encoding_size_bytes = 21;
+  int32 binary_encoding_size_bytes = 21;
 
   // The encoding specification of the instruction, as provided by the designer
   // of the CPU instruction set. The exact format of the value is
   // platform-dependent:
   // * For x86 and x86-64, the encoding specification language used in the
   //   Intel(r) 64 and IA-32 Architectures Software Developer's Manual.
-  optional string raw_encoding_specification = 22;
+  string raw_encoding_specification = 22;
 
   // Names of the register operands that are read by the instruction even if
   // they are not explicitly listed in the encoded form or the assembly code.
@@ -326,7 +330,7 @@ message InstructionProto {
   }
 
   // The index of the instruction group this instruction belongs to.
-  optional uint32 instruction_group_index = 32;
+  uint32 instruction_group_index = 32;
 }
 
 // Contains information about a group of instructions. (e.g. for Intel, this
@@ -334,15 +338,18 @@ message InstructionProto {
 // specification/... in the SDM)
 message InstructionGroupProto {
   // The group the instruction belong to. For example, VADDPS belongs to ADDPS.
-  optional string name = 1;
+  string name = 1;
+
+  // A short description of the group.
+  string short_description = 4;
 
   // A human-readable description of what the group of instructions actually
   // does.
-  optional string description = 2;
+  string description = 2;
 
   // A human-readable description of which flags are affected and how.
   message FlagsAffected {
-    optional string content = 1;
+    string content = 1;
   }
 
   repeated FlagsAffected flags_affected = 3;
@@ -351,12 +358,12 @@ message InstructionGroupProto {
 // Stores information about the source of an instruction set, for debugging.
 message InstructionSetSourceInfo {
   // The source used to create the instruction set.
-  optional string source_name = 1;
+  string source_name = 1;
 
   // Key/Value entries for metadata.
   message MetadataEntry {
-    optional string key = 1;
-    optional string value = 2;
+    string key = 1;
+    string value = 2;
   }
   repeated MetadataEntry metadata = 2;
 }
@@ -380,77 +387,77 @@ message InstructionSetProto {
 // the instruction. When executing a given micro-operation, the CPU picks
 // one of the execution ports and sends the micro-operation there.
 message MicroOperationProto {
-  optional PortMaskProto port_mask = 1;
-  optional int32 latency = 2 [default = 1];
+  PortMaskProto port_mask = 1;
+  int32 latency = 2;
   repeated int32 dependencies = 3;
-  optional bool double_pumped = 4 [default = false];
-  optional string likely_execution_unit = 5;
+  bool double_pumped = 4;
+  string likely_execution_unit = 5;
 }
 
 // The itinerary for an instruction.
 message ItineraryProto {
   // This is useful to be able to read stored files more easily. For debug only.
-  optional string llvm_mnemonic = 1;
+  string llvm_mnemonic = 1;
 
   // The latency is the number of cycles, after which the output of the
   // instruction is ready, and any other instruction that uses this
   // output can be sent for execution.
 
   // The minimum latency for the instruction (for example for simple cases).
-  optional int32 min_latency = 6;
+  int32 min_latency = 6;
 
   // The maximum latency for the instruction. For most of the basic instructions
   // the minimum latency is equal to the maximum latency.
-  optional int32 max_latency = 7;
+  int32 max_latency = 7;
 
   // For complex instructions like ENTER or REP CMPS, the latency can be
   // proportional to the number of bytes treated by the instruction.
-  optional double proportional_latency_per_byte = 8;
+  double proportional_latency_per_byte = 8;
 
   // True if the latency is approximate. This is the case for complex
   // micro-coded instructions.
-  optional bool latency_is_approximate = 9 [default = false];
+  bool latency_is_approximate = 9;
 
   // The minimum throughput for the instruction (for example for simple cases).
-  optional int32 min_throughput = 10;
+  int32 min_throughput = 10;
 
   // The maximum throughput for the instruction. For most of the basic
   // instructions the minimum throughput is equal to the maximum throughput.
-  optional int32 max_throughput = 11;
+  int32 max_throughput = 11;
 
   // For complex instructions like ENTER or REP CMPS, the throughput can be
   // proportional to the number of bytes treated by the instruction.
-  optional double proportional_throughput_per_byte = 12;
+  double proportional_throughput_per_byte = 12;
 
   // The number of micro-ops in the unfused domain, i.e. before macro-fusion
   // occurs.
-  optional int32 num_uops_unfused_domain = 13;
+  int32 num_uops_unfused_domain = 13;
 
-  // The number of micro-ops in the unfused domain, i.e. before macro-fusion
-  // occurs. For most instructions,
-  // num_uops_unfused_domain >= num_uops_fused_domain.
-  optional int32 num_uops_fused_domain = 14;
+  // The number of micro-ops in the fused domain, i.e. after macro-fusion
+  // occurs. For most instructions, num_uops_unfused_domain >=
+  // num_uops_fused_domain.
+  int32 num_uops_fused_domain = 14;
 
   // The following Boolean is true when the instruction is issued in
   // a standard way to the different execution units, by opposition to
   // micro-coded instructions.
-  optional bool standard_execution = 15 [default = true];
+  bool standard_execution = 15;
 
   // An itinerary is an array of MicroOperations describing the
   // different steps that must be performed to execute the instruction.
   repeated MicroOperationProto micro_ops = 16;
 
   // Observation vector for throughput measurements.
-  optional ObservationVector throughput_observation = 27;
+  ObservationVector throughput_observation = 27;
 
   // Observation vector for latency measurements.
-  optional ObservationVector latency_observation = 28;
+  ObservationVector latency_observation = 28;
 }
 
 // A set of instruction itineraries. This is always specific to a given
 // microarchitecture.
 message InstructionSetItinerariesProto {
-  optional string microarchitecture_id = 1;
+  string microarchitecture_id = 1;
   repeated ItineraryProto itineraries = 2;
 }
 
@@ -459,20 +466,16 @@ message InstructionSetItinerariesProto {
 // common to all microarchitectures.
 message ArchitectureProto {
   // e.g. "x86_64".
-  optional string name = 5;
+  string name = 5;
 
   // The unannotated instruction set after applying transforms.
-  optional InstructionSetProto instruction_set = 1;
+  InstructionSetProto instruction_set = 1;
 
   // Itineraries, per micro-architecture.
   repeated InstructionSetItinerariesProto per_microarchitecture_itineraries = 3;
 
-  // The raw instruction set, for reference. This might not have the same number
-  // of instructions as unannotated_instruction_set.
-  optional InstructionSetProto raw_instruction_set = 2;
-
   // The list of registers available in the instruction set.
-  optional RegisterSetProto register_set = 6;
+  RegisterSetProto register_set = 6;
 }
 
 // Allows defining translation of instruction mnemonics from one or more source
@@ -485,7 +488,7 @@ message ArchitectureProto {
 // x86 and x86-64 instruction).
 message InstructionMnemonicTranslationProto {
   repeated string source_mnemonics = 1;
-  optional string target_mnemonic = 2;
+  string target_mnemonic = 2;
 }
 
 message InstructionMnemonicTranslationListProto {

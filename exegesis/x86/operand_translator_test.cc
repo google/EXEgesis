@@ -27,6 +27,7 @@ using ::exegesis::testing::EqualsProto;
 
 TEST(OperandTranslatorTest, Works) {
   const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"(
+      legacy_instruction: true
       vendor_syntax {
         mnemonic: "ADD"
         operands {

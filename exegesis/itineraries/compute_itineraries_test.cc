@@ -53,6 +53,7 @@ TEST(ComputeItinerariesTest, ADC) {
           }
           available_in_64_bit: true
           legacy_instruction: true
+          protection_mode: -1
           raw_encoding_specification: "14 ib"
           x86_encoding_specification {
             opcode: 20
@@ -81,7 +82,7 @@ TEST(ComputeItinerariesTest, ADC) {
   } else {
     EXPECT_EQ(1, itineraries.itineraries_size());
 
-    // Chech that we've detected at least one micro op.
+    // Check that we've detected at least one micro op.
     EXPECT_GT(itineraries.itineraries(0).micro_ops_size(), 0);
     // This is a simple instruction.
     EXPECT_LT(itineraries.itineraries(0).micro_ops_size(), 3);

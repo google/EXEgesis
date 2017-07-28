@@ -49,6 +49,7 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
         vendor_syntax { mnemonic: 'HLT' }
+        protection_mode: -1
       }
       instructions {
         vendor_syntax {
@@ -63,6 +64,7 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
         protection_mode: 0
       }
       instructions {
+        protection_mode: -1
         vendor_syntax {
           mnemonic: 'MOV'
           operands { name: 'r64' }

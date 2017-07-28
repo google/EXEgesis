@@ -397,7 +397,8 @@ string ComputeItinerariesHelper::MakeCleanupCode(uint8* const fx_state_buffer) {
 // We should revisit that when it's the case.
 bool TouchesMemory(const InstructionFormat& asm_syntax) {
   for (const InstructionOperand& operand : asm_syntax.operands()) {
-    CHECK(operand.has_addressing_mode());
+    CHECK_NE(operand.addressing_mode(),
+             InstructionOperand::ANY_ADDRESSING_MODE);
     if (InCategory(operand.addressing_mode(),
                    InstructionOperand::INDIRECT_ADDRESSING) ||
         InCategory(operand.addressing_mode(),

@@ -772,7 +772,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     InstructionOperand* const operand =
         vendor_syntax->mutable_operands(operand_index);
 
-    if (!operand->has_addressing_mode()) {
+    if (operand->addressing_mode() == InstructionOperand::ANY_ADDRESSING_MODE) {
       InstructionOperand::AddressingMode addressing_mode;
       if (!FindCopy(addressing_mode_map, operand->name(), &addressing_mode)) {
         status = InvalidArgumentError(StrCat(
@@ -789,7 +789,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       operand->set_value_size_bits(value_size_bits);
     }
 
-    if (operand->has_encoding()) {
+    if (operand->encoding() != InstructionOperand::ANY_ENCODING) {
       UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
                                                  available_encodings));
     } else {
@@ -898,7 +898,7 @@ Status AssignEncodingRandomlyFromAvailableEncodings(
     InstructionOperandEncodingMultiset* available_encodings) {
   InstructionFormat* const vendor_syntax = instruction->mutable_vendor_syntax();
   for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
-    if (!operand.has_encoding()) {
+    if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
       if (available_encodings->empty()) {
         return InvalidArgumentError(
             StrCat("No available encodings for instruction:\n",
