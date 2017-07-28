@@ -12,12 +12,12 @@ cc_library(
         "case.h",
         "str_cat.h",
         "str_join.h",
+        "str_replace.h",
         "str_split.h",
         "string.h",
         "string_view.h",
         "string_view_utils.h",
         "strip.h",
-        "util.h",
     ],
     deps = [
         "@com_google_protobuf//:protobuf_lite",

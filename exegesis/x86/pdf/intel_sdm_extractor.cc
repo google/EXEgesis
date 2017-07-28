@@ -32,7 +32,6 @@
 #include "strings/str_split.h"
 #include "strings/string_view_utils.h"
 #include "strings/strip.h"
-#include "strings/util.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 

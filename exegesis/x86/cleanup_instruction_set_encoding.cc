@@ -28,7 +28,7 @@
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "strings/str_cat.h"
-#include "strings/util.h"
+#include "strings/str_replace.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"

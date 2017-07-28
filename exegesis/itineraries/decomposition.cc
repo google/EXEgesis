@@ -33,7 +33,6 @@
 #include "strings/str_cat.h"
 #include "strings/str_join.h"
 #include "strings/string_view.h"
-#include "strings/util.h"
 #include "util/gtl/container_algorithm.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"

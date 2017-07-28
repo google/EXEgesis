@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2017 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef STRINGS_UTIL_H_
-#define STRINGS_UTIL_H_
+#ifndef STRINGS_STR_REPLACE_H_
+#define STRINGS_STR_REPLACE_H_
 
 #include "src/google/protobuf/stubs/strutil.h"
 
@@ -24,4 +24,4 @@ using ::google::protobuf::StringReplace;
 
 }  // namespace exegesis
 
-#endif  // STRINGS_UTIL_H_
+#endif  // STRINGS_STR_REPLACE_H_
