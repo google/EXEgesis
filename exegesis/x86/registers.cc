@@ -300,8 +300,146 @@ RegisterSetProto GetFlagsRegisters() {
 }
 
 RegisterSetProto GetFpuAndMmxRegisters() {
-  return MakeRegistersFromBaseNameAndIndices(
+  constexpr char kX87FpuStatusAndControlRegisters[] = R"(
+      register_groups {
+        name: "FPU status word"
+        description: "The x87 FPU status word."
+        registers {
+          name: "FPSW"  # Note that the name FPSW is not used in the Intel SDM,
+                        # but it is used in LLVM TD files.
+          implicit_encoding_only: true
+          position_in_group { lsb: 0 msb: 15 }
+          subfields {
+            bit_range { lsb: 0 msb: 0 }
+            name: "IE"
+            description: "Invalid Operation"
+          }
+          subfields {
+            bit_range { lsb: 1 msb: 1 }
+            name: "DE"
+            description: "Denormalized Operand"
+          }
+          subfields {
+            bit_range { lsb: 2 msb: 2 }
+            name: "ZE"
+            description: "Zero Divide"
+          }
+          subfields {
+            bit_range { lsb: 3 msb: 3 }
+            name: "OE"
+            description: "Overflow"
+          }
+          subfields {
+            bit_range { lsb: 4 msb: 4 }
+            name: "UE"
+            description: "Underflow"
+          }
+          subfields {
+            bit_range { lsb: 5 msb: 5 }
+            name: "PE"
+            description: "Precision"
+          }
+          subfields {
+            bit_range { lsb: 6 msb: 6 }
+            name: "SF"
+            description: "Stack Fault"
+          }
+          subfields {
+            bit_range { lsb: 7 msb: 7 }
+            name: "ES"
+            description: "Exception Summary Status"
+          }
+          subfields {
+            bit_range { lsb: 8 msb: 10 }
+            name: "C0-C2"
+            description: "Condition Code 0-2"
+          }
+          subfields {
+            bit_range { lsb: 11 msb: 13 }
+            name: "TOP"
+            description: "Top of Stack Pointer"
+          }
+          subfields {
+            bit_range { lsb: 14 msb: 14 }
+            name: "C3"
+            description: "Condition Code 3"
+          }
+          subfields {
+            bit_range { lsb: 15 msb: 15 }
+            name: "B"
+            description: "FPU Busy"
+          }
+        }
+      }
+      register_groups {
+        name: "FPU control word"
+        description: "The x87 FPU control word."
+        registers {
+          name: "FPCW"  # Note that the name FPCW is used neither in the Intel
+                        # SDM nor in LLVM; we use this name because it follows
+                        # The same convention as FPSW.
+          implicit_encoding_only: true
+          position_in_group { lsb: 0 msb: 15 }
+          subfields {
+            bit_range { lsb: 0 msb: 0 }
+            name: "IM"
+            description: "Invalid Operation Mask"
+          }
+          subfields {
+            bit_range { lsb: 1 msb: 1 }
+            name: "DM"
+            description: "Denormalized Operand Mask"
+          }
+          subfields {
+            bit_range { lsb: 2 msb: 2 }
+            name: "ZM"
+            description: "Zero Divide Mask"
+          }
+          subfields {
+            bit_range { lsb: 3 msb: 3 }
+            name: "OM"
+            description: "Overflow Mask"
+          }
+          subfields {
+            bit_range { lsb: 4 msb: 4 }
+            name: "UM"
+            description: "Underflow Mask"
+          }
+          subfields {
+            bit_range { lsb: 5 msb: 5 }
+            name: "PM"
+            description: "Precision Mask"
+          }
+          subfields {
+            bit_range { lsb: 6 msb: 7 }
+            name: "reserved"
+          }
+          subfields {
+            bit_range { lsb: 8 msb: 9 }
+            name: "PC"
+            description: "Precision Control"
+          }
+          subfields {
+            bit_range { lsb: 10 msb: 11 }
+            name: "RC"
+            description: "Rounding Control"
+          }
+          subfields {
+            bit_range { lsb: 12 msb: 12 }
+            name: "X"
+            description: "Infinity Control"
+          }
+          subfields {
+            bit_range { lsb: 13 msb: 15 }
+            name: "reserved"
+          }
+        }
+      })";
+  RegisterSetProto register_set = MakeRegistersFromBaseNameAndIndices(
       {{"ST", "", 0, 79, 0, "FPU"}, {"MM", "", 0, 63, 0, "MMX"}}, "", 0, 8, 0);
+  register_set.MergeFrom(ParseProtoFromStringOrDie<RegisterSetProto>(
+      kX87FpuStatusAndControlRegisters));
+  return register_set;
 }
 
 RegisterSetProto GetOpmaskRegisters() {
@@ -309,9 +447,107 @@ RegisterSetProto GetOpmaskRegisters() {
                                              "k", 0, 8, 0);
 }
 
+// Returns a RegisterSetProto that contains the definitions of the segment
+// registers.
+RegisterSetProto GetSegmentRegisters() {
+  return MakeRegistersFromBaseNames({{"", "S", 0, 15, 0, ""}},
+                                    {"E", "C", "S", "D", "F", "G"}, 0);
+}
+
 // Returns a RegisterSetProto that contains definitions of the XMM* registers.
 RegisterSetProto GetXmmRegisters() {
-  RegisterSetProto register_set;
+  static constexpr char kXmmControlRegister[] = R"(
+      register_groups {
+        name: "MXCSR group"
+        description: "The SIMD floating point operation control register."
+        registers {
+          name: "MXCSR"
+          description: "The SIMD floating point operation control register."
+          implicit_encoding_only: true
+          position_in_group { lsb: 0 msb: 31 }
+          subfields {
+            bit_range { lsb: 0 msb: 0 }
+            name: "IE"
+            description: "Invalid Operation Flag"
+          }
+          subfields {
+            bit_range { lsb: 1 msb: 1 }
+            name: "DE"
+            description: "Denormal Flag"
+          }
+          subfields {
+            bit_range { lsb: 2 msb: 2 }
+            name: "ZE"
+            description: "Divide-by-zero Flag"
+          }
+          subfields {
+            bit_range { lsb: 3 msb: 3 }
+            name: "OE"
+            description: "Overflow Flag"
+          }
+          subfields {
+            bit_range { lsb: 4 msb: 4 }
+            name: "UE"
+            description: "Underflow Flag"
+          }
+          subfields {
+            bit_range { lsb: 5 msb: 5 }
+            name: "PE"
+            description: "Precision Flag"
+          }
+          subfields {
+            bit_range { lsb: 6 msb: 6 }
+            name: "DAZ"
+            description: "Denormals Are Zeros"
+          }
+          subfields {
+            bit_range { lsb: 7 msb: 7 }
+            name: "IM"
+            description: "Invalid Operation Mask"
+          }
+          subfields {
+            bit_range { lsb: 8 msb: 8 }
+            name: "DM"
+            description: "Denormal Operation Mask"
+          }
+          subfields {
+            bit_range { lsb: 9 msb: 9 }
+            name: "ZM"
+            description: "Divide-by-zero Mask"
+          }
+          subfields {
+            bit_range { lsb: 10 msb: 10 }
+            name: "OM"
+            description: "Overflow Mask"
+          }
+          subfields {
+            bit_range { lsb: 11 msb: 11 }
+            name: "UM"
+            description: "Underflow Mask"
+          }
+          subfields {
+            bit_range { lsb: 12 msb: 12 }
+            name: "PM"
+            description: "Precision Mask"
+          }
+          subfields {
+            bit_range { lsb: 13 msb: 14 }
+            name: "RC"
+            description: "Rounding Control"
+          }
+          subfields {
+            bit_range { lsb: 15 msb: 15 }
+            name: "FZ"
+            description: "Flush to Zero"
+          }
+          subfields {
+            bit_range { lsb: 16 msb: 31 }
+            name: "reserved"
+          }
+        }
+      })";
+  RegisterSetProto register_set =
+      ParseProtoFromStringOrDie<RegisterSetProto>(kXmmControlRegister);
   register_set.MergeFrom(
       MakeRegistersFromBaseNameAndIndices({{"X", "", 0, 127, 0, "SSE"},
                                            {"Y", "", 0, 255, 0, "AVX"},
@@ -325,6 +561,43 @@ RegisterSetProto GetXmmRegisters() {
                                            {"Z", "", 0, 511, 0, "AVX512"}},
                                           "MM", 16, 32, 16));
   return register_set;
+}
+
+RegisterSetProto GetMemoryControlRegisters() {
+  static constexpr char kRegisterSet[] = R"(
+      register_groups {
+        name: "GDTR group"
+        description: "The Global Descriptor Table Register group"
+        registers {
+          name: "GDTR"
+          position_in_group { lsb: 0 msb: 63 }
+        }
+      }
+      register_groups {
+        name: "LDTR group"
+        description: "The Local Descriptor Table Register group"
+        registers {
+          name: "LDTR"
+          position_in_group { lsb: 0 msb: 63 }
+        }
+      }
+      register_groups {
+        name: "IDTR group"
+        description: "The Interrupt Descriptor Table Register group"
+        registers {
+          name: "IDTR"
+          position_in_group { lsb: 0 msb: 63 }
+        }
+      }
+      register_groups {
+        name: "TR group"
+        description: "The Task Register group"
+        registers {
+          name: "TR"
+          position_in_group { lsb: 0 msb: 63 }
+        }
+      })";
+  return ParseProtoFromStringOrDie<RegisterSetProto>(kRegisterSet);
 }
 
 }  // namespace
@@ -344,7 +617,9 @@ const RegisterSetProto& GetRegisterSet() {
     register_set->MergeFrom(GetFlagsRegisters());
     register_set->MergeFrom(GetFpuAndMmxRegisters());
     register_set->MergeFrom(GetOpmaskRegisters());
+    register_set->MergeFrom(GetSegmentRegisters());
     register_set->MergeFrom(GetXmmRegisters());
+    register_set->MergeFrom(GetMemoryControlRegisters());
     return register_set;
   }();
   return *register_set;

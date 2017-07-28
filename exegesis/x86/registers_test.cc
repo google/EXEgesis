@@ -119,114 +119,154 @@ TEST(GetRegisterSetTest, PositionsAreOverlapping) {
 }
 
 TEST(GetRegisterSetTest, CheckSomeRegisters) {
-  // clang-format off
   constexpr struct {
     const char* register_name;
     const char* expected_proto;
-  } kTestCases[] =
+  } kTestCases[] =  //
       {{"RAX", R"(
-        name: "RAX group"
-        description: "The group of registers aliased with RAX"
+        name: 'RAX group'
+        description: 'The group of registers aliased with RAX'
         registers {
-          name: "RAX"
+          name: 'RAX'
           binary_encoding: 0
-          position_in_group { msb: 63 }
+          position_in_group {
+            msb: 63
+          }
         }
         registers {
-          name: "EAX"
+          name: 'EAX'
           binary_encoding: 0
-          position_in_group { msb: 31 }
+          position_in_group {
+            msb: 31
+          }
         }
         registers {
-          name: "AX"
+          name: 'AX'
           binary_encoding: 0
-          position_in_group { msb: 15 }
+          position_in_group {
+            msb: 15
+          }
         }
         registers {
-          name: "AL"
+          name: 'AL'
           binary_encoding: 0
-          position_in_group { msb: 7 }
+          position_in_group {
+            msb: 7
+          }
         }
         registers {
-          name: "AH"
+          name: 'AH'
           binary_encoding: 4
-          position_in_group { lsb: 8 msb: 15 }
+          position_in_group {
+            lsb: 8
+            msb: 15
+          }
         })"},
        {"R16", ""},
        {"ST7", R"(
-        name: "ST7 group"
-        description: "The group of registers aliased with ST7"
+        name: 'ST7 group'
+        description: 'The group of registers aliased with ST7'
         registers {
-          name: "ST7"
+          name: 'ST7'
           binary_encoding: 7
-          position_in_group { msb: 79 }
-          feature_name: "FPU"
+          position_in_group {
+            msb: 79
+          }
+          feature_name: 'FPU'
         }
         registers {
-          name: "MM7"
+          name: 'MM7'
           binary_encoding: 7
-          position_in_group { msb: 63 }
-          feature_name: "MMX"
+          position_in_group {
+            msb: 63
+          }
+          feature_name: 'MMX'
+        })"},
+       {"DS", R"(
+        name: 'DS group'
+        description: 'The group of registers aliased with DS'
+        registers {
+          name: 'DS'
+          binary_encoding: 3
+          position_in_group {
+            lsb: 0
+            msb: 15
+          }
         })"},
        {"XMM15", R"(
-        name: "XMM15 group"
-        description: "The group of registers aliased with XMM15"
+        name: 'XMM15 group'
+        description: 'The group of registers aliased with XMM15'
         registers {
-          name: "XMM15"
+          name: 'XMM15'
           binary_encoding: 15
-          position_in_group { msb: 127 }
-          feature_name: "SSE"
+          position_in_group {
+            msb: 127
+          }
+          feature_name: 'SSE'
         }
         registers {
-          name: "YMM15"
+          name: 'YMM15'
           binary_encoding: 15
-          position_in_group { msb: 255 }
-          feature_name: "AVX"
+          position_in_group {
+            msb: 255
+          }
+          feature_name: 'AVX'
         }
         registers {
-          name: "ZMM15"
+          name: 'ZMM15'
           binary_encoding: 15
-          position_in_group { msb: 511 }
-          feature_name: "AVX512"
+          position_in_group {
+            msb: 511
+          }
+          feature_name: 'AVX512'
         })"},
        {"XMM17", R"(
-        name: "XMM17 group"
-        description: "The group of registers aliased with XMM17"
+        name: 'XMM17 group'
+        description: 'The group of registers aliased with XMM17'
         registers {
-          name: "XMM17"
+          name: 'XMM17'
           binary_encoding: 17
-          position_in_group { msb: 127 }
-          feature_name: "AVX512"
+          position_in_group {
+            msb: 127
+          }
+          feature_name: 'AVX512'
         }
         registers {
-          name: "YMM17"
+          name: 'YMM17'
           binary_encoding: 17
-          position_in_group { msb: 255 }
-          feature_name: "AVX512"
+          position_in_group {
+            msb: 255
+          }
+          feature_name: 'AVX512'
         }
         registers {
-          name: "ZMM17"
+          name: 'ZMM17'
           binary_encoding: 17
-          position_in_group { msb: 511 }
-          feature_name: "AVX512"
+          position_in_group {
+            msb: 511
+          }
+          feature_name: 'AVX512'
         })"},
        {"CR3", R"(
-        name: "CR3 group"
-        description: "The group of registers aliased with CR3"
+        name: 'CR3 group'
+        description: 'The group of registers aliased with CR3'
         registers {
-          name: "CR3"
+          name: 'CR3'
           binary_encoding: 3
-          position_in_group { msb: 63 }
+          position_in_group {
+            msb: 63
+          }
         })"},
        {"DR3", R"(
-        name: "DR3 group"
-        description: "The group of registers aliased with DR3"
+        name: 'DR3 group'
+        description: 'The group of registers aliased with DR3'
         registers {
-          name: "DR3"
+          name: 'DR3'
           binary_encoding: 3
-          position_in_group { msb: 63 }
+          position_in_group {
+            msb: 63
+          }
         })"}};
-  // clang-format on
   for (const auto& test_case : kTestCases) {
     const string register_name = test_case.register_name;
     SCOPED_TRACE(StrCat("register_name = ", register_name));
@@ -235,7 +275,9 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
   }
   // The definitions of the following registers are too long to repeat here. We
   // only check that we have some definition for them.
-  constexpr const char* kCheckedRegisters[] = {"RFLAGS", "EFLAGS"};
+  constexpr const char* kCheckedRegisters[] = {"RFLAGS", "EFLAGS", "FPSW",
+                                               "MXCSR",  "FPCW",   "GDTR",
+                                               "LDTR",   "IDTR",   "TR"};
   for (const string register_name : kCheckedRegisters) {
     SCOPED_TRACE(StrCat("register_name = ", register_name));
     EXPECT_THAT(FindGroupByRegister(GetRegisterSet(), register_name),
