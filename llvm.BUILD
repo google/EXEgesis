@@ -608,6 +608,7 @@ cc_library(
     ]) + [
         "include/llvm-c/Disassembler.h",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":config",
         ":machine_code",
