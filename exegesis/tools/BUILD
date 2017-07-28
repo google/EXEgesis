@@ -10,7 +10,7 @@ cc_binary(
     name = "compute_itineraries",
     srcs = ["compute_itineraries.cc"],
     deps = [
-        ":instruction_sets",
+        ":architecture_flags",
         "//base",
         "//exegesis/base:microarchitecture",
         "//exegesis/itineraries:compute_itineraries",
@@ -24,21 +24,16 @@ cc_binary(
 
 # A library that provides access to instruction sets for all supported architectures.
 cc_library(
-    name = "instruction_sets",
-    srcs = ["instruction_sets.cc"],
-    hdrs = ["instruction_sets.h"],
+    name = "architecture_flags",
+    srcs = ["architecture_flags.cc"],
+    hdrs = ["architecture_flags.h"],
     visibility = ["//visibility:public"],
     deps = [
         "//base",
         "//exegesis/base:architecture_provider",
-        "//exegesis/base:cleanup_instruction_set",
         "//exegesis/base:microarchitecture",
-        "//exegesis/base:restrict",
-        "//exegesis/base:transform_factory",
         "//exegesis/proto:instructions_cc_proto",
-        "//exegesis/x86:cleanup_instruction_set_all",
         "//strings",
-        "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
