@@ -32,16 +32,32 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "intel_sdm_proto",
+    srcs = ["intel_sdm.proto"],
+    deps = [
+        "//exegesis/proto:instructions_proto",
+        "//exegesis/proto/pdf:pdf_document_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "intel_sdm_cc_proto",
+    deps = [
+        ":intel_sdm_proto",
+    ],
+)
+
 cc_library(
     name = "intel_sdm_extractor",
     srcs = ["intel_sdm_extractor.cc"],
     hdrs = ["intel_sdm_extractor.h"],
     deps = [
+        ":intel_sdm_cc_proto",
         ":vendor_syntax",
         "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/pdf:pdf_document_cc_proto",
-        "//exegesis/proto/pdf/x86:intel_sdm_cc_proto",
         "//exegesis/util:text_processing",
         "//exegesis/util/pdf:pdf_document_utils",
         "//strings",

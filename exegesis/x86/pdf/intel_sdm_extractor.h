@@ -19,7 +19,7 @@
 
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
-#include "exegesis/proto/pdf/x86/intel_sdm.pb.h"
+#include "exegesis/x86/pdf/intel_sdm.pb.h"
 
 namespace exegesis {
 namespace x86 {
