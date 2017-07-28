@@ -14,7 +14,9 @@
 
 #include "exegesis/base/cpuid_x86.h"
 
+#ifdef __x86_64__
 #include <cpuid.h>
+#endif  //  __x86_64__
 
 #include <unordered_map>
 
@@ -380,9 +382,9 @@ StatusOr<CpuIdDump> CpuIdDump::FromString(const string& source) {
 
 CpuIdDump CpuIdDump::FromHost() {
   CpuIdDump dump;
+#ifdef __x86_64__
   X86CpuIdDumpProto* const dump_proto =
       dump.dump_proto_.mutable_x86_cpuid_dump();
-#ifdef __x86_64__
   AddHostCpuIdEntriesFromSeed(0, dump_proto);
   AddHostCpuIdEntriesFromSeed(0x80000000, dump_proto);
 #endif  // __x86_64__
