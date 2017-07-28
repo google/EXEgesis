@@ -11,6 +11,9 @@ package exegesis;
 //
 // TODO(gchatelet): Add validation code.
 message FixedSizeInstructionLayout {
+  // An identifier for the kind of encoding (FORM for POWER, ps_name for ARM).
+  string form_name = 1;
+
   // A sequence of bits indexed by [msb, lsb].
   message BitRange {
     // Invariant: msb >= lsb && lsb >= 0.
@@ -20,8 +23,8 @@ message FixedSizeInstructionLayout {
 
     enum Bit {
       UNKNOWN = 0;        // Needed by proto3, do not use.
-      CONSTANT_ONE = 1;   // Bit is 0.
-      CONSTANT_ZERO = 2;  // Bit is 1.
+      CONSTANT_ONE = 1;   // Bit is 1.
+      CONSTANT_ZERO = 2;  // Bit is 0.
       VARIABLE = 3;       // Bit value is set at runtime.
     }
 
@@ -38,5 +41,5 @@ message FixedSizeInstructionLayout {
                                 // needed to validate the range.
   }
 
-  repeated BitRange bit_ranges = 1;  // Sorted by decreasing msb.
+  repeated BitRange bit_ranges = 2;  // Sorted by decreasing msb.
 }
