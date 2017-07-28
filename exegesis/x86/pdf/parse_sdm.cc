@@ -25,12 +25,18 @@
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
 #include "exegesis/x86/pdf/intel_sdm_extractor.h"
+#include "exegesis/x86/registers.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "strings/str_cat.h"
 #include "strings/str_split.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
+
+DEFINE_bool(exegesis_parse_sdm_store_intermediate_files, false,
+            "Set to true to write intermediate files: the PDF and SDM protos "
+            "and the raw instruction set.");
 
 namespace exegesis {
 namespace x86 {
@@ -72,40 +78,53 @@ std::vector<PdfParseRequest> ParseRequestsOrDie(const string& input_spec) {
 
 }  // namespace
 
-InstructionSetProto ParseSdmOrDie(const string& input_spec,
-                                  const string& patches_folder,
-                                  const string& output_base) {
+ArchitectureProto ParseSdmOrDie(const string& input_spec,
+                                const string& patches_folder,
+                                const string& output_base) {
   const PdfDocumentsChanges patch_sets = LoadConfigurations(patches_folder);
 
   const auto requests = ParseRequestsOrDie(input_spec);
 
-  InstructionSetProto full_instruction_set;
+  ArchitectureProto architecture;
+  InstructionSetProto* const full_instruction_set =
+      architecture.mutable_instruction_set();
   for (int request_id = 0; request_id < requests.size(); ++request_id) {
     const PdfParseRequest& spec = requests[request_id];
     const PdfDocument pdf_document = ParseOrDie(spec, patch_sets);
-    const string pb_filename = StrCat(output_base, "_", request_id, ".pdf.pb");
-    LOG(INFO) << "Saving pdf as proto file : " << pb_filename;
-    WriteBinaryProtoOrDie(pb_filename, pdf_document);
+    if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
+      const string pb_filename =
+          StrCat(output_base, "_", request_id, ".pdf.pb");
+      LOG(INFO) << "Saving pdf as proto file : " << pb_filename;
+      WriteBinaryProtoOrDie(pb_filename, pdf_document);
+    }
 
     LOG(INFO) << "Extracting instruction set";
     const SdmDocument sdm_document =
         ConvertPdfDocumentToSdmDocument(pdf_document);
-    const string sdm_pb_filename =
-        StrCat(output_base, "_", request_id, ".sdm.pb");
-    LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
-    WriteBinaryProtoOrDie(sdm_pb_filename, sdm_document);
+    if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
+      const string sdm_pb_filename =
+          StrCat(output_base, "_", request_id, ".sdm.pb");
+      LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
+      WriteBinaryProtoOrDie(sdm_pb_filename, sdm_document);
+    }
     InstructionSetProto instruction_set = ProcessIntelSdmDocument(sdm_document);
     *instruction_set.add_source_infos() =
         CreateInstructionSetSourceInfo(pdf_document.metadata());
-    full_instruction_set.MergeFrom(instruction_set);
+    full_instruction_set->MergeFrom(instruction_set);
   }
 
-  // Outputs the instructions.
-  const string instructions_filename = StrCat(output_base, ".pbtxt");
-  LOG(INFO) << "Saving instruction database as: " << instructions_filename;
-  WriteTextProtoOrDie(instructions_filename, full_instruction_set);
+  // Add information about registers; the registers are not listed in the SDM in
+  // a consistent way, and thus we supply our own definitions.
+  *architecture.mutable_register_set() = x86::GetRegisterSet();
 
-  return full_instruction_set;
+  // Outputs the instructions.
+  if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
+    const string instructions_filename = StrCat(output_base, ".raw.pbtxt");
+    LOG(INFO) << "Saving instruction database as: " << instructions_filename;
+    WriteTextProtoOrDie(instructions_filename, architecture);
+  }
+
+  return architecture;
 }
 
 }  // namespace pdf

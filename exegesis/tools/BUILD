@@ -46,9 +46,11 @@ cc_binary(
     srcs = ["parse_intel_sdm.cc"],
     deps = [
         "//base",
+        "//exegesis/base:cleanup_instruction_set",
         "//exegesis/base:transform_factory",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/util:proto_util",
+        "//exegesis/x86:cleanup_instruction_set_all",
         "//exegesis/x86/pdf:parse_sdm",
         "//strings",
         "//util/task:status",

@@ -32,10 +32,18 @@ DEFINE_string(exegesis_input_spec, "",
               "process all the pages to the end. If no range is provided, "
               "the entire PDF is processed. Required.");
 DEFINE_string(exegesis_output_file_base, "",
-              "Where to dump instructions. Required.");
+              "Where to dump instructions. Required. The binary will write an "
+              "ArchitectureProto with all instructions parsed form the manual "
+              "to {exegesis_output_file_base}.pbtxt. When "
+              "exegesis_parse_sm_store_intermediate_files is true, it will "
+              "also store files with the intermediate data in other files with "
+              "the same base name and different suffixes.");
 DEFINE_string(
     exegesis_patches_directory, "exegesis/x86/pdf/sdm_patches/",
     "A folder containing a set of patches to apply to original documents");
+DEFINE_bool(exegesis_ignore_failing_transforms, false,
+            "Set if some transforms are failing but you still need to process "
+            "the instruction set");
 
 namespace exegesis {
 namespace {
@@ -45,19 +53,25 @@ void Main() {
   CHECK(!FLAGS_exegesis_output_file_base.empty())
       << "missing --exegesis_output_file_base";
 
-  InstructionSetProto instruction_set = x86::pdf::ParseSdmOrDie(
+  ArchitectureProto architecture = x86::pdf::ParseSdmOrDie(
       FLAGS_exegesis_input_spec, FLAGS_exegesis_patches_directory,
       FLAGS_exegesis_output_file_base);
 
   // Optionally apply transforms in --exegesis_transforms.
-  CHECK_OK(RunTransformPipeline(GetTransformsFromCommandLineFlags(),
-                                &instruction_set));
+  const auto result_status =
+      RunTransformPipeline(GetTransformsFromCommandLineFlags(),
+                           architecture.mutable_instruction_set());
+  if (!FLAGS_exegesis_ignore_failing_transforms) {
+    CHECK_OK(result_status);
+  } else {
+    LOG_IF(ERROR, !result_status.ok()) << result_status;
+  }
 
   // Write transformed intruction set.
-  const string instructions_filename =
-      StrCat(FLAGS_exegesis_output_file_base, "_transformed.pbtxt");
-  LOG(INFO) << "Saving instruction database as: " << instructions_filename;
-  WriteTextProtoOrDie(instructions_filename, instruction_set);
+  const string architecture_filename =
+      StrCat(FLAGS_exegesis_output_file_base, ".pbtxt");
+  LOG(INFO) << "Saving ArchitectureProto as: " << architecture_filename;
+  WriteTextProtoOrDie(architecture_filename, architecture);
 }
 
 }  // namespace

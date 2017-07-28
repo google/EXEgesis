@@ -29,9 +29,9 @@ namespace pdf {
 //     of the PDF (raw parsed input) and SDM (interpreted input) respectively,
 //     as <output_base>_<input_id>.{pdf,sdm}.pb
 // The files in patches_folder are applied before interpreting the SDM.
-InstructionSetProto ParseSdmOrDie(const string& input_spec,
-                                  const string& patches_folder,
-                                  const string& output_base);
+ArchitectureProto ParseSdmOrDie(const string& input_spec,
+                                const string& patches_folder,
+                                const string& output_base);
 
 }  // namespace pdf
 }  // namespace x86

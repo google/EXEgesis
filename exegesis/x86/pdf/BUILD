@@ -111,6 +111,7 @@ cc_library(
         "//exegesis/util/pdf:pdf_document_utils",
         "//exegesis/util/pdf:xpdf_util",
         "//exegesis/x86:cleanup_instruction_set_all",
+        "//exegesis/x86:registers",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
