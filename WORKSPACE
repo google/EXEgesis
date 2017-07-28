@@ -79,7 +79,7 @@ new_http_archive(
 new_git_repository(
     name = "libpfm4_git",
     build_file = "libpfm4.BUILD",
-    remote = "https://git.code.sf.net/p/perfmon2/libpfm4",
+    remote = "git://git.code.sf.net/p/perfmon2/libpfm4",
     tag = "v4.8.0",
 )
 
