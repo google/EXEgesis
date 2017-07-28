@@ -214,7 +214,7 @@ GetInstructionColumnMatchers() {
           {InstructionTable::IT_MODE_COMPAT_LEG,
            new RE2(R"(Compat/\n?Leg Mode\*?)")},
           {InstructionTable::IT_FEATURE_FLAG,
-           new RE2(R"(CPUID(\ ?\n?Fea\-?\n?ture \n?Flag)?)")},
+           new RE2(R"(CPUID(\ ?\n?Fea\-?\n?ture \n?Flag)?)")},  // NOTYPO
           {InstructionTable::IT_DESCRIPTION, new RE2(R"(Description)")},
           {InstructionTable::IT_OP_EN, new RE2(R"(Op\ ?\n?/?\ ?\n?E\n?[nN])")},
       };
@@ -505,27 +505,35 @@ void ParseInstructionTable(const SubSection& sub_section,
   }
 }
 
-bool IsOperandEncodingTableHeader(const PdfTextTableRow& row) {
-  const auto& blocks = row.blocks();
-  return std::all_of(blocks.begin(), blocks.end(),
-                     [](const PdfTextBlock& block) {
-                       string text = block.text();
-                       RemoveSpaceAndLF(&text);
-                       return RE2::FullMatch(text,
-                                             R"(Op/En|Operand[1234])");
-                     });
+OperandEncodingTableType GetOperandEncodingTableHeaderType(
+    const PdfTextTableRow& row) {
+  bool has_tuple_type_column = false;
+  for (const auto& block : row.blocks()) {
+    string text = block.text();
+    RemoveSpaceAndLF(&text);
+    if (text == "TupleType") {
+      has_tuple_type_column = true;
+    }
+    if (!RE2::FullMatch(text, R"(Op/En|Operand[1234]|TupleType)")) {
+      return OET_INVALID;
+    }
+  }
+  return has_tuple_type_column ? OET_WITH_TUPLE_TYPE : OET_LEGACY;
 }
 
-void ParseOperandEncodingTableRow(const PdfTextTableRow& row,
+void ParseOperandEncodingTableRow(const OperandEncodingTableType table_type,
+                                  const PdfTextTableRow& row,
                                   InstructionTable* table) {
+  CHECK(table_type == OET_WITH_TUPLE_TYPE || table_type == OET_LEGACY);
+  const int first_operand_index = table_type == OET_LEGACY ? 1 : 2;
   // First the operand specs.
   std::vector<OperandEncoding> operand_encodings;
-  for (int i = 1; i < row.blocks_size(); ++i) {
+  for (int i = first_operand_index; i < row.blocks_size(); ++i) {
     operand_encodings.push_back(
         ParseOperandEncodingTableCell(row.blocks(i).text()));
   }
   // The cell can specify several cross references (e.g. "HVM, QVM, OVM")
-  // We instanciate as many operand encoding as cross references.
+  // We instantiate as many operand encoding as cross references.
   const string& cross_references = row.blocks(0).text();
   for (auto cross_reference :
        strings::Split(cross_references, ",", strings::SkipEmpty())) {  // NOLINT
@@ -549,15 +557,18 @@ void ParseOperandEncodingTableRow(const PdfTextTableRow& row,
 void ParseOperandEncodingTable(const SubSection& sub_section,
                                InstructionTable* table) {
   size_t column_count = 0;
+  OperandEncodingTableType table_type = OET_INVALID;
   for (const auto& row : sub_section.rows()) {
     if (column_count == 0) {
       // Parsing the operand encoding table header, we just make sure the text
       // is valid but don't store any informations.
       column_count = row.blocks_size();
-      CHECK(IsOperandEncodingTableHeader(row)) << "Invalid operand header ";
+      table_type = GetOperandEncodingTableHeaderType(row);
+      CHECK_NE(table_type, OET_INVALID)
+          << "Invalid operand header " << row.DebugString();
     } else {
       // Skipping redundant header.
-      if (IsOperandEncodingTableHeader(row)) {
+      if (GetOperandEncodingTableHeaderType(row) == table_type) {
         continue;
       }
       // Stop parsing if we're out of the table.
@@ -565,7 +576,7 @@ void ParseOperandEncodingTable(const SubSection& sub_section,
         break;
       }
       // Parsing a operand encoding table row.
-      ParseOperandEncodingTableRow(row, table);
+      ParseOperandEncodingTableRow(table_type, row, table);
     }
   }
 }
@@ -768,7 +779,17 @@ bool ToString(const InstructionSection& section, const SubSection::Type type,
 // Fills InstructionGroupProto with subsections.
 void FillGroupProto(const InstructionSection& section,
                     InstructionGroupProto* group) {
-  group->set_name(section.id());
+  const size_t first_hyphen_position = section.id().find('-');
+  if (first_hyphen_position == string::npos) {
+    group->set_name(section.id());
+  } else {
+    string name = section.id().substr(0, first_hyphen_position);
+    string description = section.id().substr(first_hyphen_position + 1);
+    StripWhitespace(&name);
+    StripWhitespace(&description);
+    group->set_name(name);
+    group->set_short_description(description);
+  }
   string buffer;
   if (ToString(section, SubSection::DESCRIPTION, &buffer)) {
     group->set_description(buffer);

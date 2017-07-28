@@ -16,6 +16,9 @@
 #define EXEGESIS_UTIL_PDF_PDF_DOCUMENT_PARSER_H_
 
 #include "exegesis/proto/pdf/pdf_document.pb.h"
+#include "gflags/gflags.h"
+
+DECLARE_double(exegesis_pdf_max_character_distance);
 
 namespace exegesis {
 namespace pdf {

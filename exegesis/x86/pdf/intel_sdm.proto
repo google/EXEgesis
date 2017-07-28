@@ -73,6 +73,14 @@ message SubSection {
   repeated exegesis.pdf.PdfTextTableRow rows = 2;
 }
 
+// The type of the operand encoding table.
+enum OperandEncodingTableType {
+  OET_INVALID = 0;
+  OET_LEGACY = 1;
+  OET_WITH_TUPLE_TYPE = 2;  // Starting from July 2017 the Operand Encoding
+                            // Table has an additional Tuple Type column.
+}
+
 // The description of a particular instruction table.
 message InstructionTable {
   enum Mode {

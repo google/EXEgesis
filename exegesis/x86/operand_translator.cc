@@ -82,7 +82,7 @@ string TranslateOperand(const string& operand) {
           {"m80fp", "xword" ADDRESS},
           {"m128", "xmmword" ADDRESS},
           {"m256", "ymmword" ADDRESS},
-          {"m512", "ymmword" ADDRESS},
+          {"m512", "zmmword" ADDRESS},
           {"m94byte", "dword" ADDRESS},   // LLVM differs from the Intel spec.
           {"m108byte", "dword" ADDRESS},  // LLVM differs from the Intel spec.
           {"m512byte", "opaque" ADDRESS},
@@ -99,6 +99,7 @@ string TranslateOperand(const string& operand) {
           {"vm32y", "[rsp + 4* ymm10]"},
           {"vm64x", "[rsp + 8* xmm11]"},
           {"vm64y", "[rsp + 8* ymm12]"},
+          {"vm64z", "[rsp + 8* zmm13]"},
       });
   return FindWithDefault(*kOperandTranslation, operand, operand);
 }

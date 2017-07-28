@@ -102,6 +102,7 @@ cc_library(
         "sdm_patches/sdm_2016_09_vol2.pbtxt",
         "sdm_patches/sdm_2016_12_vol123.pbtxt",
         "sdm_patches/sdm_2017_03_vol123.pbtxt",
+        "sdm_patches/sdm_2017_07_vol1234.pbtxt",
     ],
     deps = [
         ":intel_sdm_extractor",

@@ -172,6 +172,12 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
              {"m512", INDIRECT_ADDRESSING, 512},
              // {"m32bcst", INDIRECT_ADDRESSING, 512},
          }},
+        {"zmm2/m512/m64bcst",
+         {
+             {"zmm2", DIRECT_ADDRESSING, 512},
+             {"m512", INDIRECT_ADDRESSING, 512},
+             // {"m64bcst", INDIRECT_ADDRESSING, 512},
+         }},
         {"zmm3/m512/m32bcst",
          {
              {"zmm3", DIRECT_ADDRESSING, 512},
