@@ -5,6 +5,75 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
+# Library for assembling and disassembling inline assembly code.
+cc_library(
+    name = "assembler_disassembler",
+    srcs = ["assembler_disassembler.cc"],
+    hdrs = ["assembler_disassembler.h"],
+    deps = [
+        "//base",
+        "//exegesis/llvm:disassembler",
+        "//exegesis/llvm:inline_asm",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:instruction_syntax",
+        "//exegesis/util:strings",
+        "//strings",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@llvm_git//:ir",
+    ],
+)
+
+cc_test(
+    name = "assembler_disassembler_test",
+    size = "small",
+    srcs = ["assembler_disassembler_test.cc"],
+    deps = [
+        ":assembler_disassembler",
+        "//base",
+        "//exegesis/testing:test_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
+# A wrapper around the LLVM disassembler.
+cc_library(
+    name = "disassembler",
+    srcs = ["disassembler.cc"],
+    hdrs = ["disassembler.h"],
+    deps = [
+        "//base",
+        "//exegesis/llvm:llvm_utils",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@llvm_git//:machine_code",
+        "@llvm_git//:machine_code_disassembler",
+        "@llvm_git//:support",
+    ],
+)
+
+cc_test(
+    name = "disassembler_test",
+    size = "small",
+    srcs = ["disassembler_test.cc"],
+    deps = [
+        ":disassembler",
+        "//base",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+        "@googletest_git//:gtest",
+        "@googletest_git//:gtest_main",
+    ],
+)
+
 # Library for compiling inline assembly code.
 cc_library(
     name = "inline_asm",
