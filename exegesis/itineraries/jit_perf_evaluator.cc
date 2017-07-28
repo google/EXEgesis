@@ -50,7 +50,7 @@ Status EvaluateAssemblyString(
     const std::string& measured_code, const std::string& update_code,
     const std::string& suffix_code, const std::string& cleanup_code,
     const std::string& constraints, PerfResult* result) {
-  JitCompiler jit(dialect, mcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR);
+  JitCompiler jit(mcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR);
   const string code =
       StrCat(prefix_code, "\n",
              RepeatCode(num_inner_iterations,
@@ -60,7 +60,7 @@ Status EvaluateAssemblyString(
   // 'cleanup_code'.
   VoidFunction inline_asm_function = jit.CompileInlineAssemblyToFunction(
       num_outer_iterations, init_code, constraints, code, constraints,
-      cleanup_code, constraints);
+      cleanup_code, constraints, dialect);
   if (!inline_asm_function.IsValid()) {
     return util::UnknownError("Could not compile the measured code");
   }
@@ -93,7 +93,7 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
                            const std::string& constraints,
                            FXStateBuffer* fx_state_buffer_in,
                            FXStateBuffer* fx_state_buffer_out) {
-  JitCompiler jit(dialect, mcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR);
+  JitCompiler jit(mcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR);
 
   constexpr const char kGetStateCodeTemplate[] = R"(
     push rax
@@ -110,7 +110,8 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
 
   const VoidFunction inline_asm_function = jit.CompileInlineAssemblyToFunction(
       /*num_iterations=*/1,
-      StrCat(prefix_code, in_code, code, out_code, cleanup_code), constraints);
+      StrCat(prefix_code, in_code, code, out_code, cleanup_code), constraints,
+      dialect);
   if (!inline_asm_function.IsValid()) {
     return util::UnknownError("Could not compile the assembly code");
   }

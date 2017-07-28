@@ -66,16 +66,14 @@ class JitCompiler {
     RETURN_NULLPTR_ON_ERROR,
   };
 
-  // Creates a Jit compiler parsing the dialect of x86 assembly given by
-  // 'dialect'.
-  // mcpu is the CPU used for compiling the inline assembly. The value must be
-  // one of the CPU microarchitecture names accepted by LLVM. To get the full
-  // list, run "llc --mcpu=help". Picking the most generic processor
-  // ("generic" for x86) means that the generated code will be able to run all
-  // hosts, but that the compiler wil refuse to compile newer instructions
-  // (since all processors might not support them).
-  JitCompiler(llvm::InlineAsm::AsmDialect dialect, const string& mcpu,
-              ErrorHandlingMode error_mode);
+  // Creates a Jit compiler parsing the dialect of x86 assembly, mcpu is the CPU
+  // used for compiling the inline assembly. The value must be one of the CPU
+  // microarchitecture names accepted by LLVM. To get the full list, run "llc
+  // --mcpu=help". Picking the most generic processor ("generic" for x86) means
+  // that the generated code will be able to run all hosts, but that the
+  // compiler wil refuse to compile newer instructions (since all processors
+  // might not support them).
+  JitCompiler(const string& mcpu, ErrorHandlingMode error_mode);
 
   // Builds, compiles and returns a pointer to a void() function that executes
   // a loop of 'num_iterations' around 'loop_code'. Registers touched by
@@ -85,7 +83,7 @@ class JitCompiler {
   // the client.)
   VoidFunction CompileInlineAssemblyToFunction(
       int num_iterations, const std::string& loop_code,
-      const std::string& loop_constraints);
+      const std::string& loop_constraints, llvm::InlineAsm::AsmDialect dialect);
 
   // A version of CompileInlineAssemblyToFunction that accepts (1) a block of
   // initialization assembly code that is executed once at the beginning of the
@@ -98,7 +96,8 @@ class JitCompiler {
       int num_iterations, const std::string& init_code,
       const std::string& init_constraints, const std::string& loop_code,
       const std::string& loop_constraints, const std::string& cleanup_code,
-      const std::string& cleanup_constraints);
+      const std::string& cleanup_constraints,
+      llvm::InlineAsm::AsmDialect dialect);
 
   // Builds, compiles and returns a pointer to the assembled code of
   // 'code'. This is not a function, and it should not be cast and
@@ -106,15 +105,16 @@ class JitCompiler {
   // the code does not have side effects.
   // Returns nullptr if some error has occurred. (This should be checked by
   // the client.)
-  uint8_t* CompileInlineAssemblyFragment(const std::string& code);
+  uint8_t* CompileInlineAssemblyFragment(const std::string& code,
+                                         llvm::InlineAsm::AsmDialect dialect);
 
   // Returns an object usable by the LLVM IR that corresponds to the inline
   // assembly code in 'code' with constraints in 'constraints'.
   // When 'has_side_effects' is true, the inline assembler issues the code to
   // save some registers.
-  llvm::InlineAsm* AssembleInlineNativeCode(bool has_side_effects,
-                                            const std::string& code,
-                                            const std::string& constraints);
+  llvm::InlineAsm* AssembleInlineNativeCode(
+      bool has_side_effects, const std::string& code,
+      const std::string& constraints, llvm::InlineAsm::AsmDialect dialect);
 
   // Builds a LLVM IR function object that loops over the block of inline
   // assembly in 'inline_asm'. The number of iterations in the loop is given by
@@ -152,10 +152,6 @@ class JitCompiler {
 
   const string mcpu_;
   ErrorHandlingMode error_mode_;
-
-  // 'dialect' is either AD_ATT or AD_Intel, refering to the two assembly
-  // language dialects for the Intel architectures.
-  llvm::InlineAsm::AsmDialect dialect_;
 
   std::unique_ptr<llvm::LLVMContext> context_;
 

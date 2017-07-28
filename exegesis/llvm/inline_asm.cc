@@ -65,9 +65,8 @@ class JitCompiler::StoreSizeMemoryManager : public llvm::SectionMemoryManager {
   std::unordered_map<const uint8_t*, int> address_to_size_;
 };
 
-JitCompiler::JitCompiler(llvm::InlineAsm::AsmDialect dialect,
-                         const string& mcpu, ErrorHandlingMode error_mode)
-    : mcpu_(mcpu), error_mode_(error_mode), dialect_(dialect) {}
+JitCompiler::JitCompiler(const string& mcpu, ErrorHandlingMode error_mode)
+    : mcpu_(mcpu), error_mode_(error_mode) {}
 
 void JitCompiler::Init() {
   initialized_ = true;
@@ -97,10 +96,10 @@ void JitCompiler::Init() {
 
 VoidFunction JitCompiler::CompileInlineAssemblyToFunction(
     int num_iterations, const std::string& loop_code,
-    const std::string& loop_constraints) {
+    const std::string& loop_constraints, llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
   llvm::Value* loop_inline_asm =
-      AssembleInlineNativeCode(true, loop_code, loop_constraints);
+      AssembleInlineNativeCode(true, loop_code, loop_constraints, dialect);
   CHECK(loop_inline_asm != nullptr);
   llvm::Function* loop = WarpInlineAsmInLoopingFunction(
       num_iterations, nullptr, loop_inline_asm, nullptr);
@@ -112,16 +111,17 @@ VoidFunction JitCompiler::CompileInlineAssemblyToFunction(
     int num_iterations, const std::string& init_code,
     const std::string& init_constraints, const std::string& loop_code,
     const std::string& loop_constraints, const std::string& cleanup_code,
-    const std::string& cleanup_constraints) {
+    const std::string& cleanup_constraints,
+    llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
   llvm::Value* const init_inline_asm =
-      AssembleInlineNativeCode(true, init_code, init_constraints);
+      AssembleInlineNativeCode(true, init_code, init_constraints, dialect);
   CHECK(init_inline_asm != nullptr);
   llvm::Value* const loop_inline_asm =
-      AssembleInlineNativeCode(true, loop_code, loop_constraints);
+      AssembleInlineNativeCode(true, loop_code, loop_constraints, dialect);
   CHECK(loop_inline_asm != nullptr);
   llvm::Value* const cleanup_inline_asm =
-      AssembleInlineNativeCode(true, cleanup_code, init_constraints);
+      AssembleInlineNativeCode(true, cleanup_code, init_constraints, dialect);
   CHECK(cleanup_inline_asm != nullptr);
 
   llvm::Function* const loop = WarpInlineAsmInLoopingFunction(
@@ -130,9 +130,10 @@ VoidFunction JitCompiler::CompileInlineAssemblyToFunction(
   return CreatePointerToInlineAssemblyFunction(loop);
 }
 
-uint8_t* JitCompiler::CompileInlineAssemblyFragment(const std::string& code) {
+uint8_t* JitCompiler::CompileInlineAssemblyFragment(
+    const std::string& code, llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
-  llvm::Value* inline_asm = AssembleInlineNativeCode(false, code, "");
+  llvm::Value* inline_asm = AssembleInlineNativeCode(false, code, "", dialect);
   CHECK(inline_asm != nullptr);
   llvm::Function* loop =
       WarpInlineAsmInLoopingFunction(1, nullptr, inline_asm, nullptr);
@@ -143,10 +144,10 @@ uint8_t* JitCompiler::CompileInlineAssemblyFragment(const std::string& code) {
 
 llvm::InlineAsm* JitCompiler::AssembleInlineNativeCode(
     bool has_side_effects, const std::string& code,
-    const std::string& constraints) {
+    const std::string& constraints, llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
   return llvm::InlineAsm::get(function_type_, code, constraints,
-                              has_side_effects, false, dialect_);
+                              has_side_effects, false, dialect);
 }
 
 llvm::Function* JitCompiler::WarpInlineAsmInLoopingFunction(

@@ -497,9 +497,9 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
 
   // Check that the code assembles correctly before proceeding.
   {
-    JitCompiler jit(llvm::InlineAsm::AD_Intel, host_mcpu_,
-                    JitCompiler::RETURN_NULLPTR_ON_ERROR);
-    if (jit.CompileInlineAssemblyFragment(measured_code) == nullptr) {
+    JitCompiler jit(host_mcpu_, JitCompiler::RETURN_NULLPTR_ON_ERROR);
+    if (jit.CompileInlineAssemblyFragment(
+            measured_code, llvm::InlineAsm::AD_Intel) == nullptr) {
       stats->IncrementAssemblyErrors();
       return InternalError(StrCat("Could not assemble: ", measured_code));
     }

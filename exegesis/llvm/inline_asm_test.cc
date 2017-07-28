@@ -35,10 +35,9 @@ TEST(JitCompilerTest, CreateAFunctionWithoutLoop) {
       "}\n";
   constexpr char kAssemblyCode[] = "mov %ebx, %ecx";
   constexpr char kConstraints[] = "~{ebx},~{ecx}";
-  JitCompiler jit(llvm::InlineAsm::AD_ATT, kGenericMcpu,
-                  JitCompiler::EXIT_ON_ERROR);
-  llvm::Value* const inline_asm =
-      jit.AssembleInlineNativeCode(false, kAssemblyCode, kConstraints);
+  JitCompiler jit(kGenericMcpu, JitCompiler::EXIT_ON_ERROR);
+  llvm::Value* const inline_asm = jit.AssembleInlineNativeCode(
+      false, kAssemblyCode, kConstraints, llvm::InlineAsm::AD_ATT);
   ASSERT_NE(nullptr, inline_asm);
   llvm::Function* const function =
       jit.WarpInlineAsmInLoopingFunction(1, nullptr, inline_asm, nullptr);
@@ -63,16 +62,16 @@ TEST(JitCompilerTest, CreateAFunctionWithoutLoopWithInitBlock) {
   constexpr char kLoopConstraints[] = "~{ebx},~{ecx}";
   constexpr char kCleanupAssemblyCode[] = "mov %edx, 0x5678";
   constexpr char kCleanupConstraints[] = "~{edx}";
-  JitCompiler jit(llvm::InlineAsm::AD_ATT, kGenericMcpu,
-                  JitCompiler::EXIT_ON_ERROR);
-  llvm::Value* const init_inline_asm =
-      jit.AssembleInlineNativeCode(false, kInitAssemblyCode, kInitConstraints);
+  JitCompiler jit(kGenericMcpu, JitCompiler::EXIT_ON_ERROR);
+  llvm::Value* const init_inline_asm = jit.AssembleInlineNativeCode(
+      false, kInitAssemblyCode, kInitConstraints, llvm::InlineAsm::AD_ATT);
   ASSERT_NE(init_inline_asm, nullptr);
-  llvm::Value* const loop_inline_asm =
-      jit.AssembleInlineNativeCode(false, kLoopAssemblyCode, kLoopConstraints);
+  llvm::Value* const loop_inline_asm = jit.AssembleInlineNativeCode(
+      false, kLoopAssemblyCode, kLoopConstraints, llvm::InlineAsm::AD_ATT);
   ASSERT_NE(loop_inline_asm, nullptr);
   llvm::Value* const cleanup_inline_asm = jit.AssembleInlineNativeCode(
-      false, kCleanupAssemblyCode, kCleanupConstraints);
+      false, kCleanupAssemblyCode, kCleanupConstraints,
+      llvm::InlineAsm::AD_ATT);
   ASSERT_NE(cleanup_inline_asm, nullptr);
   llvm::Function* const function = jit.WarpInlineAsmInLoopingFunction(
       1, init_inline_asm, loop_inline_asm, cleanup_inline_asm);
@@ -101,10 +100,9 @@ TEST(JitCompilerTest, CreateAFunctionWithLoop) {
       "}\n";
   constexpr char kAssemblyCode[] = "mov %ebx, %ecx";
   constexpr char kConstraints[] = "~{ebx},~{ecx}";
-  JitCompiler jit(llvm::InlineAsm::AD_ATT, kGenericMcpu,
-                  JitCompiler::EXIT_ON_ERROR);
-  llvm::Value* const inline_asm =
-      jit.AssembleInlineNativeCode(false, kAssemblyCode, kConstraints);
+  JitCompiler jit(kGenericMcpu, JitCompiler::EXIT_ON_ERROR);
+  llvm::Value* const inline_asm = jit.AssembleInlineNativeCode(
+      false, kAssemblyCode, kConstraints, llvm::InlineAsm::AD_ATT);
   ASSERT_NE(nullptr, inline_asm);
   llvm::Function* const function =
       jit.WarpInlineAsmInLoopingFunction(10, nullptr, inline_asm, nullptr);
@@ -119,10 +117,9 @@ TEST(JitCompilerTest, CreateAFunctionAndRunItInJIT) {
       mov %ebx, %eax
       .endr)";
   constexpr char kConstraints[] = "~{ebx},~{eax}";
-  JitCompiler jit(llvm::InlineAsm::AD_ATT, kGenericMcpu,
-                  JitCompiler::EXIT_ON_ERROR);
-  VoidFunction function =
-      jit.CompileInlineAssemblyToFunction(10, kAssemblyCode, kConstraints);
+  JitCompiler jit(kGenericMcpu, JitCompiler::EXIT_ON_ERROR);
+  VoidFunction function = jit.CompileInlineAssemblyToFunction(
+      10, kAssemblyCode, kConstraints, llvm::InlineAsm::AD_ATT);
   ASSERT_TRUE(function.IsValid());
   // We need to encode at least two two movs (two times 0x89d8).
   const string kTwoMovsEncoding = "\x89\xd8\x89\xd8";
