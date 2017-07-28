@@ -24,54 +24,57 @@ namespace {
 TEST(AddAlternativesTest, InstructionWithRM8) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
-        description: "Add with carry r/m8 to byte register."
         vendor_syntax {
-          mnemonic: "ADC"
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_REG_ENCODING
-                     value_size_bits: 8
-                     name: "r8" }
-          operands { addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                     encoding: MODRM_RM_ENCODING
-                     value_size_bits: 8
-                     name: "r/m8" }}
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: "RM"
-        raw_encoding_specification: "12 /r" })";
+          mnemonic: 'ADC'
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 8
+            name: 'r8'
+          }
+          operands {
+            addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 8
+            name: 'r/m8'
+          }
+        }
+      })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
-        description: "Add with carry r/m8 to byte register."
         vendor_syntax {
-          mnemonic: "ADC"
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_REG_ENCODING
-                     value_size_bits: 8
-                     name: "r8" }
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_RM_ENCODING
-                     value_size_bits: 8
-                     name: "r8" }}
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: "RM"
-        raw_encoding_specification: "12 /r" }
+          mnemonic: 'ADC'
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 8
+            name: 'r8'
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 8
+            name: 'r8'
+          }
+        }
+      }
       instructions {
-        description: "Add with carry r/m8 to byte register."
         vendor_syntax {
-          mnemonic: "ADC"
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_REG_ENCODING
-                     value_size_bits: 8
-                     name: "r8" }
-          operands { addressing_mode: INDIRECT_ADDRESSING
-                     encoding: MODRM_RM_ENCODING
-                     value_size_bits: 8
-                     name: "m8" }}
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: "RM"
-        raw_encoding_specification: "12 /r" })";
+          mnemonic: 'ADC'
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 8
+            name: 'r8'
+          }
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 8
+            name: 'm8'
+          }
+        }
+      })";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -79,91 +82,98 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
 TEST(AddAlternativesTest, DifferentSizes) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
-        description: "Insert a byte integer value from r32/m8 into xmm1 at the "
-                     "destination element in xmm1 specified by imm8."
         vendor_syntax {
-          mnemonic: "PINSRB"
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_REG_ENCODING
-                     value_size_bits: 128
-                     name: "xmm1" }
-          operands { addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                     encoding: MODRM_RM_ENCODING
-                     value_size_bits: 8
-                     name: "r32/m8" }
-          operands { addressing_mode: NO_ADDRESSING
-                     encoding: IMMEDIATE_VALUE_ENCODING
-                     value_size_bits: 8
-                     name: "imm8" }}
-        feature_name: "SSE4_1"
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: "RMI"
-        raw_encoding_specification: "66 0F 3A 20 /r ib" })";
+          mnemonic: 'PINSRB'
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 128
+            name: 'xmm1'
+          }
+          operands {
+            addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 8
+            name: 'r32/m8'
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 8
+            name: 'imm8'
+          }
+        }
+      })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
-        description: "Insert a byte integer value from r32/m8 into xmm1 at the "
-                     "destination element in xmm1 specified by imm8."
         vendor_syntax {
-          mnemonic: "PINSRB"
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_REG_ENCODING
-                     value_size_bits: 128
-                     name: "xmm1" }
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_RM_ENCODING
-                     value_size_bits: 32
-                     name: "r32" }
-          operands { addressing_mode: NO_ADDRESSING
-                     encoding: IMMEDIATE_VALUE_ENCODING
-                     value_size_bits: 8
-                     name: "imm8" }}
-        feature_name: "SSE4_1"
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: "RMI"
-        raw_encoding_specification: "66 0F 3A 20 /r ib" }
+          mnemonic: 'PINSRB'
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 128
+            name: 'xmm1'
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 32
+            name: 'r32'
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 8
+            name: 'imm8'
+          }
+        }
+      }
       instructions {
-        description: "Insert a byte integer value from r32/m8 into xmm1 at the "
-                     "destination element in xmm1 specified by imm8."
         vendor_syntax {
-          mnemonic: "PINSRB"
-          operands { addressing_mode: DIRECT_ADDRESSING
-                     encoding: MODRM_REG_ENCODING
-                     value_size_bits: 128
-                     name: "xmm1" }
-          operands { addressing_mode: INDIRECT_ADDRESSING
-                     encoding: MODRM_RM_ENCODING
-                     value_size_bits: 8
-                     name: "m8" }
-          operands { addressing_mode: NO_ADDRESSING
-                     encoding: IMMEDIATE_VALUE_ENCODING
-                     value_size_bits: 8
-                     name: "imm8" }}
-        feature_name: "SSE4_1"
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: "RMI"
-        raw_encoding_specification: "66 0F 3A 20 /r ib" })";
+          mnemonic: 'PINSRB'
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 128
+            name: 'xmm1'
+          }
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 8
+            name: 'm8'
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 8
+            name: 'imm8'
+          }
+        }
+      })";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddAlternativesTest, NoRenaming) {
-  constexpr char kInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'FBLD'
-             operands { name: 'm80bcd' }}
-           feature_name: 'X87'
-           raw_encoding_specification: 'DF /4' })";
-  constexpr char kExpectedInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'FBLD'
-             operands { name: 'm80bcd' }}
-           feature_name: 'X87'
-           raw_encoding_specification: 'DF /4' })";
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'FBLD'
+          operands {
+            name: 'm80bcd'
+          }
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'FBLD'
+          operands {
+            name: 'm80bcd'
+          }
+        }
+      })";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

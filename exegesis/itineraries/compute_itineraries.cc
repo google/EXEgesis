@@ -72,59 +72,128 @@ const std::unordered_set<
     string>* const kExcludedInstructions = new std::unordered_set<string>({
     // Before execution, "DX:AX" == 0x00010001 and "word ptr[RSI]" == 0x0001, so
     // 0x00010001/0x0001 == 0x00010001 overflows, resulting in #DE.
-    "DIV", "IDIV",
+    "DIV",
+    "IDIV",
     // Interrupt-related.
-    "INT3", "INT", "IRET", "IRETD", "IRETQ",
+    "INT3",
+    "INT",
+    "IRET",
+    "IRETD",
+    "IRETQ",
     // This tries to read FPU state from RSI, which does not have the right
     // structure. This would require the contents of RSI to be properly
     // structured.
-    "FLDENV", "FLDCW", "FXRSTOR", "FXRSTOR64",
+    "FLDENV",
+    "FLDCW",
+    "FXRSTOR",
+    "FXRSTOR64",
     // This tries to set reserved bits to 1 ("Bits 16 through 31 of the MXCSR
     // register are reserved and are cleared on a power-up or reset of the
     // processor;attempting to write a non-zero value to these bits, using
     // either the FXRSTOR or LDMXCSR instructions, will result in a
     // general-protection exception (#GP) being generated.")
-    "LDMXCSR", "VLDMXCSR",
+    "LDMXCSR",
+    "VLDMXCSR",
     // The value loaded in RSI correspond to an invalid descriptor (null) or not
     // within writable bounds, and thus triggers a #GP.
-    "LFS", "LGS", "LSL", "LSS",
+    "LFS",
+    "LGS",
+    "LSL",
+    "LSS",
     // LOCK requires and accompanying instruction.
     "LOCK",
     // #GP because "the value in EAX is outside the CS, DS, ES, FS, or GS
     // segment limit".
     "MONITOR",
     // Stack instructions. Obviously running a million POPs is a bad idea.
-    "POP", "POPF", "POPFQ", "PUSH", "PUSHF", "PUSHFQ",
+    "POP",
+    "POPF",
+    "POPFQ",
+    "PUSH",
+    "PUSHF",
+    "PUSHFQ",
     // This cannot be tested (by design).
     "UD2",
     // These require memory to be aligned more than 16 bytes.
-    "VMOVAPD", "VMOVAPS", "VMOVDQA", "VMOVNTDQ", "VMOVNTDQA", "VMOVNTPD",
+    "VMOVAPD",
+    "VMOVAPS",
+    "VMOVDQA",
+    "VMOVNTDQ",
+    "VMOVNTDQA",
+    "VMOVNTPD",
     "VMOVNTPS",
     // These cannot be called several times successively.
-    "VPGATHERDD", "VGATHERDPS",
+    "VPGATHERDD",
+    "VGATHERDPS",
     // This would require ECX to be 0 instead of 1: "XCR0 is supported on any
     // processor that supports the XGETBV instruction."
-    "XGETBV", "XSETBV",
+    "XGETBV",
+    "XSETBV",
     // This tries to read extended registers state from RSI, which does not have
     // the right structure. This would require the contents of RSI to be
     // properly structured.
-    "XRSTOR", "XRSTOR64",
+    "XRSTOR",
+    "XRSTOR64",
     // These require memory to be 64-byte aligned and EDX:EAX to be set to
     // specific values.
-    "XSAVE", "XSAVE64", "XSAVEC", "XSAVEC64", "XSAVEOPT", "XSAVEOPT64",
-    "XSAVES", "XSAVES64",
+    "XSAVE",
+    "XSAVE64",
+    "XSAVEC",
+    "XSAVEC64",
+    "XSAVEOPT",
+    "XSAVEOPT64",
+    "XSAVES",
+    "XSAVES64",
 
     // Sys instructions.
-    "SYSCALL", "SYSENTER", "SYSEXIT", "SYSRET",
+    "SYSCALL",
+    "SYSENTER",
+    "SYSEXIT",
+    "SYSRET",
     // Program flow.
-    "CALL", "JMP", "ENTER", "LEAVE", "RET",
+    "CALL",
+    "JMP",
+    "ENTER",
+    "LEAVE",
+    "RET",
     // Conditional jumps.
-    "JA", "JAE", "JB", "JBE", "JC", "JE", "JG", "JGE", "JL", "JLE", "JNA",
-    "JNAE", "JNB", "JNBE", "JNC", "JNE", "JNG", "JNGE", "JNL", "JNLE", "JNO",
-    "JNP", "JNS", "JNZ", "JO", "JP", "JPE", "JPO", "JS", "JZ", "JCXZ", "JECXZ",
+    "JA",
+    "JAE",
+    "JB",
+    "JBE",
+    "JC",
+    "JE",
+    "JG",
+    "JGE",
+    "JL",
+    "JLE",
+    "JNA",
+    "JNAE",
+    "JNB",
+    "JNBE",
+    "JNC",
+    "JNE",
+    "JNG",
+    "JNGE",
+    "JNL",
+    "JNLE",
+    "JNO",
+    "JNP",
+    "JNS",
+    "JNZ",
+    "JO",
+    "JP",
+    "JPE",
+    "JPO",
+    "JS",
+    "JZ",
+    "JCXZ",
+    "JECXZ",
     "JRCXZ",
     // LOOP.
-    "LOOP", "LOOPE", "LOOPNE",
+    "LOOP",
+    "LOOPE",
+    "LOOPNE",
 });
 
 ObservationVector CreateObservationVector(const PerfResult& perf_result) {

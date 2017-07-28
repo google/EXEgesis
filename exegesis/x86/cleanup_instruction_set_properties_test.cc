@@ -24,21 +24,33 @@ namespace {
 TEST(AddMissingCpuFlagsTest, AddsMissing) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
-        vendor_syntax { mnemonic: 'CLFLUSH' }
+        vendor_syntax {
+          mnemonic: 'CLFLUSH'
+        }
       }
       instructions {
-        vendor_syntax { mnemonic: 'INS' operands { name: 'm8' } }
-        encoding_scheme: 'NP'
+        vendor_syntax {
+          mnemonic: 'INS'
+          operands {
+            name: 'm8'
+          }
+        }
         raw_encoding_specification: '6C'
       })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
-        vendor_syntax { mnemonic: 'CLFLUSH' }
+        vendor_syntax {
+          mnemonic: 'CLFLUSH'
+        }
         feature_name: 'CLFSH'
       }
       instructions {
-        vendor_syntax { mnemonic: 'INS' operands { name: 'm8' } }
-        encoding_scheme: 'NP'
+        vendor_syntax {
+          mnemonic: 'INS'
+          operands {
+            name: 'm8'
+          }
+        }
         raw_encoding_specification: '6C'
       })";
   TestTransform(AddMissingCpuFlags, kInstructionSetProto,
@@ -48,27 +60,39 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
 TEST(AddRestrictedModesTest, AddsProtectionModes) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
-        vendor_syntax { mnemonic: 'HLT' }
+        vendor_syntax {
+          mnemonic: 'HLT'
+        }
         protection_mode: -1
       }
       instructions {
         vendor_syntax {
           mnemonic: 'MOV'
-          operands { name: 'r64' }
-          operands { name: 'imm64' }
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'imm64'
+          }
         }
       })";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
-        vendor_syntax { mnemonic: 'HLT' }
+        vendor_syntax {
+          mnemonic: 'HLT'
+        }
         protection_mode: 0
       }
       instructions {
         protection_mode: -1
         vendor_syntax {
           mnemonic: 'MOV'
-          operands { name: 'r64' }
-          operands { name: 'imm64' }
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'imm64'
+          }
         }
       })";
   TestTransform(AddProtectionModes, kInstructionSetProto,

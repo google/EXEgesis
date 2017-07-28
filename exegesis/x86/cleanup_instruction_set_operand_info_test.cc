@@ -27,89 +27,131 @@ using ::exegesis::util::Status;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(AddOperandInfoTest, AddInfo) {
-  constexpr char kInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'STOS'
-             operands { name: 'BYTE PTR [RDI]' } operands { name: 'AL' }}
-           encoding_scheme: 'NA'
-           raw_encoding_specification: 'AA'
-           x86_encoding_specification { legacy_prefixes {} opcode: 0xAA }}
-         instructions {
-           vendor_syntax {
-             mnemonic: 'FMUL'
-             operands { name: 'ST(0)' } operands { name: 'ST(i)' }}
-           feature_name: 'X87'
-           raw_encoding_specification: 'D8 C8+i'
-           x86_encoding_specification {
-             legacy_prefixes {} opcode: 0xD8C8
-             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE }}
-         instructions {
-           vendor_syntax {
-             mnemonic: 'VMOVD'
-             operands { name: 'xmm1' encoding: MODRM_REG_ENCODING }
-             operands { name: 'r32' }}
-           feature_name: 'AVX'
-           encoding_scheme: 'RM'
-           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
-           x86_encoding_specification {
-             vex_prefix {
-               prefix_type: VEX_PREFIX
-               vector_size: VEX_VECTOR_SIZE_128_BIT
-               mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-               map_select: MAP_SELECT_0F
-               vex_w_usage: VEX_W_IS_ZERO }
-             opcode: 0x0F66
-             modrm_usage: FULL_MODRM }})";
-  constexpr char kExpectedInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'STOS'
-             operands { name: 'BYTE PTR [RDI]'
-                        addressing_mode: INDIRECT_ADDRESSING_BY_RDI
-                        encoding: IMPLICIT_ENCODING
-                        value_size_bits: 8 }
-             operands { name: 'AL' addressing_mode: DIRECT_ADDRESSING
-                        encoding: IMPLICIT_ENCODING
-                        value_size_bits: 8 }}
-           encoding_scheme: 'NA'
-           raw_encoding_specification: 'AA'
-           x86_encoding_specification { legacy_prefixes {} opcode: 0xAA }}
-         instructions {
-           vendor_syntax {
-             mnemonic: 'FMUL'
-             operands { name: 'ST(0)' addressing_mode: DIRECT_ADDRESSING
-                        encoding: IMPLICIT_ENCODING
-                        value_size_bits: 80 }
-             operands { name: 'ST(i)' addressing_mode: DIRECT_ADDRESSING
-                        encoding: OPCODE_ENCODING
-                        value_size_bits: 80 }}
-           feature_name: 'X87'
-           raw_encoding_specification: 'D8 C8+i'
-           x86_encoding_specification {
-             legacy_prefixes {} opcode: 0xD8C8
-             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE }}
-         instructions {
-           vendor_syntax {
-             mnemonic: 'VMOVD'
-             operands { name: 'xmm1' addressing_mode: DIRECT_ADDRESSING
-                        encoding: MODRM_REG_ENCODING
-                        value_size_bits: 128 }
-             operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                        encoding: MODRM_RM_ENCODING
-                        value_size_bits: 32 }}
-           feature_name: 'AVX'
-           encoding_scheme: 'RM'
-           raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
-           x86_encoding_specification {
-             vex_prefix {
-               prefix_type: VEX_PREFIX
-               vector_size: VEX_VECTOR_SIZE_128_BIT
-               mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-               map_select: MAP_SELECT_0F
-               vex_w_usage: VEX_W_IS_ZERO }
-             opcode: 0x0F66
-             modrm_usage: FULL_MODRM }})";
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'STOS'
+          operands {
+            name: 'BYTE PTR [RDI]'
+          }
+          operands {
+            name: 'AL'
+          }
+        }
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'FMUL'
+          operands {
+            name: 'ST(0)'
+          }
+          operands {
+            name: 'ST(i)'
+          }
+        }
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+          operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'VMOVD'
+          operands {
+            name: 'xmm1'
+            encoding: MODRM_REG_ENCODING
+          }
+          operands {
+            name: 'r32'
+          }
+        }
+        x86_encoding_specification {
+          vex_prefix {
+            prefix_type: VEX_PREFIX
+            vector_size: VEX_VECTOR_SIZE_128_BIT
+            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+            map_select: MAP_SELECT_0F
+            vex_w_usage: VEX_W_IS_ZERO
+          }
+          modrm_usage: FULL_MODRM
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'STOS'
+          operands {
+            name: 'BYTE PTR [RDI]'
+            addressing_mode: INDIRECT_ADDRESSING_BY_RDI
+            encoding: IMPLICIT_ENCODING
+            value_size_bits: 8
+          }
+          operands {
+            name: 'AL'
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: IMPLICIT_ENCODING
+            value_size_bits: 8
+          }
+        }
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'FMUL'
+          operands {
+            name: 'ST(0)'
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: IMPLICIT_ENCODING
+            value_size_bits: 80
+          }
+          operands {
+            name: 'ST(i)'
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: OPCODE_ENCODING
+            value_size_bits: 80
+          }
+        }
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+          operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'VMOVD'
+          operands {
+            name: 'xmm1'
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 128
+          }
+          operands {
+            name: 'r32'
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 32
+          }
+        }
+        x86_encoding_specification {
+          vex_prefix {
+            prefix_type: VEX_PREFIX
+            vector_size: VEX_VECTOR_SIZE_128_BIT
+            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+            map_select: MAP_SELECT_0F
+            vex_w_usage: VEX_W_IS_ZERO
+          }
+          modrm_usage: FULL_MODRM
+        }
+      })";
   TestTransform(AddOperandInfo, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -118,25 +160,43 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
   constexpr const char* const kInstructionSetProtos[] = {
       // The instruction encoding does not use the ModR/M byte, so the operands
       // can't use MODRM_RM_ENCODING.
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'STOS'
-             operands { name: 'BYTE PTR [RDI]' encoding: MODRM_RM_ENCODING }
-             operands { name: 'AL' }}
-           encoding_scheme: 'NA'
-           raw_encoding_specification: 'AA'
-           x86_encoding_specification { legacy_prefixes {} opcode: 0xAA }})",
+      R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'STOS'
+          operands {
+            name: 'BYTE PTR [RDI]'
+            encoding: MODRM_RM_ENCODING
+          }
+          operands {
+            name: 'AL'
+          }
+        }
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      })",
       // Only one operand can be encoded in the opcode.
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'FMUL'
-             operands { name: 'ST(0)' encoding: OPCODE_ENCODING }
-             operands { name: 'ST(i)' encoding: OPCODE_ENCODING }}
-           feature_name: 'X87'
-           raw_encoding_specification: 'D8 C8+i'
-           x86_encoding_specification {
-             legacy_prefixes {} opcode: 0xD8C8
-             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE }})"};
+      R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'FMUL'
+          operands {
+            name: 'ST(0)'
+            encoding: OPCODE_ENCODING
+          }
+          operands {
+            name: 'ST(i)'
+            encoding: OPCODE_ENCODING
+          }
+        }
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+          operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+        }
+      })"};
   for (const char* const instruction_set_proto : kInstructionSetProtos) {
     InstructionSetProto instruction_set;
     ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(

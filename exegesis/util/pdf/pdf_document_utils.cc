@@ -36,7 +36,7 @@ namespace {
 // Negative starts from the end of the array
 //   GetIndex(5, -1) => 4
 // Invalid index yields -1
-//  GetIndex(5, 10) => -1
+//   GetIndex(5, 10) => -1
 int GetIndex(int size, int index) {
   CHECK_GE(size, 0);
   if (index >= 0 && index >= size) return -1;

@@ -22,64 +22,115 @@ namespace x86 {
 namespace {
 
 TEST(AddIntelAsmSyntaxTest, StringMnemonic) {
-  constexpr char kInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'CMPS'
-             operands { name: 'BYTE PTR [RSI]' }
-             operands { name: 'BYTE PTR [RDI]' }}})";
-  constexpr char kExpectedInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'CMPS'
-             operands { name: 'BYTE PTR [RSI]' }
-             operands { name: 'BYTE PTR [RDI]' }}
-           syntax {
-             mnemonic: 'CMPSB'
-             operands { name: 'BYTE PTR [RSI]' }
-             operands { name: 'BYTE PTR [RDI]' }}})";
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'CMPS'
+          operands {
+            name: 'BYTE PTR [RSI]'
+          }
+          operands {
+            name: 'BYTE PTR [RDI]'
+          }
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'CMPS'
+          operands {
+            name: 'BYTE PTR [RSI]'
+          }
+          operands {
+            name: 'BYTE PTR [RDI]'
+          }
+        }
+        syntax {
+          mnemonic: 'CMPSB'
+          operands {
+            name: 'BYTE PTR [RSI]'
+          }
+          operands {
+            name: 'BYTE PTR [RDI]'
+          }
+        }
+      })";
   TestTransform(AddIntelAsmSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddIntelAsmSyntaxTest, MovImm64) {
-  constexpr char kInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'MOV'
-             operands { name: 'r64' }
-             operands { name: 'imm64' }}})";
-  constexpr char kExpectedInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'MOV'
-             operands { name: 'r64' }
-             operands { name: 'imm64' }}
-           syntax {
-             mnemonic: 'MOVABS'
-             operands { name: 'r64' }
-             operands { name: 'imm64' }}})";
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'MOV'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'imm64'
+          }
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'MOV'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'imm64'
+          }
+        }
+        syntax {
+          mnemonic: 'MOVABS'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'imm64'
+          }
+        }
+      })";
   TestTransform(AddIntelAsmSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddIntelAsmSyntaxTest, LSLR64) {
-  constexpr char kInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'LSL'
-             operands { name: 'r64' }
-             operands { name: 'r32/m16' }}})";
-  constexpr char kExpectedInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax {
-             mnemonic: 'LSL'
-             operands { name: 'r64' }
-             operands { name: 'r32/m16' }}
-           syntax {
-             mnemonic: 'LSL'
-             operands { name: 'r64' }
-             operands { name: 'r64' }}})";
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'LSL'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'r32/m16'
+          }
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'LSL'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'r32/m16'
+          }
+        }
+        syntax {
+          mnemonic: 'LSL'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'r64'
+          }
+        }
+      })";
   TestTransform(AddIntelAsmSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

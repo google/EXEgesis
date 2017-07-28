@@ -29,24 +29,28 @@ TEST(OperandTranslatorTest, Works) {
   const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"(
       legacy_instruction: true
       vendor_syntax {
-        mnemonic: "ADD"
+        mnemonic: 'ADD'
         operands {
           addressing_mode: DIRECT_ADDRESSING
           encoding: MODRM_REG_ENCODING
           value_size_bits: 32
-          name: "r32" }
+          name: 'r32'
+        }
         operands {
           addressing_mode: NO_ADDRESSING
           encoding: IMMEDIATE_VALUE_ENCODING
           value_size_bits: 8
-          name: "imm8"
+          name: 'imm8'
         }
       })");
   constexpr const char kExpected[] = R"(
-      mnemonic: "ADD"
-      operands { name: "ecx" }
-      operands { name: "0x7e" }
-  )";
+      mnemonic: 'ADD'
+      operands {
+        name: 'ecx'
+      }
+      operands {
+        name: '0x7e'
+      })";
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpected));
 }
 
