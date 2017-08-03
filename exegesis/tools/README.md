@@ -7,14 +7,14 @@ Currently, they're all related to parsing PDFs:
 
 -   [`parse_intel_sdm`](#intel-x86-64) (Intel x86-64 only): Transforms the
     Intel's Software Development Manual (SDM) into an
-    [`InstructionSetProto`](exegesis/proto/instructions.proto).
+    [`ArchitectureProto`](../proto/instructions.proto).
 -   [`pdf2proto`](#pdf2proto): Transforms a PDF file into a
-    [PdfDocument](exegesis/proto/pdf/pdf_document.proto).
+    [PdfDocument](../proto/pdf/pdf_document.proto).
 -   [`proto_patch_helper`](#proto_patch_helper): Greps through a
-    [PdfDocument](exegesis/proto/pdf/pdf_document.proto) to help creating PDF
+    [PdfDocument](../proto/pdf/pdf_document.proto) to help creating PDF
     patches.
 -   [`proto_patch_migrate`](#proto_patch_migrate): Migrates a set of patches
-    from one [PdfDocument](exegesis/proto/pdf/pdf_document.proto) to another.
+    from one [PdfDocument](../proto/pdf/pdf_document.proto) to another.
 
 This file presents a set of tools to extract
 [ISA](https://en.wikipedia.org/wiki/Instruction_set_architecture) information
@@ -30,7 +30,7 @@ debugging.
 # Prerequisites
 
 First install [`bazel`](http://bazel.io), Google's own build tool. It will
-download and build the [dependencies](/WORKSPACE) for you.
+download and build the [dependencies](../../WORKSPACE) for you.
 
 You also need the source code, so clone the repository with the following
 command:
@@ -47,7 +47,7 @@ download the most recent version from the [Intel Developer
 Zone](https://software.intel.com/en-us/articles/intel-sdm).
 
 For the complete list of supported and tested versions, see
-[`sdm_patches`](exegesis/x86/pdf/sdm_patches). Please [file a
+[`sdm_patches`](../x86/pdf/sdm_patches/). Please [file a
 bug](https://github.com/google/EXEgesis/issues) if the SDM version you
 downloaded is unsupported.
 
@@ -60,7 +60,7 @@ resulting database.
 ```shell
 bazel -c opt run //exegesis/tools:parse_intel_sdm --  \
   --exegesis_input_spec=/path/to/intel-sdm.pdf  \
-  --exegesis_output_file_base=/tmp/instructions \
+  --exegesis_output_file_base=/tmp/intel_isa \
   --exegesis_transforms=default
 ```
 
@@ -68,11 +68,11 @@ The `--exegesis_transforms` flag specifies which cleanups to apply.
 
 This creates the following files:
 
--   `/tmp/instructions.pbtxt` contains the raw data as parsed from the PDF.
--   `/tmp/instructions_transformed.pbtxt` contains the cleaned up version with
+-   `/tmp/intel_isa.pbtxt` contains the raw data as parsed from the PDF.
+-   `/tmp/intel_isa_transformed.pbtxt` contains the cleaned up version with
     transforms applied.
 
-They both contain an [`InstructionSetProto`](exegesis/proto/instructions.proto)
+They both contain an [`ArchitectureProto`](../proto/instructions.proto)
 in [Protobuf text
 format](https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.text_format).
 
@@ -96,14 +96,14 @@ Just add `--define libunwind=true` to the command line like so:
 ```shell
 bazel -c opt run //exegesis/tools:parse_intel_sdm --define libunwind=true --  \
   --exegesis_input_spec=/path/to/intel-sdm.pdf  \
-  --exegesis_output_file_base=/tmp/instructions \
+  --exegesis_output_file_base=/tmp/intel_isa \
   --exegesis_transforms=default
 ```
 
 ### More details
 
 For more details, have a look at the tool's
-[README](exegesis/x86/pdf/README.md).
+[README](../x86/pdf/README.md).
 
 ## IBM POWER
 
@@ -122,7 +122,7 @@ purposes or to port patches from one PDF version to another.
 ### `pdf2proto`
 
 Transforms a PDF file into a
-[PdfDocument](exegesis/proto/pdf/pdf_document.proto).
+[PdfDocument](../proto/pdf/pdf_document.proto).
 
 ```shell
 bazel run -c opt //exegesis/tools:pdf2proto --    \
@@ -132,9 +132,9 @@ bazel run -c opt //exegesis/tools:pdf2proto --    \
 
 ### `proto_patch_helper`
 
-Greps through a [PdfDocument](exegesis/proto/pdf/pdf_document.proto) and
-displays a [PdfDocumentChange](exegesis/proto/pdf/pdf_document.proto) for all
-the matching [PdfTextBlock](exegesis/proto/pdf/pdf_document.proto)s.
+Greps through a [PdfDocument](../proto/pdf/pdf_document.proto) and
+displays a [PdfDocumentChange](../proto/pdf/pdf_document.proto) for all
+the matching [PdfTextBlock](../proto/pdf/pdf_document.proto)s.
 
 ```shell
 bazel run -c opt //exegesis/tools::proto_patch_helper -- \
@@ -144,7 +144,7 @@ bazel run -c opt //exegesis/tools::proto_patch_helper -- \
 
 ### `proto_patch_migrate`
 
-Migrates a set of [PdfDocumentChanges](exegesis/proto/pdf/pdf_document.proto)
+Migrates a set of [PdfDocumentChanges](../proto/pdf/pdf_document.proto)
 from PdfDocument to PdfDocument.
 
 ```shell
