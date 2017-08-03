@@ -16,29 +16,35 @@ message FixedSizeInstructionLayout {
 
   // A sequence of bits indexed by [msb, lsb].
   message BitRange {
+    string name = 1;  // The name of the range as specified by the manual.
+
     // Invariant: msb >= lsb && lsb >= 0.
+    int32 msb = 2;  // 0 based index, inclusive.
+    int32 lsb = 3;  // 0 based index, inclusive.
 
-    int32 msb = 1;  // 0 based index, inclusive.
-    int32 lsb = 2;  // 0 based index, inclusive.
-
-    enum Bit {
-      UNKNOWN = 0;        // Needed by proto3, do not use.
-      CONSTANT_ONE = 1;   // Bit is 1.
-      CONSTANT_ZERO = 2;  // Bit is 0.
-      VARIABLE = 3;       // Bit value is set at runtime.
+    message BitPattern {
+      enum Bit {
+        UNKNOWN = 0;        // Needed by proto3, do not use.
+        CONSTANT_ONE = 1;   // Bit is 1.
+        CONSTANT_ZERO = 2;  // Bit is 0.
+        VARIABLE = 3;       // Bit value is set at runtime.
+      }
+      // Invariant: bits.size() == (msb-lsb+1).
+      repeated Bit bits = 1;
     }
 
-    repeated Bit bits = 3;  // The value for the bits.
-                            // Invariant: bits.size() == (msb-lsb+1).
-
-    string name = 4;  // The name of the range as specified by the manual.
-
-    enum Constraint {
-      NONE = 0;
-      NOT_ALL_ONES = 1;
+    // Constraints describing the possible values of the bits in the range.
+    oneof constraints {
+      // A pattern representing all valid bit combinations.
+      // e.g. [CONSTANT_ONE, VARIABLE, CONSTANT_ZERO]
+      // would match all of "110" and "100".
+      BitPattern pattern = 4;
+      // A negated pattern, representing all invalid bit combinations.
+      // e.g. [CONSTANT_ONE, VARIABLE, CONSTANT_ZERO]
+      // would match all of "000" "001" "010" "011" "100" "101" "111"
+      // but would reject "110" and "100".
+      BitPattern not_pattern = 5;
     }
-    Constraint constraint = 5;  // An additional constraint when some logic is
-                                // needed to validate the range.
   }
 
   repeated BitRange bit_ranges = 2;  // Sorted by decreasing msb.
