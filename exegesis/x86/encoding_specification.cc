@@ -188,16 +188,33 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   // NOTE(ondrasej): kLegacyPrefixRegex must be static - removing it causes an
   // internal compiler error on gcc 4.8.
   static constexpr char kLegacyPrefixRegex[] =
-      " *(?:"                  // Optional whitespace before the prefix.
-      "(66)|"                  // The operand size override prefix.
-      "(67)|"                  // THe address size override prefix.
-      "(F2)|"                  // The REPNE prefix.
-      "(F3)|"                  // The REPE prefix.
-      "(REX(?:\\.(?:R|W))?))"  // The REX prefix. The manual uses this prefix in
-                               // several forms: REX.W and REX.R to signal that
-                               // a specific bit of the REX prefix is required,
-                               // or just REX which probably implies REX.W.
-      "(?: *\\+ *)?";          // Consume also any whitespace at the end.
+      // Optional whitespace before the prefix.
+      " *(?:"
+      // The operand size override prefix.
+      "(66)|"
+      // THe address size override prefix.
+      "(67)|"
+      // The REPNE prefix.
+      "(F2)|"
+      // The REPE prefix.
+      "(F3)|"
+      // The REX prefix. The manual uses this prefix in three forms:
+      // * REX.W means that the REX.W bit must be set to 1.
+      // * REX.R means that the REX.R bit must be set to 1. This is used only in
+      //   cases that are consistent with the general rules for the use of the
+      //   REX.R bit, and thus the specification can be safely ignored.
+      // * REX which probably means that the instruction may be used with the
+      //   extended registers (R8-R15). However, this is the case for all legacy
+      //   instructions using general purpose registers, and the use of this
+      //   prefix specification is not very consistent.
+      // In practice, we're interested only in the REX.W specification, because
+      // the others follow from the general rules for the use of the REX prefix
+      // on legacy instructions. The parser ignores the REX and REX.R prefix
+      // specifications.
+      "(REX(?:\\.(?:R|W))?))"
+      // Consume also any whitespace at the end.
+      "(?: *\\+ *)?";
+  static constexpr char kRexWPrefix[] = "REX.W";
   static const LazyRE2 legacy_prefix_parser = {kLegacyPrefixRegex};
   string operand_size_override_prefix;
   string address_size_override_prefix;
@@ -219,7 +236,7 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
         !address_size_override_prefix.empty();
     has_mandatory_repe_prefix |= !repe_prefix.empty();
     has_mandatory_repne_prefix |= !repne_prefix.empty();
-    has_mandatory_rex_prefix |= !rex_prefix.empty();
+    has_mandatory_rex_prefix |= rex_prefix == kRexWPrefix;
   }
   // Note that just calling mutable_legacy_prefixes will create an empty
   // legacy_prefixes field of the specification. This is desirable, because it

@@ -92,7 +92,6 @@ TEST(EncodingSpecificationParserTest, NPPrefix) {
 TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
   CheckParser("REX + 80 /2 ib", R"(
                   legacy_prefixes {
-                    has_mandatory_rex_w_prefix: true
                   }
                   opcode: 0x80
                   modrm_usage: OPCODE_EXTENSION_IN_MODRM
@@ -106,11 +105,19 @@ TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
                   modrm_usage: FULL_MODRM)");
 }
 
+TEST(EncodingSpecificationParserTest, RexRPrefix) {
+  CheckParser("REX.R + 0F 20 /0", R"(
+                  legacy_prefixes {
+                  }
+                  opcode: 0x0f20
+                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                  modrm_opcode_extension: 0)");
+}
+
 TEST(EncodingSpecificationParserTest, MultiplePrefixes) {
   CheckParser("F2 REX 0F 38 F0 /r", R"(
                   legacy_prefixes {
                     has_mandatory_repne_prefix: true
-                    has_mandatory_rex_w_prefix: true
                   }
                   opcode: 0x0f38f0
                   modrm_usage: FULL_MODRM)");
