@@ -120,6 +120,39 @@ cc_test(
 )
 
 cc_library(
+    name = "cleanup_instruction_set_checks",
+    srcs = ["cleanup_instruction_set_checks.cc"],
+    hdrs = ["cleanup_instruction_set_checks.h"],
+    deps = [
+        "//base",
+        "//exegesis/base:cleanup_instruction_set",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/util:status_util",
+        "//strings",
+        "//util/gtl:map_util",
+        "//util/task:status",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "cleanup_instruction_set_checks_test",
+    size = "small",
+    srcs = ["cleanup_instruction_set_checks_test.cc"],
+    deps = [
+        ":cleanup_instruction_set_checks",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//util/task:status",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "cleanup_instruction_set_encoding",
     srcs = ["cleanup_instruction_set_encoding.cc"],
     hdrs = ["cleanup_instruction_set_encoding.h"],
