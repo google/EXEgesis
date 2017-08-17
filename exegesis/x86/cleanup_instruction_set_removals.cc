@@ -20,19 +20,33 @@
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
+#include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
+#include "src/google/protobuf/util/message_differencer.h"
+#include "strings/str_cat.h"
 #include "strings/string_view.h"
+#include "strings/string_view_utils.h"
 #include "util/gtl/container_algorithm.h"
 #include "util/gtl/map_util.h"
+#include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 
+// RE2 and protobuf have two slightly different implementations of StringPiece.
+// In this file, we use RE2::Consume heavily, so we explicitly switch to the RE2
+// implementation.
+using ::re2::StringPiece;
+
 using ::exegesis::gtl::c_linear_search;
+using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
+using ::google::protobuf::RepeatedPtrField;
+using ::google::protobuf::util::MessageDifferencer;
 
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -46,7 +60,7 @@ Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
         return !visited_instructions.insert(serialized_instruction).second;
       };
 
-  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+  RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      remove_instruction_if_visited),
@@ -62,11 +76,11 @@ Status RemoveInstructionsWaitingForFpuSync(
   // the prefix does not match the stand-alone FWAIT instructions that is
   // encoded as "9B".
   static constexpr char kFWaitPrefix[] = "9B ";
-  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+  RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_fwait_for_sync = [](const InstructionProto& instruction) {
-    return StringPiece(instruction.raw_encoding_specification())
-        .starts_with(kFWaitPrefix);
+    return strings::StartsWith(instruction.raw_encoding_specification(),
+                               kFWaitPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_fwait_for_sync),
@@ -77,7 +91,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveInstructionsWaitingForFpuSync, 0);
 
 Status RemoveNonEncodableInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+  RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   instructions->erase(
       std::remove_if(instructions->begin(), instructions->end(),
@@ -96,11 +110,11 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   // are no instructions that would use REP in their mnemonic, so optimizing
   // the matching this way is safe.
   static constexpr char kRepPrefix[] = "REP";
-  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+  RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_rep_or_repne = [](const InstructionProto& instruction) {
-    StringPiece mnemonic(instruction.vendor_syntax().mnemonic());
-    return mnemonic.starts_with(kRepPrefix);
+    return strings::StartsWith(instruction.vendor_syntax().mnemonic(),
+                               kRepPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_rep_or_repne),
@@ -147,7 +161,7 @@ const std::unordered_set<string>* const kRemovedMnemonics =
 
 Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+  RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto is_special_case_instruction =
       [](const InstructionProto& instruction) {
@@ -164,7 +178,7 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveSpecialCaseInstructions, 0);
 
 Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set) {
-  ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+  RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto is_undefined_instruction =
       [](const InstructionProto& instruction) {
@@ -178,6 +192,70 @@ Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set) {
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveUndefinedInstructions, 0);
+
+Status RemoveDuplicateInstructionsWithRexPrefix(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  // NOTE(ondrasej): We need to store a copy of the instruction protos, not
+  // pointers those in instruction_set, because the contents of instruction_set
+  // is modified by std::remove_if().
+  std::unordered_map<string, std::vector<InstructionProto>>
+      instructions_by_encoding;
+  RepeatedPtrField<InstructionProto>* const instructions =
+      instruction_set->mutable_instructions();
+  for (const InstructionProto& instruction : instruction_set->instructions()) {
+    const string& specification = instruction.raw_encoding_specification();
+    instructions_by_encoding[specification].push_back(instruction);
+  }
+  Status result = OkStatus();
+  const auto is_duplicate_instruction_with_rex =
+      [&](const InstructionProto& instruction) {
+        static constexpr char kRexPrefixRegex[] = R"(REX *\+ *)";
+        static const LazyRE2 rex_prefix_parser = {kRexPrefixRegex};
+        StringPiece specification = instruction.raw_encoding_specification();
+        if (!RE2::Consume(&specification, *rex_prefix_parser)) return false;
+        const std::vector<InstructionProto>* const other_instructions =
+            FindOrNull(instructions_by_encoding, specification.as_string());
+        // We remove the instruction only if there is a version without the REX
+        // prefix that is equivalent in terms of vendor_syntax. If there is not,
+        // we return an error status, and keep the instruction to allow
+        // debugging with --exegesis_ignore_failing_transforms.
+        //
+        // Note that there are cases in the manual, where the REX prefix
+        // actually means REX.W. Such cases are fixed by
+        // FixRexPrefixSpecification() which runs in the default pipeline
+        // before this transform, and they should not cause any failures here.
+        if (other_instructions == nullptr) {
+          const Status error = InvalidArgumentError(StrCat(
+              "Instruction does not have a version without the REX prefix: ",
+              instruction.raw_encoding_specification()));
+          LOG(WARNING) << error;
+          UpdateStatus(&result, error);
+          return false;
+        }
+        for (const InstructionProto& other : *other_instructions) {
+          if (MessageDifferencer::Equals(other.vendor_syntax(),
+                                         instruction.vendor_syntax())) {
+            return true;
+          }
+        }
+        const Status error = InvalidArgumentError(
+            StrCat("The REX and the non-REX versions differ: ",
+                   instruction.raw_encoding_specification()));
+        LOG(WARNING) << error;
+        UpdateStatus(&result, error);
+        return false;
+      };
+  instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
+                                     is_duplicate_instruction_with_rex),
+                      instructions->end());
+  return result;
+}
+// The checks performed in the cleanup depend on the encoding specification
+// fixes done in FixRexPrefixSpecification(), thus it needs to be executed after
+// the encoding specification cleanups.
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructionsWithRexPrefix,
+                                   1005);
 
 }  // namespace x86
 }  // namespace exegesis

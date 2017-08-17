@@ -15,11 +15,14 @@
 #include "exegesis/x86/cleanup_instruction_set_removals.h"
 
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
+#include "exegesis/util/proto_util.h"
 #include "gtest/gtest.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
+
+using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
   constexpr char kInstructionSetProto[] = R"(
@@ -530,6 +533,128 @@ TEST(RemoveUndefinedInstructionsTest, RemoveSomeInstructions) {
       })";
   TestTransform(RemoveUndefinedInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
+}
+
+TEST(RemoveDuplicateInstructionsWithRexPrefixTest, RemoveSomeInstructions) {
+  const char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "r64"
+          }
+          operands {
+            name: "imm32"
+          }
+        }
+        raw_encoding_specification: "REX.W + 81 /2 id"
+        instruction_group_index: 4
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "imm8"
+          }
+        }
+        raw_encoding_specification: "80 /2 ib"
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "imm8"
+          }
+        }
+        raw_encoding_specification: "REX + 80 /2 ib"
+        instruction_group_index: 4
+      })";
+  const char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "r64"
+          }
+          operands {
+            name: "imm32"
+          }
+        }
+        raw_encoding_specification: "REX.W + 81 /2 id"
+        instruction_group_index: 4
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "imm8"
+          }
+        }
+        raw_encoding_specification: "80 /2 ib"
+      })";
+  TestTransform(RemoveDuplicateInstructionsWithRexPrefix, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
+  constexpr const char* kInstructionSets[] = {R"(
+          instructions {
+            vendor_syntax {
+              mnemonic: "LSS"
+              operands {
+                name: "r32"
+              }
+              operands {
+                name: "m16:32"
+              }
+            }
+            raw_encoding_specification: "0F B2 /r"
+            instruction_group_index: 197
+          }
+          instructions {
+            vendor_syntax {
+              mnemonic: "LSS"
+              operands {
+                name: "r64"
+              }
+              operands {
+                name: "m16:64"
+              }
+            }
+            raw_encoding_specification: "REX + 0F B2 /r"
+            instruction_group_index: 197
+          })",
+                                              R"(
+          instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                name: "m8"
+              }
+              operands {
+                name: "imm8"
+              }
+            }
+            raw_encoding_specification: "REX + 80 /2 ib"
+            instruction_group_index: 4
+          })"};
+  for (const char* const instruction_set_source : kInstructionSets) {
+    SCOPED_TRACE(instruction_set_source);
+    InstructionSetProto instruction_set =
+        ParseProtoFromStringOrDie<InstructionSetProto>(instruction_set_source);
+    const Status result =
+        RemoveDuplicateInstructionsWithRexPrefix(&instruction_set);
+    EXPECT_EQ(result.error_code(), INVALID_ARGUMENT);
+  }
 }
 
 }  // namespace

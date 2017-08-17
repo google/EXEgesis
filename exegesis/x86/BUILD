@@ -332,6 +332,7 @@ cc_library(
         "//base",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:status_util",
         "//strings",
         "//util/gtl:container_algorithm",
         "//util/gtl:map_util",
@@ -340,6 +341,7 @@ cc_library(
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
     ],
     alwayslink = 1,
 )
@@ -351,6 +353,7 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_removals",
         "//exegesis/base:cleanup_instruction_set_test_utils",
+        "//exegesis/util:proto_util",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

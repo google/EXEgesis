@@ -67,6 +67,14 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set);
 // "undefined opcode" exception, by using an undefined opcode.
 Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set);
 
+// Removes instructions whose encoding specification has the token "REX" (not
+// "REX.W") and checks that there is an equaivalent definition without the REX
+// prefix. We suspect that this REX prefix is there only to signal that the
+// instruction may use the REX prefix to access the extended registers added by
+// the 64-bit instruction set.
+Status RemoveDuplicateInstructionsWithRexPrefix(
+    InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 
