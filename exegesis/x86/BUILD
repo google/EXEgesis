@@ -30,9 +30,9 @@ cc_test(
         ":cleanup_instruction_set_utils",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -84,8 +84,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_alternatives",
         "//exegesis/base:cleanup_instruction_set_test_utils",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -114,8 +114,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_asm_syntax",
         "//exegesis/base:cleanup_instruction_set_test_utils",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -151,9 +151,9 @@ cc_test(
         ":cleanup_instruction_set_encoding",
         "//exegesis/base:cleanup_instruction_set_test_utils",
         "//util/task:status",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -186,9 +186,9 @@ cc_test(
         "//exegesis/base:cleanup_instruction_set_test_utils",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -220,9 +220,9 @@ cc_test(
         ":cleanup_instruction_set_fix_operands",
         "//exegesis/base:cleanup_instruction_set_test_utils",
         "//util/task:status",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -256,9 +256,9 @@ cc_test(
         ":cleanup_instruction_set_operand_info",
         "//exegesis/base:cleanup_instruction_set_test_utils",
         "//util/task:status",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -290,8 +290,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_operand_size_override",
         "//exegesis/base:cleanup_instruction_set_test_utils",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -319,8 +319,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_properties",
         "//exegesis/base:cleanup_instruction_set_test_utils",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -351,8 +351,8 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_removals",
         "//exegesis/base:cleanup_instruction_set_test_utils",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -380,9 +380,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -423,9 +423,9 @@ cc_test(
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -453,8 +453,8 @@ cc_test(
     deps = [
         ":microarchitectures",
         "//exegesis/base:microarchitecture",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -481,8 +481,8 @@ cc_test(
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
         "//strings",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -511,7 +511,7 @@ cc_test(
         ":operand_translator",
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )

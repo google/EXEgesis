@@ -26,9 +26,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -53,8 +53,8 @@ cc_test(
     deps = [
         ":file_util",
         "//strings",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -70,6 +70,7 @@ cc_library(
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
     ],
 )
 
@@ -85,9 +86,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -117,10 +118,10 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -145,8 +146,8 @@ cc_test(
     deps = [
         ":status_util",
         "//util/task:status",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -175,8 +176,8 @@ cc_test(
         ":strings",
         "//strings",
         "//util/task:status",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -192,8 +193,8 @@ cc_test(
     srcs = ["structured_register_test.cc"],
     deps = [
         ":structured_register",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -214,7 +215,7 @@ cc_test(
     srcs = ["text_processing_test.cc"],
     deps = [
         ":text_processing",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 

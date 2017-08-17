@@ -23,11 +23,10 @@ git_repository(
 
 # ===== googletest =====
 
-new_git_repository(
-    name = "googletest_git",
+git_repository(
+    name = "com_google_googletest",
     remote = "https://github.com/google/googletest.git",
-    tag = "release-1.8.0",
-    build_file = "gmock.BUILD",
+    commit = "c3f65335b79f47b05629e79a54685d899bc53b93",
 )
 
 # ===== benchmark =====

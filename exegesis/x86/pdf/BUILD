@@ -27,8 +27,8 @@ cc_test(
     deps = [
         ":vendor_syntax",
         "//exegesis/testing:test_util",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -85,8 +85,8 @@ cc_test(
         "//exegesis/util:proto_util",
         "//exegesis/util/pdf:pdf_document_parser",
         "//strings",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
-        "@googletest_git//:gtest_main",
     ],
 )
 

@@ -14,9 +14,9 @@ cc_library(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
     ],
 )
 
@@ -39,7 +39,7 @@ cc_test(
     deps = [
         ":test_cc_proto",
         ":test_util",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )

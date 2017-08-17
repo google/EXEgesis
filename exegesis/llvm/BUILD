@@ -36,9 +36,9 @@ cc_test(
         "//exegesis/testing:test_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -68,9 +68,9 @@ cc_test(
         "//base",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -106,9 +106,9 @@ cc_test(
         "//exegesis/util:strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
         "@llvm_git//:ir",
         "@llvm_git//:support",
     ],

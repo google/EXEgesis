@@ -34,9 +34,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -64,9 +64,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -98,8 +98,8 @@ cc_library(
         ":cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
+        "@com_google_googletest//:gtest",
         "@com_google_protobuf//:protobuf",
-        "@googletest_git//:gtest",
     ],
 )
 
@@ -114,10 +114,10 @@ cc_test(
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -162,8 +162,8 @@ cc_test(
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
         "//util/task:status",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -198,9 +198,9 @@ cc_test(
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -237,9 +237,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -268,8 +268,8 @@ cc_test(
         ":cpu_info",
         ":host_cpu",
         "//exegesis/proto:cpuid_cc_proto",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
@@ -299,9 +299,9 @@ cc_test(
         "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -336,9 +336,9 @@ cc_test(
         "//exegesis/util:proto_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -367,9 +367,9 @@ cc_test(
         "//exegesis/testing:test_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -401,9 +401,9 @@ cc_test(
         "//exegesis/util:proto_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
 
@@ -432,8 +432,8 @@ cc_test(
         "//base",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@googletest_git//:gtest",
-        "@googletest_git//:gtest_main",
     ],
 )
