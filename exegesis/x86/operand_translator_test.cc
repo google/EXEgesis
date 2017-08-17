@@ -54,6 +54,62 @@ TEST(OperandTranslatorTest, Works) {
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpected));
 }
 
+TEST(OperandTranslatorTest, Avx512) {
+  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"(
+      vendor_syntax {
+        mnemonic: "VPADDB"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 128
+          name: "xmm1"
+          tags {
+            name: "k1"
+          }
+          tags {
+            name: "z"
+          }
+          usage: USAGE_WRITE
+        }
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 128
+          name: "xmm2"
+          usage: USAGE_READ
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 128
+          name: "m128"
+          usage: USAGE_READ
+        }
+      }
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "EVEX.NDS.128.66.0F.WIG FC /r")");
+  constexpr char kExpectedFormat[] = R"(
+      mnemonic: "VPADDB"
+      operands {
+        name: "xmm1"
+        tags {
+          name: "k1"
+        }
+        tags {
+          name: "z"
+        }
+      }
+      operands {
+        name: "xmm2"
+      }
+      operands {
+        name: "xmmword ptr[RSI]"
+      }
+  )";
+  EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpectedFormat));
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis

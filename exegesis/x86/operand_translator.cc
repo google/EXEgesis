@@ -162,7 +162,11 @@ InstructionFormat InstantiateOperands(const InstructionProto& instruction) {
                          : TranslateREX(operand.name());
     }
     if (!code_operand.empty()) {
-      result.add_operands()->set_name(code_operand);
+      InstructionOperand* const instantiated_operand = result.add_operands();
+      instantiated_operand->set_name(code_operand);
+      for (const InstructionOperand::Tag& tag : operand.tags()) {
+        *instantiated_operand->add_tags() = tag;
+      }
     } else {
       CHECK_EQ(operand.name(), "<XMM0>")
           << operand.name() << " could not be translated.";
