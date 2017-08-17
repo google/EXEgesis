@@ -66,7 +66,6 @@ void Disassembler::Init() {
   // MCObjectFileInfo needs a MCContext reference in order to initialize itself.
   object_file_info_.reset(new llvm::MCObjectFileInfo());
   bool is_pic = false;
-  llvm::CodeModel::Model code_model(llvm::CodeModel::Default);
 
   // Create an empty SourceMgr.
   source_manager_.reset(new llvm::SourceMgr());
@@ -75,7 +74,7 @@ void Disassembler::Init() {
                                         object_file_info_.get(),
                                         source_manager_.get()));
   object_file_info_->InitMCObjectFileInfo(llvm::Triple(triple_name_), is_pic,
-                                          code_model, *mc_context_);
+                                          *mc_context_);
 
   CHECK(error_string.empty()) << error_string;
 

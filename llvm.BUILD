@@ -57,7 +57,6 @@ genrule(
 #define CONFIG_H
 #include "llvm/Config/llvm-config.h"
 #define ENABLE_BACKTRACES 0
-#define HAVE_BACKTRACE 0
 #define HAVE_DIRENT_H 1
 #define HAVE_DLFCN_H 1
 #define HAVE_DLOPEN 1
@@ -113,7 +112,15 @@ genrule(
     srcs = ["include/llvm/Config/abi-breaking.h.cmake"],
     outs = ["include/llvm/Config/abi-breaking.h"],
     cmd = ("sed -e 's/#cmakedefine01 LLVM_ENABLE_ABI_BREAKING_CHECKS/#define LLVM_ENABLE_ABI_BREAKING_CHECKS 0/'" +
+           "    -e 's/#cmakedefine01 LLVM_ENABLE_REVERSE_ITERATION/#define LLVM_ENABLE_REVERSE_ITERATION 0/'" +
            "  $< > $@"),
+)
+
+genrule(
+    name = "generate_vcsrevision_h",
+    srcs = [],
+    outs = ["include/llvm/Support/VCSRevision.h"],
+    cmd = "echo '' > \"$@\"",
 )
 
 genrule(
@@ -207,7 +214,9 @@ cc_library(
         "lib/CodeGen/AsmPrinter/*.cpp",
         "lib/CodeGen/AsmPrinter/*.h",
     ]),
-    hdrs = ["include/llvm/CodeGen/AsmPrinter.h"],
+    hdrs = [
+        "include/llvm/CodeGen/AsmPrinter.h"] +
+        glob(["lib/CodeGen/AsmPrinter/*.def"]),
     deps = [
         ":analysis",
         ":codegen",
@@ -258,6 +267,7 @@ cc_library(
         "include/llvm/Bitcode/LLVMBitCodes.h",
     ],
     deps = [
+        ":analysis",
         ":config",
         ":ir",
         ":support",
@@ -290,7 +300,6 @@ cc_library(
     srcs = glob([
         "lib/Analysis/*.cpp",
         "lib/Analysis/*.h",
-        "lib/Analysis/*.def",
     ]) + [
         "include/llvm-c/Analysis.h",
     ],
@@ -362,6 +371,7 @@ cc_library(
         "include/llvm/DebugInfo/CodeView/*.def",
     ]),
     deps = [
+        ":binary_format",
         ":support",
     ],
     includes = ["include/llvm/DebugInfo/CodeView"],
@@ -511,6 +521,27 @@ gentbl(
 )
 
 cc_library(
+    name = "binary_format",
+    srcs = glob([
+        "lib/BinaryFormat/*.cpp",
+        "lib/BinaryFormat/*.h",
+    ]),
+    hdrs = glob([
+        "include/llvm/BinaryFormat/*.h",
+        "include/llvm/BinaryFormat/*.def",
+        "include/llvm/BinaryFormat/ELFRelocs/*.def",
+        "include/llvm/BinaryFormat/WasmRelocs/*.def",
+    ]),
+    copts = [
+        "$(STACK_FRAME_UNLIMITED)",
+    ],
+    linkopts = ["-ldl"],
+    deps = [
+        ":support",
+    ],
+)
+
+cc_library(
     name = "ir",
     srcs = glob([
         "lib/IR/*.cpp",
@@ -526,6 +557,7 @@ cc_library(
     hdrs = glob(
         [
             "include/llvm/*.h",
+            "include/llvm/Analysis/*.def",
             "include/llvm/IR/*.h",
             "include/llvm/IR/*.def",
             "include/llvm/IR/*.td",
@@ -542,6 +574,7 @@ cc_library(
     deps = [
         ":attributes_compat_gen",
         ":attributes_gen",
+        ":binary_format",
         ":config",
         ":intrinsics_gen",
         ":support",
@@ -591,6 +624,7 @@ cc_library(
     hdrs = glob(["include/llvm/MC/*.h"]),
     visibility = ["//visibility:public"],
     deps = [
+        ":binary_format",
         ":config",
         ":debug_info_codeview",
         ":support",
@@ -610,6 +644,7 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        ":binary_format",
         ":config",
         ":machine_code",
         ":support",
@@ -695,7 +730,9 @@ cc_library(
         "lib/Support/Unix/*.inc",
         "include/llvm-c/*.h",
         ]) + [
+        "include/llvm/CodeGen/MachineValueType.h",
         "include/llvm/Support/DataTypes.h",
+        "include/llvm/Support/VCSRevision.h",
     ],
     hdrs = glob([
         "include/llvm/Support/*.h",
@@ -723,6 +760,7 @@ cc_library(
         "include/llvm-c/Target.h",
     ],
     hdrs = glob([
+        "include/llvm/CodeGen/*.def",
         "include/llvm/Target/*.h",
         "include/llvm/Target/*.def",
     ]),
