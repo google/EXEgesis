@@ -20,16 +20,24 @@
 
 #include "exegesis/proto/instructions.pb.h"
 #include "glog/logging.h"
+#include "re2/re2.h"
 #include "strings/str_cat.h"
 #include "strings/string_view.h"
+#include "strings/string_view_utils.h"
 #include "strings/strip.h"
 
 namespace exegesis {
-
 namespace {
-bool ContainsPrefix(StringPiece s, const std::vector<StringPiece>& prefixes) {
+
+// RE2 and protobuf have two slightly different implementations of StringPiece.
+// In this file, we use RE2::Consume, so we explicitly switch to the RE2
+// implementation.
+using ::re2::StringPiece;
+
+template <typename PrefixCollection>
+bool ContainsPrefix(const string& str, const PrefixCollection& prefixes) {
   for (const auto& prefix : prefixes) {
-    if (s.substr(0, prefix.size()) == prefix) {
+    if (strings::StartsWith(str, prefix)) {
       return true;
     }
   }
@@ -54,6 +62,21 @@ std::vector<string> SeparateOperandsWithCommas(const string& s) {
   result.push_back(s.substr(start, s.size() - start));
   return result;
 }
+
+InstructionOperand ParseOperand(StringPiece source) {
+  static const LazyRE2 kOperandNameRegexp = {R"( *([^{}]*[^{} ]) *)"};
+  static const LazyRE2 kTagRegexp = {R"( *\{([%\w]+)\} *)"};
+  InstructionOperand operand;
+  CHECK(RE2::Consume(&source, *kOperandNameRegexp, operand.mutable_name()))
+      << "Source: \"" << source << "\"";
+  while (!source.empty()) {
+    CHECK(
+        RE2::Consume(&source, *kTagRegexp, operand.add_tags()->mutable_name()))
+        << "Remaining source: \"" << source << "\"";
+  }
+  return operand;
+}
+
 }  // namespace
 
 InstructionFormat ParseAssemblyStringOrDie(const string& code) {
@@ -71,7 +94,7 @@ InstructionFormat ParseAssemblyStringOrDie(const string& code) {
                mnemonic_and_first_operand.end(), '\t', ' ');
 
   CHECK(!mnemonic_and_first_operand.empty());
-  const std::vector<StringPiece> kX86Prefixes = {"LOCK", "REP"};
+  constexpr const char* kX86Prefixes[] = {"LOCK", "REP"};
   size_t delimiting_space = mnemonic_and_first_operand.find_first_of(' ');
   if (delimiting_space != string::npos &&
       ContainsPrefix(mnemonic_and_first_operand, kX86Prefixes)) {
@@ -82,15 +105,13 @@ InstructionFormat ParseAssemblyStringOrDie(const string& code) {
     proto.set_mnemonic(mnemonic_and_first_operand);
   } else {
     proto.set_mnemonic(mnemonic_and_first_operand.substr(0, delimiting_space));
-    proto.add_operands()->set_name(
-        mnemonic_and_first_operand.substr(delimiting_space + 1));
+    *proto.add_operands() =
+        ParseOperand(mnemonic_and_first_operand.substr(delimiting_space + 1));
   }
 
   // Copy the remaining operands.
   for (int i = 1; i < parts.size(); ++i) {
-    string operand = parts[i];
-    StripWhitespace(&operand);
-    proto.add_operands()->set_name(operand);
+    *proto.add_operands() = ParseOperand(parts[i]);
   }
   return proto;
 }
@@ -99,7 +120,10 @@ string ConvertToCodeString(const InstructionFormat& instruction) {
   string result = instruction.mnemonic();
   bool run_once = false;
   for (const auto& operand : instruction.operands()) {
-    StrAppend(&result, run_once ? "," : " ", operand.name());
+    StrAppend(&result, run_once ? ", " : " ", operand.name());
+    for (const InstructionOperand::Tag& tag : operand.tags()) {
+      StrAppend(&result, " {", tag.name(), "}");
+    }
     run_once = true;
   }
   return result;

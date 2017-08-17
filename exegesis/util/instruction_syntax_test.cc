@@ -32,36 +32,91 @@ TEST(InstructionSyntaxTest, BuildFromStrings) {
     const char* expected_output;
   } kTestCases[] = {
       {"AAD", "mnemonic: 'AAD' ", "AAD"},
-      {"ADD RAX,imm32",
+      {"ADD RAX, imm32",
        "mnemonic: 'ADD' operands { name: 'RAX' } operands { name: 'imm32' "
        "} ",
-       "ADD RAX,imm32"},
+       "ADD RAX, imm32"},
       {"XOR RAX,RBX",
        "mnemonic: 'XOR' operands { name: 'RAX' } operands { name: 'RBX' } ",
-       "XOR RAX,RBX"},
+       "XOR RAX, RBX"},
       {"VADDPD xmm1,xmm2,xmm3/m128",
        R"(mnemonic: 'VADDPD' operands { name: 'xmm1' } operands { name: 'xmm2' }
           operands { name: 'xmm3/m128' })",
-       "VADDPD xmm1,xmm2,xmm3/m128"},
+       "VADDPD xmm1, xmm2, xmm3/m128"},
       {"\tVAESDEC\txmm1,xmm2,xmm3/m128",
        R"(mnemonic: 'VAESDEC' operands { name: 'xmm1' } operands { name: 'xmm2' }
           operands { name: 'xmm3/m128' })",
-       "VAESDEC xmm1,xmm2,xmm3/m128"},
+       "VAESDEC xmm1, xmm2, xmm3/m128"},
       {"   VFMADD132PDy ymm1, ymm2,  ymm3   ",
        R"(mnemonic: 'VFMADD132PDy' operands { name: 'ymm1' }
           operands { name: 'ymm2' } operands { name: 'ymm3' })",
-       "VFMADD132PDy ymm1,ymm2,ymm3"},
+       "VFMADD132PDy ymm1, ymm2, ymm3"},
       {"LOCK MOV", "mnemonic: 'LOCK MOV' ", "LOCK MOV"},
       {"REPNE MOVS", "mnemonic: 'REPNE MOVS' ", "REPNE MOVS"},
       {"REP MOVS BYTE PTR [RDI], BYTE PTR [RSI]",
        R"(mnemonic: 'REP MOVS' operands { name: 'BYTE PTR [RDI]' }
           operands { name: 'BYTE PTR [RSI]' })",
-       "REP MOVS BYTE PTR [RDI],BYTE PTR [RSI]"},
+       "REP MOVS BYTE PTR [RDI], BYTE PTR [RSI]"},
       {"REP ", "mnemonic: 'REP' ", "REP"},
-      {"vpgatherqq %ymm2,(%rsp,%ymm12,8),%ymm1",
+      {"vpgatherqq %ymm2, (%rsp,%ymm12,8), %ymm1",
        R"(mnemonic: 'vpgatherqq' operands { name: '%ymm2' }
           operands { name: '(%rsp,%ymm12,8)' } operands { name: '%ymm1' })",
-       "vpgatherqq %ymm2,(%rsp,%ymm12,8),%ymm1"}};
+       "vpgatherqq %ymm2, (%rsp,%ymm12,8), %ymm1"},
+      {"VPADDB xmm1 {k1} {z}, xmm2, XMMWORD PTR [RSI]",
+       R"(mnemonic: 'VPADDB'
+          operands {
+            name: 'xmm1'
+            tags {
+              name: 'k1'
+            }
+            tags {
+              name: 'z'
+            }
+          }
+          operands {
+            name: 'xmm2'
+          }
+          operands {
+            name: 'XMMWORD PTR [RSI]'
+          })",
+       "VPADDB xmm1 {k1} {z}, xmm2, XMMWORD PTR [RSI]"},
+      {"VPADDB xmmword ptr [RSI + 4*RBP - 69] {k1} {z}, xmm2, xmm3",
+       R"(mnemonic: 'VPADDB'
+          operands {
+            name: 'xmmword ptr [RSI + 4*RBP - 69]'
+            tags {
+              name: 'k1'
+            }
+            tags {
+              name: 'z'
+            }
+          }
+          operands {
+            name: 'xmm2'
+          }
+          operands {
+            name: 'xmm3'
+          })",
+       "VPADDB xmmword ptr [RSI + 4*RBP - 69] {k1} {z}, xmm2, xmm3"},
+      {"vpaddb %xmm3, %xmm2, -69(%rsi, %rbp, 4) {k1} {z}",
+       R"(mnemonic: 'vpaddb'
+          operands {
+            name: '%xmm3'
+          }
+          operands {
+            name: '%xmm2'
+          }
+          operands {
+            name: '-69(%rsi, %rbp, 4)'
+            tags {
+              name: 'k1'
+            }
+            tags {
+              name: 'z'
+            }
+          })",
+       "vpaddb %xmm3, %xmm2, -69(%rsi, %rbp, 4) {k1} {z}"},
+  };
   for (const auto& test_case : kTestCases) {
     const InstructionFormat proto = ParseAssemblyStringOrDie(test_case.input);
     EXPECT_THAT(proto, EqualsProto(test_case.expected_proto));
