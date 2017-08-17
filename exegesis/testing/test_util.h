@@ -26,7 +26,6 @@
 #include <utility>
 #include "strings/string.h"
 
-#include "exegesis/testing/test_util.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "src/google/protobuf/text_format.h"
