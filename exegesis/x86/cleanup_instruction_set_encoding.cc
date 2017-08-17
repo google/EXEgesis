@@ -15,6 +15,7 @@
 #include "exegesis/x86/cleanup_instruction_set_encoding.h"
 
 #include <algorithm>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include "strings/string.h"
@@ -315,6 +316,25 @@ Status AddMissingModRmAndImmediateSpecification(
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingModRmAndImmediateSpecification,
                                    1000);
+
+Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const std::unordered_map<string, string> kReplacements = {
+      {"REX + 0F B2 /r", "REX.W + 0F B2 /r"},
+      {"REX + 0F B4 /r", "REX.W + 0F B4 /r"},
+      {"REX + 0F B5 /r", "REX.W + 0F B5 /r"},
+      {"REX + 0F BE /r", "REX.W + 0F BE /r"}};
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    const string* const replacement_raw_encoding_specification =
+        FindOrNull(kReplacements, instruction.raw_encoding_specification());
+    if (replacement_raw_encoding_specification == nullptr) continue;
+    instruction.set_raw_encoding_specification(
+        *replacement_raw_encoding_specification);
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixRexPrefixSpecification, 1000);
 
 Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);

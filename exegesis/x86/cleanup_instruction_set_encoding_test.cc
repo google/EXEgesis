@@ -664,6 +664,61 @@ TEST(FixEncodingSpecificationsTest, SomeInstructions) {
                 kExpectedInstructionSetProto);
 }
 
+TEST(FixRexPrefixSpecificationTest, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOVSX"
+          operands {
+            name: "r64"
+          }
+          operands {
+            name: "m8"
+          }
+        }
+        raw_encoding_specification: "REX + 0F BE /r"
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "r8"
+          }
+        }
+        raw_encoding_specification: "REX + 10 /r"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOVSX"
+          operands {
+            name: "r64"
+          }
+          operands {
+            name: "m8"
+          }
+        }
+        raw_encoding_specification: "REX.W + 0F BE /r"
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "r8"
+          }
+        }
+        raw_encoding_specification: "REX + 10 /r"
+      })";
+  TestTransform(FixRexPrefixSpecification, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {

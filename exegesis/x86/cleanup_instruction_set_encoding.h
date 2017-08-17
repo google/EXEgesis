@@ -100,6 +100,10 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set);
 // 3. Replaces .0 at the end of a VEX prefix with .W0.
 Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
 
+// Fixes the encoding specification of instructions that use the REX prefix
+// specification where REX.W should be used.
+Status FixRexPrefixSpecification(InstructionSetProto* instruction_set);
+
 // Parses the raw encoding specification of each instruction in the
 // instruction set, and stores the parsed proto in the specialized x86 encoding
 // specification field. Assumes that instruction.raw_encoding_specification
