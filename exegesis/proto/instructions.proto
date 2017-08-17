@@ -63,12 +63,22 @@ message InstructionOperand {
           // The memory is addressed using a base register and a displacement.
           INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT = 0x223;
 
+          // The memory is addressed using a base register and an index
+          // register.
+          INDIRECT_ADDRESSING_WITH_BASE_AND_INDEX = 0x224;
+
+          // The memory is addressed using an index register and a displacement.
+          INDIRECT_ADDRESSING_WITH_INDEX_AND_DISPLACEMENT = 0x225;
+
           // The memory is addressed using a base register, an index register
           // and a displacement.
-          INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX = 0x224;
+          INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX = 0x226;
 
           // The memory is addressed using the x86-64 VSIB addressing scheme.
-          INDIRECT_ADDRESSING_WITH_VSIB = 0x225;
+          INDIRECT_ADDRESSING_WITH_VSIB = 0x227;
+
+          // The memory is addressed using instruction pointer register.
+          INDIRECT_ADDRESSING_WITH_INSTRUCTION_POINTER = 0x228;
 
       // The operand uses either direct or indirect addressing using a register
       // that is fixed for the given instruction class, and it can't be changed
