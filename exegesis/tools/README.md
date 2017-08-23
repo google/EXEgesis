@@ -42,9 +42,13 @@ git clone https://github.com/google/EXEgesis
 # Intel x86-64
 
 We have one x86-64 specific tool: `parse_intel_sdm`, which extracts instruction
-information from Intel's Software Development Manual (SDM). You will need to
-download the most recent version from the [Intel Developer
-Zone](https://software.intel.com/en-us/articles/intel-sdm).
+information from Intel's Software Development Manual (SDM). We provide a bazel
+rule that automatically downloads the SDM, and parses it using the default set
+of cleanups.
+
+You can also download the SDM from the [Intel Developer
+Zone](https://software.intel.com/en-us/articles/intel-sdm) and run the
+`parse_intel_sdm` tool manually.
 
 For the complete list of supported and tested versions, see
 [`sdm_patches`](../x86/pdf/sdm_patches/). Please [file a
@@ -53,12 +57,23 @@ downloaded is unsupported.
 
 ### Usage
 
+To download and parse the most recent version of the SDM, run
+
+```shell
+bazel build -c opt //exegesis/data/x86:intel_instruction_sets.pbtxt
+```
+
+The parsed data will then be located in
+`bazel-genfiles/exegesis/data/x86/intel_instruction_sets.pbtxt`.
+
+#### Manual parsing
+
 The following command parses `/path/to/intel-sdm.pdf`, patches it to fix typos,
 extracts the instructions and removes mistakes and inconsistencies from the
 resulting database.
 
 ```shell
-bazel -c opt run //exegesis/tools:parse_intel_sdm --  \
+bazel run -c opt //exegesis/tools:parse_intel_sdm --  \
   --exegesis_input_spec=/path/to/intel-sdm.pdf  \
   --exegesis_output_file_base=/tmp/intel_isa \
   --exegesis_transforms=default

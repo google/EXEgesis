@@ -44,6 +44,7 @@ cc_library(
 cc_binary(
     name = "parse_intel_sdm",
     srcs = ["parse_intel_sdm.cc"],
+    visibility = ["//exegesis/data/x86:__pkg__"],
     deps = [
         "//base",
         "//exegesis/base:cleanup_instruction_set",

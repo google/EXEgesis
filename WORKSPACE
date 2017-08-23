@@ -100,6 +100,14 @@ new_git_repository(
     commit = "389880910a2da533fbda53cdf5ddf344f70f591f",
 )
 
+# ===== Intel SDM =====
+
+http_file(
+    name = "intel_sdm_pdf",
+    url = "https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf",
+    sha256 = "398fe124b6082b0e370f0e3127c6c285a4bcc920c95fa249ee8aa76de43bb475",
+)
+
 # ==============================================================================
 # Transitive Dependencies:
 # See https://bazel.build/versions/master/docs/external.html#transitive-dependencies
