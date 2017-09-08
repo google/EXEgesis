@@ -64,8 +64,12 @@ cc_proto_library(
 )
 
 # Represents how to encode an instruction.
-
 proto_library(
     name = "instruction_encoding_proto",
     srcs = ["instruction_encoding.proto"],
+)
+
+cc_proto_library(
+    name = "instruction_encoding_cc_proto",
+    deps = [":instruction_encoding_proto"],
 )
