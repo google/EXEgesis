@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<instructionsection id="id_i_1" title="I1 Title -- A64" type="instruction">
+  <docvars>
+    <docvar key="isa" value="A64" />
+    <docvar key="mnemonic" value="I1" />
+  </docvars>
+  <heading>I1 Title</heading>
+  <desc>
+    <brief><para>First instruction</para></brief>
+    <authored><para>This is the first instruction</para></authored>
+  </desc>
+ <classes>
+    <iclass name="Class One" id="class_1">
+      <docvars>
+        <docvar key="isa" value="A64" />
+        <docvar key="mnemonic" value="I1" />
+        <docvar key="instr-class" value="general" />
+      </docvars>
+      <regdiagram form="32" psname="ps">
+        <box hibit="31" name="msb">
+          <c></c>
+        </box>
+        <box hibit="30" name="range" width="3">
+          <c>x</c>
+          <c>1</c>
+          <c>0</c>
+        </box>
+        <box hibit="2" name="partial-override" width="2">
+          <c>0</c>
+          <c></c>
+        </box>
+        <box hibit="0" name="lsb">
+          <c>0</c>
+        </box>
+      </regdiagram>
+      <encoding name="First encoding of Class One" label="I1_class_1_enc_1">
+        <docvars>
+          <docvar key="isa" value="A64" />
+          <docvar key="mnemonic" value="I1" />
+          <docvar key="instr-class" value="general" />
+          <docvar key="cond-setting" value="S" />
+        </docvars>
+        <box hibit="31" name="msb" width="1">
+          <c>0</c>
+        </box>
+        <box hibit="2" name="partial-override" width="2">
+          <c></c>
+          <c>1</c>
+        </box>
+        <asmtemplate><text>I1 </text><a link="range" hover="range desc">&lt;range&gt;</a><text>, 0</text></asmtemplate>
+      </encoding>
+      <encoding name="Second encoding of Class One" label="I1_class_1_enc_2">
+        <docvars>
+          <docvar key="isa" value="A64" />
+          <docvar key="mnemonic" value="I1" />
+          <docvar key="instr-class" value="general" />
+          <docvar key="cond-setting" value="no-s" />
+        </docvars>
+        <box hibit="31" width="1" name="msb">
+          <c>1</c>
+        </box>
+        <box hibit="2" name="partial-override" width="2">
+          <c colspan="2"></c>
+        </box>
+        <asmtemplate><text>I1 </text><a link="range" hover="range desc">&lt;range&gt;</a><text>, 1</text></asmtemplate>
+      </encoding>
+    </iclass>
+  </classes>
+</instructionsection>

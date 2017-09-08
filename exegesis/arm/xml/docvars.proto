@@ -1,0 +1,519 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// DocVars are key/value pairs carrying a wide range of information about ARM
+// instructions. No specific documentation exist but their raw name, hence they
+// are extracted as-is from the <docvars> nodes of the XML instruction database.
+// Strings entries are translated into proto enums to be resilient to typos.
+
+syntax = "proto3";
+
+package exegesis.arm.xml.dv;
+
+enum AddressForm {
+  UNKNOWN_ADDRESS_FORM = 0;
+  LITERAL = 1;
+  BASE_REGISTER = 2;
+  BASE_PLUS_OFFSET = 3;
+  SIGNED_SCALED_OFFSET = 4;
+  UNSIGNED_SCALED_OFFSET = 5;
+  PRE_INDEXED = 6;
+  POST_INDEXED = 7;
+}
+
+enum AddressFormRegType {
+  UNKNOWN_ADDRESS_FORM_REG_TYPE = 0;
+  LITERAL_32_REG = 2;
+  LITERAL_32_FSREG = 3;
+  LITERAL_64_REG = 4;
+  LITERAL_64_FSREG = 5;
+  LITERAL_128_FSREG = 1;
+  BASE_REGISTER_32_REG = 6;
+  BASE_REGISTER_64_REG = 7;
+  BASE_REGISTER_PAIR_32 = 8;
+  BASE_REGISTER_PAIR_64 = 9;
+  BASE_PLUS_OFFSET_8_FSREG = 10;
+  BASE_PLUS_OFFSET_16_FSREG = 11;
+  BASE_PLUS_OFFSET_32_REG = 12;
+  BASE_PLUS_OFFSET_32_FSREG = 13;
+  BASE_PLUS_OFFSET_64_REG = 14;
+  BASE_PLUS_OFFSET_64_FSREG = 15;
+  BASE_PLUS_OFFSET_128_FSREG = 16;
+  UNSIGNED_SCALED_OFFSET_8_FSREG = 17;
+  UNSIGNED_SCALED_OFFSET_16_FSREG = 18;
+  UNSIGNED_SCALED_OFFSET_32_REG = 19;
+  UNSIGNED_SCALED_OFFSET_32_FSREG = 20;
+  UNSIGNED_SCALED_OFFSET_64_REG = 21;
+  UNSIGNED_SCALED_OFFSET_64_FSREG = 22;
+  UNSIGNED_SCALED_OFFSET_128_FSREG = 23;
+  SIGNED_SCALED_OFFSET_PAIR_32 = 24;
+  SIGNED_SCALED_OFFSET_PAIR_64 = 25;
+  SIGNED_SCALED_OFFSET_PAIR_WORDS = 26;
+  SIGNED_SCALED_OFFSET_PAIR_DOUBLEWORDS = 27;
+  SIGNED_SCALED_OFFSET_PAIR_QUADWORDS = 28;
+  PRE_INDEXED_8_FSREG = 29;
+  PRE_INDEXED_16_FSREG = 30;
+  PRE_INDEXED_32_REG = 31;
+  PRE_INDEXED_32_FSREG = 32;
+  PRE_INDEXED_64_REG = 33;
+  PRE_INDEXED_64_FSREG = 34;
+  PRE_INDEXED_128_FSREG = 35;
+  PRE_INDEXED_PAIR_32 = 36;
+  PRE_INDEXED_PAIR_64 = 37;
+  PRE_INDEXED_PAIR_WORDS = 38;
+  PRE_INDEXED_PAIR_DOUBLEWORDS = 39;
+  PRE_INDEXED_PAIR_QUADWORDS = 40;
+  POST_INDEXED_8_FSREG = 41;
+  POST_INDEXED_16_FSREG = 42;
+  POST_INDEXED_32_REG = 43;
+  POST_INDEXED_32_FSREG = 44;
+  POST_INDEXED_64_REG = 45;
+  POST_INDEXED_64_FSREG = 46;
+  POST_INDEXED_128_FSREG = 47;
+  POST_INDEXED_PAIR_32 = 48;
+  POST_INDEXED_PAIR_64 = 49;
+  POST_INDEXED_PAIR_WORDS = 50;
+  POST_INDEXED_PAIR_DOUBLEWORDS = 51;
+  POST_INDEXED_PAIR_QUADWORDS = 52;
+}
+
+enum AdvsimdDatatype {
+  UNKNOWN_ADVSIMD_DATATYPE = 0;
+  SISD_HALF = 1;
+  SIMD_HALF = 2;
+  SISD_SINGLE_AND_DOUBLE = 3;
+  SIMD_SINGLE_AND_DOUBLE = 4;
+}
+
+enum AdvsimdReguse {
+  UNKNOWN_ADVSIMD_REGUSE = 0;
+  X__2REG_SCALAR = 1;
+  X__2REG_ELEMENT = 2;
+  X__3REG_SAME = 3;
+  X__3REG_DIFF = 4;
+}
+
+enum AdvsimdType {
+  UNKNOWN_ADVSIMD_TYPE = 0;
+  SISD = 1;
+  SIMD = 2;
+}
+
+enum AsimdimmDatatype {
+  UNKNOWN_ASIMDIMM_DATATYPE = 0;
+  DOUBLEWORD = 1;
+  PER_BYTE = 2;
+  PER_DOUBLE = 3;
+  PER_DOUBLEWORD = 4;
+  PER_HALF = 5;
+  PER_HALFWORD = 6;
+  PER_SINGLE = 7;
+  PER_WORD = 8;
+}
+
+enum AsimdimmImmtype {
+  UNKNOWN_ASIMDIMM_IMMTYPE = 0;
+  IMMEDIATE = 1;
+  SHIFTED_IMMEDIATE = 2;
+  MASKED_IMMEDIATE = 3;
+}
+
+enum AsimdimmMask {
+  UNKNOWN_ASIMDIMM_MASK = 0;
+  BYTE_MASK = 1;
+  NO_BYTE_MASK = 2;
+}
+
+enum AsimdimmType {
+  UNKNOWN_ASIMDIMM_TYPE = 0;
+  DOUBLEWORD_IMMEDIATE = 1;
+  PER_BYTE_IMMEDIATE = 2;
+  PER_DOUBLEWORD_IMMEDIATE = 3;
+  PER_HALFWORD_SHIFTED_IMMEDIATE = 4;
+  PER_WORD_MASKED_IMMEDIATE = 5;
+  PER_WORD_SHIFTED_IMMEDIATE = 6;
+}
+
+enum AsStructureIndexSource {
+  UNKNOWN_AS_STRUCTURE_INDEX_SOURCE = 0;
+  POST_INDEX_IMM = 1;
+  POST_INDEX_REG = 2;
+}
+
+enum AsStructureOrg {
+  UNKNOWN_AS_STRUCTURE_ORG = 0;
+  OF_BYTES = 1;
+  OF_HALFWORDS = 2;
+  OF_WORDS = 3;
+  OF_DOUBLEWORDS = 4;
+  TO_ALL_LANES = 5;
+}
+
+enum AsStructurePostIndex {
+  UNKNOWN_AS_STRUCTURE_POST_INDEX = 0;
+  AS_NO_POST_INDEX = 1;
+  AS_POST_INDEX = 2;
+}
+
+enum BitfieldFill {
+  UNKNOWN_BITFIELD_FILL = 0;
+  NOFILL = 1;
+  ZERO_FILL = 2;
+  SIGNED_FILL = 3;
+}
+
+enum BranchOffset {
+  UNKNOWN_BRANCH_OFFSET = 0;
+  BR14 = 1;
+  BR19 = 2;
+  BR26 = 3;
+}
+
+enum CompareWith {
+  UNKNOWN_COMPARE_WITH = 0;
+  CMP_ZERO = 1;
+  CMP_NONZERO = 2;
+  CMP_COND = 3;
+  CMP_REG = 4;
+}
+
+enum CondSetting {
+  UNKNOWN_COND_SETTING = 0;
+  S = 1;
+  NO_S = 2;
+}
+
+enum ConvertType {
+  UNKNOWN_CONVERT_TYPE = 0;
+  X__32_TO_DOUBLE = 1;
+  X__32_TO_HALF = 2;
+  X__32_TO_SINGLE = 3;
+  X__64_TO_DOUBLE = 4;
+  X__64_TO_HALF = 5;
+  X__64_TO_QUADHI = 6;
+  X__64_TO_SINGLE = 7;
+  DOUBLE_TO_32 = 8;
+  DOUBLE_TO_64 = 9;
+  DOUBLE_TO_FIX32 = 10;
+  DOUBLE_TO_FIX64 = 11;
+  DOUBLE_TO_HALF = 12;
+  DOUBLE_TO_SINGLE = 13;
+  FIX32_TO_DOUBLE = 14;
+  FIX32_TO_HALF = 15;
+  FIX32_TO_SINGLE = 16;
+  FIX64_TO_DOUBLE = 17;
+  FIX64_TO_HALF = 18;
+  FIX64_TO_SINGLE = 19;
+  HALF_TO_32 = 20;
+  HALF_TO_64 = 21;
+  HALF_TO_DOUBLE = 22;
+  HALF_TO_FIX32 = 23;
+  HALF_TO_FIX64 = 24;
+  HALF_TO_SINGLE = 25;
+  QUADHI_TO_64 = 26;
+  SINGLE_TO_32 = 27;
+  SINGLE_TO_64 = 28;
+  SINGLE_TO_DOUBLE = 29;
+  SINGLE_TO_FIX32 = 30;
+  SINGLE_TO_FIX64 = 31;
+  SINGLE_TO_HALF = 32;
+}
+
+enum Datatype {
+  UNKNOWN_DATATYPE = 0;
+  X__32 = 1;
+  X__64 = 2;
+  HALF = 3;
+  SINGLE = 4;
+  DOUBLE = 5;
+  SINGLE_AND_DOUBLE = 6;
+}
+
+enum DatatypeReguse {
+  UNKNOWN_DATATYPE_REGUSE = 0;
+  X__32_EXT_REG = 1;
+  X__32_SHIFTED_REG = 2;
+  X__64_EXT_REG = 3;
+  X__64_SHIFTED_REG = 4;
+}
+
+enum Feature {
+  UNKNOWN_FEATURE = 0;
+  CRC = 1;
+}
+
+enum HintVariants {
+  UNKNOWN_HINT_VARIANTS = 0;
+  HINT_17_23 = 1;
+  HINT_6_7 = 2;
+  HINT_8_15_24_127 = 3;
+}
+
+enum ImmediateType {
+  UNKNOWN_IMMEDIATE_TYPE = 0;
+  IMM5U = 1;
+  IMM8F = 2;
+  IMM12U = 3;
+  IMM12_BITFIELD = 4;
+  IMM18_PACKED = 5;
+}
+
+enum InstrClass {
+  UNKNOWN_INSTR_CLASS = 0;
+  GENERAL = 1;
+  SYSTEM = 2;
+  FLOAT = 3;
+  FPSIMD = 4;
+  ADVSIMD = 5;
+}
+
+enum Isa {
+  UNKNOWN_ISA = 0;
+  A32 = 1;
+  A64 = 2;
+}
+
+enum Ld1MultipleLabels {
+  UNKNOWN_LD1_MULTIPLE_LABELS = 0;
+  POST_INDEX_IMM_TO_1REG = 1;
+  POST_INDEX_IMM_TO_2REG = 2;
+  POST_INDEX_IMM_TO_3REG = 3;
+  POST_INDEX_IMM_TO_4REG = 4;
+  POST_INDEX_REG_TO_1REG = 5;
+  POST_INDEX_REG_TO_2REG = 6;
+  POST_INDEX_REG_TO_3REG = 7;
+  POST_INDEX_REG_TO_4REG = 8;
+}
+
+enum Ld1SingleLabels {
+  UNKNOWN_LD1_SINGLE_LABELS = 0;
+  OF_BYTES_POST_INDEX_IMM = 1;
+  OF_BYTES_POST_INDEX_REG = 2;
+  OF_DOUBLEWORDS_POST_INDEX_IMM = 3;
+  OF_DOUBLEWORDS_POST_INDEX_REG = 4;
+  OF_HALFWORDS_POST_INDEX_IMM = 5;
+  OF_HALFWORDS_POST_INDEX_REG = 6;
+  OF_WORDS_POST_INDEX_IMM = 7;
+  OF_WORDS_POST_INDEX_REG = 8;
+  TO_ALL_LANES_POST_INDEX_IMM = 9;
+  TO_ALL_LANES_POST_INDEX_REG = 10;
+}
+
+enum LdstructRegcount {
+  UNKNOWN_LDSTRUCT_REGCOUNT = 0;
+  TO_1REG = 1;
+  TO_2REG = 2;
+  TO_3REG = 3;
+  TO_4REG = 4;
+}
+
+enum LoadstoreBra {
+  UNKNOWN_LOADSTORE_BRA = 0;
+  KEY_A_ZMOD = 1;
+  KEY_A_REGMOD = 2;
+  KEY_B_ZMOD = 3;
+  KEY_B_REGMOD = 4;
+}
+
+enum LoadstoreOrder {
+  UNKNOWN_LOADSTORE_ORDER = 0;
+  ACQUIRE = 1;
+  ACQUIRE_RELEASE = 2;
+  NO_ORDER = 3;
+  RELEASE = 4;
+}
+
+enum LoadstoreOrderRegType {
+  UNKNOWN_LOADSTORE_ORDER_REG_TYPE = 0;
+  ACQUIRE_32_REG = 1;
+  ACQUIRE_64_REG = 2;
+  ACQUIRE_PAIR_32 = 3;
+  ACQUIRE_PAIR_64 = 4;
+  ACQUIRE_RELEASE_32_REG = 5;
+  ACQUIRE_RELEASE_64_REG = 6;
+  ACQUIRE_RELEASE_PAIR_32 = 7;
+  ACQUIRE_RELEASE_PAIR_64 = 8;
+  NO_ORDER_32_REG = 9;
+  NO_ORDER_64_REG = 10;
+  NO_ORDER_PAIR_32 = 11;
+  NO_ORDER_PAIR_64 = 12;
+  RELEASE_32_REG = 13;
+  RELEASE_64_REG = 14;
+  RELEASE_PAIR_32 = 15;
+  RELEASE_PAIR_64 = 16;
+}
+
+enum LoadstorePa {
+  UNKNOWN_LOADSTORE_PA = 0;
+  KEY_A_OFFS = 1;
+  KEY_A_PREIND = 2;
+  KEY_B_OFFS = 3;
+  KEY_B_PREIND = 4;
+}
+
+enum MoveWhat {
+  UNKNOWN_MOVE_WHAT = 0;
+  MOV_BITMASK = 1;
+  MOV_REGISTER = 2;
+  MOV_WIDEIMM = 3;
+  MOV_WIDEINV = 4;
+  TO_FROM_SP = 5;
+}
+
+enum MsrSysregTarget {
+  UNKNOWN_MSR_SYSREG_TARGET = 0;
+  REGISTER_FIELD = 1;
+  WHOLE_REGISTER = 2;
+}
+
+enum NoRegForTable {
+  UNKNOWN_NO_REG_FOR_TABLE = 0;
+  TBL1 = 1;
+  TBL2 = 2;
+  TBL3 = 3;
+  TBL4 = 4;
+}
+
+enum OffsetType {
+  UNKNOWN_OFFSET_TYPE = 0;
+  OFF_REG = 1;
+  OFF7S_S = 2;
+  OFF8S_U = 3;
+  OFF9S_U = 4;
+  OFF12U_S = 5;
+  OFF19S = 6;
+}
+
+enum RegType {
+  UNKNOWN_REG_TYPE = 0;
+  X__32_REG = 1;
+  X__64_REG = 2;
+  X__8_FSREG = 3;
+  X__16_FSREG = 4;
+  X__32_FSREG = 5;
+  X__64_FSREG = 6;
+  X__128_FSREG = 7;
+  PAIR_32 = 8;
+  PAIR_64 = 9;
+  PAIR_WORDS = 10;
+  PAIR_DOUBLEWORDS = 11;
+  PAIR_QUADWORDS = 12;
+}
+
+enum RegTypeAndUse {
+  UNKNOWN_REG_TYPE_AND_USE = 0;
+  X__8_FSREG_EXT_REG = 1;
+  X__8_FSREG_SHIFTED_REG = 2;
+}
+
+enum Reguse {
+  UNKNOWN_REGUSE = 0;
+  SHIFTED_REG = 1;
+  EXT_REG = 2;
+}
+
+enum ReguseDatatype {
+  UNKNOWN_REGUSE_DATATYPE = 0;
+  X__2REG_ELEMENT_HALF = 1;
+  X__2REG_ELEMENT_SINGLE_AND_DOUBLE = 2;
+  X__2REG_SCALAR_HALF = 3;
+  X__2REG_SCALAR_SINGLE_AND_DOUBLE = 4;
+  X__3REG_SAME_HALF = 5;
+  X__3REG_SAME_SINGLE_AND_DOUBLE = 6;
+}
+
+enum SourceType {
+  UNKNOWN_SOURCE_TYPE = 0;
+  SRC_IS_IMMEDIATE = 1;
+  SRC_IS_REGISTER = 2;
+}
+
+enum StiMultLabels {
+  UNKNOWN_STI_MULT_LABELS = 0;
+  FROM_1REG_POST_INDEX_IMM = 1;
+  FROM_1REG_POST_INDEX_REG = 2;
+  FROM_2REG_POST_INDEX_IMM = 3;
+  FROM_2REG_POST_INDEX_REG = 4;
+  FROM_3REG_POST_INDEX_IMM = 5;
+  FROM_3REG_POST_INDEX_REG = 6;
+  FROM_4REG_POST_INDEX_IMM = 7;
+  FROM_4REG_POST_INDEX_REG = 8;
+}
+
+enum StstructRegcount {
+  UNKNOWN_STSTRUCT_REGCOUNT = 0;
+  FROM_1REG = 1;
+  FROM_2REG = 2;
+  FROM_3REG = 3;
+  FROM_4REG = 4;
+}
+
+enum VectorXferType {
+  UNKNOWN_VECTOR_XFER_TYPE = 0;
+  SCALAR_FROM_ELEMENT = 1;
+  ELEMENT_FROM_ELEMENT = 2;
+  GENERAL_FROM_ELEMENT = 3;
+  VECTOR_FROM_ELEMENT = 4;
+  VECTOR_FROM_VECTOR = 5;
+  VECTOR_FROM_GENERAL = 6;
+}
+
+message DocVars {
+  string mnemonic = 1;
+  string alias_mnemonic = 2;
+
+  AddressForm address_form = 3;
+  AddressFormRegType address_form_reg_type = 4;
+  AdvsimdDatatype advsimd_datatype = 5;
+  AdvsimdReguse advsimd_reguse = 6;
+  AdvsimdType advsimd_type = 7;
+  AsimdimmDatatype asimdimm_datatype = 8;
+  AsimdimmImmtype asimdimm_immtype = 9;
+  AsimdimmMask asimdimm_mask = 10;
+  AsimdimmType asimdimm_type = 11;
+  AsStructureIndexSource as_structure_index_source = 12;
+  AsStructureOrg as_structure_org = 13;
+  AsStructurePostIndex as_structure_post_index = 14;
+  BitfieldFill bitfield_fill = 15;
+  BranchOffset branch_offset = 16;
+  CompareWith compare_with = 17;
+  CondSetting cond_setting = 18;
+  ConvertType convert_type = 19;
+  Datatype datatype = 20;
+  DatatypeReguse datatype_reguse = 21;
+  Feature feature = 22;
+  HintVariants hint_variants = 23;
+  ImmediateType immediate_type = 24;
+  InstrClass instr_class = 25;
+  Isa isa = 26;
+  Ld1MultipleLabels ld1_multiple_labels = 27;
+  Ld1SingleLabels ld1_single_labels = 28;
+  LdstructRegcount ldstruct_regcount = 29;
+  LoadstoreBra loadstore_bra = 30;
+  LoadstoreOrder loadstore_order = 31;
+  LoadstoreOrderRegType loadstore_order_reg_type = 32;
+  LoadstorePa loadstore_pa = 33;
+  MoveWhat move_what = 34;
+  MsrSysregTarget msr_sysreg_target = 35;
+  NoRegForTable no_reg_for_table = 36;
+  OffsetType offset_type = 37;
+  RegType reg_type = 38;
+  RegTypeAndUse reg_type_and_use = 39;
+  Reguse reguse = 40;
+  ReguseDatatype reguse_datatype = 41;
+  SourceType source_type = 42;
+  StiMultLabels sti_mult_labels = 43;
+  StstructRegcount ststruct_regcount = 44;
+  VectorXferType vector_xfer_type = 45;
+}

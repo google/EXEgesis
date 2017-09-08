@@ -61,6 +61,24 @@ cc_binary(
     ],
 )
 
+# A tool that parses the ARM v8-A XML instruction database.
+cc_binary(
+    name = "parse_arm_xml",
+    srcs = ["parse_arm_xml.cc"],
+    deps = [
+        "//base",
+        "//exegesis/arm/xml:converter",
+        "//exegesis/arm/xml:parser",
+        "//exegesis/arm/xml:parser_cc_proto",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:proto_util",
+        "//util/task:status",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
 # A tool that parses the a CPUID dumps and converts the information to
 # EXEgesis formats.
 cc_binary(

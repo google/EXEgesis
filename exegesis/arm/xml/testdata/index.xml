@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<alphaindex>
+  <toptitle instructionset="A64" />
+  <iforms title="Test instruction list">
+    <iform iformfile="instruction_1.xml" heading="I1" id="id_i_1">First instruction.</iform>
+    <iform iformfile="instruction_2.xml" heading="I2" id="id_i_2">Second instruction.</iform>
+  </iforms>
+</alphaindex>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<instructionsection id="id_i_2" title="I2 Title -- A64" type="instruction">
+  <docvars>
+    <docvar key="isa" value="A64" />
+    <docvar key="mnemonic" value="I2" />
+  </docvars>
+  <heading>I2 Title</heading>
+  <desc>
+    <brief><para>Second instruction</para></brief>
+    <authored><para>This is the second instruction</para></authored>
+  </desc>
+ <classes>
+    <iclass name="Class One" id="class_1">
+      <docvars>
+        <docvar key="isa" value="A64" />
+        <docvar key="mnemonic" value="I2" />
+      </docvars>
+      <regdiagram form="32" psname="ps">
+        <box hibit="31" name="weird" width="7" constraint="!= 1x1x0xx">
+          <c span="7"></c>
+        </box>
+        <box hibit="0" name="lsb">
+          <c>0</c>
+        </box>
+      </regdiagram>
+      <encoding name="First encoding of Class One" label="I2_class_1_enc_1">
+        <docvars>
+          <docvar key="isa" value="A64" />
+          <docvar key="mnemonic" value="I2" />
+        </docvars>
+        <box hibit="31" width="7">
+          <c></c>
+          <c>Z</c>
+          <c></c>
+          <c>N</c>
+          <c></c>
+          <c></c>
+          <c>x</c>
+        </box>
+        <asmtemplate><text>I2 </text></asmtemplate>
+      </encoding>
+    </iclass>
+  </classes>
+</instructionsection>

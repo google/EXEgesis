@@ -3,8 +3,8 @@
 # Parsing the x86 instructions manual.
 
 This file describes the internals of `parse_intel_sdm`: a tool to read Intel's
-Software Development Manual (SDM). If you want to use `parse_intel_sdm` have a
-look at the [tool's README](../../tools/README.md).
+Software Development Manual (SDM). If you just want to use `parse_intel_sdm`,
+have a look at the main [README](../../tools/README.md).
 
 ## Overview
 
@@ -26,6 +26,6 @@ information.
     [`SDMDocument`](../../proto/pdf/pdf_document.proto) protobuf that
     represents the SDM-specific structure. At that point we still keep some PDF
     data for easier debugging.
-*   Finally we convert the `SDMDocument` to the final `InstructionSetProto`
-    representation.
+*   Finally we convert the `SDMDocument` to the final
+    [`ArchitectureProto`](../../proto/instructions.proto) representation.
 

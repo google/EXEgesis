@@ -2,27 +2,15 @@
 
 # Overview
 
-As we develop utilities to better understand CPUs, we'll document them here.
-Currently, they're all related to parsing PDFs:
-
--   [`parse_intel_sdm`](#intel-x86-64) (Intel x86-64 only): Transforms the
-    Intel's Software Development Manual (SDM) into an
-    [`ArchitectureProto`](../proto/instructions.proto).
--   [`pdf2proto`](#pdf2proto): Transforms a PDF file into a
-    [PdfDocument](../proto/pdf/pdf_document.proto).
--   [`proto_patch_helper`](#proto_patch_helper): Greps through a
-    [PdfDocument](../proto/pdf/pdf_document.proto) to help creating PDF
-    patches.
--   [`proto_patch_migrate`](#proto_patch_migrate): Migrates a set of patches
-    from one [PdfDocument](../proto/pdf/pdf_document.proto) to another.
-
-This file presents a set of tools to extract
+As we develop utilities to better understand CPUs, we'll document them here. The
+tools available in this directory currently focus on extracting the
 [ISA](https://en.wikipedia.org/wiki/Instruction_set_architecture) information
-for various vendors.
+for various vendors into a unified
+[`ArchitectureProto`](../proto/instructions.proto) format:
 
 -   [Intel x86-64](#intel-x86-64)
+-   [ARM A64](#arm-a64)
 -   [IBM POWER](#ibm-power) _under development_
--   [ARM A64](#arm-a64) _under development_
 
 We also provide some [generic PDF tools](#generic-pdf-tools) to help with
 debugging.
@@ -41,19 +29,20 @@ git clone https://github.com/google/EXEgesis
 
 # Intel x86-64
 
-We have one x86-64 specific tool: `parse_intel_sdm`, which extracts instruction
-information from Intel's Software Development Manual (SDM). We provide a bazel
-rule that automatically downloads the SDM, and parses it using the default set
-of cleanups.
+`parse_intel_sdm` extracts instruction information from Intel's Software
+Development Manual (SDM). We provide a bazel rule that automatically downloads
+the latest tested SDM version, and parses it using the default set of cleanups.
 
-You can also download the SDM from the [Intel Developer
+
+You can also download the most recent published version of the SDM (which might
+not be supported by our tools yet) from the [Intel Developer
 Zone](https://software.intel.com/en-us/articles/intel-sdm) and run the
 `parse_intel_sdm` tool manually.
 
 For the complete list of supported and tested versions, see
-[`sdm_patches`](../x86/pdf/sdm_patches/). Please [file a
-bug](https://github.com/google/EXEgesis/issues) if the SDM version you
-downloaded is unsupported.
+[`sdm_patches`](../x86/pdf/sdm_patches/). \
+Please [file a bug](https://github.com/google/EXEgesis/issues) if the SDM
+version you downloaded is unsupported.
 
 ### Usage
 
@@ -70,11 +59,11 @@ The parsed data will then be located in
 
 The following command parses `/path/to/intel-sdm.pdf`, patches it to fix typos,
 extracts the instructions and removes mistakes and inconsistencies from the
-resulting database.
+resulting database:
 
 ```shell
-bazel run -c opt //exegesis/tools:parse_intel_sdm --  \
-  --exegesis_input_spec=/path/to/intel-sdm.pdf  \
+bazel run -c opt //exegesis/tools:parse_intel_sdm -- \
+  --exegesis_input_spec=/path/to/intel-sdm.pdf \
   --exegesis_output_file_base=/tmp/intel_isa \
   --exegesis_transforms=default
 ```
@@ -109,7 +98,7 @@ undefined reference to `_ULx86_64_step'
 Just add `--define libunwind=true` to the command line like so:
 
 ```shell
-bazel -c opt run //exegesis/tools:parse_intel_sdm --define libunwind=true --  \
+bazel run -c opt //exegesis/tools:parse_intel_sdm --define libunwind=true --  \
   --exegesis_input_spec=/path/to/intel-sdm.pdf  \
   --exegesis_output_file_base=/tmp/intel_isa \
   --exegesis_transforms=default
@@ -117,18 +106,47 @@ bazel -c opt run //exegesis/tools:parse_intel_sdm --define libunwind=true --  \
 
 ### More details
 
-For more details, have a look at the tool's
-[README](../x86/pdf/README.md).
+For more details, have a look at the local [README](../x86/pdf/README.md).
 
-## IBM POWER
+# ARM A64
 
-_Still under development. Please come back later._
+`parse_arm_xml` generates architecture information for the ARM v8-A ISA. You
+will need to download the ARM v8-A XML instruction database available
+at https://developer.arm.com/products/architecture/a-profile/exploration-tools
+and extract its content locally on your machine. This tool supports at least the
+following versions:
 
-## ARM A64
+* [A64_v82A_ISA_xml_00bet3.1](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v82A_ISA_xml_00bet3.1.tar.gz)
+* [A64_v83A_ISA_xml_00bet4](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v83A_ISA_xml_00bet4.tar.gz)
 
-_Still under development. Please come back later._
+You can find more information on the ARM v8-A XML architecture specification on
+https://alastairreid.github.io/alastairreid.github.io/ARM-v8a-xml-release/
 
-## Generic PDF tools
+### Usage
+
+The following command parses all instructions, assuming that XML files reside
+inside `/path/to/xml-directory/`:
+
+```shell
+bazel run -c opt //exegesis/tools:parse_arm_xml -- \
+  --exegesis_arm_xml_path=/path/to/xml-directory/ \
+  --exegesis_xml_database_output_file=/tmp/arm_xml_database.pbtxt \
+  --exegesis_isa_output_file=/tmp/arm_isa.pbtxt
+```
+
+The above command will create the following files in protobuf
+[text format](https://developers.google.com/protocol-buffers/docs/reference/cpp/google.protobuf.text_format):
+
+-   `/tmp/arm_xml_database.pbtxt` contains a raw translation of the instruction
+    database as an [`XmlDatabase`](../arm/xml/parser.proto) proto.
+-   `/tmp/arm_isa.pbtxt` contains the same data but further transformed into the
+    [`ArchitectureProto`](../proto/instructions.proto) unified format.
+
+### More details
+
+For more details, have a look at the local [README](../arm/xml/README.md).
+
+# Generic PDF tools
 
 This section describes a set of more generic tools that we built to work with
 PDF files. We don't expect you to use them but it's helpful for debugging
@@ -163,7 +181,7 @@ Migrates a set of [PdfDocumentChanges](../proto/pdf/pdf_document.proto)
 from PdfDocument to PdfDocument.
 
 ```shell
-bazel run -c opt  //exegesis/tools:proto_patch_migrate -- \
+bazel run -c opt //exegesis/tools:proto_patch_migrate -- \
   --exegesis_from_proto_file=/path/from_pdf_file.pdf.pb \
   --exegesis_to_proto_file=/path/to_pdf_file.pdf.pb \
   --exegesis_output_file_base=/tmp/migration_base
