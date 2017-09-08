@@ -26,12 +26,24 @@ Status InternalError(StringPiece error_message) {
   return Status(error::INTERNAL, error_message);
 }
 
+Status InvalidArgumentError(StringPiece error_message) {
+  return Status(error::INVALID_ARGUMENT, error_message);
+}
+
+Status NotFoundError(StringPiece error_message) {
+  return Status(error::NOT_FOUND, error_message);
+}
+
+Status UnimplementedError(StringPiece error_message) {
+  return Status(error::UNIMPLEMENTED, error_message);
+}
+
 Status UnknownError(StringPiece error_message) {
   return Status(error::UNKNOWN, error_message);
 }
 
-Status InvalidArgumentError(StringPiece error_message) {
-  return Status(error::INVALID_ARGUMENT, error_message);
+bool IsNotFound(const Status& status) {
+  return status.error_code() == error::NOT_FOUND;
 }
 
 bool IsInvalidArgument(const Status& status) {

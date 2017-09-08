@@ -22,11 +22,13 @@ namespace exegesis {
 namespace util {
 
 Status FailedPreconditionError(StringPiece error);
-
 Status InternalError(StringPiece error);
+Status InvalidArgumentError(StringPiece error);
+Status NotFoundError(StringPiece error);
+Status UnimplementedError(StringPiece error);
 Status UnknownError(StringPiece error);
 
-Status InvalidArgumentError(StringPiece error);
+bool IsNotFound(const Status& status);
 bool IsInvalidArgument(const Status& status);
 
 }  // namespace util

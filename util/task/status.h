@@ -15,7 +15,11 @@
 #ifndef UTIL_TASK_STATUS_H_
 #define UTIL_TASK_STATUS_H_
 
+#include "strings/string.h"
+
 #include "src/google/protobuf/stubs/status.h"
+#include "strings/str_cat.h"
+#include "strings/string_view.h"
 
 namespace exegesis {
 namespace util {
@@ -25,12 +29,25 @@ using ::google::protobuf::util::error::Code;
 using ::google::protobuf::util::error::FAILED_PRECONDITION;
 using ::google::protobuf::util::error::INTERNAL;
 using ::google::protobuf::util::error::INVALID_ARGUMENT;
+using ::google::protobuf::util::error::NOT_FOUND;
+using ::google::protobuf::util::error::UNIMPLEMENTED;
 using ::google::protobuf::util::error::UNKNOWN;
 
 }  // namespace error
 
 using ::google::protobuf::util::Status;
 using ::google::protobuf::util::operator<<;
+
+inline Status Annotate(const Status& s, StringPiece msg) {
+  if (s.ok() || msg.empty()) return s;
+  StringPiece new_msg = msg;
+  string annotated;
+  if (!s.error_message().empty()) {
+    StrAppend(&annotated, s.error_message(), "; ", msg);
+    new_msg = annotated;
+  }
+  return Status(static_cast<error::Code>(s.error_code()), new_msg);
+}
 
 inline Status OkStatus() { return Status(); }
 
