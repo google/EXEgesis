@@ -42,8 +42,8 @@ new_git_repository(
 
 new_http_archive(
     name = "utf_archive",
-    url = "https://swtch.com/plan9port/unix/libutf.tgz",
-    sha256 = "7789326c507fe9c07ade0731e0b0da221385a8f7cd1faa890af92a78a953bf5e",
+    url = "https://9fans.github.io/plan9port/unix/libutf.tgz",
+    sha256 = "262a902f622dcd28e05b8a4be10da0aa3899050d0be8f4a71780eed6b2ea65ca",
     build_file = "utf.BUILD",
 )
 
