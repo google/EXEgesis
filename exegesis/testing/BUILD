@@ -12,6 +12,8 @@ cc_library(
     deps = [
         "//base",
         "//strings",
+        "//util/task:status",
+        "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",

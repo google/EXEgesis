@@ -12,17 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Contains implementation of EqualsProto, a gMock matcher that takes a protocol
-// buffer in the text format and matches it against "real" protocol buffers
-// using the message differencer.
+// Contains implementations of:
 //
-// Usage:
-// MyProto proto = CreateMyProto();
-// EXPECT_THAT(proto, EqualsProto("my_field: 'my_value'");
+// * EqualsProto, a gMock matcher that takes a ::google::protobuf::Messsage or
+//   its equivalent in text format and matches it against actual protocol
+//   buffers using a message differencer.
+//
+//   Usage:
+//   MyProto proto = CreateMyProto();
+//   EXPECT_THAT(proto, EqualsProto("my_field: 'my_value'");
+//
+// * IsOk, a gMock matcher that matches OK Status or StatusOr.
+//
+//   Usage:
+//   Status status = ReturnStatus();
+//   EXPECT_THAT(status, IsOk());
+//
+// * StatusIs, a gMock matcher that matches a Status or StatusOr error code,
+//   and optionally its error message.
+//
+//   Usage #1:
+//   StatusOr<int> status_or = ReturnStatusOr();
+//   EXPECT_THAT(status_or, StatusIs(NOT_FOUND));
+//
+//   Usage #2:
+//   Status status = ReturnStatusWithMessage("error_message");
+//   EXPECT_THAT(status, StatusIs(NOT_FOUND, "error_message"));
+//
+// * IsOkAndHolds, a gMock matcher that matches a StatusOr<T> value whose status
+//   is OK and whose inner value matches a given.
+//
+//   Usage:
+//   StatusOr<int> status_or = ReturnStatusOr();
+//   EXPECT_THAT(status_or, IsOkAndHolds(42));
 
 #ifndef EXEGESIS_TESTING_TEST_UTIL_H_
 #define EXEGESIS_TESTING_TEST_UTIL_H_
 
+#include <type_traits>
 #include <utility>
 #include "strings/string.h"
 
@@ -30,14 +57,39 @@
 #include "gmock/gmock.h"
 #include "src/google/protobuf/text_format.h"
 #include "src/google/protobuf/util/message_differencer.h"
+#include "util/task/status.h"
+#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace testing {
+
 namespace internal {
+
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
+using ::exegesis::util::error::Code;
 
 template <typename ProtoType>
 bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
-                ::testing::MatchResultListener* listener);
+                ::testing::MatchResultListener* listener) {
+  using ::google::protobuf::TextFormat;
+  using ::google::protobuf::util::MessageDifferencer;
+  ProtoType expected_proto;
+  if (!TextFormat::ParseFromString(expected_proto_str, &expected_proto)) {
+    *listener << "could not parse proto: <" << expected_proto_str << ">";
+    return false;
+  }
+
+  MessageDifferencer differencer;
+  string differences;
+  differencer.ReportDifferencesToString(&differences);
+  if (!differencer.Compare(expected_proto, actual_proto)) {
+    *listener << "the protos are different:\n" << differences;
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace internal
 
@@ -108,32 +160,132 @@ inline ::testing::PolymorphicMatcher<EqualsProtoTupleMatcher> EqualsProto() {
   return ::testing::MakePolymorphicMatcher(EqualsProtoTupleMatcher());
 }
 
+// Implements IsOk() as a polymorphic matcher.
+MATCHER(IsOk, "") { return arg.ok(); }
+
 namespace internal {
 
-// The implementation of the proto-to-string matching.
-template <typename ProtoType>
-bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
-                ::testing::MatchResultListener* listener) {
-  using ::google::protobuf::TextFormat;
-  using ::google::protobuf::util::MessageDifferencer;
-  ProtoType expected_proto;
-  if (!TextFormat::ParseFromString(expected_proto_str, &expected_proto)) {
-    *listener << "could not parse proto: <" << expected_proto_str << ">";
-    return false;
-  }
+// Monomorphic matcher for the error code of a Status.
+bool StatusIsMatcher(const Status& actual_status,
+                     const Code& expected_error_code) {
+  return actual_status.error_code() == expected_error_code;
+}
 
-  MessageDifferencer differencer;
-  string differences;
-  differencer.ReportDifferencesToString(&differences);
-  if (!differencer.Compare(expected_proto, actual_proto)) {
-    *listener << "the protos are different:\n" << differences;
-    return false;
-  }
+// Monomorphic matcher for the error code of a StatusOr.
+template <typename T>
+bool StatusIsMatcher(const StatusOr<T>& actual_status_or,
+                     const Code& expected_error_code) {
+  return StatusIsMatcher(actual_status_or.status(), expected_error_code);
+}
 
-  return true;
+// Monomorphic matcher for the error code & message of a Status.
+bool StatusIsMatcher(
+    const Status& actual_status, const Code& expected_error_code,
+    const ::testing::Matcher<const string&>& expected_message) {
+  ::testing::StringMatchResultListener sink;
+  return actual_status.error_code() == expected_error_code &&
+         expected_message.MatchAndExplain(actual_status.error_message(), &sink);
+}
+
+// Monomorphic matcher for the error code & message of a StatusOr.
+template <typename T>
+bool StatusIsMatcher(
+    const StatusOr<T>& actual_status_or, const Code& expected_error_code,
+    const ::testing::Matcher<const string&>& expected_message) {
+  return StatusIsMatcher(actual_status_or.status(), expected_error_code,
+                         expected_message);
 }
 
 }  // namespace internal
+
+// Implements StatusIs() as a polymorphic matcher.
+MATCHER_P(StatusIs, expected_error_code, "") {
+  return internal::StatusIsMatcher(arg, expected_error_code);
+}
+
+// Implements StatusIs() as a polymorphic matcher.
+MATCHER_P2(StatusIs, expected_error_code, expected_message, "") {
+  return internal::StatusIsMatcher(arg, expected_error_code, expected_message);
+}
+
+namespace internal {
+
+// Monomorphic implementation of a matcher for a StatusOr.
+template <typename StatusOrType>
+class IsOkAndHoldsMatcherImpl
+    : public ::testing::MatcherInterface<StatusOrType> {
+ public:
+  using ValueType = typename std::remove_reference<decltype(
+      std::declval<StatusOrType>().ValueOrDie())>::type;
+
+  template <typename InnerMatcher>
+  explicit IsOkAndHoldsMatcherImpl(InnerMatcher&& inner_matcher)
+      : inner_matcher_(::testing::SafeMatcherCast<const ValueType&>(
+            std::forward<InnerMatcher>(inner_matcher))) {}
+
+  void DescribeTo(std::ostream* os) const {
+    *os << "is OK and has a value that ";
+    inner_matcher_.DescribeTo(os);
+  }
+
+  void DescribeNegationTo(std::ostream* os) const {
+    *os << "isn't OK or has a value that ";
+    inner_matcher_.DescribeNegationTo(os);
+  }
+
+  bool MatchAndExplain(StatusOrType actual_value,
+                       ::testing::MatchResultListener* listener) const {
+    if (!actual_value.ok()) {
+      *listener << "which has status " << actual_value.status();
+      return false;
+    }
+
+    ::testing::StringMatchResultListener inner_listener;
+    const bool matches = inner_matcher_.MatchAndExplain(
+        actual_value.ValueOrDie(), &inner_listener);
+    const string inner_explanation = inner_listener.str();
+    if (!inner_explanation.empty()) {
+      *listener << "which contains value "
+                << ::testing::PrintToString(actual_value.ValueOrDie()) << ", "
+                << inner_explanation;
+    }
+    return matches;
+  }
+
+ private:
+  const ::testing::Matcher<const ValueType&> inner_matcher_;
+};
+
+// Implements IsOkAndHolds() as a polymorphic matcher.
+template <typename InnerMatcher>
+class IsOkAndHoldsMatcher {
+ public:
+  explicit IsOkAndHoldsMatcher(InnerMatcher inner_matcher)
+      : inner_matcher_(std::move(inner_matcher)) {}
+
+  // Converts this polymorphic matcher to a monomorphic one of the given type.
+  // StatusOrType can be either StatusOr<T> or a reference to StatusOr<T>.
+  template <typename StatusOrType>
+  operator ::testing::Matcher<StatusOrType>() const {
+    return ::testing::MakeMatcher(
+        new IsOkAndHoldsMatcherImpl<StatusOrType>(inner_matcher_));
+  }
+
+ private:
+  const InnerMatcher inner_matcher_;
+};
+
+}  // namespace internal
+
+// Returns a gMock matcher that matches a StatusOr<> whose status is
+// OK and whose value matches the inner matcher.
+template <typename InnerMatcher>
+internal::IsOkAndHoldsMatcher<typename std::decay<InnerMatcher>::type>
+IsOkAndHolds(InnerMatcher&& inner_matcher) {
+  return internal::IsOkAndHoldsMatcher<typename std::decay<InnerMatcher>::type>(
+      std::forward<InnerMatcher>(inner_matcher));
+}
+
 }  // namespace testing
 }  // namespace exegesis
 
