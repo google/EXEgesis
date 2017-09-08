@@ -82,6 +82,15 @@ new_git_repository(
     build_file = "libpfm4.BUILD",
 )
 
+# ===== tinyxml2 =====
+
+new_git_repository(
+    name = "tinyxml2_git",
+    remote = "https://github.com/leethomason/tinyxml2.git",
+    tag = "4.0.1",
+    build_file = "tinyxml2.BUILD",
+)
+
 # ===== or-tools =====
 
 git_repository(
