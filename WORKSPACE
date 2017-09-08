@@ -59,9 +59,9 @@ git_repository(
 
 new_git_repository(
     name = "com_github_glog_glog",
-    build_file = "glog.BUILD",
     remote = "https://github.com/google/glog.git",
     tag = "v0.3.5",
+    build_file = "glog.BUILD",
 )
 
 # ===== xpdf =====
@@ -77,9 +77,9 @@ new_http_archive(
 
 new_git_repository(
     name = "libpfm4_git",
-    build_file = "libpfm4.BUILD",
     remote = "git://git.code.sf.net/p/perfmon2/libpfm4",
     tag = "v4.8.0",
+    build_file = "libpfm4.BUILD",
 )
 
 # ===== or-tools =====
@@ -94,10 +94,10 @@ git_repository(
 
 new_git_repository(
     name = "llvm_git",
-    build_file = "llvm.BUILD",
     remote = "https://git.llvm.org/git/llvm.git",
     # LLVM has no tags.
     commit = "389880910a2da533fbda53cdf5ddf344f70f591f",
+    build_file = "llvm.BUILD",
 )
 
 # ===== Intel SDM =====
