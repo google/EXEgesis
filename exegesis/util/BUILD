@@ -115,7 +115,7 @@ cc_test(
         "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
-        "//strings",
+        "//file/base:path",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",

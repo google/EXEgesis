@@ -19,11 +19,11 @@
 
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"
+#include "file/base/path.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
@@ -35,7 +35,7 @@ TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
     llvm_mnemonic: 'ADD32mr')";
   const InstructionProto page =
       ParseProtoFromStringOrDie<InstructionProto>(kExpected);
-  const string filename = StrCat(getenv("TEST_TMPDIR"), "/test.pbtxt");
+  const string filename = file::JoinPath(getenv("TEST_TMPDIR"), "test.pbtxt");
   WriteTextProtoOrDie(filename, page);
   const InstructionProto read_proto =
       ReadTextProtoOrDie<InstructionProto>(filename);
