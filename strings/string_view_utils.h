@@ -25,6 +25,44 @@ inline bool StartsWith(::google::protobuf::StringPiece str,
   return ::google::protobuf::HasPrefixString(str, prefix);
 }
 
+inline bool EndsWith(::google::protobuf::StringPiece str,
+                     ::google::protobuf::StringPiece suffix) {
+  return ::google::protobuf::HasSuffixString(str, suffix);
+}
+
+inline bool ConsumePrefix(::google::protobuf::StringPiece* str,
+                          ::google::protobuf::StringPiece expected) {
+  if (!StartsWith(*str, expected)) return false;
+  str->remove_prefix(expected.size());
+  return true;
+}
+
+inline ssize_t RemoveLeadingWhitespace(::google::protobuf::StringPiece* text) {
+  size_t count = 0;
+  const char* ptr = text->data();
+  while (count < text->size() && ::google::protobuf::ascii_isspace(*ptr)) {
+    count++;
+    ptr++;
+  }
+  text->remove_prefix(count);
+  return count;
+}
+
+inline ssize_t RemoveTrailingWhitespace(::google::protobuf::StringPiece* text) {
+  size_t count = 0;
+  const char* ptr = text->data() + text->size() - 1;
+  while (count < text->size() && ::google::protobuf::ascii_isspace(*ptr)) {
+    ++count;
+    --ptr;
+  }
+  text->remove_suffix(count);
+  return count;
+}
+
+inline ssize_t RemoveWhitespaceContext(::google::protobuf::StringPiece* text) {
+  return RemoveLeadingWhitespace(text) + RemoveTrailingWhitespace(text);
+}
+
 }  // namespace strings
 }  // namespace exegesis
 
