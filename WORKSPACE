@@ -96,7 +96,7 @@ new_git_repository(
 git_repository(
     name = "or_tools_git",
     remote = "https://github.com/google/or-tools.git",
-    commit = "df7959fa5a1db1e941a1d7582b0340e1a2e7a8c8",
+    commit = "53189020e3f995715a935aab7355357ce658fb76",
 )
 
 # ===== LLVM =====
