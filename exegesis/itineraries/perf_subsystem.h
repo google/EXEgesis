@@ -72,7 +72,7 @@ class PerfResult {
   // Returns the scaled value for the given counter name.
   double GetScaledOrDie(const string& name) const;
 
-  void SetScaleFactor(int num_times) { num_times_ = num_times; }
+  void SetScaleFactor(uint64_t num_times) { num_times_ = num_times; }
 
   // Returns a human-readable cycle count for `result`.
   string ToString() const;

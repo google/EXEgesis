@@ -82,7 +82,8 @@ Status EvaluateAssemblyString(
     inline_asm_function.CallOrDie();
     result->Accumulate(perf_subsystem.StopAndReadCounters());
   }
-  result->SetScaleFactor(num_outer_iterations * num_inner_iterations);
+  result->SetScaleFactor(static_cast<uint64_t>(num_outer_iterations) *
+                         num_inner_iterations);
   return OkStatus();
 }
 
