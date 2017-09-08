@@ -15,6 +15,7 @@
 #ifndef NET_PROTO2_UTIL_PUBLIC_REPEATED_FIELD_UTIL_H_
 #define NET_PROTO2_UTIL_PUBLIC_REPEATED_FIELD_UTIL_H_
 
+#include <algorithm>
 #include <cassert>
 #include <utility>
 
@@ -42,6 +43,23 @@ int RemoveIf(::google::protobuf::RepeatedPtrField<T>* array, const Pred& pr) {
   }
   Truncate(array, write - begin);
   return end - write;
+}
+
+template <typename T, typename LessThan>
+inline void Sort(::google::protobuf::RepeatedPtrField<T>* array,
+                 const LessThan& lt) {
+  std::sort(array->pointer_begin(), array->pointer_end(), lt);
+}
+
+template <typename T, typename LessThan>
+inline void Sort(::google::protobuf::RepeatedField<T>* array,
+                 const LessThan& lt) {
+  std::sort(array->begin(), array->end(), lt);
+}
+
+template <typename T>
+inline void Sort(::google::protobuf::RepeatedField<T>* array) {
+  std::sort(array->begin(), array->end());
 }
 
 }  // namespace exegesis
