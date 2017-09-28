@@ -105,7 +105,7 @@ new_git_repository(
     name = "llvm_git",
     remote = "https://git.llvm.org/git/llvm.git",
     # LLVM has no tags.
-    commit = "389880910a2da533fbda53cdf5ddf344f70f591f",
+    commit = "68d31bd128bd0d7618a654e8bd9aa22effedb3ec",
     build_file = "llvm.BUILD",
 )
 

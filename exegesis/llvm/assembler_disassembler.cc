@@ -16,16 +16,20 @@
 
 #include <utility>
 
+#include "exegesis/llvm/assembler_disassembler.pb.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/strings.h"
 #include "glog/logging.h"
 #include "llvm/IR/InlineAsm.h"
 #include "strings/str_cat.h"
+#include "util/task/canonical_errors.h"
 #include "util/task/statusor.h"
 
 namespace exegesis {
 namespace {
 
+using ::exegesis::util::InternalError;
+using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::StatusOr;
 
 // We're never actually running the assembled code on the host, so we use the
@@ -35,94 +39,93 @@ constexpr const char kMcpu[] = "cannonlake";
 
 }  // namespace
 
-AssemblerDisassembler::AssemblerDisassembler() {
-  jit_.reset(new JitCompiler(kMcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR));
-  disasm_.reset(new Disassembler(""));
-}
+AssemblerDisassembler::AssemblerDisassembler()
+    : jit_(new JitCompiler(kMcpu)), disasm_(new Disassembler("")) {}
 
-void AssemblerDisassembler::Reset() {
-  llvm_opcode_ = 0;
-  llvm_mnemonic_.clear();
-  binary_encoding_.clear();
-  intel_format_.Clear();
-  att_format_.Clear();
-}
-
-bool AssemblerDisassembler::AssembleDisassemble(
+StatusOr<AssemblerDisassemblerResult>
+AssemblerDisassembler::AssembleDisassemble(
     const string& code, llvm::InlineAsm::AsmDialect asm_dialect) {
-  Reset();
-  VoidFunction function = jit_->CompileInlineAssemblyToFunction(
+  const auto function = jit_->CompileInlineAssemblyToFunction(
       1, "\t" + code,
       /*loop_constraints=*/"", asm_dialect);
-  if (!function.IsValid()) {
-    LOG(INFO) << "Error on: " << code;
-    return false;
+  if (!function.ok()) {
+    return InvalidArgumentError(StrCat("Could not assemble '", code, "': ",
+                                       function.status().error_message()));
   }
-  const uint8_t* const encoded_instruction =
-      reinterpret_cast<const uint8_t*>(function.ptr);
+  if (function.ValueOrDie().size <= 0) {
+    return InvalidArgumentError(StrCat("Non-positive size for '", code, "'"));
+  }
+  const auto data = reinterpret_cast<const uint8_t*>(function.ValueOrDie().ptr);
+  const std::vector<uint8_t> encoded_instruction(
+      data, data + function.ValueOrDie().size);
   return Disassemble(encoded_instruction);
 }
 
-bool AssemblerDisassembler::AssembleDisassemble(const string& code) {
-  return AssembleDisassemble(code, llvm::InlineAsm::AD_Intel);
+std::pair<StatusOr<AssemblerDisassemblerResult>,
+          AssemblerDisassemblerInterpretation>
+AssemblerDisassembler::AssembleDisassemble(
+    const string& input, AssemblerDisassemblerInterpretation interpretation) {
+  switch (interpretation) {
+    case AssemblerDisassemblerInterpretation::
+        HUMAN_READABLE_BINARY_OR_INTEL_ASM: {
+      const auto bytes_or_status = ParseHexString(input);
+      if (bytes_or_status.ok()) {
+        return std::make_pair(Disassemble(bytes_or_status.ValueOrDie()),
+                              HUMAN_READABLE_BINARY);
+      }
+      return std::make_pair(
+          AssembleDisassemble(input, llvm::InlineAsm::AD_Intel),
+          AssemblerDisassemblerInterpretation::INTEL_ASM);
+    }
+    case AssemblerDisassemblerInterpretation::INTEL_ASM:
+      return std::make_pair(
+          AssembleDisassemble(input, llvm::InlineAsm::AD_Intel),
+          AssemblerDisassemblerInterpretation::INTEL_ASM);
+    case AssemblerDisassemblerInterpretation::ATT_ASM:
+      return std::make_pair(AssembleDisassemble(input, llvm::InlineAsm::AD_ATT),
+                            AssemblerDisassemblerInterpretation::ATT_ASM);
+    case AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY: {
+      const auto bytes_or_status = ParseHexString(input);
+      if (!bytes_or_status.ok()) {
+        return std::make_pair(
+            InvalidArgumentError(StrCat(
+                "Input '", input, "' is not in human readable binary format")),
+            AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY);
+      }
+      return std::make_pair(
+          Disassemble(bytes_or_status.ValueOrDie()),
+          AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY);
+    }
+    default:
+      return std::make_pair(InternalError("unreachable"),
+                            AssemblerDisassemblerInterpretation::INTEL_ASM);
+  }
 }
 
-bool AssemblerDisassembler::Disassemble(const uint8_t* encoded_instruction) {
-  Reset();
-  std::string llvm_mnemonic;
-  std::vector<std::string> llvm_operands;
-  std::string intel_code;
-  std::string att_code;
-  const int binary_encoding_size_in_bytes =
-      disasm_->Disassemble(encoded_instruction, &llvm_opcode_, &llvm_mnemonic,
-                           &llvm_operands, &intel_code, &att_code);
+StatusOr<AssemblerDisassemblerResult> AssemblerDisassembler::Disassemble(
+    const std::vector<uint8_t>& encoded_instruction) {
+  AssemblerDisassemblerResult result;
+  std::vector<string> llvm_operands;
+  string intel_code;
+  string att_code;
+  unsigned llvm_opcode = 0;
+  const int binary_encoding_size_in_bytes = disasm_->Disassemble(
+      encoded_instruction, &llvm_opcode, result.mutable_llvm_mnemonic(),
+      &llvm_operands, &intel_code, &att_code);
   if (binary_encoding_size_in_bytes == 0) {
-    LOG(INFO) << "could not disassemble";
-    return false;
+    return InvalidArgumentError(
+        StrCat("Could not disassemble: ",
+               ToHumanReadableHexString(encoded_instruction)));
   }
+  CHECK_LE(binary_encoding_size_in_bytes, encoded_instruction.size());
   // Make a copy of the binary encoding of the instruction.
-  binary_encoding_.assign(encoded_instruction,
-                          encoded_instruction + binary_encoding_size_in_bytes);
-  llvm_mnemonic_ = llvm_mnemonic;
-  intel_format_ = ParseAssemblyStringOrDie(intel_code);
-  att_format_ = ParseAssemblyStringOrDie(att_code);
-  return IsValid();
-}
-
-string AssemblerDisassembler::GetHumanReadableBinaryEncoding() const {
-  return ToHumanReadableHexString(binary_encoding_);
-}
-
-string AssemblerDisassembler::GetPastableBinaryEncoding() const {
-  return ToPastableHexString(binary_encoding_);
-}
-
-string AssemblerDisassembler::DebugString() const {
-  string buffer;
-  StrAppend(&buffer, "LLVM mnemonic: ", llvm_mnemonic_, "\n");
-  StrAppend(&buffer, "Intel: ", ConvertToCodeString(intel_format_), "\n");
-  StrAppend(&buffer, "AT&T: ", ConvertToCodeString(att_format_), "\n");
-  StrAppend(&buffer, GetHumanReadableBinaryEncoding());
-  return buffer;
-}
-
-std::vector<uint8_t> ParseBinaryInstructionAndPadWithNops(
-    StringPiece input_line) {
-  std::vector<uint8_t> bytes;
-  StatusOr<std::vector<uint8_t>> bytes_or_status =
-      ParseHexString(string(input_line));
-  if (!bytes_or_status.ok()) {
-    return bytes;
-  }
-
-  // If the vector is non-empty it means that the user entered some binary
-  // code, and we have things to disassemble. Add 32 NOP bytes at the end of
-  // the vector to make sure that the disassembler always has something to
-  // stop at (even if the bytes that the user entered are only prefixes).
-  constexpr int kPaddingSize = 32;
-  bytes = std::move(bytes_or_status.ValueOrDie());
-  bytes.insert(bytes.end(), kPaddingSize, 0x90);
-  return bytes;
+  result.mutable_binary_encoding()->assign(
+      encoded_instruction.begin(),
+      encoded_instruction.begin() + binary_encoding_size_in_bytes);
+  *result.mutable_intel_syntax() = ParseAssemblyStringOrDie(intel_code);
+  *result.mutable_att_syntax() = ParseAssemblyStringOrDie(att_code);
+  result.set_llvm_opcode(llvm_opcode);
+  return result;
 }
 
 }  // namespace exegesis

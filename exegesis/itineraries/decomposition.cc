@@ -108,8 +108,8 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   const double kMaxError = 1.0;
 
   if (uops_retired > 50.0) {
-    return util::InternalError(
-        StrCat("Too many uops to solve the problem", uops_retired));
+    return util::InternalError(StrCat("Too many uops to solve the problem",
+                                      StringPrintf("%.17g", uops_retired)));
   }
   // Compute the maximum number of uops per port mask. This enables us to
   // create less variables and to make the model easier to solve.

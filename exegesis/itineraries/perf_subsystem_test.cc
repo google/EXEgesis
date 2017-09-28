@@ -16,6 +16,7 @@
 
 #include <cstdint>
 
+#include "base/stringprintf.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"
@@ -341,7 +342,7 @@ TEST(PerfSubsystemTest, ADDSDrm) {
 TEST(PerfSubsystemTest, ADDSDrmSize) {
   double memory;
   asm volatile("movsd %%xmm0,%[memory]" : [memory] "=m"(memory) : :);
-  EXPECT_NE("", StrCat(memory));
+  EXPECT_NE("", StringPrintf("%.17g", memory));
 }
 #endif
 

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package exegesis;
+
+import "exegesis/proto/instructions.proto";
+
+message AssemblerDisassemblerResult {
+  string llvm_mnemonic = 1;
+  InstructionFormat intel_syntax = 2;
+  InstructionFormat att_syntax = 3;
+  bytes binary_encoding = 4;
+
+  // For debug only, this might not be consistent across releases of LLVM.
+  uint32 llvm_opcode = 5;
+}
+
+enum AssemblerDisassemblerInterpretation {
+  // The string is either HUMAN_READABLE_BINARY or INTEL_ASM.
+  HUMAN_READABLE_BINARY_OR_INTEL_ASM = 0;
+  // The string is assembly code in Intel syntax.
+  INTEL_ASM = 1;
+  // The string is assembly code in AT&T syntax.
+  ATT_ASM = 2;
+  // The string is binary in human-readable form (e.g. "66 45 89").
+  HUMAN_READABLE_BINARY = 3;
+}

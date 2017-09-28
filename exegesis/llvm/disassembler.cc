@@ -34,8 +34,8 @@
 
 namespace exegesis {
 
-Disassembler::Disassembler(const std::string& triple_name)
-    : triple_name_(triple_name) {}
+Disassembler::Disassembler(const string& triple_name)
+    : triple_name_(triple_name.c_str()) {}
 
 void Disassembler::Init() {
   initialized_ = true;
@@ -45,7 +45,7 @@ void Disassembler::Init() {
     // Figure out the target triple.
     triple_name_ = llvm::sys::getDefaultTargetTriple();
   }
-  triple_.setTriple(llvm::Triple::normalize(triple_name_));
+  triple_.setTriple(llvm::Triple::normalize(triple_name_.c_str()));
 
   // Get the target specific parser.
   std::string error_string;
@@ -106,19 +106,24 @@ void Disassembler::Init() {
   disasm_.reset(target_->createMCDisassembler(*sub_target_info_, *mc_context_));
 }
 
-int Disassembler::Disassemble(const uint8_t* const memory,
-                              unsigned* llvm_opcode, std::string* llvm_mnemonic,
-                              std::vector<std::string>* llvm_operands,
-                              std::string* intel_instruction,
-                              std::string* att_instruction) {
+int Disassembler::Disassemble(const std::vector<uint8_t>& bytes,
+                              unsigned* const llvm_opcode,
+                              string* const llvm_mnemonic,
+                              std::vector<string>* const llvm_operands,
+                              string* const intel_instruction,
+                              string* const att_instruction) {
+  *llvm_opcode = 0;
+  llvm_mnemonic->clear();
+  llvm_operands->clear();
+  intel_instruction->clear();
+  att_instruction->clear();
   if (!initialized_) Init();
-  const int kMaxInstructionSize = 15;
   uint64_t instruction_size;
   llvm::MCInst instruction;
   llvm::MCDisassembler::DecodeStatus decode_status = disasm_->getInstruction(
-      instruction, instruction_size,
-      llvm::ArrayRef<uint8_t>{memory, kMaxInstructionSize}, 0, llvm::nulls(),
-      llvm::nulls());
+      instruction, instruction_size, llvm::ArrayRef<uint8_t>{bytes}, 0,
+      llvm::nulls(), llvm::nulls());
+  std::string tmp;
   switch (decode_status) {
     case llvm::MCDisassembler::Fail:
       return 0;
@@ -127,27 +132,30 @@ int Disassembler::Disassemble(const uint8_t* const memory,
       LOG(INFO) << "Potentially undefined instruction encoding";
       FALLTHROUGH_INTENDED;
     case llvm::MCDisassembler::Success:
-      att_instruction->clear();
-      llvm::raw_string_ostream att_stream(*att_instruction);
+      tmp.clear();
+      llvm::raw_string_ostream att_stream(tmp);
       att_instruction_printer_->printInst(&instruction, att_stream, "",
                                           *sub_target_info_);
       att_stream.flush();
+      att_instruction->assign(tmp);
 
-      intel_instruction->clear();
-      llvm::raw_string_ostream intel_stream(*intel_instruction);
+      tmp.clear();
+      llvm::raw_string_ostream intel_stream(tmp);
       intel_instruction_printer_->printInst(&instruction, intel_stream, "",
                                             *sub_target_info_);
       intel_stream.flush();
+      intel_instruction->assign(tmp);
 
       *llvm_opcode = instruction.getOpcode();
       *llvm_mnemonic = instruction_info_->getName(instruction.getOpcode());
       llvm_operands->resize(instruction.getNumOperands());
       for (int i = 0; i < instruction.getNumOperands(); ++i) {
-        (*llvm_operands)[i].clear();
-        llvm::raw_string_ostream operand_stream((*llvm_operands)[i]);
+        tmp.clear();
+        llvm::raw_string_ostream operand_stream(tmp);
         const llvm::MCOperand operand = instruction.getOperand(i);
         operand_stream << operand;
         operand_stream.flush();
+        (*llvm_operands)[i].assign(tmp);
       }
       break;
   }
@@ -177,13 +185,13 @@ string Disassembler::DisassembleHexString(const string& hex_bytes) {
   const int size = hex_bytes.size() / 2;
   CHECK_EQ(0, hex_bytes.size() % 2);
   unsigned llvm_opcode;
-  std::string llvm_mnemonic;
-  std::vector<std::string> llvm_operands;
-  std::string intel_instruction;
-  std::string att_instruction;
+  string llvm_mnemonic;
+  std::vector<string> llvm_operands;
+  string intel_instruction;
+  string att_instruction;
   uint64_t instruction_size = size;
   constexpr int kMaxX86InstructionSize = 15;
-  uint8_t buffer[kMaxX86InstructionSize];
+  std::vector<uint8_t> buffer(kMaxX86InstructionSize);
   for (int offset = 0; offset < size; offset += instruction_size) {
     if (offset != 0) result += "\n";
     const int remaining_bytes = std::min(size - offset, kMaxX86InstructionSize);

@@ -50,7 +50,7 @@ Status EvaluateAssemblyString(
     const std::string& measured_code, const std::string& update_code,
     const std::string& suffix_code, const std::string& cleanup_code,
     const std::string& constraints, PerfResult* result) {
-  JitCompiler jit(mcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR);
+  JitCompiler jit(mcpu);
   const string code =
       StrCat(prefix_code, "\n",
              RepeatCode(num_inner_iterations,
@@ -58,11 +58,13 @@ Status EvaluateAssemblyString(
              "\n", suffix_code);
   // NOTE(bdb): constraints are the same for 'code', 'init_code' and
   // 'cleanup_code'.
-  VoidFunction inline_asm_function = jit.CompileInlineAssemblyToFunction(
+  const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(
       num_outer_iterations, init_code, constraints, code, constraints,
       cleanup_code, constraints, dialect);
-  if (!inline_asm_function.IsValid()) {
-    return util::UnknownError("Could not compile the measured code");
+  if (!inline_asm_function.ok()) {
+    return util::UnknownError(
+        StrCat("Could not compile the measured code:",
+               inline_asm_function.status().error_message()));
   }
 
   // Because of the decode window size, a large instruction is likely going to
@@ -70,7 +72,7 @@ Status EvaluateAssemblyString(
   // Make sure that the repeated instruction fits in the cache to avoid noise
   // from cache misses.
   constexpr int kL1CodeCacheSize = 1 << 15;
-  if (inline_asm_function.size >= kL1CodeCacheSize) {
+  if (inline_asm_function.ValueOrDie().size >= kL1CodeCacheSize) {
     return util::UnknownError(
         StrCat("Cannot fit ", num_inner_iterations,
                " repetitions of the measured code in the L1 cache"));
@@ -79,7 +81,7 @@ Status EvaluateAssemblyString(
   PerfSubsystem perf_subsystem;
   for (const auto& events : kPerfEventCategories) {
     perf_subsystem.StartCollectingEvents(events);
-    inline_asm_function.CallOrDie();
+    inline_asm_function.ValueOrDie().CallOrDie();
     result->Accumulate(perf_subsystem.StopAndReadCounters());
   }
   result->SetScaleFactor(static_cast<uint64_t>(num_outer_iterations) *
@@ -94,7 +96,7 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
                            const std::string& constraints,
                            FXStateBuffer* fx_state_buffer_in,
                            FXStateBuffer* fx_state_buffer_out) {
-  JitCompiler jit(mcpu, JitCompiler::RETURN_NULLPTR_ON_ERROR);
+  JitCompiler jit(mcpu);
 
   constexpr const char kGetStateCodeTemplate[] = R"(
     push rax
@@ -109,14 +111,14 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
   const string out_code =
       StringPrintf(kGetStateCodeTemplate, fx_state_buffer_out->get());
 
-  const VoidFunction inline_asm_function = jit.CompileInlineAssemblyToFunction(
+  const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(
       /*num_iterations=*/1,
       StrCat(prefix_code, in_code, code, out_code, cleanup_code), constraints,
       dialect);
-  if (!inline_asm_function.IsValid()) {
-    return util::UnknownError("Could not compile the assembly code");
+  if (!inline_asm_function.ok()) {
+    return inline_asm_function.status();
   }
-  inline_asm_function.CallOrDie();
+  inline_asm_function.ValueOrDie().CallOrDie();
 
   return OkStatus();
 }

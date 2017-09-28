@@ -11,6 +11,7 @@ cc_library(
     srcs = ["assembler_disassembler.cc"],
     hdrs = ["assembler_disassembler.h"],
     deps = [
+        ":assembler_disassembler_cc_proto",
         "//base",
         "//exegesis/llvm:disassembler",
         "//exegesis/llvm:inline_asm",
@@ -18,6 +19,7 @@ cc_library(
         "//exegesis/util:instruction_syntax",
         "//exegesis/util:strings",
         "//strings",
+        "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
@@ -32,6 +34,7 @@ cc_test(
     srcs = ["assembler_disassembler_test.cc"],
     deps = [
         ":assembler_disassembler",
+        ":assembler_disassembler_cc_proto",
         "//base",
         "//exegesis/testing:test_util",
         "@com_github_gflags_gflags//:gflags",
@@ -39,6 +42,21 @@ cc_test(
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+proto_library(
+    name = "assembler_disassembler_proto",
+    srcs = ["assembler_disassembler.proto"],
+    deps = [
+        "//exegesis/proto:instructions_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "assembler_disassembler_cc_proto",
+    deps = [
+        ":assembler_disassembler_proto",
     ],
 )
 
@@ -85,6 +103,8 @@ cc_library(
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",
+        "//util/task:status",
+        "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
@@ -103,6 +123,7 @@ cc_test(
         ":inline_asm",
         "//base",
         "//exegesis/llvm:llvm_utils",
+        "//exegesis/testing:test_util",
         "//exegesis/util:strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",

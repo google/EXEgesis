@@ -307,5 +307,41 @@ TEST(DisassemblerTest, InvalidateTLBEntry) {
       disasm.DisassembleHexString("0F013C25FEFFFF7F"));
 }
 
+TEST(DisassemblerTest, TooShortABuffer) {
+  Disassembler disasm("");
+  unsigned llvm_opcode;
+  string llvm_mnemonic;
+  std::vector<string> llvm_operands;
+  string intel_instruction;
+  string att_instruction;
+  std::vector<uint8_t> full = {0x66, 0x0F, 0x2F, 0x0C, 0x25,
+                               0xFF, 0x7F, 0x00, 0x00};
+
+  // Sanity check.
+  EXPECT_EQ(full.size(), disasm.Disassemble(full, &llvm_opcode, &llvm_mnemonic,
+                                            &llvm_operands, &intel_instruction,
+                                            &att_instruction));
+  EXPECT_EQ("COMISDrm", llvm_mnemonic);
+
+  // This one is empty.
+  EXPECT_EQ(0,
+            disasm.Disassemble({}, &llvm_opcode, &llvm_mnemonic, &llvm_operands,
+                               &intel_instruction, &att_instruction));
+
+  // This one is a Length-Changing Prefix.
+  EXPECT_EQ(1, disasm.Disassemble(
+                   std::vector<uint8_t>(full.begin(), full.begin() + 1),
+                   &llvm_opcode, &llvm_mnemonic, &llvm_operands,
+                   &intel_instruction, &att_instruction));
+  EXPECT_EQ("DATA16_PREFIX", llvm_mnemonic);
+
+  for (auto end = full.begin() + 2; end != full.rbegin().base(); ++end) {
+    EXPECT_EQ(0,
+              disasm.Disassemble(std::vector<uint8_t>(full.begin(), end),
+                                 &llvm_opcode, &llvm_mnemonic, &llvm_operands,
+                                 &intel_instruction, &att_instruction));
+  }
+}
+
 }  // namespace
 }  // namespace exegesis

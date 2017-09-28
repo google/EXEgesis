@@ -29,25 +29,25 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/SourceMgr.h"
+#include "util/task/statusor.h"
 
 namespace exegesis {
+
+using ::exegesis::util::StatusOr;
 
 // Represents a function that takes no arguments and does not return any value.
 struct VoidFunction {
   using Pointer = void (*)();
 
-  static VoidFunction Undefined() { return VoidFunction(nullptr, 0); }
-
-  VoidFunction() = delete;
+  VoidFunction() : ptr(nullptr), size(0) {}
   VoidFunction(Pointer ptr, int size) : ptr(ptr), size(size) {}
   void CallOrDie() const {
     DCHECK(ptr);
     ptr();
   }
-  bool IsValid() const { return ptr != nullptr; }
 
-  const Pointer ptr;
-  const int size;
+  Pointer ptr;
+  int size;
 };
 
 // A simple JIT compiler class that enables to assemble code at run time,
@@ -56,16 +56,6 @@ struct VoidFunction {
 
 class JitCompiler {
  public:
-  enum ErrorHandlingMode {
-    // If the compiler encounters an error in the inline assembly, the program
-    // prints an error message to STDERR and exits.
-    EXIT_ON_ERROR,
-    // If the compiler encounters an error in the inline assembly, the function
-    // prints an error message to the log and returns nullptr instead of the
-    // function pointer.
-    RETURN_NULLPTR_ON_ERROR,
-  };
-
   // Creates a Jit compiler parsing the dialect of x86 assembly, mcpu is the CPU
   // used for compiling the inline assembly. The value must be one of the CPU
   // microarchitecture names accepted by LLVM. To get the full list, run "llc
@@ -73,15 +63,13 @@ class JitCompiler {
   // that the generated code will be able to run all hosts, but that the
   // compiler wil refuse to compile newer instructions (since all processors
   // might not support them).
-  JitCompiler(const string& mcpu, ErrorHandlingMode error_mode);
+  explicit JitCompiler(const string& mcpu);
 
   // Builds, compiles and returns a pointer to a void() function that executes
   // a loop of 'num_iterations' around 'loop_code'. Registers touched by
   // 'constraints' are saved, and the compiler assumes that the function does
   // have side effects.
-  // Returns nullptr if some error has occurred. (This should be checked by
-  // the client.)
-  VoidFunction CompileInlineAssemblyToFunction(
+  StatusOr<VoidFunction> CompileInlineAssemblyToFunction(
       int num_iterations, const std::string& loop_code,
       const std::string& loop_constraints, llvm::InlineAsm::AsmDialect dialect);
 
@@ -92,7 +80,7 @@ class JitCompiler {
   // code generator still has some freedom in how it allocates the registers,
   // and their values might not be preserved between the initialization and the
   // loop unless they are properly annotated in both sets of constraints.
-  VoidFunction CompileInlineAssemblyToFunction(
+  StatusOr<VoidFunction> CompileInlineAssemblyToFunction(
       int num_iterations, const std::string& init_code,
       const std::string& init_constraints, const std::string& loop_code,
       const std::string& loop_constraints, const std::string& cleanup_code,
@@ -103,10 +91,8 @@ class JitCompiler {
   // 'code'. This is not a function, and it should not be cast and
   // called: Registers are not saved, and the compiler assumes that
   // the code does not have side effects.
-  // Returns nullptr if some error has occurred. (This should be checked by
-  // the client.)
-  uint8_t* CompileInlineAssemblyFragment(const std::string& code,
-                                         llvm::InlineAsm::AsmDialect dialect);
+  StatusOr<uint8_t*> CompileInlineAssemblyFragment(
+      const std::string& code, llvm::InlineAsm::AsmDialect dialect);
 
   // Returns an object usable by the LLVM IR that corresponds to the inline
   // assembly code in 'code' with constraints in 'constraints'.
@@ -122,18 +108,15 @@ class JitCompiler {
   // assembly that is called once at the beginning (resp. at the end) of the
   // function to initialize (resp. clean up) the memory and the registers. Any
   // of these two values can be null to disable this feature.
-  // Returns nullptr if some error has occurred. (This should be checked by
-  // the client.)
-  llvm::Function* WarpInlineAsmInLoopingFunction(
+  StatusOr<llvm::Function*> WrapInlineAsmInLoopingFunction(
       int num_iterations, llvm::Value* init_inline_asm,
       llvm::Value* loop_inline_asm, llvm::Value* cleanup_inline_asm);
 
   // Builds and compiles a void() function that executes the LLVM IR function
   // passed in function. Compiles the function using 'execution_engine_',
   // and returns a pointer to the compiled function.
-  // Returns nullptr if some error has occurred. (This should be checked by
-  // the client.)
-  VoidFunction CreatePointerToInlineAssemblyFunction(llvm::Function* function);
+  StatusOr<VoidFunction> CreatePointerToInlineAssemblyFunction(
+      llvm::Function* function);
 
   // For debugging purposes. Dumps all the modules in the current object.
   void DumpAllModules();
@@ -151,7 +134,6 @@ class JitCompiler {
                                         void* context, unsigned loc_cookie);
 
   const string mcpu_;
-  ErrorHandlingMode error_mode_;
 
   std::unique_ptr<llvm::LLVMContext> context_;
 
@@ -176,6 +158,7 @@ class JitCompiler {
   // The list of compiler error messages from inline assembly collected during
   // the build.
   std::vector<string> compile_errors_;
+  std::vector<string> intercepted_unknown_symbols_;
 };
 
 }  // namespace exegesis

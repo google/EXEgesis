@@ -567,11 +567,12 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
 
   // Check that the code assembles correctly before proceeding.
   {
-    JitCompiler jit(host_mcpu_, JitCompiler::RETURN_NULLPTR_ON_ERROR);
-    if (jit.CompileInlineAssemblyFragment(
-            measured_code, llvm::InlineAsm::AD_Intel) == nullptr) {
+    JitCompiler jit(host_mcpu_);
+    const auto fragment = jit.CompileInlineAssemblyFragment(
+        measured_code, llvm::InlineAsm::AD_Intel);
+    if (!fragment.ok()) {
       stats->IncrementAssemblyErrors();
-      return InternalError(StrCat("Could not assemble: ", measured_code));
+      return fragment.status();
     }
   }
 

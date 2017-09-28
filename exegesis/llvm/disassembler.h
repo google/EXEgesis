@@ -41,10 +41,11 @@ class Disassembler {
  public:
   // Creates a disassembler for triple_name. If triple_name is "", the
   // default one will be used.
-  explicit Disassembler(const std::string& triple_name);
+  explicit Disassembler(const string& triple_name);
 
   // Disassembles an instruction from an array of bytes pointed to by memory.
-  // The return value is the length of the disassembled instruction in bytes.
+  // The return value is the length of the disassembled instruction in bytes (or
+  // 0 on error).
   // The values pointed to by the other parameters are modified as follows:
   //   *llvm_opcode contains the LLVM opcode of the disassembled instruction,
   //   *llvm_mnemonic contains the LLVM mnemonic of the disassembled
@@ -54,10 +55,9 @@ class Disassembler {
   //   in Intel format.
   //   *att_instruction contains the x86 instruction (mnemonic and operands)
   //   in ATT format.
-  int Disassemble(const uint8_t* const memory, unsigned* llvm_opcode,
-                  std::string* llvm_mnemonic,
-                  std::vector<std::string>* llvm_operands,
-                  std::string* intel_instruction, std::string* att_instruction);
+  int Disassemble(const std::vector<uint8_t>& bytes, unsigned* llvm_opcode,
+                  string* llvm_mnemonic, std::vector<string>* llvm_operands,
+                  string* intel_instruction, string* att_instruction);
 
   // Disassembles a hex string and returns a (possibly multi-line) string
   // containing: "Address; Hex code; Intel syntax; ATT syntax; LLVM Mnemonic"

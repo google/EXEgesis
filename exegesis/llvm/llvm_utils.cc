@@ -20,6 +20,7 @@
 #include <vector>
 #include "strings/string.h"
 
+#include "base/stringprintf.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "llvm/ADT/Triple.h"
@@ -174,7 +175,8 @@ string DumpMCOperandToString(const llvm::MCOperand& operand,
     if (operand.isImm()) {
       debug_string = StrCat("Imm(", operand.getImm(), ")");
     } else if (operand.isFPImm()) {
-      debug_string = StrCat("FPImm(", operand.getFPImm(), ")");
+      debug_string =
+          StrCat("FPImm(", StringPrintf("%.17g", operand.getFPImm()), ")");
     } else if (operand.isReg()) {
       debug_string = StrCat("R:", register_info->getName(operand.getReg()), "(",
                             operand.getReg(), ")");

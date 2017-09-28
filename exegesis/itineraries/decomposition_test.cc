@@ -27,6 +27,7 @@ namespace exegesis {
 namespace itineraries {
 namespace {
 
+using ::exegesis::testing::EqualsProto;
 using ::exegesis::util::Status;
 using ::exegesis::x86::HaswellMicroArchitecture;
 using ::testing::AnyOf;
@@ -102,7 +103,7 @@ TEST(DecompositionTest, Negate) {
         latency: 1
       }
     )";
-  EXPECT_THAT(proto, ::exegesis::testing::EqualsProto(kExpected));
+  EXPECT_THAT(proto, EqualsProto(kExpected));
 }
 
 // Class for generating random measurements to be decomposed by the MIP
