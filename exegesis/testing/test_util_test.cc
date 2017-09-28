@@ -22,6 +22,8 @@ namespace exegesis {
 namespace testing {
 namespace {
 
+using ::exegesis::testing::proto::IgnoringFields;
+using ::testing::Not;
 using ::testing::Pointwise;
 using ::testing::StringMatchResultListener;
 
@@ -59,6 +61,28 @@ TEST(EqualsProtoMatcherTest, DifferentProtos) {
   EXPECT_FALSE(matcher.MatchAndExplain(actual_proto, &listener));
   EXPECT_EQ(listener.str(),
             "the protos are different:\nmodified: integer_field: 2 -> 1\n");
+}
+
+TEST(IgnoringFieldsTest, IgnoresFields) {
+  TestProto actual_proto;
+  actual_proto.set_integer_field(1);
+  EXPECT_THAT(actual_proto,
+              IgnoringFields({"exegesis.testing.TestProto.integer_field"},
+                             EqualsProto("integer_field: 2")));
+  EXPECT_THAT(actual_proto,
+              Not(IgnoringFields(
+                  {"exegesis.testing.TestProto.integer_field"},
+                  EqualsProto("integer_field: 2 string_field: 'hello'"))));
+
+  actual_proto.mutable_message_field()->set_field_a(1);
+  actual_proto.mutable_message_field()->set_field_b(2);
+  EXPECT_THAT(
+      actual_proto,
+      IgnoringFields(
+          {"exegesis.testing.TestProto.integer_field",
+           "exegesis.testing.SubProto.field_a"},
+          EqualsProto(
+              "integer_field: 2 message_field { field_a: 2 field_b: 2 }")));
 }
 
 TEST(EqualsProtoTupleMatcherTest, Pointwise) {

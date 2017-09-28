@@ -14,6 +14,7 @@
 
 #include "exegesis/util/strings.h"
 
+#include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "strings/str_cat.h"

@@ -22,6 +22,14 @@
 //   MyProto proto = CreateMyProto();
 //   EXPECT_THAT(proto, EqualsProto("my_field: 'my_value'");
 //
+// * IgnoringFields, an extension to EqualsProto that makes it ignore certain
+//   fields when computing the differences.
+//
+//   Usage:
+//   MyProto proto = CreateMyProto();
+//   EXPECT_THAT(proto, IgnoringFields({"MyProto.my_field", "OtherProto.foo"},
+//                                     EqualsProto("my_other_field: 1")));
+//
 // * IsOk, a gMock matcher that matches OK Status or StatusOr.
 //
 //   Usage:
@@ -49,8 +57,10 @@
 #ifndef EXEGESIS_TESTING_TEST_UTIL_H_
 #define EXEGESIS_TESTING_TEST_UTIL_H_
 
+#include <iterator>
 #include <type_traits>
 #include <utility>
+#include <vector>
 #include "strings/string.h"
 
 #include "glog/logging.h"
@@ -69,8 +79,14 @@ using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
 using ::exegesis::util::error::Code;
 
+void AddIgnoredFieldsToDifferencer(
+    const ::google::protobuf::Descriptor* descriptor,
+    const std::vector<string>& ignored_field_names,
+    ::google::protobuf::util::MessageDifferencer* differencer);
+
 template <typename ProtoType>
 bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
+                const std::vector<string>& ignored_fields,
                 ::testing::MatchResultListener* listener) {
   using ::google::protobuf::TextFormat;
   using ::google::protobuf::util::MessageDifferencer;
@@ -83,6 +99,8 @@ bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
   MessageDifferencer differencer;
   string differences;
   differencer.ReportDifferencesToString(&differences);
+  AddIgnoredFieldsToDifferencer(expected_proto.descriptor(), ignored_fields,
+                                &differencer);
   if (!differencer.Compare(expected_proto, actual_proto)) {
     *listener << "the protos are different:\n" << differences;
     return false;
@@ -103,7 +121,8 @@ class EqualsProtoMatcher {
   template <typename ProtoType>
   bool MatchAndExplain(const ProtoType& actual_proto,
                        ::testing::MatchResultListener* listener) const {
-    return internal::MatchProto(actual_proto, expected_proto_str_, listener);
+    return internal::MatchProto(actual_proto, expected_proto_str_,
+                                ignored_fields_, listener);
   }
 
   void DescribeTo(std::ostream* os) const {
@@ -114,8 +133,14 @@ class EqualsProtoMatcher {
     *os << "is not equal to proto:\n" << expected_proto_str_;
   }
 
+  template <typename Iterator>
+  void AddIgnoredFields(Iterator begin, Iterator end) {
+    ignored_fields_.insert(ignored_fields_.end(), begin, end);
+  }
+
  private:
   const string expected_proto_str_;
+  std::vector<string> ignored_fields_;
 };
 
 // Creates a polymorphic proto matcher based on the given proto in text format.
@@ -135,6 +160,18 @@ inline ::testing::PolymorphicMatcher<EqualsProtoMatcher> EqualsProto(
       EqualsProtoMatcher(std::move(expected_proto_str)));
 }
 
+namespace proto {
+
+template <typename InnerProtoMatcher, typename StringType>
+InnerProtoMatcher IgnoringFields(
+    const std::initializer_list<StringType>& fields,
+    InnerProtoMatcher matcher) {
+  matcher.mutable_impl().AddIgnoredFields(fields.begin(), fields.end());
+  return matcher;
+}
+
+}  // namespace proto
+
 // A gMock matcher that takes a tuple containing a proto and a string containing
 // a proto in text format, and compares the proto against the text
 // representation. Used to implement EqualsProto().
@@ -146,7 +183,8 @@ class EqualsProtoTupleMatcher {
   bool MatchAndExplain(TupleType args,
                        ::testing::MatchResultListener* listener) const {
     using ::testing::get;
-    return internal::MatchProto(get<0>(args), get<1>(args), listener);
+    // TODO(ondrasej): Add support for ignored fields when needed.
+    return internal::MatchProto(get<0>(args), get<1>(args), {}, listener);
   }
 
   void DescribeTo(std::ostream* os) const { *os << "are equal"; }
@@ -162,6 +200,15 @@ inline ::testing::PolymorphicMatcher<EqualsProtoTupleMatcher> EqualsProto() {
 
 // Implements IsOk() as a polymorphic matcher.
 MATCHER(IsOk, "") { return arg.ok(); }
+
+#ifndef ASSERT_OK
+#define ASSERT_OK(status_expr) \
+  EXPECT_THAT(status_expr, ::exegesis::testing::IsOk())
+#endif  // ASSERT_OK
+#ifndef EXPECT_OK
+#define EXPECT_OK(status_expr) \
+  EXPECT_THAT(status_expr, ::exegesis::testing::IsOk())
+#endif  // EXPECT_OK
 
 namespace internal {
 

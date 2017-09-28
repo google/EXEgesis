@@ -111,6 +111,7 @@ cc_test(
         ":cleanup_instruction_set",
         ":cleanup_instruction_set_test_utils",
         "//base",
+        "//exegesis/testing:test_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",

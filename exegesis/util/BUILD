@@ -174,6 +174,7 @@ cc_test(
     srcs = ["strings_test.cc"],
     deps = [
         ":strings",
+        "//exegesis/testing:test_util",
         "//strings",
         "//util/task:status",
         "@com_google_googletest//:gtest",

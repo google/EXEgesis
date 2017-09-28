@@ -8,6 +8,7 @@ licenses(["notice"])  # Apache 2.0
 cc_library(
     name = "test_util",
     testonly = 1,
+    srcs = ["test_util.cc"],
     hdrs = ["test_util.h"],
     deps = [
         "//base",

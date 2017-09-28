@@ -17,6 +17,7 @@
 #include <functional>
 
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
+#include "exegesis/testing/test_util.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

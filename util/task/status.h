@@ -59,21 +59,6 @@ inline Status OkStatus() { return Status(); }
   } while (false)
 #endif  // CHECK_OK
 
-#ifndef ASSERT_OK
-#define ASSERT_OK(status_expr)                             \
-  do {                                                     \
-    const ::exegesis::util::Status status = (status_expr); \
-    ASSERT_TRUE(status.ok()) << status;                    \
-  } while (false)
-#endif  // ASSERT_OK
-#ifndef EXPECT_OK
-#define EXPECT_OK(status_expr)                             \
-  do {                                                     \
-    const ::exegesis::util::Status status = (status_expr); \
-    EXPECT_TRUE(status.ok()) << status;                    \
-  } while (false)
-#endif  // EXPECT_OK
-
 }  // namespace util
 }  // namespace exegesis
 

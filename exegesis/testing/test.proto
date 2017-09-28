@@ -19,7 +19,13 @@ syntax = "proto3";
 
 package exegesis.testing;
 
+message SubProto {
+  int32 field_a = 1;
+  int32 field_b = 2;
+}
+
 message TestProto {
   int32 integer_field = 1;
   string string_field = 2;
+  SubProto message_field = 3;
 }
