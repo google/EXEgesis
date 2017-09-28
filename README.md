@@ -12,6 +12,9 @@ Google's EXEgesis project aims to improve code generation in compilers, via:
     instruction/microarchitecture pair.
 3.  Providing tools for debugging the performance of code based on this data.
 
+For a high-level overview of our efforts, see the
+[slides](https://goo.gl/koSKFK) for a tech talk about EXEgesis (July 2017).
+
 ## Details
 
 This repository provides a set of [tools](exegesis/tools/README.md) for
