@@ -81,8 +81,7 @@ void CheckPatchesOrDie(const PdfDocument& document,
         return page;
       }
     }
-    CHECK(false) << "Can't find page " << page_number
-                 << " in original document";
+    LOG(FATAL) << "Can't find page " << page_number << " in original document";
   };
   for (const auto& page_changes : changes.pages()) {
     const auto page_number = page_changes.page_number();
