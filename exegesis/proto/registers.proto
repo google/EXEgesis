@@ -56,6 +56,38 @@ message RegisterSubfield {
 
 // Contains information about a single register.
 message RegisterProto {
+  // Represents the class of a register.
+  // clang-format off
+  enum RegisterClass {
+    INVALID_REGISTER_CLASS = 0x0;
+
+    ANY_REGISTER_CLASS = 0x1;
+      GENERAL_PURPOSE_REGISTER = 0x11;
+        GENERAL_PURPOSE_REGISTER_8_BIT = 0x110;
+        GENERAL_PURPOSE_REGISTER_16_BIT = 0x111;
+        GENERAL_PURPOSE_REGISTER_32_BIT = 0x112;
+        GENERAL_PURPOSE_REGISTER_64_BIT = 0x113;
+
+      SPECIAL_REGISTER = 0x12;
+        SPECIAL_REGISTER_SEGMENT = 0x120;
+        SPECIAL_REGISTER_DEBUG = 0x121;
+        SPECIAL_REGISTER_CONTROL = 0x122;
+        SPECIAL_REGISTER_FLAG = 0x123;
+        SPECIAL_REGISTER_MEMORY = 0x124;
+
+      VECTOR_REGISTER = 0x13;
+        VECTOR_REGISTER_128_BIT = 0x130;
+        VECTOR_REGISTER_256_BIT = 0x131;
+        VECTOR_REGISTER_512_BIT = 0x132;
+
+      FLOATING_POINT_STACK_REGISTER = 0x14;
+
+      MMX_STACK_REGISTER = 0x15;
+
+      MASK_REGISTER = 0x16;
+  }
+  // clang-format on
+
   // The name of the register, as used in the reference manual and/or the
   // assembly language.
   string name = 1;
@@ -93,6 +125,9 @@ message RegisterProto {
   // InstructionProto.feature_name. The operators '&&' and '||' may be used when
   // the register is not connected to a single feature.
   string feature_name = 7;
+
+  // The class of the register.
+  RegisterClass register_class = 8;
 }
 
 // Represents a group of registers that are aliased, i.e. that use the same

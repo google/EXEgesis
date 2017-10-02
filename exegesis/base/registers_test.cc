@@ -35,16 +35,19 @@ TEST(RegistersTest, MakeRegistersFromBaseNames) {
           name: "RAX"
           binary_encoding: 0
           position_in_group { lsb: 0 msb: 63 }
+          register_class: GENERAL_PURPOSE_REGISTER_64_BIT
         }
         registers {
           name: "AL"
           binary_encoding: 0
           position_in_group { lsb: 0 msb: 7 }
+          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
         }
         registers {
           name: "AH"
           binary_encoding: 4
           position_in_group { lsb: 8 msb: 15 }
+          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
         }
       }
       register_groups {
@@ -54,21 +57,25 @@ TEST(RegistersTest, MakeRegistersFromBaseNames) {
           name: "RCX"
           binary_encoding: 1
           position_in_group { lsb: 0 msb: 63 }
+          register_class: GENERAL_PURPOSE_REGISTER_64_BIT
         }
         registers {
           name: "CL"
           binary_encoding: 1
           position_in_group { lsb: 0 msb: 7 }
+          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
         }
         registers {
           name: "CH"
           binary_encoding: 5
           position_in_group { lsb: 8 msb: 15 }
+          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
         }
       })";
-  const std::vector<RegisterTemplate> kTemplates = {{"R", "X", 0, 63, 0, ""},
-                                                    {"", "L", 0, 7, 0, ""},
-                                                    {"", "H", 8, 15, 4, ""}};
+  const std::vector<RegisterTemplate> kTemplates = {
+      {"R", "X", 0, 63, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+      {"", "L", 0, 7, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
+      {"", "H", 8, 15, 4, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT}};
   const std::vector<string> kBaseNames = {"A", "C"};
   EXPECT_THAT(MakeRegistersFromBaseNames(kTemplates, kBaseNames, 0),
               EqualsProto(kExpectedRegisters));
@@ -84,18 +91,21 @@ TEST(RegistersTest, MakeRegistersFromBaseNameAndIndices) {
           binary_encoding: 4
           position_in_group { lsb: 0 msb: 127 }
           feature_name: "SSE"
+          register_class: VECTOR_REGISTER_128_BIT
         }
         registers {
           name: "YMM4"
           binary_encoding: 4
           position_in_group { lsb: 0 msb: 255 }
           feature_name: "AVX"
+          register_class: VECTOR_REGISTER_256_BIT
         }
         registers {
           name: "ZMM4"
           binary_encoding: 4
           position_in_group { lsb: 0 msb: 511 }
           feature_name: "AVX512"
+          register_class: VECTOR_REGISTER_512_BIT
         }
       }
       register_groups {
@@ -106,24 +116,27 @@ TEST(RegistersTest, MakeRegistersFromBaseNameAndIndices) {
           binary_encoding: 5
           position_in_group { lsb: 0 msb: 127 }
           feature_name: "SSE"
+          register_class: VECTOR_REGISTER_128_BIT
         }
         registers {
           name: "YMM5"
           binary_encoding: 5
           position_in_group { lsb: 0 msb: 255 }
           feature_name: "AVX"
+          register_class: VECTOR_REGISTER_256_BIT
         }
         registers {
           name: "ZMM5"
           binary_encoding: 5
           position_in_group { lsb: 0 msb: 511 }
           feature_name: "AVX512"
+          register_class: VECTOR_REGISTER_512_BIT
         }
       })";
   const std::vector<RegisterTemplate> kTemplates = {
-      {"X", "", 0, 127, 0, "SSE"},
-      {"Y", "", 0, 255, 0, "AVX"},
-      {"Z", "", 0, 511, 0, "AVX512"}};
+      {"X", "", 0, 127, 0, "SSE", RegisterProto::VECTOR_REGISTER_128_BIT},
+      {"Y", "", 0, 255, 0, "AVX", RegisterProto::VECTOR_REGISTER_256_BIT},
+      {"Z", "", 0, 511, 0, "AVX512", RegisterProto::VECTOR_REGISTER_512_BIT}};
   constexpr char kBaseName[] = "MM";
   constexpr int kBeginIndex = 4;
   constexpr int kEndIndex = 6;

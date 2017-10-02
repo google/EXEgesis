@@ -15,6 +15,7 @@
 #include "exegesis/x86/registers.h"
 
 #include "exegesis/base/registers.h"
+#include "exegesis/proto/registers.pb.h"
 #include "exegesis/util/proto_util.h"
 #include "strings/str_cat.h"
 
@@ -25,26 +26,27 @@ namespace {
 RegisterSetProto GetGeneralPurposeRegisters() {
   RegisterSetProto register_set;
   // RAX, RBX, RCX and RDX, and their aliased variants.
-  register_set.MergeFrom(MakeRegistersFromBaseNames({{"R", "X", 0, 63, 0, ""},
-                                                     {"E", "X", 0, 31, 0, ""},
-                                                     {"", "X", 0, 15, 0, ""},
-                                                     {"", "L", 0, 7, 0, ""},
-                                                     {"", "H", 8, 15, 4, ""}},
-                                                    {"A", "C", "D", "B"}, 0));
+  register_set.MergeFrom(MakeRegistersFromBaseNames(
+      {{"R", "X", 0, 63, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+       {"E", "X", 0, 31, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+       {"", "X", 0, 15, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_16_BIT},
+       {"", "L", 0, 7, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
+       {"", "H", 8, 15, 4, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT}},
+      {"A", "C", "D", "B"}, 0));
   // RBP, RSP, RSI, RDI and their aliased variants.
-  register_set.MergeFrom(MakeRegistersFromBaseNames({{"R", "", 0, 63, 0, ""},
-                                                     {"E", "", 0, 31, 0, ""},
-                                                     {"", "", 0, 15, 0, ""},
-                                                     {"", "L", 0, 7, 0, ""}},
-                                                    {"BP", "SP", "SI", "DI"},
-                                                    4));
+  register_set.MergeFrom(MakeRegistersFromBaseNames(
+      {{"R", "", 0, 63, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+       {"E", "", 0, 31, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+       {"", "", 0, 15, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_16_BIT},
+       {"", "L", 0, 7, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT}},
+      {"BP", "SP", "SI", "DI"}, 4));
   // The 64-bit only registers R8-R15 and their aliased variants.
-  register_set.MergeFrom(
-      MakeRegistersFromBaseNameAndIndices({{"", "", 0, 63, 0, ""},
-                                           {"", "D", 0, 31, 0, ""},
-                                           {"", "W", 0, 15, 0, ""},
-                                           {"", "B", 0, 7, 0, ""}},
-                                          "R", 8, 16, 8));
+  register_set.MergeFrom(MakeRegistersFromBaseNameAndIndices(
+      {{"", "", 0, 63, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+       {"", "D", 0, 31, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+       {"", "W", 0, 15, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_16_BIT},
+       {"", "B", 0, 7, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT}},
+      "R", 8, 16, 8));
 
   return register_set;
 }
@@ -56,8 +58,9 @@ RegisterSetProto GetControlRegisters() {
   // For more information about the control registers, see the Intel 64 and
   // IA-32 Architectures Software Developer's Manual (March 2017), Volume 3A,
   // Section 2.5.
-  return MakeRegistersFromBaseNameAndIndices({{"", "", 0, 63, 0, ""}}, "CR", 0,
-                                             9, 0);
+  return MakeRegistersFromBaseNameAndIndices(
+      {{"", "", 0, 63, 0, "", RegisterProto::SPECIAL_REGISTER_CONTROL}}, "CR",
+      0, 9, 0);
 }
 
 RegisterSetProto GetDebugRegisters() {
@@ -66,8 +69,9 @@ RegisterSetProto GetDebugRegisters() {
   // For more information about the control registers, see the Intel 64 and
   // IA-32 Architectures Software Developer's Manual (March 2017), Volume 3A,
   // Section 17.2.
-  return MakeRegistersFromBaseNameAndIndices({{"", "", 0, 63, 0, ""}}, "DR", 0,
-                                             9, 0);
+  return MakeRegistersFromBaseNameAndIndices(
+      {{"", "", 0, 63, 0, "", RegisterProto::SPECIAL_REGISTER_DEBUG}}, "DR", 0,
+      9, 0);
 }
 
 RegisterSetProto GetFlagsRegisters() {
@@ -77,6 +81,7 @@ RegisterSetProto GetFlagsRegisters() {
         description: "The flags registers"
         registers {
           name: "EFLAGS"
+          register_class: SPECIAL_REGISTER_FLAG
           implicit_encoding_only: true
           position_in_group { lsb: 0 msb: 31 }
           subfields {
@@ -188,6 +193,7 @@ RegisterSetProto GetFlagsRegisters() {
         registers {
           name: "RFLAGS"
           implicit_encoding_only: true
+          register_class: SPECIAL_REGISTER_FLAG
           position_in_group { lsb: 0 msb: 63 }
           subfields {
             bit_range { lsb: 0 msb: 0 }
@@ -307,6 +313,7 @@ RegisterSetProto GetFpuAndMmxRegisters() {
         registers {
           name: "FPSW"  # Note that the name FPSW is not used in the Intel SDM,
                         # but it is used in LLVM TD files.
+          register_class: SPECIAL_REGISTER_FLAG
           implicit_encoding_only: true
           position_in_group { lsb: 0 msb: 15 }
           subfields {
@@ -378,6 +385,7 @@ RegisterSetProto GetFpuAndMmxRegisters() {
           name: "FPCW"  # Note that the name FPCW is used neither in the Intel
                         # SDM nor in LLVM; we use this name because it follows
                         # The same convention as FPSW.
+          register_class: SPECIAL_REGISTER_FLAG
           implicit_encoding_only: true
           position_in_group { lsb: 0 msb: 15 }
           subfields {
@@ -436,22 +444,27 @@ RegisterSetProto GetFpuAndMmxRegisters() {
         }
       })";
   RegisterSetProto register_set = MakeRegistersFromBaseNameAndIndices(
-      {{"ST", "", 0, 79, 0, "FPU"}, {"MM", "", 0, 63, 0, "MMX"}}, "", 0, 8, 0);
+      {{"ST", "", 0, 79, 0, "FPU",
+        RegisterProto::FLOATING_POINT_STACK_REGISTER},
+       {"MM", "", 0, 63, 0, "MMX", RegisterProto::MMX_STACK_REGISTER}},
+      "", 0, 8, 0);
   register_set.MergeFrom(ParseProtoFromStringOrDie<RegisterSetProto>(
       kX87FpuStatusAndControlRegisters));
   return register_set;
 }
 
 RegisterSetProto GetOpmaskRegisters() {
-  return MakeRegistersFromBaseNameAndIndices({{"", "", 0, 63, 0, "AVX512"}},
-                                             "k", 0, 8, 0);
+  return MakeRegistersFromBaseNameAndIndices(
+      {{"", "", 0, 63, 0, "AVX512", RegisterProto::MASK_REGISTER}}, "k", 0, 8,
+      0);
 }
 
 // Returns a RegisterSetProto that contains the definitions of the segment
 // registers.
 RegisterSetProto GetSegmentRegisters() {
-  return MakeRegistersFromBaseNames({{"", "S", 0, 15, 0, ""}},
-                                    {"E", "C", "S", "D", "F", "G"}, 0);
+  return MakeRegistersFromBaseNames(
+      {{"", "S", 0, 15, 0, "", RegisterProto::SPECIAL_REGISTER_SEGMENT}},
+      {"E", "C", "S", "D", "F", "G"}, 0);
 }
 
 // Returns a RegisterSetProto that contains definitions of the XMM* registers.
@@ -462,6 +475,7 @@ RegisterSetProto GetXmmRegisters() {
         description: "The SIMD floating point operation control register."
         registers {
           name: "MXCSR"
+          register_class: SPECIAL_REGISTER_FLAG
           description: "The SIMD floating point operation control register."
           implicit_encoding_only: true
           position_in_group { lsb: 0 msb: 31 }
@@ -548,18 +562,18 @@ RegisterSetProto GetXmmRegisters() {
       })";
   RegisterSetProto register_set =
       ParseProtoFromStringOrDie<RegisterSetProto>(kXmmControlRegister);
-  register_set.MergeFrom(
-      MakeRegistersFromBaseNameAndIndices({{"X", "", 0, 127, 0, "SSE"},
-                                           {"Y", "", 0, 255, 0, "AVX"},
-                                           {"Z", "", 0, 511, 0, "AVX512"}},
-                                          "MM", 0, 16, 0));
+  register_set.MergeFrom(MakeRegistersFromBaseNameAndIndices(
+      {{"X", "", 0, 127, 0, "SSE", RegisterProto::VECTOR_REGISTER_128_BIT},
+       {"Y", "", 0, 255, 0, "AVX", RegisterProto::VECTOR_REGISTER_256_BIT},
+       {"Z", "", 0, 511, 0, "AVX512", RegisterProto::VECTOR_REGISTER_512_BIT}},
+      "MM", 0, 16, 0));
   // The registers 16-31 can be encoded only with the EVEX encoding, which makes
   // them available only on AVX-512-enabled CPUs.
-  register_set.MergeFrom(
-      MakeRegistersFromBaseNameAndIndices({{"X", "", 0, 127, 0, "AVX512"},
-                                           {"Y", "", 0, 255, 0, "AVX512"},
-                                           {"Z", "", 0, 511, 0, "AVX512"}},
-                                          "MM", 16, 32, 16));
+  register_set.MergeFrom(MakeRegistersFromBaseNameAndIndices(
+      {{"X", "", 0, 127, 0, "AVX512", RegisterProto::VECTOR_REGISTER_128_BIT},
+       {"Y", "", 0, 255, 0, "AVX512", RegisterProto::VECTOR_REGISTER_256_BIT},
+       {"Z", "", 0, 511, 0, "AVX512", RegisterProto::VECTOR_REGISTER_512_BIT}},
+      "MM", 16, 32, 16));
   return register_set;
 }
 
@@ -570,6 +584,7 @@ RegisterSetProto GetMemoryControlRegisters() {
         description: "The Global Descriptor Table Register group"
         registers {
           name: "GDTR"
+          register_class: SPECIAL_REGISTER_MEMORY
           position_in_group { lsb: 0 msb: 63 }
         }
       }
@@ -578,6 +593,7 @@ RegisterSetProto GetMemoryControlRegisters() {
         description: "The Local Descriptor Table Register group"
         registers {
           name: "LDTR"
+          register_class: SPECIAL_REGISTER_MEMORY
           position_in_group { lsb: 0 msb: 63 }
         }
       }
@@ -586,6 +602,7 @@ RegisterSetProto GetMemoryControlRegisters() {
         description: "The Interrupt Descriptor Table Register group"
         registers {
           name: "IDTR"
+          register_class: SPECIAL_REGISTER_MEMORY
           position_in_group { lsb: 0 msb: 63 }
         }
       }
@@ -594,6 +611,7 @@ RegisterSetProto GetMemoryControlRegisters() {
         description: "The Task Register group"
         registers {
           name: "TR"
+          register_class: SPECIAL_REGISTER_MEMORY
           position_in_group { lsb: 0 msb: 63 }
         }
       })";

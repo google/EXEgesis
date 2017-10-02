@@ -43,6 +43,7 @@ RegisterSetProto MakeRegisters(
       position->set_lsb(tpl.lsb);
       position->set_msb(tpl.msb);
       reg->set_feature_name(tpl.feature_name);
+      reg->set_register_class(tpl.register_class);
     }
     // Use the name of the first register in the group for naming the group. By
     // convention, this should be the most "representative" register of the

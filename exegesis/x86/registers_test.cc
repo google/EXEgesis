@@ -129,6 +129,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'RAX'
           binary_encoding: 0
+          register_class: GENERAL_PURPOSE_REGISTER_64_BIT
           position_in_group {
             msb: 63
           }
@@ -136,6 +137,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'EAX'
           binary_encoding: 0
+          register_class: GENERAL_PURPOSE_REGISTER_32_BIT
           position_in_group {
             msb: 31
           }
@@ -143,6 +145,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'AX'
           binary_encoding: 0
+          register_class: GENERAL_PURPOSE_REGISTER_16_BIT
           position_in_group {
             msb: 15
           }
@@ -150,6 +153,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'AL'
           binary_encoding: 0
+          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
           position_in_group {
             msb: 7
           }
@@ -157,6 +161,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'AH'
           binary_encoding: 4
+          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
           position_in_group {
             lsb: 8
             msb: 15
@@ -169,6 +174,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'ST7'
           binary_encoding: 7
+          register_class: FLOATING_POINT_STACK_REGISTER
           position_in_group {
             msb: 79
           }
@@ -177,6 +183,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'MM7'
           binary_encoding: 7
+          register_class: MMX_STACK_REGISTER
           position_in_group {
             msb: 63
           }
@@ -188,6 +195,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'DS'
           binary_encoding: 3
+          register_class: SPECIAL_REGISTER_SEGMENT
           position_in_group {
             lsb: 0
             msb: 15
@@ -199,6 +207,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'XMM15'
           binary_encoding: 15
+          register_class: VECTOR_REGISTER_128_BIT
           position_in_group {
             msb: 127
           }
@@ -207,6 +216,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'YMM15'
           binary_encoding: 15
+          register_class: VECTOR_REGISTER_256_BIT
           position_in_group {
             msb: 255
           }
@@ -215,6 +225,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'ZMM15'
           binary_encoding: 15
+          register_class: VECTOR_REGISTER_512_BIT
           position_in_group {
             msb: 511
           }
@@ -226,6 +237,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'XMM17'
           binary_encoding: 17
+          register_class: VECTOR_REGISTER_128_BIT
           position_in_group {
             msb: 127
           }
@@ -234,6 +246,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'YMM17'
           binary_encoding: 17
+          register_class: VECTOR_REGISTER_256_BIT
           position_in_group {
             msb: 255
           }
@@ -242,6 +255,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'ZMM17'
           binary_encoding: 17
+          register_class: VECTOR_REGISTER_512_BIT
           position_in_group {
             msb: 511
           }
@@ -253,6 +267,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'CR3'
           binary_encoding: 3
+          register_class: SPECIAL_REGISTER_CONTROL
           position_in_group {
             msb: 63
           }
@@ -263,6 +278,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         registers {
           name: 'DR3'
           binary_encoding: 3
+          register_class: SPECIAL_REGISTER_DEBUG
           position_in_group {
             msb: 63
           }

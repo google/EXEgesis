@@ -56,6 +56,9 @@ struct RegisterTemplate {
 
   // The name of the feature that makes the register available.
   const char* feature_name;
+
+  // The class of the registers.
+  RegisterProto::RegisterClass register_class;
 };
 
 // Creates a RegisterSetProto from the given templates and a set of base names.
