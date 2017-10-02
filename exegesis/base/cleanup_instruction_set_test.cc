@@ -30,10 +30,10 @@ namespace {
 
 using ::exegesis::InstructionProto;
 using ::exegesis::InstructionSetProto;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
 
@@ -127,32 +127,237 @@ TEST(RunTransformWithDiffTest, WithError) {
 }
 
 TEST(SortByVendorSyntaxTest, Sort) {
-  constexpr char kInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
-           encoding_scheme: 'NP'
-           raw_encoding_specification: 'AE' }
-         instructions {
-           vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
-                           operands { name: 'DX' }}
-           encoding_scheme: 'NP' raw_encoding_specification: '6C' }
-         instructions {
-           vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
-                           operands { name: 'DX' }}
-           encoding_scheme: 'NP' raw_encoding_specification: '6D' })";
-  constexpr char kExpectedInstructionSetProto[] =
-      R"(instructions {
-           vendor_syntax { mnemonic: 'INS' operands { name: 'm16' }
-                           operands { name: 'DX' }}
-           encoding_scheme: 'NP' raw_encoding_specification: '6D' }
-         instructions {
-           vendor_syntax { mnemonic: 'INS' operands { name: 'm8' }
-                           operands { name: 'DX' }}
-           encoding_scheme: 'NP' raw_encoding_specification: '6C' }
-         instructions {
-           vendor_syntax { mnemonic: 'SCAS' operands { name: 'm8' }}
-           encoding_scheme: 'NP'
-           raw_encoding_specification: 'AE' })";
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'SCAS'
+          operands {
+            name: 'm8'
+          }
+        }
+        encoding_scheme: 'NP'
+        raw_encoding_specification: 'AE'
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+            tags {
+              name: "k1"
+            }
+            tags {
+              name: "z"
+            }
+          }
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "m512"
+            tags {
+              name: "er"
+            }
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+            tags {
+              name: "k1"
+            }
+          }
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "m512"
+            tags {
+              name: "er"
+            }
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'INS'
+          operands {
+            name: 'm8'
+          }
+          operands {
+            name: 'DX'
+          }
+        }
+        encoding_scheme: 'NP'
+        raw_encoding_specification: '6C'
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+          }
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "m512"
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "zmm3"
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+          }
+          operands {
+            name: "zmm2"
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'INS'
+          operands {
+            name: 'm16'
+          }
+          operands {
+            name: 'DX'
+          }
+        }
+        encoding_scheme: 'NP'
+        raw_encoding_specification: '6D'
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'INS'
+          operands {
+            name: 'm16'
+          }
+          operands {
+            name: 'DX'
+          }
+        }
+        encoding_scheme: 'NP'
+        raw_encoding_specification: '6D'
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'INS'
+          operands {
+            name: 'm8'
+          }
+          operands {
+            name: 'DX'
+          }
+        }
+        encoding_scheme: 'NP'
+        raw_encoding_specification: '6C' }
+      instructions {
+        vendor_syntax {
+          mnemonic: 'SCAS'
+          operands {
+            name: 'm8'
+          }
+        }
+        encoding_scheme: 'NP'
+        raw_encoding_specification: 'AE'
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+          }
+          operands {
+            name: "zmm2"
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+          }
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "m512"
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+            tags {
+              name: "k1"
+            }
+          }
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "m512"
+            tags {
+              name: "er"
+            }
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm1"
+            tags {
+              name: "k1"
+            }
+            tags {
+              name: "z"
+            }
+          }
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "m512"
+            tags {
+              name: "er"
+            }
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            name: "zmm2"
+          }
+          operands {
+            name: "zmm3"
+          }
+        }
+      })";
   TestTransform(SortByVendorSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

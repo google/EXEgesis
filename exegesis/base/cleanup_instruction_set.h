@@ -74,8 +74,8 @@ Status RunTransformPipeline(
 
 // Sorts the instructions by their vendor syntax. The sorting criteria are:
 // 1. The mnemonic (lexicographical order),
-// 2. The number of operands (instructions with less operands come first),
-// 3. The operands (two-level lexicographical order).
+// 2. The operands names (two-level lexicographical order).
+// 3. The operand tags (three-level lexicographical order).
 // 4. The binary encoding of the instruction.
 // This transform should be the last transform in the set, so that it cleans up
 // after the changes done by the other instructions.

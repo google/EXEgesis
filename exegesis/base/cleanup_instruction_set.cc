@@ -208,34 +208,63 @@ StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
 
 namespace {
 
-bool LessOrEqual(const InstructionProto& instruction_a,
-                 const InstructionProto& instruction_b) {
+int CompareOperands(const InstructionFormat& vendor_syntax_a,
+                    const InstructionFormat& vendor_syntax_b) {
+  int comparison = 0;
+  const int num_operands = std::min(vendor_syntax_a.operands_size(),
+                                    vendor_syntax_b.operands_size());
+  for (int operand_index = 0; comparison == 0 && operand_index < num_operands;
+       ++operand_index) {
+    const string& operand_a = vendor_syntax_a.operands(operand_index).name();
+    const string& operand_b = vendor_syntax_b.operands(operand_index).name();
+    comparison = operand_a.compare(operand_b);
+  }
+  if (comparison == 0) {
+    comparison =
+        vendor_syntax_a.operands_size() - vendor_syntax_b.operands_size();
+  }
+  return comparison;
+}
+
+int CompareOperandTags(const InstructionFormat& vendor_syntax_a,
+                       const InstructionFormat& vendor_syntax_b) {
+  DCHECK_EQ(vendor_syntax_a.operands_size(), vendor_syntax_b.operands_size());
+  int comparison = 0;
+  const int num_operands = vendor_syntax_a.operands_size();
+  for (int operand_index = 0; comparison == 0 && operand_index < num_operands;
+       ++operand_index) {
+    const InstructionOperand& operand_a =
+        vendor_syntax_a.operands(operand_index);
+    const InstructionOperand& operand_b =
+        vendor_syntax_b.operands(operand_index);
+
+    const int num_tags = std::min(operand_a.tags_size(), operand_b.tags_size());
+    for (int tag_index = 0; comparison == 0 && tag_index < num_tags;
+         ++tag_index) {
+      const string& tag_a = operand_a.tags(tag_index).name();
+      const string& tag_b = operand_b.tags(tag_index).name();
+      comparison = tag_a.compare(tag_b);
+    }
+    if (comparison == 0) {
+      comparison = operand_a.tags_size() - operand_b.tags_size();
+    }
+  }
+  return comparison;
+}
+
+bool LessThan(const InstructionProto& instruction_a,
+              const InstructionProto& instruction_b) {
   const InstructionFormat& vendor_syntax_a = instruction_a.vendor_syntax();
   const InstructionFormat& vendor_syntax_b = instruction_b.vendor_syntax();
 
-  int comparison = 0;
-
-  // 1. Compare mnemonics.
-  comparison = vendor_syntax_a.mnemonic().compare(vendor_syntax_b.mnemonic());
-
-  // 2. Compare the number of operands.
+  int comparison =
+      vendor_syntax_a.mnemonic().compare(vendor_syntax_b.mnemonic());
   if (comparison == 0) {
-    comparison =
-        vendor_syntax_b.operands_size() - vendor_syntax_a.operands_size();
+    comparison = CompareOperands(vendor_syntax_a, vendor_syntax_b);
   }
-
-  // 3. Compare the operands.
   if (comparison == 0) {
-    const int num_operands = vendor_syntax_a.operands_size();
-    for (int operand_index = 0; comparison == 0 && operand_index < num_operands;
-         ++operand_index) {
-      const string& operand_a = vendor_syntax_a.operands(operand_index).name();
-      const string& operand_b = vendor_syntax_b.operands(operand_index).name();
-      comparison = operand_a.compare(operand_b);
-    }
+    comparison = CompareOperandTags(vendor_syntax_a, vendor_syntax_b);
   }
-
-  // 4. Compare binary encodings.
   if (comparison == 0) {
     const string& specification_a = instruction_a.raw_encoding_specification();
     const string& specification_b = instruction_b.raw_encoding_specification();
@@ -251,7 +280,7 @@ Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
-  std::sort(instructions->begin(), instructions->end(), LessOrEqual);
+  std::stable_sort(instructions->begin(), instructions->end(), LessThan);
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(SortByVendorSyntax, 7000);
