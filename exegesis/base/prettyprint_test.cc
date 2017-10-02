@@ -83,7 +83,6 @@ TEST(PrettyPrintTest, Instruction) {
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: "RM"
-      binary_encoding_size_bytes: 5
       raw_encoding_specification: "VEX.256.66.0F38.W0 1A /r"
       x86_encoding_specification {
         opcode: 997402

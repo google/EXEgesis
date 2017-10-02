@@ -303,17 +303,6 @@ message InstructionProto {
   // to assume the least priviledged mode.
   int32 protection_mode = 29;
 
-  // The size of the binary encoding of the instruction, in bytes.
-  // TODO(ondrasej): The encoding size might or might not depend on the operands
-  //                 of the instruction. We're already differentiating between
-  //                 value sizes for registers and immediate values (these are
-  //                 encoded in the instruction mnemonic). When working with
-  //                 memory operands, the address might be composed of up to
-  //                 three registers. We need to verify whether the size of the
-  //                 encoding depends on the encoding and if it does, compute
-  //                 the encoding size correctly.
-  int32 binary_encoding_size_bytes = 21;
-
   // The encoding specification of the instruction, as provided by the designer
   // of the CPU instruction set. The exact format of the value is
   // platform-dependent:

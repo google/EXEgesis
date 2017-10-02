@@ -232,7 +232,6 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           }
           available_in_64_bit: true
           encoding_scheme: "ps1a"
-          binary_encoding_size_bytes: 4
           fixed_size_encoding_specification {
             form_name: "ps1a"
             bit_ranges {
@@ -255,7 +254,6 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           }
           available_in_64_bit: true
           encoding_scheme: "ps1b"
-          binary_encoding_size_bytes: 4
           fixed_size_encoding_specification {
             form_name: "ps1b"
             bit_ranges {
@@ -276,7 +274,6 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           feature_name: "crc"
           available_in_64_bit: true
           encoding_scheme: "ps2"
-          binary_encoding_size_bytes: 4
           fixed_size_encoding_specification {
             form_name: "ps2"
             bit_ranges {
@@ -296,7 +293,6 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           vendor_syntax {
           }
           available_in_64_bit: false
-          binary_encoding_size_bytes: 4
           fixed_size_encoding_specification {
           }
           instruction_group_index: 2

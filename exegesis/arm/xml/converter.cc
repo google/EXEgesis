@@ -99,7 +99,6 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
         instruction->set_available_in_64_bit(xml_instruction.docvars().isa() ==
                                              dv::Isa::A64);
 
-        instruction->set_binary_encoding_size_bytes(4);
         instruction->set_encoding_scheme(
             encoding.instruction_layout().form_name());
         *instruction->mutable_fixed_size_encoding_specification() =
