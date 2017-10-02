@@ -41,4 +41,18 @@ void PinCoreAffinity() {
   }
 }
 
+int GetLastAvailableCore() {
+  cpu_set_t affinity;
+  CPU_ZERO(&affinity);
+  CHECK_EQ(0, sched_getaffinity(0, sizeof(affinity), &affinity));
+  constexpr int kMaxCores = 4095;  // "Ought to be enough for anybody".
+  for (int core_id = kMaxCores; core_id >= 0; --core_id) {
+    if (CPU_ISSET(core_id, &affinity)) {
+      LOG(INFO) << "Last available core: " << core_id;
+      return core_id;
+    }
+  }
+  return 0;
+}
+
 }  // namespace exegesis

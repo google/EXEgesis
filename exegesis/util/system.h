@@ -26,6 +26,9 @@ void SetCoreAffinity(int core_id);
 // Same as above, but picks the first available core.
 void PinCoreAffinity();
 
+// Gets the last available CPU core id on the machine.
+int GetLastAvailableCore();
+
 }  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_SYSTEM_H_
