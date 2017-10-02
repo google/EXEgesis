@@ -110,6 +110,7 @@ cc_library(
         "//exegesis/util/pdf:xpdf_util",
         "//exegesis/x86:cleanup_instruction_set_all",
         "//exegesis/x86:registers",
+        "//net/proto2/util/public:repeated_field_util",
         "//strings",
         "//util/gtl:map_util",
         "//util/gtl:ptr_util",

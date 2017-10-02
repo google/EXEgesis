@@ -28,6 +28,7 @@
 #include "exegesis/x86/registers.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
+#include "net/proto2/util/public/repeated_field_util.h"
 #include "re2/re2.h"
 #include "strings/str_cat.h"
 #include "strings/str_split.h"
@@ -60,6 +61,14 @@ InstructionSetSourceInfo CreateInstructionSetSourceInfo(
     metadata->set_key(key_value_pair.first);
     metadata->set_value(key_value_pair.second);
   }
+
+  // Making sure metadata always appear in the same order.
+  Sort(source_info.mutable_metadata(),
+       [](const InstructionSetSourceInfo::MetadataEntry* const a,
+          const InstructionSetSourceInfo::MetadataEntry* const b) {
+         return a->key() < b->key();
+       });
+
   return source_info;
 }
 
