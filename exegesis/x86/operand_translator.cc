@@ -38,7 +38,7 @@ namespace {
 #define OFFSET_ADDRESS " ptr DS:[RSI]"
 
 // Returns an example of operand value for a given operand specification,
-// e.g. '0x7e' for 'imm8', or 'xmm5' for 'xmm'.
+// e.g. '0x11' for 'imm8', or 'xmm5' for 'xmm'.
 string TranslateOperand(const string& operand) {
   static const std::unordered_map<string, string>* const kOperandTranslation =
       new std::unordered_map<string, string>({
@@ -48,7 +48,12 @@ string TranslateOperand(const string& operand) {
           {"ST(i)", "ST(2)"},
           {"bnd", "bnd2"},
           // All rel*, m, and mem are fishy.
-          {"imm8", "0x7e"},
+          // NOTE(ondrasej): Some instructions use an imm8 as an additional
+          // control value for the operation they perform, and might place
+          // additional constraints on this value. For example the EVEX version
+          // of VCMPDD requires that the value of the immediate uses only the
+          // four least significant bits.
+          {"imm8", "0x11"},
           {"imm16", "0x7ffe"},
           {"imm32", "0x7ffffffe"},
           {"imm64", "0x400000000002d06d"},
@@ -57,23 +62,23 @@ string TranslateOperand(const string& operand) {
           {"rel32", LABEL_OPERAND(0x10000)},
           {"m8", "byte" ADDRESS},
           {"mib", "qword" ADDRESS},
-          {"moffs8", "byte" OFFSET_ADDRESS},
+          {"moffs8", "0x11"},
           {"m", "word" ADDRESS},
           {"m16", "word" ADDRESS},
           {"m16&16", "word" ADDRESS},
           {"m16&64", "qword" ADDRESS},
           {"m16int", "word" ADDRESS},
-          {"moffs16", "word" OFFSET_ADDRESS},
+          {"moffs16", "0x7ffe"},
           {"m2byte", "word" ADDRESS},
           {"m14byte", "dword" ADDRESS},  // LLVM differs from the Intel spec.
           {"m28byte", "dword" ADDRESS},  // LLVM differs from the Intel spec.
           {"m32", "dword" ADDRESS},
           {"m32&32", "dword" ADDRESS},
-          {"moffs32", "dword" OFFSET_ADDRESS},
+          {"moffs32", "0x7ffffffe"},
           {"m32fp", "dword" ADDRESS},
           {"m32int", "dword" ADDRESS},
           {"m64", "qword" ADDRESS},
-          {"moffs64", "qword" OFFSET_ADDRESS},
+          {"moffs64", "0x7ffffffffffffffe"},
           {"mem", "xmmword" ADDRESS},
           {"m64fp", "qword" ADDRESS},
           {"m64int", "dword" ADDRESS},
@@ -145,6 +150,15 @@ string TranslateREX(const string& operand) {
   return FindWithDefault(*kGPRREXTranslation, operand, operand);
 }
 
+InstructionOperand::Tag TranslateOperandTag(
+    const InstructionOperand::Tag& tag) {
+  static const auto* const kTagTranslation =
+      new std::unordered_map<string, string>({{"er", "rn-sae"}});
+  InstructionOperand::Tag code_tag;
+  code_tag.set_name(FindWithDefault(*kTagTranslation, tag.name(), tag.name()));
+  return code_tag;
+}
+
 }  // namespace
 
 InstructionFormat InstantiateOperands(const InstructionProto& instruction) {
@@ -161,15 +175,18 @@ InstructionFormat InstantiateOperands(const InstructionProto& instruction) {
                          ? TranslateGPR(operand.name())
                          : TranslateREX(operand.name());
     }
-    if (!code_operand.empty()) {
+    // NOTE(ondrasej): We need to allow empty operand names with tags to support
+    // AVX-512 instructions, where {sae} and the embedded rounding tags are
+    // separated from other operands by a comma.
+    if (!code_operand.empty() || !operand.tags().empty()) {
       InstructionOperand* const instantiated_operand = result.add_operands();
       instantiated_operand->set_name(code_operand);
       for (const InstructionOperand::Tag& tag : operand.tags()) {
-        *instantiated_operand->add_tags() = tag;
+        *instantiated_operand->add_tags() = TranslateOperandTag(tag);
       }
     } else {
       CHECK_EQ(operand.name(), "<XMM0>")
-          << operand.name() << " could not be translated.";
+          << "\"" << operand.name() << "\" could not be translated.";
     }
   }
   return result;

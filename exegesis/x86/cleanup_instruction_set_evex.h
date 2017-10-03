@@ -34,6 +34,13 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set);
 // instructions in the instruction set.
 Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set);
 
+// Moves the AVX-512 embedded-rounding and suppress-all-exceptions tags {er} and
+// {sae} to a separate operand, to match the syntax used by actual instruction.
+// This is necessary, because the SDM lists these as properties of the last
+// operand of the instruction, but the assembly syntax for these instructions
+// introduces by the manual puts a comma between them and the last operand.
+Status AddEvexPseudoOperands(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 

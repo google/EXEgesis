@@ -47,6 +47,7 @@ cc_library(
     deps = [
         ":cleanup_instruction_set_alternatives",
         ":cleanup_instruction_set_asm_syntax",
+        ":cleanup_instruction_set_checks",
         ":cleanup_instruction_set_encoding",
         ":cleanup_instruction_set_evex",
         ":cleanup_instruction_set_fix_operands",
@@ -197,6 +198,7 @@ cc_library(
     hdrs = ["cleanup_instruction_set_evex.h"],
     deps = [
         "//base",
+        "//exegesis/base:category_utils",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/x86:encoding_specification_cc_proto",
@@ -269,6 +271,7 @@ cc_library(
         "//base",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto:registers_cc_proto",
         "//exegesis/proto/x86:encoding_specification_cc_proto",
         "//exegesis/util:status_util",
         "//strings",

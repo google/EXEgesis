@@ -49,7 +49,7 @@ TEST(OperandTranslatorTest, Works) {
         name: 'ecx'
       }
       operands {
-        name: '0x7e'
+        name: '0x11'
       })";
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpected));
 }
@@ -107,6 +107,73 @@ TEST(OperandTranslatorTest, Avx512) {
         name: "xmmword ptr[RSI]"
       }
   )";
+  EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpectedFormat));
+}
+
+TEST(OperandTranslatorTest, Avx512StaticRounding) {
+  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"(
+      vendor_syntax {
+        mnemonic: "VADDPD"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 512
+          name: "zmm1"
+          tags {
+            name: "k1"
+          }
+          tags {
+            name: "z"
+          }
+          usage: USAGE_WRITE
+        }
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 512
+          name: "zmm2"
+          usage: USAGE_READ
+        }
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 512
+          name: "zmm3"
+          usage: USAGE_READ
+        }
+        operands {
+          addressing_mode: NO_ADDRESSING
+          encoding: X86_STATIC_PROPERTY_ENCODING
+          usage: USAGE_READ
+          tags {
+            name: "er"
+          }
+        }
+      }
+      available_in_64_bit: true
+      raw_encoding_specification: "EVEX.NDS.512.66.0F.W1 58 /r")");
+  constexpr char kExpectedFormat[] = R"(
+        mnemonic: "VADDPD"
+        operands {
+          name: "zmm1"
+          tags {
+            name: "k1"
+          }
+          tags {
+            name: "z"
+          }
+        }
+        operands {
+          name: "zmm2"
+        }
+        operands {
+          name: "zmm3"
+        }
+        operands {
+          tags {
+            name: "rn-sae"
+          }
+        })";
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpectedFormat));
 }
 

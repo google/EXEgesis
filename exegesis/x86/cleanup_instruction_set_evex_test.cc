@@ -691,6 +691,171 @@ TEST(AddEvexOpmaskUsageTest, Combined) {
                 kExpectedInstructionSetProto);
 }
 
+TEST(AddEvexPseudoOperandsTest, AddPseudoOperands) {
+  static constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 512
+            name: "zmm1"
+            tags {
+              name: "k1"
+            }
+            tags {
+              name: "z"
+            }
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: VEX_V_ENCODING
+            value_size_bits: 512
+            name: "zmm2"
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 512
+            name: "zmm3"
+            tags {
+              name: "er"
+            }
+            usage: USAGE_READ
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VCMPPD"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            name: "k1"
+            tags {
+              name: "k2"
+            }
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: VEX_V_ENCODING
+            value_size_bits: 512
+            name: "zmm2"
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 512
+            name: "zmm3"
+            tags {
+              name: "sae"
+            }
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 8
+            name: "imm8"
+            usage: USAGE_READ
+          }
+        }
+      }
+  )";
+  static constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "VADDPD"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 512
+            name: "zmm1"
+            tags {
+              name: "k1"
+            }
+            tags {
+              name: "z"
+            }
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: VEX_V_ENCODING
+            value_size_bits: 512
+            name: "zmm2"
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 512
+            name: "zmm3"
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: X86_STATIC_PROPERTY_ENCODING
+            tags {
+              name: "er"
+            }
+            usage: USAGE_READ
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "VCMPPD"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            name: "k1"
+            tags {
+              name: "k2"
+            }
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: VEX_V_ENCODING
+            value_size_bits: 512
+            name: "zmm2"
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 512
+            name: "zmm3"
+            usage: USAGE_READ
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: X86_STATIC_PROPERTY_ENCODING
+            usage: USAGE_READ
+            tags {
+              name: "sae"
+            }
+          }
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 8
+            name: "imm8"
+            usage: USAGE_READ
+          }
+        }
+      }
+  )";
+  TestTransform(AddEvexPseudoOperands, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis

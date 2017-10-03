@@ -116,7 +116,52 @@ TEST(InstructionSyntaxTest, BuildFromStrings) {
             }
           })",
        "vpaddb %xmm3, %xmm2, -69(%rsi, %rbp, 4) {k1} {z}"},
-  };
+      {"VCMPSD k1 {k2}, xmm2, xmm3, {sae}, 0x11",
+       R"(mnemonic: 'VCMPSD'
+          operands {
+            name: 'k1'
+            tags {
+              name: 'k2'
+            }
+          }
+          operands {
+            name: 'xmm2'
+          }
+          operands {
+            name: 'xmm3'
+          }
+          operands {
+            tags {
+              name: 'sae'
+            }
+          }
+          operands {
+            name: '0x11'
+          })",
+       "VCMPSD k1 {k2}, xmm2, xmm3, {sae}, 0x11"},
+      {"VADDPD zmm1 {k1} {z}, zmm2, zmm3, {rd-sae}",
+       R"(mnemonic: "VADDPD"
+         operands {
+           name: "zmm1"
+           tags {
+             name: "k1"
+           }
+           tags {
+             name: "z"
+           }
+         }
+         operands {
+           name: "zmm2"
+         }
+         operands {
+           name: "zmm3"
+         }
+         operands {
+           tags {
+             name: "rd-sae"
+           }
+         })",
+       "VADDPD zmm1 {k1} {z}, zmm2, zmm3, {rd-sae}"}};
   for (const auto& test_case : kTestCases) {
     const InstructionFormat proto = ParseAssemblyStringOrDie(test_case.input);
     EXPECT_THAT(proto, EqualsProto(test_case.expected_proto));

@@ -141,6 +141,10 @@ message InstructionOperand {
 
       // The operand is encoded using the VSIB scheme.
       VSIB_ENCODING = 0x4;
+
+      // The operand is a static property of the instruction that is represented
+      // as an operand in the syntax of the instruction.
+      X86_STATIC_PROPERTY_ENCODING = 0x5;
   }
   // clang-format on
 

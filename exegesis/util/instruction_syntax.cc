@@ -64,16 +64,26 @@ std::vector<string> SeparateOperandsWithCommas(const string& s) {
 }
 
 InstructionOperand ParseOperand(StringPiece source) {
+  StringPiece original_source = source;
   static const LazyRE2 kOperandNameRegexp = {R"( *([^{}]*[^{} ]) *)"};
-  static const LazyRE2 kTagRegexp = {R"( *\{([%\w]+)\} *)"};
+  static const LazyRE2 kTagRegexp = {R"( *\{([^}]+)\} *)"};
   InstructionOperand operand;
-  CHECK(RE2::Consume(&source, *kOperandNameRegexp, operand.mutable_name()))
-      << "Source: \"" << source << "\"";
+  // In the assembly syntax for AVX-512 features introduced in the Intel SDM,
+  // some tags ({*-sae} and {sae}) are separated from the other operands by a
+  // comma, even though there is no "real" operand. We parse this as an
+  // InstructionOperand with a list of tags and an empty name.
+  // Later, we CHECK() that at least one of the following holds:
+  // 1. The operand has a non-empty name.
+  // 2. The operand has one or more tags.
+  RE2::Consume(&source, *kOperandNameRegexp, operand.mutable_name());
   while (!source.empty()) {
     CHECK(
         RE2::Consume(&source, *kTagRegexp, operand.add_tags()->mutable_name()))
         << "Remaining source: \"" << source << "\"";
   }
+  CHECK(!operand.name().empty() || operand.tags_size() > 0)
+      << "Neither operand name nor any tags were found, source = \""
+      << original_source << "\"";
   return operand;
 }
 
@@ -122,7 +132,8 @@ string ConvertToCodeString(const InstructionFormat& instruction) {
   for (const auto& operand : instruction.operands()) {
     StrAppend(&result, run_once ? ", " : " ", operand.name());
     for (const InstructionOperand::Tag& tag : operand.tags()) {
-      StrAppend(&result, " {", tag.name(), "}");
+      if (!result.empty() && result.back() != ' ') result += ' ';
+      StrAppend(&result, "{", tag.name(), "}");
     }
     run_once = true;
   }

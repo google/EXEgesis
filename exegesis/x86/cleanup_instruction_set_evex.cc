@@ -14,9 +14,11 @@
 
 #include "exegesis/x86/cleanup_instruction_set_evex.h"
 
+#include <algorithm>
 #include <unordered_set>
 #include "strings/string.h"
 
+#include "exegesis/base/category_utils.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "glog/logging.h"
@@ -31,6 +33,7 @@ namespace x86 {
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
+using ::google::protobuf::RepeatedPtrField;
 
 Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -139,6 +142,84 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexOpmaskUsage, 5500);
+
+namespace {
+
+inline bool IsPseudoOperandTag(const InstructionOperand::Tag& tag) {
+  static const auto* const kPseudoOperandTags =
+      new std::unordered_set<string>({"er", "sae"});
+  return ContainsKey(*kPseudoOperandTags, tag.name());
+}
+
+bool OperandHasPseudoOperandTag(const InstructionOperand& operand) {
+  return std::any_of(operand.tags().begin(), operand.tags().end(),
+                     IsPseudoOperandTag);
+}
+
+bool InstructionHasPseudoOperandTag(const InstructionFormat& syntax) {
+  return std::any_of(syntax.operands().begin(), syntax.operands().end(),
+                     OperandHasPseudoOperandTag);
+}
+
+bool IsPseudoOperand(const InstructionOperand& operand) {
+  return operand.name().empty() &&
+         operand.addressing_mode() == InstructionOperand::NO_ADDRESSING &&
+         InCategory(operand.encoding(),
+                    InstructionOperand::X86_STATIC_PROPERTY_ENCODING);
+}
+
+void RemovePseudoOperandTags(InstructionOperand* operand) {
+  CHECK(operand != nullptr);
+  RepeatedPtrField<InstructionOperand::Tag>* const tags =
+      operand->mutable_tags();
+  tags->erase(std::remove_if(tags->begin(), tags->end(),
+                             [](const InstructionOperand::Tag& tag) {
+                               return IsPseudoOperandTag(tag);
+                             }),
+              tags->end());
+}
+
+}  // namespace
+
+Status AddEvexPseudoOperands(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    InstructionFormat* const vendor_syntax =
+        instruction.mutable_vendor_syntax();
+    if (!InstructionHasPseudoOperandTag(*vendor_syntax)) continue;
+
+    RepeatedPtrField<InstructionOperand> updated_operands;
+    bool instruction_has_pseudo_operand = false;
+    for (const InstructionOperand& operand : vendor_syntax->operands()) {
+      InstructionOperand* const updated_operand = updated_operands.Add();
+      *updated_operand = operand;
+      if (IsPseudoOperand(operand)) {
+        CHECK(!instruction_has_pseudo_operand) << instruction.DebugString();
+        instruction_has_pseudo_operand = true;
+        continue;
+      }
+      if (!OperandHasPseudoOperandTag(operand)) continue;
+      CHECK(!instruction_has_pseudo_operand) << instruction.DebugString();
+      instruction_has_pseudo_operand = true;
+
+      RemovePseudoOperandTags(updated_operand);
+      InstructionOperand* const pseudo_operand = updated_operands.Add();
+      pseudo_operand->set_addressing_mode(InstructionOperand::NO_ADDRESSING);
+      pseudo_operand->set_encoding(
+          InstructionOperand::X86_STATIC_PROPERTY_ENCODING);
+      pseudo_operand->set_usage(InstructionOperand::USAGE_READ);
+      for (const InstructionOperand::Tag& tag : operand.tags()) {
+        if (IsPseudoOperandTag(tag)) {
+          *pseudo_operand->add_tags() = tag;
+        }
+      }
+    }
+    vendor_syntax->mutable_operands()->Swap(&updated_operands);
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexPseudoOperands, 5500);
 
 }  // namespace x86
 }  // namespace exegesis
