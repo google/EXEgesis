@@ -128,6 +128,7 @@ cc_library(
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/util:bits",
         "//exegesis/util:status_util",
         "//strings",
         "//util/gtl:map_util",

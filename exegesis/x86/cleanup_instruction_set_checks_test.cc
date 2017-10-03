@@ -172,6 +172,252 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
   }
 }
 
+TEST(CheckSpecialCaseInstructions, CoveredInstructions) {
+  static constexpr struct {
+    const char* instruction_set;
+    const char* expected_error_message;
+  } kTestCases[] = {
+      {R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x4
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8E1
+             }
+           })",
+       "Opcode is ambigious: d8e1"},
+      {R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x4
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD861
+             }
+           })",
+       "Opcode is ambigious: d861"},
+      {R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD9
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x2
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD9D4
+             }
+           })",
+       "Opcode is ambigious: d9d4"},
+      {R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: OPCODE_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD9
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD964
+             }
+           })",
+       "Opcode is ambigious: d964"},
+  };
+  for (const auto& test_case : kTestCases) {
+    InstructionSetProto instruction_set =
+        ParseProtoFromStringOrDie<InstructionSetProto>(
+            test_case.instruction_set);
+    const Status status = CheckSpecialCaseInstructions(&instruction_set);
+    EXPECT_EQ(status.error_code(), INVALID_ARGUMENT);
+    EXPECT_THAT(status.error_message(),
+                HasSubstr(test_case.expected_error_message));
+  }
+}
+
+TEST(CheckSpecialCaseInstructions, NotCoveredInstructions) {
+  static constexpr const char* kTestCases[] =  //
+      {
+          R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x4
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8F1
+             }
+           })",
+          R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD9
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x2
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD9E4
+             }
+           })",
+          R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x5
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD861
+             }
+           })",
+          R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD8
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x5
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD361
+             }
+           })",
+          R"(instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD9
+               modrm_usage: OPCODE_EXTENSION_IN_MODRM
+               modrm_opcode_extension: 0x2
+             }
+           }
+           instructions {
+             vendor_syntax {
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               }
+             }
+             x86_encoding_specification {
+               opcode: 0xD964
+             }
+           })",
+      };
+  for (const auto& test_case : kTestCases) {
+    InstructionSetProto instruction_set =
+        ParseProtoFromStringOrDie<InstructionSetProto>(test_case);
+    EXPECT_OK(CheckSpecialCaseInstructions(&instruction_set));
+  }
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis
