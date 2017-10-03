@@ -23,8 +23,8 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::util::Status;
 using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::exegesis::util::Status;
 
 TEST(AddOperandInfoTest, AddInfo) {
   constexpr char kInstructionSetProto[] = R"(

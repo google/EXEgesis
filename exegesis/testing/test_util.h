@@ -75,9 +75,9 @@ namespace testing {
 
 namespace internal {
 
+using ::exegesis::util::error::Code;
 using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::Code;
 
 void AddIgnoredFieldsToDifferencer(
     const ::google::protobuf::Descriptor* descriptor,

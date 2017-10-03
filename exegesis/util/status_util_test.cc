@@ -22,12 +22,12 @@
 namespace exegesis {
 namespace {
 
+using ::exegesis::util::error::FAILED_PRECONDITION;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::FailedPreconditionError;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
-using ::exegesis::util::error::FAILED_PRECONDITION;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(UpdateStatusTest, UpdateOkWithOk) {
   Status overall_status;
