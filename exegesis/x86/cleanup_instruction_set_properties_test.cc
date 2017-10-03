@@ -67,6 +67,27 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
       }
       instructions {
         vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 64
+            name: "r64"
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 64
+            name: "CR0-CR7"
+            usage: USAGE_READ
+          }
+        }
+        available_in_64_bit: true
+        raw_encoding_specification: "0F 20/r"
+      }
+      instructions {
+        vendor_syntax {
           mnemonic: 'MOV'
           operands {
             name: 'r64'
@@ -82,6 +103,28 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
           mnemonic: 'HLT'
         }
         protection_mode: 0
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 64
+            name: "r64"
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 64
+            name: "CR0-CR7"
+            usage: USAGE_READ
+          }
+        }
+        protection_mode: 0
+        available_in_64_bit: true
+        raw_encoding_specification: "0F 20/r"
       }
       instructions {
         protection_mode: -1

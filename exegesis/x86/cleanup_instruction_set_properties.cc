@@ -58,7 +58,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingCpuFlags, 1000);
 namespace {
 
 // Returns the list of protection modes for priviledged instructions.
-const std::unordered_map<string, int>& GetProtectionModes() {
+const std::unordered_map<string, int>& GetProtectionModesByMnemonic() {
   static const std::unordered_map<string, int>* const kProtectionModes =
       new std::unordered_map<string, int>({
           // -----------------------
@@ -112,13 +112,32 @@ const std::unordered_map<string, int>& GetProtectionModes() {
   return *kProtectionModes;
 }
 
+// Returns the list of protection modes for privileged instructions that are not
+// covered by GetProtectionModesByMnemonic().
+const std::unordered_map<string, int>& GetProtectionModesByEncoding() {
+  static const std::unordered_map<string, int>* const kProtectionModes =
+      new std::unordered_map<string, int>({
+          // MOV from/to debug register.
+          {"0F 21/r", 0},
+          {"0F 23 /r", 0},
+          // MOV from/to control registers.
+          {"0F 20/r", 0},
+          {"0F 22 /r", 0},
+      });
+  return *kProtectionModes;
+}
+
 }  // namespace
 
 Status AddProtectionModes(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
-    const int* mode = FindOrNull(GetProtectionModes(),
+    const int* mode = FindOrNull(GetProtectionModesByMnemonic(),
                                  instruction.vendor_syntax().mnemonic());
+    if (mode == nullptr) {
+      mode = FindOrNull(GetProtectionModesByEncoding(),
+                        instruction.raw_encoding_specification());
+    }
     // Set default protection_mode to something negative to make sure
     // instruction is not marked as protected.
     instruction.set_protection_mode(-1);
