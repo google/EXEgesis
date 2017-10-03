@@ -257,5 +257,26 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructionsWithRexPrefix,
                                    1005);
 
+Status RemoveX87InstructionsWithGeneralVersions(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const std::unordered_set<string> kRemovedEncodingSpecifications = {
+      "D8 D1", "D8 D9", "DE C9", "DE E9", "D9 C9"};
+  google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
+      instruction_set->mutable_instructions();
+  instructions->erase(
+      std::remove_if(instructions->begin(), instructions->end(),
+                     [&kRemovedEncodingSpecifications](
+                         const InstructionProto& instruction) {
+                       return ContainsKey(
+                           kRemovedEncodingSpecifications,
+                           instruction.raw_encoding_specification());
+                     }),
+      instructions->end());
+
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveX87InstructionsWithGeneralVersions, 0);
+
 }  // namespace x86
 }  // namespace exegesis

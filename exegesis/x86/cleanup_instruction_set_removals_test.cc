@@ -657,6 +657,28 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
   }
 }
 
+TEST(RemoveX87InstructionsWithGeneralVersions, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        raw_encoding_specification: "D8 D0+i"
+      }
+      instructions {
+        raw_encoding_specification: "D8 D1"
+      }
+      instructions {
+        raw_encoding_specification: "D8 /2"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        raw_encoding_specification: "D8 D0+i"
+      }
+      instructions {
+        raw_encoding_specification: "D8 /2"
+      })";
+  TestTransform(RemoveX87InstructionsWithGeneralVersions, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis

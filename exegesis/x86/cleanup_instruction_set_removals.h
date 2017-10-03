@@ -75,6 +75,14 @@ Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set);
 Status RemoveDuplicateInstructionsWithRexPrefix(
     InstructionSetProto* instruction_set);
 
+// Some of the instructions like "FXCH" has multiple variants that cover each
+// other, for example encoding for "FXCH st(0), st(i)" is "D9 C8+i" which swaps
+// contents of ST(0) with ST(i), but there is also one version with "D9 C9",
+// which is "FXCH st(0), st(1)" and implicitly included in the previous case. We
+// delete those of second type.
+Status RemoveX87InstructionsWithGeneralVersions(
+    InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 
