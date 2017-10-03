@@ -41,6 +41,9 @@ Status AddOperandInfo(InstructionSetProto* instruction_set);
 // registers (e.g. in ADD AL, imm8) are usually missing usage in the SDM.
 Status AddMissingOperandUsage(InstructionSetProto* instruction_set);
 
+// Adds RegisterClass to every operand in vendor_syntax.
+Status AddRegisterClassToOperands(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 

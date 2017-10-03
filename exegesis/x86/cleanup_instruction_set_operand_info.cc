@@ -25,6 +25,7 @@
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "exegesis/proto/registers.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/status_util.h"
 #include "exegesis/x86/encoding_specification.h"
@@ -49,6 +50,8 @@ using EncodingMap = std::unordered_map<string, InstructionOperand::Encoding>;
 using AddressingModeMap =
     std::unordered_map<string, InstructionOperand::AddressingMode>;
 using ValueSizeMap = std::unordered_map<string, uint32_t>;
+using RegisterClassMap =
+    std::unordered_map<string, RegisterProto::RegisterClass>;
 
 // Contains mapping from operand names to their encoding types. Note that this
 // mapping is incomplete, because it contains the mapping only for the cases in
@@ -165,9 +168,11 @@ const std::pair<const char*, InstructionOperand::Encoding> kEncodingMap[] = {
     // are always encoded using modrm.reg.
     {"Sreg", InstructionOperand::MODRM_REG_ENCODING},
     {"ST(0)", InstructionOperand::IMPLICIT_ENCODING},
-    // NOTE(ondrasej): In the 2015-09 version of the manual, ST(i) registers
-    // are always encoded in the opcode of the instruction.
-    {"ST(i)", InstructionOperand::OPCODE_ENCODING},
+    // NOTE(ondrasej): In the 2017-07 version of the manual, ST(i) registers
+    // are always encoded in the opcode of the instruction, but it is always at
+    // the end of second byte, so we generalize them to ModR/M bytes. Therefore
+    // ST(i) registers get encoded in RM field.
+    {"ST(i)", InstructionOperand::MODRM_RM_ENCODING},
     {"vm32x", InstructionOperand::VSIB_ENCODING},
     {"vm32y", InstructionOperand::VSIB_ENCODING},
     {"vm32z", InstructionOperand::VSIB_ENCODING},
@@ -715,6 +720,146 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
     {"zmm3/m512", 512},
 };
 
+constexpr const std::pair<const char*, RegisterProto::RegisterClass>
+    kRegisterClassMap[] = {
+        {"AL", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
+        {"CL", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
+        {"AX", RegisterProto::GENERAL_PURPOSE_REGISTER_16_BIT},
+        {"DX", RegisterProto::GENERAL_PURPOSE_REGISTER_16_BIT},
+        {"EAX", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+        {"RAX", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+
+        {"r8", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
+        {"r16", RegisterProto::GENERAL_PURPOSE_REGISTER_16_BIT},
+        {"r32", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+        {"r64", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+
+        {"m", RegisterProto::INVALID_REGISTER_CLASS},
+        {"mem", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"m8", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m16", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m32", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m64", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m128", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m256", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m512", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"mib", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"mm", RegisterProto::MMX_STACK_REGISTER},
+        {"mm1", RegisterProto::MMX_STACK_REGISTER},
+        {"mm2", RegisterProto::MMX_STACK_REGISTER},
+
+        {"ST(0)", RegisterProto::FLOATING_POINT_STACK_REGISTER},
+        {"ST(i)", RegisterProto::FLOATING_POINT_STACK_REGISTER},
+
+        {"m16:16", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m16:32", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m16:64", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"m16&16", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m16&32", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m16&64", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m32&32", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"m32fp", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m64fp", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"m16int", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m32int", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m64int", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"m80fp", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"imm8", RegisterProto::INVALID_REGISTER_CLASS},
+        {"imm16", RegisterProto::INVALID_REGISTER_CLASS},
+        {"imm32", RegisterProto::INVALID_REGISTER_CLASS},
+        {"imm64", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"moffs8", RegisterProto::INVALID_REGISTER_CLASS},
+        {"moffs16", RegisterProto::INVALID_REGISTER_CLASS},
+        {"moffs32", RegisterProto::INVALID_REGISTER_CLASS},
+        {"moffs64", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"xmm", RegisterProto::VECTOR_REGISTER_128_BIT},
+        {"xmm0", RegisterProto::VECTOR_REGISTER_128_BIT},
+        {"xmm1", RegisterProto::VECTOR_REGISTER_128_BIT},
+        {"xmm2", RegisterProto::VECTOR_REGISTER_128_BIT},
+        {"xmm3", RegisterProto::VECTOR_REGISTER_128_BIT},
+        {"xmm4", RegisterProto::VECTOR_REGISTER_128_BIT},
+
+        {"ymm", RegisterProto::VECTOR_REGISTER_256_BIT},
+        {"ymm1", RegisterProto::VECTOR_REGISTER_256_BIT},
+        {"ymm2", RegisterProto::VECTOR_REGISTER_256_BIT},
+        {"ymm3", RegisterProto::VECTOR_REGISTER_256_BIT},
+        {"ymm4", RegisterProto::VECTOR_REGISTER_256_BIT},
+
+        {"zmm", RegisterProto::VECTOR_REGISTER_512_BIT},
+        {"zmm1", RegisterProto::VECTOR_REGISTER_512_BIT},
+        {"zmm2", RegisterProto::VECTOR_REGISTER_512_BIT},
+        {"zmm3", RegisterProto::VECTOR_REGISTER_512_BIT},
+
+        {"k", RegisterProto::MASK_REGISTER},
+        {"k1", RegisterProto::MASK_REGISTER},
+        {"k2", RegisterProto::MASK_REGISTER},
+        {"k3", RegisterProto::MASK_REGISTER},
+
+        {"bnd", RegisterProto::SPECIAL_REGISTER},
+        {"bnd1", RegisterProto::SPECIAL_REGISTER},
+        {"bnd2", RegisterProto::SPECIAL_REGISTER},
+
+        {"BYTE PTR [RSI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"BYTE PTR [RDI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"WORD PTR [RSI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"WORD PTR [RDI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"DWORD PTR [RSI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"DWORD PTR [RDI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"QWORD PTR [RSI]", RegisterProto::INVALID_REGISTER_CLASS},
+        {"QWORD PTR [RDI]", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"rel8", RegisterProto::INVALID_REGISTER_CLASS},
+        {"rel16", RegisterProto::INVALID_REGISTER_CLASS},
+        {"rel32", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"CR0-CR7", RegisterProto::SPECIAL_REGISTER_CONTROL},
+
+        {"DR0-DR7", RegisterProto::SPECIAL_REGISTER_DEBUG},
+
+        {"FS", RegisterProto::SPECIAL_REGISTER_SEGMENT},
+        {"GS", RegisterProto::SPECIAL_REGISTER_SEGMENT},
+        {"Sreg", RegisterProto::SPECIAL_REGISTER_SEGMENT},
+
+        {"vm32x", RegisterProto::INVALID_REGISTER_CLASS},
+        {"vm32y", RegisterProto::INVALID_REGISTER_CLASS},
+        {"vm32z", RegisterProto::INVALID_REGISTER_CLASS},
+        {"vm64x", RegisterProto::INVALID_REGISTER_CLASS},
+        {"vm64y", RegisterProto::INVALID_REGISTER_CLASS},
+        {"vm64z", RegisterProto::INVALID_REGISTER_CLASS},
+
+        // Some operands are nameless.
+        {"", RegisterProto::INVALID_REGISTER_CLASS},
+
+        // There were no specifications for the ones below in the manual
+        // versions I looked at, but they are still used with a few
+        // instructions. Assumed what they are.
+        {"m80bcd", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"r32a", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+        {"r32b", RegisterProto::GENERAL_PURPOSE_REGISTER_32_BIT},
+        {"r64a", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+        {"r64b", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
+
+        {"m2byte", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m14byte", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m28byte", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m94byte", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m108byte", RegisterProto::INVALID_REGISTER_CLASS},
+        {"m512byte", RegisterProto::INVALID_REGISTER_CLASS},
+
+        {"1", RegisterProto::INVALID_REGISTER_CLASS},
+        {"3", RegisterProto::INVALID_REGISTER_CLASS}};
+
 }  // namespace
 
 namespace {
@@ -912,6 +1057,34 @@ Status AssignEncodingRandomlyFromAvailableEncodings(
 }
 
 }  // namespace
+
+Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const RegisterClassMap register_class_map(std::begin(kRegisterClassMap),
+                                            std::end(kRegisterClassMap));
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    InstructionFormat* const vendor_syntax =
+        instruction.mutable_vendor_syntax();
+    for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
+      const RegisterProto::RegisterClass* const register_class =
+          FindOrNull(register_class_map, operand.name());
+      if (register_class == nullptr) {
+        return InvalidArgumentError(
+            StrCat("Unexpected operand name:", operand.name(),
+                   "\nInstruction:", instruction.DebugString()));
+      } else {
+        operand.set_register_class(*register_class);
+      }
+    }
+  }
+  return OkStatus();
+}
+// We are running this after alternatives transform has ran. Because an
+// operand with name r/m32 is ambigious. It can use both a 32 bit general
+// purpose register with direct addressing or use a 64 bit general purpose
+// register to perform indirect accessing.
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddRegisterClassToOperands, 7000);
 
 Status AddOperandInfo(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);

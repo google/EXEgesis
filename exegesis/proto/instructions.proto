@@ -219,6 +219,9 @@ message InstructionOperand {
     USAGE_READ_WRITE = 3;
   }
   Usage usage = 6;
+
+  // Holds the register_class to which the operand belongs.
+  RegisterProto.RegisterClass register_class = 8;
 }
 
 // Contains a list of measurements of the CPU events like the number of uoos

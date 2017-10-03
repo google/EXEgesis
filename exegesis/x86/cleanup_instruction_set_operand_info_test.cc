@@ -56,7 +56,7 @@ TEST(AddOperandInfoTest, AddInfo) {
         x86_encoding_specification {
           legacy_prefixes {
           }
-          operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+          modrm_usage: OPCODE_EXTENSION_IN_MODRM
         }
       }
       instructions {
@@ -115,14 +115,14 @@ TEST(AddOperandInfoTest, AddInfo) {
           operands {
             name: 'ST(i)'
             addressing_mode: DIRECT_ADDRESSING
-            encoding: OPCODE_ENCODING
+            encoding: MODRM_RM_ENCODING
             value_size_bits: 80
           }
         }
         x86_encoding_specification {
           legacy_prefixes {
           }
-          operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+          modrm_usage: OPCODE_EXTENSION_IN_MODRM
         }
       }
       instructions {
@@ -188,7 +188,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
           }
           operands {
             name: 'ST(i)'
-            encoding: OPCODE_ENCODING
+            encoding: MODRM_RM_ENCODING
           }
         }
         x86_encoding_specification {
@@ -274,6 +274,57 @@ TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
         }
       })";
   TestTransform(AddMissingOperandUsage, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(AddRegisterClassToOperandsTest, AddRegisterClassToOperands) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'STUFF'
+          operands {
+            name: 'r64'
+          }
+          operands {
+            name: 'imm64'
+          }
+          operands {
+            name: 'm8'
+          }
+          operands {
+            name: 'k'
+          }
+          operands {
+            name: 'xmm1'
+          }
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: 'STUFF'
+          operands {
+            name: 'r64'
+            register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+          }
+          operands {
+            name: 'imm64'
+          }
+          operands {
+            name: 'm8'
+            register_class: INVALID_REGISTER_CLASS
+          }
+          operands {
+            name: 'k'
+            register_class: MASK_REGISTER
+          }
+          operands {
+            name: 'xmm1'
+            register_class: VECTOR_REGISTER_128_BIT
+          }
+        }
+      })";
+  TestTransform(AddRegisterClassToOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
