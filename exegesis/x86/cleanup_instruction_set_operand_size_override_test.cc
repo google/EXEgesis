@@ -105,6 +105,233 @@ TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
+TEST(AddOperandSizeOverrideVersionForSpecialCaseInstructions,
+     AddInstructionWithPrefix) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r/m16"
+          }
+          operands {
+            name: "Sreg"
+          }
+        }
+        raw_encoding_specification: "8C /r"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SLDT"
+          operands {
+            name: "r/m16"
+          }
+        }
+        raw_encoding_specification: "0F 00 /0"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "STR"
+          operands {
+            name: "r/m16"
+          }
+        }
+        raw_encoding_specification: "0F 00 /1"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SLDT"
+          operands {
+            name: "r64/m16"
+          }
+        }
+        raw_encoding_specification: "0F 00 /0"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r/m64"
+          }
+          operands {
+            name: "Sreg"
+          }
+        }
+        raw_encoding_specification: "8C /r"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SAR"
+          operands {
+            name: "r/m32"
+          }
+          operands {
+            name: "cl"
+          }
+        }
+        raw_encoding_specification: "D3 /7"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r/m16"
+          }
+          operands {
+            name: "Sreg"
+          }
+        }
+        raw_encoding_specification: "8C /r"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SLDT"
+          operands {
+            name: "r/m16"
+          }
+        }
+        raw_encoding_specification: "0F 00 /0"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "STR"
+          operands {
+            name: "r/m16"
+          }
+        }
+        raw_encoding_specification: "0F 00 /1"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SLDT"
+          operands {
+            name: "r64/m16"
+          }
+        }
+        raw_encoding_specification: "0F 00 /0"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r/m64"
+          }
+          operands {
+            name: "Sreg"
+          }
+        }
+        raw_encoding_specification: "8C /r"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SAR"
+          operands {
+            name: "r/m32"
+          }
+          operands {
+            name: "cl"
+          }
+        }
+        raw_encoding_specification: "D3 /7"
+        x86_encoding_specification {
+          legacy_prefixes {
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r/m16"
+          }
+          operands {
+            name: "Sreg"
+          }
+        }
+        raw_encoding_specification: "66 8C /r"
+        x86_encoding_specification {
+          legacy_prefixes {
+            has_mandatory_operand_size_override_prefix: true
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "SLDT"
+          operands {
+            name: "r/m16"
+          }
+        }
+        raw_encoding_specification: "66 0F 00 /0"
+        x86_encoding_specification {
+          legacy_prefixes {
+            has_mandatory_operand_size_override_prefix: true
+          }
+        }
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "STR"
+          operands {
+            name: "r/m16"
+          }
+        }
+        raw_encoding_specification: "66 0F 00 /1"
+        x86_encoding_specification {
+          legacy_prefixes {
+            has_mandatory_operand_size_override_prefix: true
+          }
+        }
+      })";
+  TestTransform(AddOperandSizeOverrideVersionForSpecialCaseInstructions,
+                kInstructionSetProto, kExpectedInstructionSetProto);
+}
+
 TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
@@ -244,7 +471,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
           }
           modrm_usage: FULL_MODRM
         }
-      })";
+      }
+      )";
   constexpr char kExpectedInstructionSetProto[] = R"(
       instructions {
         vendor_syntax {

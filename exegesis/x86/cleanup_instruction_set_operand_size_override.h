@@ -48,6 +48,11 @@ Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
 Status AddOperandSizeOverrideToSpecialCaseInstructions(
     InstructionSetProto* instruction_set);
 
+// Adds another version with operand size override for instructions that
+// existence of an operand size override is optional.
+Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
+    InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 

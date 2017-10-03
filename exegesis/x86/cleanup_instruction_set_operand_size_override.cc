@@ -240,5 +240,52 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefix, 5000);
 
+Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const std::unordered_set<string> k16BitOperands = {"r16", "r/m16"};
+  // Following instructions can have operand size override prefix or not,
+  // because they implicitly operate on 16 bit data. Since, it is up to compiler
+  // to add the prefix or not we are adding both versions to be able to match
+  // them in any case.
+  const std::unordered_map<string, int> kOperandIndex = {
+      {"8C /r", 0},     // MOV Sreg to r/m16; MOV Sreg to r/m64
+      {"0F 00 /0", 0},  // SLDT r/m16; SLDT r64/m16
+      {"0F 00 /1", 0},  // STR r/m16; STR r64/m16
+  };
+  std::vector<InstructionProto> instructions_to_add;
+
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    int32_t operand_index = std::numeric_limits<int32_t>::max();
+    if (FindCopy(kOperandIndex, instruction.raw_encoding_specification(),
+                 &operand_index)) {
+      const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+      if (operand_index >= vendor_syntax.operands_size()) {
+        return InvalidArgumentError(
+            StrCat("Unexpected number of operands of instruction: ",
+                   instruction.raw_encoding_specification()));
+      }
+      // We can't rely just on the information in value_size_bits, because
+      // technically, even the 32 or 64-bit versions of the instruction often
+      // use a 16-bit value, and just leave the other bits undefined (or
+      // zeroed). Instead, we need to look at the string representation of the
+      // type of the operand.
+      if (ContainsKey(k16BitOperands,
+                      vendor_syntax.operands(operand_index).name())) {
+        instructions_to_add.push_back(instruction);
+      }
+    }
+  }
+
+  for (InstructionProto& instruction : instructions_to_add) {
+    AddOperandSizeOverrideToInstructionProto(&instruction);
+    *instruction_set->add_instructions() = instruction;
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(
+    AddOperandSizeOverrideVersionForSpecialCaseInstructions, 3000);
+
 }  // namespace x86
 }  // namespace exegesis
