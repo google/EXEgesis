@@ -323,8 +323,8 @@ void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page) {
       << "Can't apply patch " << patch.ShortDebugString();
   switch (patch.action_case()) {
     case PdfPagePatch::ACTION_NOT_SET:
-      CHECK(false) << "action must be one of replacement or remove_cell for "
-                   << patch.ShortDebugString();
+      LOG(FATAL) << "action must be one of replacement or remove_cell for "
+                 << patch.ShortDebugString();
       break;
     case PdfPagePatch::kReplacement:
       *text = patch.replacement();

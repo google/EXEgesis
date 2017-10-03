@@ -86,7 +86,7 @@ bool QuadTree::Insert(size_t index, const Point& position) {
   if (quadrant_nw_->Insert(index, position)) return true;
   if (quadrant_se_->Insert(index, position)) return true;
   if (quadrant_sw_->Insert(index, position)) return true;
-  CHECK(false);
+  LOG(FATAL);
   return false;
 }
 
@@ -190,7 +190,7 @@ Vec2F GetDirectionVector(Orientation orientation) {
     case Orientation_INT_MAX_SENTINEL_DO_NOT_USE_:
       break;
   }
-  CHECK(false);
+  LOG(FATAL);
   return Vec2F(0, 0);
 }
 
@@ -208,7 +208,7 @@ Orientation RotateClockwise90(Orientation orientation) {
     case Orientation_INT_MAX_SENTINEL_DO_NOT_USE_:
       break;
   }
-  CHECK(false);
+  LOG(FATAL);
   return NORTH;
 }
 }  // namespace pdf
