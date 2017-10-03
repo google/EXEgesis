@@ -835,6 +835,60 @@ TEST(ParseEncodingSpecificationsTest, ParseErrors) {
   EXPECT_EQ(status.error_code(), INVALID_ARGUMENT);
 }
 
+TEST(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,
+     SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        raw_encoding_specification: "D8 F0+i"
+      }
+      instructions {
+        raw_encoding_specification: "DC C0+i"
+      }
+      instructions {
+        raw_encoding_specification: "D8 /6"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        raw_encoding_specification: "D8 /6"
+      }
+      instructions {
+        raw_encoding_specification: "DC /0"
+      }
+      instructions {
+        raw_encoding_specification: "D8 /6"
+      })";
+  TestTransform(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,
+                kInstructionSetProto, kExpectedInstructionSetProto);
+}
+
+TEST(AddRexWPrefixedVersionOfStr, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        raw_encoding_specification: "0F 00 /1"
+      }
+      instructions {
+        raw_encoding_specification: "66 0F 38 20 /r"
+      }
+      instructions {
+        raw_encoding_specification: "D8 /6"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        raw_encoding_specification: "0F 00 /1"
+      }
+      instructions {
+        raw_encoding_specification: "66 0F 38 20 /r"
+      }
+      instructions {
+        raw_encoding_specification: "D8 /6"
+      }
+      instructions {
+        raw_encoding_specification: "REX.W 0F 00 /1"
+      })";
+  TestTransform(AddRexWPrefixedVersionOfStr, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis

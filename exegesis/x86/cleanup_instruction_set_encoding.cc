@@ -358,5 +358,82 @@ Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
 // specification cleanups, but before running any other transform.
 REGISTER_INSTRUCTION_SET_TRANSFORM(ParseEncodingSpecifications, 1010);
 
+Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const std::unordered_map<string, string> kReplacements = {
+      {"D8 C0+i", "D8 /0"},  // FADD store to ST(0)
+      {"DC C0+i", "DC /0"},  // FADD store to ST(i)
+      {"DE C0+i", "DE /0"},  // FADDP
+      {"D8 D0+i", "D8 /2"},  // FCOM
+      {"D8 D8+i", "D8 /3"},  // FCOMP
+      {"DF F0+i", "DF /6"},  // FCOMIP
+      {"D8 F0+i", "D8 /6"},  // FDIV ST(0) = ST(i) / ST(0)
+      {"D8 F8+i", "D8 /7"},  // FDIV ST(0) = ST(0) / ST(i)
+      {"DC F0+i", "DC /6"},  // FDIV ST(i) = ST(i) / ST(0)
+      {"DC F8+i", "DC /7"},  // FDIV ST(i) = ST(0) / ST(i)
+      {"DE F0+i", "DE /6"},  // FDIVRP
+      {"DE F8+i", "DE /7"},  // FDIVP
+      {"DD C0+i", "DD /0"},  // FFREE
+      {"D9 C0+i", "D9 /0"},  // FLD
+      {"D8 C8+i", "D8 /1"},  // FMUL ST(0) = ST(0) * ST(i)
+      {"DC C8+i", "DC /1"},  // FMUL ST(i) = ST(0) * ST(i)
+      {"DE C8+i", "DE /1"},  // FMULP
+      {"DD D0+i", "DD /2"},  // FST
+      {"DD D8+i", "DD /3"},  // FSTP
+      {"D8 E0+i", "D8 /4"},  // FSUB ST(0) = ST(i) - ST(0)
+      {"D8 E8+i", "D8 /5"},  // FDIV ST(0) = ST(0) - ST(i)
+      {"DC E0+i", "DC /4"},  // FDIV ST(i) = ST(i) - ST(0)
+      {"DC E8+i", "DC /5"},  // FDIV ST(i) = ST(0) - ST(i)
+      {"DE E8+i", "DE /5"},  // FSUBP
+      {"DE E0+i", "DE /4"},  // FSUBRP
+      {"DD E0+i", "DD /4"},  // FUCOM
+      {"DD E8+i", "DD /5"},  // FUCOMP
+      {"DB E8+i", "DB /5"},  // FUCOMI
+      {"DF E8+i", "DF /5"},  // FUCOMIP
+      {"D9 C8+i", "D9 /1"},  // FUCOMIP
+      {"DA C0+i", "DA /0"},  // FCMOVb
+      {"DA C8+i", "DA /1"},  // FCMOVe
+      {"DA D0+i", "DA /2"},  // FCMOVbe
+      {"DA D8+i", "DA /3"},  // FCMOVu
+      {"DB C0+i", "DB /0"},  // FCMOVnb
+      {"DB C8+i", "DB /1"},  // FCMOVne
+      {"DB D0+i", "DB /2"},  // FCMOVnbe
+      {"DB D8+i", "DB /3"},  // FCMOVnu
+      {"DB F0+i", "DB /6"},  // FCOMI
+  };
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    const string* const replacement_raw_encoding_specification =
+        FindOrNull(kReplacements, instruction.raw_encoding_specification());
+    if (replacement_raw_encoding_specification == nullptr) continue;
+    instruction.set_raw_encoding_specification(
+        *replacement_raw_encoding_specification);
+  }
+  return OkStatus();
+}
+// We must convert the encoding specifications after running all other encoding
+// specification cleanups, but before running any other transform.
+REGISTER_INSTRUCTION_SET_TRANSFORM(
+    ConvertEncodingSpecificationOfX87FpuWithDirectAddressing, 1005);
+
+Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  constexpr char kStrEncoding[] = "0F 00 /1";
+
+  for (const InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    if (instruction.raw_encoding_specification() == kStrEncoding) {
+      InstructionProto str_with_rex = instruction;
+      AddRexWPrefixToInstructionProto(&str_with_rex);
+      *instruction_set->add_instructions() = str_with_rex;
+      break;
+    }
+  }
+
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddRexWPrefixedVersionOfStr, 1000);
+
 }  // namespace x86
 }  // namespace exegesis
