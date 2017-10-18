@@ -90,6 +90,11 @@ message InstructionOperand {
 
         // The memory is addressed using the destination index register RDI.
         INDIRECT_ADDRESSING_BY_RDI = 0x32;
+
+      // The operand uses the same rules for computing a memory location as the
+      // indirect addressing operands, but it does not access the data at the
+      // location. This is used for example by the LEA instructions on x86-64.
+      LOAD_EFFECTIVE_ADDRESS = 0x4;
   }
   // clang-format on
 

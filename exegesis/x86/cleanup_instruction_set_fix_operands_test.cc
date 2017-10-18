@@ -534,6 +534,61 @@ TEST(FixOperandsOfLodsAndStosTest, Lods) {
                 kExpectedInstructionSetProto);
 }
 
+TEST(FixOperandsOfSgdtAndSidtTest, FixOperands) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "SGDT"
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            name: "m"
+            usage: USAGE_WRITE
+          }
+        }
+        raw_encoding_specification: "0F 01 /0"
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "INVLPG"
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            name: "m"
+            usage: USAGE_READ
+          }
+        }
+        raw_encoding_specification: "0F 01/7"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "SGDT"
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            name: "m16&64"
+            usage: USAGE_WRITE
+          }
+        }
+        raw_encoding_specification: "0F 01 /0"
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "INVLPG"
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            name: "m"
+            usage: USAGE_READ
+          }
+        }
+        raw_encoding_specification: "0F 01/7"
+      })";
+  TestTransform(FixOperandsOfSgdtAndSidt, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 TEST(FixOperandsOfVMovqTest, FixOperand) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {

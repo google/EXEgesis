@@ -238,6 +238,27 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLodsScasAndStos, 2000);
 
+Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const std::unordered_set<string> kEncodings = {"0F 01 /0", "0F 01 /1"};
+  constexpr char kMemoryOperandName[] = "m";
+  constexpr char kUpdatedMemoryOperandName[] = "m16&64";
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    if (ContainsKey(kEncodings, instruction.raw_encoding_specification())) {
+      InstructionFormat* const vendor_syntax =
+          instruction.mutable_vendor_syntax();
+      for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
+        if (operand.name() == kMemoryOperandName) {
+          operand.set_name(kUpdatedMemoryOperandName);
+        }
+      }
+    }
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfSgdtAndSidt, 2000);
+
 Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kVMovQEncoding[] = "VEX.128.F3.0F.WIG 7E /r";

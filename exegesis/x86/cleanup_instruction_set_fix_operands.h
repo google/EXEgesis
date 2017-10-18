@@ -66,6 +66,14 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set);
 // changng the memory operand to something more explicit.
 Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set);
 
+// Updates the operands of SGTD and SIDT instructions. In the Intel manual, they
+// are listed as SGTD m and SITD m, suggesting that they compute the effective
+// address of the operand, but do not actually access the memory at this
+// address. However, this is not the case, and they both write an 80-bit value
+// at the operand. According to another part of the SDM, the correct operand
+// type of these instructions is m16&32.
+Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set);
+
 // Fixes the operands of VMOVQ. The Intel manual lists two variants of VMOVQ for
 // XMM registers: one that reads the value from another XMM registers, and one
 // that reads it from a location in memory. Both of these instructions use the

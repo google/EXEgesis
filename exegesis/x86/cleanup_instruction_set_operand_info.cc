@@ -298,7 +298,7 @@ const std::pair<const char*, InstructionOperand::AddressingMode>
         {"rel16", InstructionOperand::NO_ADDRESSING},
         {"rel32", InstructionOperand::NO_ADDRESSING},
         {"moffs8", InstructionOperand::NO_ADDRESSING},
-        {"m", InstructionOperand::INDIRECT_ADDRESSING},
+        {"m", InstructionOperand::LOAD_EFFECTIVE_ADDRESS},
         {"m16", InstructionOperand::INDIRECT_ADDRESSING},
         {"m16&16", InstructionOperand::INDIRECT_ADDRESSING},
         {"m16&32", InstructionOperand::INDIRECT_ADDRESSING},
