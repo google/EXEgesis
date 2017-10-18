@@ -105,29 +105,28 @@ TEST(DisassemblerTest, InInstructions) {
       "00000000; 6d; insd dword ptr es:[rdi], dx; insl %dx, %es:(%rdi); INSL",
       disasm.DisassembleHexString("6d"));
   EXPECT_EQ(
-      "00000000; f3; rep; rep; REP_PREFIX"
-      "\n00000001; 6c; insb byte ptr es:[rdi], dx; insb %dx, %es:(%rdi); INSB",
+      "00000000; f36c; rep\n insb byte ptr es:[rdi], dx; "
+      "rep\n insb %dx, %es:(%rdi); INSB",
       disasm.DisassembleHexString("f36c"));
   EXPECT_EQ(
-      "00000000; f3; rep; rep; REP_PREFIX\n"
-      "00000001; 666d; insw word ptr es:[rdi], dx; insw %dx, %es:(%rdi); INSW",
+      "00000000; f3666d; rep\n insw word ptr es:[rdi], dx; rep\n "
+      "insw %dx, %es:(%rdi); INSW",
       disasm.DisassembleHexString("f3666d"));
   EXPECT_EQ(
-      "00000000; f3; rep; rep; REP_PREFIX"
-      "\n00000001; 6d; insd dword ptr es:[rdi], dx; insl %dx, %es:(%rdi); INSL",
+      "00000000; f36d; rep\n insd dword ptr es:[rdi], dx; rep\n "
+      "insl %dx, %es:(%rdi); INSL",
       disasm.DisassembleHexString("f36d"));
   EXPECT_EQ(
-      "00000000; f2; repne; repne; REPNE_PREFIX"
-      "\n00000001; 6c; insb byte ptr es:[rdi], dx; insb %dx, %es:(%rdi); INSB",
+      "00000000; f26c; repne\n insb byte ptr es:[rdi], dx; "
+      "repne\n insb %dx, %es:(%rdi); INSB",
       disasm.DisassembleHexString("f26c"));
   EXPECT_EQ(
-      "00000000; f2; repne; repne; REPNE_PREFIX"
-      "\n00000001; 6d; insd dword ptr es:[rdi], dx; insl %dx, %es:(%rdi); INSL",
+      "00000000; f26d; repne\n insd dword ptr es:[rdi], dx; "
+      "repne\n insl %dx, %es:(%rdi); INSL",
       disasm.DisassembleHexString("f26d"));
   EXPECT_EQ(
-      "00000000; f2; repne; repne; REPNE_PREFIX"
-      "\n00000001; 666d; insw word ptr es:[rdi], dx; insw %dx, %es:(%rdi); "
-      "INSW",
+      "00000000; f2666d; repne\n insw word ptr es:[rdi], dx; "
+      "repne\n insw %dx, %es:(%rdi); INSW",
       disasm.DisassembleHexString("f2666d"));
 }
 
