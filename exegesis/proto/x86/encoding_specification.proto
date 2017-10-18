@@ -280,6 +280,8 @@ message EncodingSpecification {
 
   // The opcode of the instruction. The opcode contains only the opcode bytes,
   // but not the mandatory prefixes that might be required by the instruction.
+  // This is in big-endian form. For example, the opcode "0F AF" is represented
+  // as 0x0FAF, not 0xAF0F.
   uint32 opcode = 1;
 
   // Specifies whether there is an operand encoded in the opcode.
