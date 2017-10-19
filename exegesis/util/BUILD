@@ -145,6 +145,7 @@ cc_test(
     srcs = ["status_util_test.cc"],
     deps = [
         ":status_util",
+        "//exegesis/testing:test_util",
         "//util/task:status",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

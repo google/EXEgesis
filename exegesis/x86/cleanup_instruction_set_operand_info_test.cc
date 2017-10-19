@@ -15,6 +15,7 @@
 #include "exegesis/x86/cleanup_instruction_set_operand_info.h"
 
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
+#include "exegesis/testing/test_util.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
 #include "util/task/status.h"
@@ -23,6 +24,7 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
+using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::Status;
 
@@ -201,8 +203,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
     InstructionSetProto instruction_set;
     ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
         instruction_set_proto, &instruction_set));
-    const Status transform_status = AddOperandInfo(&instruction_set);
-    EXPECT_EQ(transform_status.error_code(), INVALID_ARGUMENT);
+    EXPECT_THAT(AddOperandInfo(&instruction_set), StatusIs(INVALID_ARGUMENT));
   }
 }
 

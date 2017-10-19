@@ -25,6 +25,7 @@ namespace x86 {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::Status;
 using ::testing::HasSubstr;
@@ -165,10 +166,9 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(
             test_case.instruction_set);
-    const Status status = CheckOpcodeFormat(&instruction_set);
-    EXPECT_EQ(status.error_code(), INVALID_ARGUMENT);
-    EXPECT_THAT(status.error_message(),
-                HasSubstr(test_case.expected_error_message));
+    EXPECT_THAT(CheckOpcodeFormat(&instruction_set),
+                StatusIs(INVALID_ARGUMENT,
+                         HasSubstr(test_case.expected_error_message)));
   }
 }
 
@@ -280,10 +280,9 @@ TEST(CheckSpecialCaseInstructions, CoveredInstructions) {
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(
             test_case.instruction_set);
-    const Status status = CheckSpecialCaseInstructions(&instruction_set);
-    EXPECT_EQ(status.error_code(), INVALID_ARGUMENT);
-    EXPECT_THAT(status.error_message(),
-                HasSubstr(test_case.expected_error_message));
+    EXPECT_THAT(CheckSpecialCaseInstructions(&instruction_set),
+                StatusIs(INVALID_ARGUMENT,
+                         HasSubstr(test_case.expected_error_message)));
   }
 }
 

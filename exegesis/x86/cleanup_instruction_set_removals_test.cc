@@ -15,13 +15,16 @@
 #include "exegesis/x86/cleanup_instruction_set_removals.h"
 
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
+#include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
+using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 
 TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
@@ -651,9 +654,8 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
     SCOPED_TRACE(instruction_set_source);
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(instruction_set_source);
-    const Status result =
-        RemoveDuplicateInstructionsWithRexPrefix(&instruction_set);
-    EXPECT_EQ(result.error_code(), INVALID_ARGUMENT);
+    EXPECT_THAT(RemoveDuplicateInstructionsWithRexPrefix(&instruction_set),
+                StatusIs(INVALID_ARGUMENT));
   }
 }
 

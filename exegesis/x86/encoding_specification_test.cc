@@ -37,25 +37,23 @@ namespace x86 {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::IsOk;
+using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::util::StatusOr;
+using ::testing::Not;
+using ::testing::ResultOf;
 using ::testing::UnorderedElementsAreArray;
 
 void CheckParser(const string& specification_str,
                  const string& expected_specification_proto) {
-  const StatusOr<EncodingSpecification> specification_or_status =
-      ParseEncodingSpecification(specification_str);
   SCOPED_TRACE(StrCat("Specification: ", specification_str));
-  ASSERT_OK(specification_or_status.status());
-  EXPECT_THAT(specification_or_status.ValueOrDie(),
-              EqualsProto(expected_specification_proto));
+  EXPECT_THAT(ParseEncodingSpecification(specification_str),
+              IsOkAndHolds(EqualsProto(expected_specification_proto)));
 }
 
 void CheckParserFailure(const string& specification_str) {
   SCOPED_TRACE(specification_str);
-  EncodingSpecification specification;
-  const StatusOr<EncodingSpecification> specification_or_status =
-      ParseEncodingSpecification(specification_str);
-  EXPECT_FALSE(specification_or_status.ok());
+  EXPECT_THAT(ParseEncodingSpecification(specification_str), Not(IsOk()));
 }
 
 TEST(EncodingSpecificationParserTest, FooBarDoesNotParse) {
@@ -460,16 +458,11 @@ TEST(GetAvailableEncodingsTest, GetEncodings) {
         InstructionOperand::MODRM_REG_ENCODING}},
       {"EVEX.512.66.0F38.W0 C6 /6 /vsib", {InstructionOperand::VSIB_ENCODING}}};
   for (const auto& test_case : kTestCases) {
-    const StatusOr<EncodingSpecification> specification_or_status =
-        ParseEncodingSpecification(test_case.encoding_specification);
-    ASSERT_OK(specification_or_status.status());
-    const EncodingSpecification& specification =
-        specification_or_status.ValueOrDie();
-    const InstructionOperandEncodingMultiset available_encodings =
-        GetAvailableEncodings(specification);
     EXPECT_THAT(
-        available_encodings,
-        UnorderedElementsAreArray(test_case.expected_available_encodings));
+        ParseEncodingSpecification(test_case.encoding_specification),
+        IsOkAndHolds(ResultOf(GetAvailableEncodings,
+                              UnorderedElementsAreArray(
+                                  test_case.expected_available_encodings))));
   }
 }
 

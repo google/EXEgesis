@@ -14,6 +14,7 @@
 
 #include "exegesis/util/status_util.h"
 
+#include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "util/task/canonical_errors.h"
@@ -22,6 +23,7 @@
 namespace exegesis {
 namespace {
 
+using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::FAILED_PRECONDITION;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::FailedPreconditionError;
@@ -39,16 +41,14 @@ TEST(UpdateStatusTest, UpdateOkWithError) {
   constexpr char kErrorMessage[] = "An error!";
   Status overall_status;
   UpdateStatus(&overall_status, FailedPreconditionError(kErrorMessage));
-  EXPECT_EQ(overall_status.error_code(), FAILED_PRECONDITION);
-  EXPECT_EQ(overall_status.error_message(), kErrorMessage);
+  EXPECT_THAT(overall_status, StatusIs(FAILED_PRECONDITION, kErrorMessage));
 }
 
 TEST(UpdateStatusTest, UpdateErrorWithOk) {
   constexpr char kErrorMessage[] = "There was already an error";
   Status overall_status = FailedPreconditionError(kErrorMessage);
   UpdateStatus(&overall_status, OkStatus());
-  EXPECT_EQ(overall_status.error_code(), FAILED_PRECONDITION);
-  EXPECT_EQ(overall_status.error_message(), kErrorMessage);
+  EXPECT_THAT(overall_status, StatusIs(FAILED_PRECONDITION, kErrorMessage));
 }
 
 TEST(UpdateStatusTest, UpdateErrorWithError) {
@@ -56,8 +56,7 @@ TEST(UpdateStatusTest, UpdateErrorWithError) {
   constexpr char kSecondErrorMessage[] = "This is the second error message";
   Status overall_status = InvalidArgumentError(kFirstErrorMessage);
   UpdateStatus(&overall_status, FailedPreconditionError(kSecondErrorMessage));
-  EXPECT_EQ(overall_status.error_code(), INVALID_ARGUMENT);
-  EXPECT_EQ(overall_status.error_message(), kFirstErrorMessage);
+  EXPECT_THAT(overall_status, StatusIs(INVALID_ARGUMENT, kFirstErrorMessage));
 }
 
 }  // namespace

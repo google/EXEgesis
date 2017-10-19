@@ -23,30 +23,24 @@
 namespace exegesis {
 namespace {
 
+using ::exegesis::testing::IsOkAndHolds;
+using ::exegesis::testing::StatusIs;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::ElementsAreArray;
-using util::Status;
-using util::StatusOr;
 
 void CheckInput(const string& hex_string,
                 const std::vector<uint8_t>& expected_bytes) {
   SCOPED_TRACE(StrCat("hex_string = ", hex_string));
-  const StatusOr<std::vector<uint8_t>> status_or_bytes =
-      ParseHexString(hex_string);
-  ASSERT_OK(status_or_bytes.status());
-
-  EXPECT_THAT(status_or_bytes.ValueOrDie(), ElementsAreArray(expected_bytes));
+  EXPECT_THAT(ParseHexString(hex_string),
+              IsOkAndHolds(ElementsAreArray(expected_bytes)));
 }
 
 void CheckError(const string& hex_string,
                 const string& expected_unparsed_part) {
   SCOPED_TRACE(StrCat("hex_string = ", hex_string));
-  const StatusOr<std::vector<uint8_t>> status_or_bytes =
-      ParseHexString(hex_string);
-  ASSERT_FALSE(status_or_bytes.ok());
-  const Status& status = status_or_bytes.status();
-  EXPECT_TRUE(util::IsInvalidArgument(status));
-  EXPECT_EQ(StrCat("Could not parse: ", expected_unparsed_part),
-            status.error_message());
+  EXPECT_THAT(ParseHexString(hex_string),
+              StatusIs(INVALID_ARGUMENT,
+                       StrCat("Could not parse: ", expected_unparsed_part)));
 }
 
 TEST(ParseHexStringTest, TestEmptyString) { CheckInput("", {}); }

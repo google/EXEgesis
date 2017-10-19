@@ -30,6 +30,7 @@ namespace x86 {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::StatusOr;
 using ::testing::IsEmpty;
@@ -174,9 +175,7 @@ TEST(CpuIdDumpTest, FromProto) {
 
 TEST(CpuIdDumpTest, FromEmptyString) {
   constexpr char kDump[] = R"()";
-  const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(kDump);
-  EXPECT_FALSE(dump_or_status.ok());
-  EXPECT_EQ(dump_or_status.status().error_code(), INVALID_ARGUMENT);
+  EXPECT_THAT(CpuIdDump::FromString(kDump), StatusIs(INVALID_ARGUMENT));
 }
 
 TEST(CpuIdDumpTest, FromString) {

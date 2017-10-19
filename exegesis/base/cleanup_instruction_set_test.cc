@@ -30,6 +30,8 @@ namespace {
 
 using ::exegesis::InstructionProto;
 using ::exegesis::InstructionSetProto;
+using ::exegesis::testing::IsOkAndHolds;
+using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
@@ -61,10 +63,8 @@ TEST(RunTransformWithDiffTest, NoDifference) {
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
   // There is only one instruction in the proto, so SortByVendorSyntax leaves
   // the proto unchanged.
-  const StatusOr<string> diff_or_status =
-      RunTransformWithDiff(SortByVendorSyntax, &instruction_set);
-  ASSERT_OK(diff_or_status.status());
-  EXPECT_EQ(diff_or_status.ValueOrDie(), "");
+  EXPECT_THAT(RunTransformWithDiff(SortByVendorSyntax, &instruction_set),
+              IsOkAndHolds(""));
 }
 
 // A dummy transform that deletes the second instruction in the instruction set,
@@ -98,10 +98,8 @@ TEST(RunTransformWithDiffTest, WithDifference) {
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
-  const StatusOr<string> diff_or_status =
-      RunTransformWithDiff(DeleteSecondInstruction, &instruction_set);
-  ASSERT_OK(diff_or_status.status());
-  EXPECT_EQ(diff_or_status.ValueOrDie(), kExpectedDiff);
+  EXPECT_THAT(RunTransformWithDiff(DeleteSecondInstruction, &instruction_set),
+              IsOkAndHolds(kExpectedDiff));
 }
 
 // A dummy transform that immediately returns an error.
@@ -120,10 +118,9 @@ TEST(RunTransformWithDiffTest, WithError) {
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
-  const StatusOr<string> diff_or_status =
-      RunTransformWithDiff(ReturnErrorInsteadOfTransforming, &instruction_set);
-  EXPECT_EQ(diff_or_status.status().error_code(), INVALID_ARGUMENT);
-  EXPECT_EQ(diff_or_status.status().error_message(), "I do not transform!");
+  EXPECT_THAT(
+      RunTransformWithDiff(ReturnErrorInsteadOfTransforming, &instruction_set),
+      StatusIs(INVALID_ARGUMENT, "I do not transform!"));
 }
 
 TEST(SortByVendorSyntaxTest, Sort) {

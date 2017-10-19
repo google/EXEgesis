@@ -185,6 +185,7 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_encoding",
         "//exegesis/base:cleanup_instruction_set_test_utils",
+        "//exegesis/testing:test_util",
         "//util/task:status",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -292,6 +293,7 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_operand_info",
         "//exegesis/base:cleanup_instruction_set_test_utils",
+        "//exegesis/testing:test_util",
         "//util/task:status",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -390,6 +392,7 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_removals",
         "//exegesis/base:cleanup_instruction_set_test_utils",
+        "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
