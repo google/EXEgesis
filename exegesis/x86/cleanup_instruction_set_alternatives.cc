@@ -16,6 +16,7 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include "strings/string.h"
 
@@ -23,6 +24,7 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "glog/logging.h"
 #include "strings/str_cat.h"
+#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -162,10 +164,8 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
              // {"m64bcst", INDIRECT_ADDRESSING, 128},
          }},
         {"ymm1/m256",
-         {
-             {"ymm1", DIRECT_ADDRESSING, 256},
-             {"m256", INDIRECT_ADDRESSING, 256},
-         }},
+         {{"ymm1", DIRECT_ADDRESSING, 256},
+          {"m256", INDIRECT_ADDRESSING, 256}}},
         {"ymm2/m256/m64bcst",
          {
              {"ymm2", DIRECT_ADDRESSING, 256},
@@ -191,20 +191,14 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
              // {"m64bcst", INDIRECT_ADDRESSING, 256},
          }},
         {"zmm1/m512",
-         {
-             {"zmm1", DIRECT_ADDRESSING, 512},
-             {"m512", INDIRECT_ADDRESSING, 512},
-         }},
+         {{"zmm1", DIRECT_ADDRESSING, 512},
+          {"m512", INDIRECT_ADDRESSING, 512}}},
         {"zmm2/m512",
-         {
-             {"zmm2", DIRECT_ADDRESSING, 512},
-             {"m512", INDIRECT_ADDRESSING, 512},
-         }},
+         {{"zmm2", DIRECT_ADDRESSING, 512},
+          {"m512", INDIRECT_ADDRESSING, 512}}},
         {"zmm3/m512",
-         {
-             {"zmm3", DIRECT_ADDRESSING, 512},
-             {"m512", INDIRECT_ADDRESSING, 512},
-         }},
+         {{"zmm3", DIRECT_ADDRESSING, 512},
+          {"m512", INDIRECT_ADDRESSING, 512}}},
         {"zmm2/m512/m32bcst",
          {
              {"zmm2", DIRECT_ADDRESSING, 512},
@@ -248,6 +242,46 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
   return *kAlternatives;
 }
 
+// Returns the list of operand names that are not modified by AddAlternatives,
+// i.e. operands that do not need to be split into alternatives. Each operand
+// name encountered by AddAlternatives must be defined either in
+// GetOperandAlternativesByName(), or in GetUnmodifiedOperandNames(), so that we
+// can catch new operand names whenever a new version of the SDM is released.
+const std::unordered_set<string> GetUnmodifiedOperandNames() {
+  static const auto* const kFallThroughOperandNames =
+      new std::unordered_set<string>(
+          {// Concrete operands.
+           "AL", "AX", "EAX", "RAX", "CL", "CR0-CR7", "DR0-DR7", "DX", "FS",
+           "GS", "ST(0)",
+
+           // Concrete immediate values.
+           "1", "3",
+
+           // Immediate values.
+           "imm8", "imm16", "imm32", "imm64", "moffs8", "moffs16", "moffs32",
+           "moffs64", "rel8", "rel16", "rel32",
+
+           // Memory references.
+           "m", "mem", "mib", "m8", "m16", "m16:16", "m16:32", "m16:64",
+           "m16&64", "m16int", "m32", "m32fp", "m32int", "m64", "m64fp",
+           "m64int", "m80bcd", "m80fp", "m128", "m256", "m512", "m2byte",
+           "m28byte", "m108byte", "m512byte", "vm32x", "vm32y", "vm32z",
+           "vm64x", "vm64y", "vm64z", "BYTE PTR [RDI]", "BYTE PTR [RSI]",
+           "DWORD PTR [RDI]", "DWORD PTR [RSI]", "QWORD PTR [RSI]",
+           "QWORD PTR [RDI]", "WORD PTR [RSI]", "WORD PTR [RDI]",
+
+           // Registers.
+           "bnd", "bnd1", "bnd2", "bnd3", "k1", "k2", "k3", "mm", "mm1", "mm2",
+           "r8", "r16", "r32", "r32a", "r32b", "r64", "r64a", "r64b", "ST(i)",
+           "Sreg", "xmm", "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "ymm1",
+           "ymm2", "ymm4", "zmm1", "zmm2",
+
+           // Pseudo-operands: they have an empty operand name, but a non-empty
+           // list of tags.
+           ""});
+  return *kFallThroughOperandNames;
+}
+
 }  // namespace
 
 Status AddAlternatives(InstructionSetProto* instruction_set) {
@@ -255,7 +289,10 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
   Status status = OkStatus();
   const OperandAlternativeMap& alternatives_by_name =
       GetOperandAlternativesByName();
+  const std::unordered_set<string>& unmodified_operand_names =
+      GetUnmodifiedOperandNames();
   std::vector<InstructionProto> new_instructions;
+  std::set<string> unknown_operand_names;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -264,9 +301,13 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
          ++operand_index) {
       InstructionOperand* const operand =
           vendor_syntax->mutable_operands(operand_index);
+      if (ContainsKey(unmodified_operand_names, operand->name())) continue;
       const std::vector<OperandAlternative>* const alternatives =
           FindOrNull(alternatives_by_name, operand->name());
-      if (alternatives == nullptr) continue;
+      if (alternatives == nullptr) {
+        unknown_operand_names.insert(operand->name());
+        continue;
+      }
 
       // The only encoding that allows alternatives is modrm.rm. An operand with
       // alternatives anywhere else means that there is an error in the data.
@@ -307,6 +348,12 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
   }
   for (InstructionProto& new_instruction : new_instructions) {
     instruction_set->add_instructions()->Swap(&new_instruction);
+  }
+  if (!unknown_operand_names.empty()) {
+    const string error_message =
+        StrCat("Encountered unknown operand names: ",
+               strings::Join(unknown_operand_names, ", "));
+    return InvalidArgumentError(error_message);
   }
   return status;
 }
