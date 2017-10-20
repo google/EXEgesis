@@ -16,8 +16,8 @@
 #define EXEGESIS_UTIL_STRINGS_H_
 
 #include <cstdint>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "base/stringprintf.h"
 #include "strings/string_view.h"
@@ -36,7 +36,7 @@ using ::exegesis::util::StatusOr;
 // Example input formats:
 // * 0x0,0x1,0x2,0x3
 // * 00 AB 01 BC
-StatusOr<std::vector<uint8_t>> ParseHexString(const string& hex_string);
+StatusOr<std::vector<uint8_t>> ParseHexString(const std::string& hex_string);
 
 // Converts the given block of binary data to a human-readable string format.
 // This function produces a sequence of two-letter hexadecimal codes separated
@@ -44,8 +44,8 @@ StatusOr<std::vector<uint8_t>> ParseHexString(const string& hex_string);
 //
 // Example output format: 00 AB 01 BC.
 template <typename Range>
-string ToHumanReadableHexString(const Range& binary_data) {
-  string buffer;
+std::string ToHumanReadableHexString(const Range& binary_data) {
+  std::string buffer;
   for (const uint8_t encoding_byte : binary_data) {
     if (!buffer.empty()) {
       buffer.push_back(' ');
@@ -60,8 +60,8 @@ string ToHumanReadableHexString(const Range& binary_data) {
 //
 // Example output format: 0x00, 0xAB, 0x01, 0xBC.
 template <typename Range>
-string ToPastableHexString(const Range& binary_data) {
-  string buffer;
+std::string ToPastableHexString(const Range& binary_data) {
+  std::string buffer;
   for (const uint8_t encoding_byte : binary_data) {
     if (!buffer.empty()) {
       buffer.append(", ");

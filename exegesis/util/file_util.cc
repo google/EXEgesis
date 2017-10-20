@@ -28,19 +28,19 @@ constexpr size_t kBufferSize = 1 << 20;
 
 // Returns true if 'source_or_target' should be treated as a file name; returns
 // false if STDIN/STDOUT should be used instead.
-bool IsFileName(const string& source_or_target) {
+bool IsFileName(const std::string& source_or_target) {
   return source_or_target != "-";
 }
 
 }  // namespace
 
-string ReadTextFromFileOrStdInOrDie(const string& source) {
+std::string ReadTextFromFileOrStdInOrDie(const std::string& source) {
   CHECK(!source.empty());
   const bool is_file = IsFileName(source);
   FILE* const input = is_file ? fopen(source.c_str(), "rb") : stdin;
   CHECK(input != nullptr) << "Could not open '" << source << "'";
   std::unique_ptr<char[]> buffer(new char[kBufferSize]);
-  string out;
+  std::string out;
   size_t read_items = 0;
   do {
     read_items = fread(buffer.get(), sizeof(char), kBufferSize, input);
@@ -51,7 +51,8 @@ string ReadTextFromFileOrStdInOrDie(const string& source) {
   return out;
 }
 
-void WriteTextToFileOrStdOutOrDie(const string& target, const string& data) {
+void WriteTextToFileOrStdOutOrDie(const std::string& target,
+                                  const std::string& data) {
   CHECK(!target.empty());
   const bool is_file = IsFileName(target);
   FILE* const output = is_file ? fopen(target.c_str(), "wb") : stdout;

@@ -19,7 +19,7 @@
 
 #include <map>
 #include <memory>
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 
@@ -29,7 +29,7 @@ namespace pdf {
 // Parses a string of the form <path/to/filename>(:<first>-<last>)?
 // e.g. "/path/to/file.pdf"
 // e.g. "/path/to/file.pdf:12-25"
-PdfParseRequest ParseRequestOrDie(const string& spec);
+PdfParseRequest ParseRequestOrDie(const std::string& spec);
 
 // Parses a PDF file described by a PdfParseEntry.
 //

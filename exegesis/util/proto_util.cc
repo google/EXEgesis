@@ -20,7 +20,7 @@
 
 namespace exegesis {
 
-void ReadTextProtoOrDie(const string& filename,
+void ReadTextProtoOrDie(const std::string& filename,
                         google::protobuf::Message* message) {
   CHECK(!filename.empty());
   FILE* const input_file = fopen(filename.c_str(), "rb");
@@ -34,7 +34,7 @@ void ReadTextProtoOrDie(const string& filename,
   fclose(input_file);
 }
 
-void ReadBinaryProtoOrDie(const string& filename,
+void ReadBinaryProtoOrDie(const std::string& filename,
                           google::protobuf::Message* message) {
   CHECK(!filename.empty());
   FILE* const input_file = fopen(filename.c_str(), "rb");
@@ -45,12 +45,12 @@ void ReadBinaryProtoOrDie(const string& filename,
   fclose(input_file);
 }
 
-void ParseProtoFromStringOrDie(const string& text,
+void ParseProtoFromStringOrDie(const std::string& text,
                                google::protobuf::Message* message) {
   CHECK(google::protobuf::TextFormat::ParseFromString(text, message));
 }
 
-void WriteTextProtoOrDie(const string& filename,
+void WriteTextProtoOrDie(const std::string& filename,
                          const google::protobuf::Message& message) {
   CHECK(!filename.empty());
   FILE* const output_file = fopen(filename.c_str(), "wb");
@@ -62,7 +62,7 @@ void WriteTextProtoOrDie(const string& filename,
   fclose(output_file);
 }
 
-void WriteBinaryProtoOrDie(const string& filename,
+void WriteBinaryProtoOrDie(const std::string& filename,
                            const google::protobuf::Message& message) {
   CHECK(!filename.empty());
   FILE* const output_file = fopen(filename.c_str(), "wb");

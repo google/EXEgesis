@@ -23,7 +23,7 @@ namespace exegesis {
 
 using ::google::protobuf::LowerString;
 
-inline int StringCaseCompare(const string& s1, const string& s2) {
+inline int StringCaseCompare(const std::string& s1, const std::string& s2) {
   return strcasecmp(s1.c_str(), s2.c_str());
 }
 

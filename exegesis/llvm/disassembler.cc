@@ -34,7 +34,7 @@
 
 namespace exegesis {
 
-Disassembler::Disassembler(const string& triple_name)
+Disassembler::Disassembler(const std::string& triple_name)
     : triple_name_(triple_name.c_str()) {}
 
 void Disassembler::Init() {
@@ -108,10 +108,10 @@ void Disassembler::Init() {
 
 int Disassembler::Disassemble(const std::vector<uint8_t>& bytes,
                               unsigned* const llvm_opcode,
-                              string* const llvm_mnemonic,
-                              std::vector<string>* const llvm_operands,
-                              string* const intel_instruction,
-                              string* const att_instruction) {
+                              std::string* const llvm_mnemonic,
+                              std::vector<std::string>* const llvm_operands,
+                              std::string* const intel_instruction,
+                              std::string* const att_instruction) {
   *llvm_opcode = 0;
   llvm_mnemonic->clear();
   llvm_operands->clear();
@@ -180,15 +180,15 @@ uint8_t HexValue(char c) {
 }
 }  // namespace
 
-string Disassembler::DisassembleHexString(const string& hex_bytes) {
-  string result;
+std::string Disassembler::DisassembleHexString(const std::string& hex_bytes) {
+  std::string result;
   const int size = hex_bytes.size() / 2;
   CHECK_EQ(0, hex_bytes.size() % 2);
   unsigned llvm_opcode;
-  string llvm_mnemonic;
-  std::vector<string> llvm_operands;
-  string intel_instruction;
-  string att_instruction;
+  std::string llvm_mnemonic;
+  std::vector<std::string> llvm_operands;
+  std::string intel_instruction;
+  std::string att_instruction;
   uint64_t instruction_size = size;
   constexpr int kMaxX86InstructionSize = 15;
   std::vector<uint8_t> buffer(kMaxX86InstructionSize);

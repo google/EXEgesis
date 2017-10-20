@@ -70,18 +70,18 @@ bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
 
 namespace {
 
-std::unordered_map<string, std::unique_ptr<const MicroArchitecture>>*
+std::unordered_map<std::string, std::unique_ptr<const MicroArchitecture>>*
 MicroArchitecturesById() {
   static auto* const result =
-      new std::unordered_map<string,
+      new std::unordered_map<std::string,
                              std::unique_ptr<const MicroArchitecture>>();
   return result;
 }
 
-std::unordered_map<string, const MicroArchitecture*>*
+std::unordered_map<std::string, const MicroArchitecture*>*
 MicroArchitecturesByCpuModelId() {
   static auto* const result =
-      new std::unordered_map<string, const MicroArchitecture*>();
+      new std::unordered_map<std::string, const MicroArchitecture*>();
   return result;
 }
 
@@ -98,11 +98,11 @@ void RegisterMicroArchitectures::RegisterFromProto(
        microarchitectures.microarchitectures()) {
     auto microarchitecture =
         gtl::MakeUnique<MicroArchitecture>(microarchitecture_proto);
-    for (const string& model_id : microarchitecture_proto.model_ids()) {
+    for (const std::string& model_id : microarchitecture_proto.model_ids()) {
       InsertOrDie(microarchitectures_by_cpu_model_id, model_id,
                   microarchitecture.get());
     }
-    const string& microarchitecture_id = microarchitecture_proto.id();
+    const std::string& microarchitecture_id = microarchitecture_proto.id();
     const auto insert_result = microarchitectures_by_id->emplace(
         microarchitecture_id, std::move(microarchitecture));
     if (!insert_result.second) {
@@ -114,19 +114,19 @@ void RegisterMicroArchitectures::RegisterFromProto(
 }  // namespace internal
 
 const MicroArchitecture* MicroArchitecture::FromId(
-    const string& microarchitecture_id) {
+    const std::string& microarchitecture_id) {
   const std::unique_ptr<const MicroArchitecture>* const result =
       FindOrNull(*MicroArchitecturesById(), microarchitecture_id);
   return result ? result->get() : nullptr;
 }
 
 const MicroArchitecture& MicroArchitecture::FromIdOrDie(
-    const string& microarchitecture_id) {
+    const std::string& microarchitecture_id) {
   return *CHECK_NOTNULL(FromId(microarchitecture_id));
 }
 
 const MicroArchitecture* MicroArchitecture::FromCpuModelId(
-    const string& cpu_model_id) {
+    const std::string& cpu_model_id) {
   const auto* const result =
       FindPtrOrNull(*MicroArchitecturesByCpuModelId(), cpu_model_id);
   if (result == nullptr) {
@@ -136,13 +136,13 @@ const MicroArchitecture* MicroArchitecture::FromCpuModelId(
 }
 
 const MicroArchitecture& MicroArchitecture::FromCpuModelIdOrDie(
-    const string& cpu_model_id) {
+    const std::string& cpu_model_id) {
   return *CHECK_NOTNULL(FromCpuModelId(cpu_model_id));
 }
 
 StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuModelId(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
-    const string& cpu_model_id) {
+    const std::string& cpu_model_id) {
   const auto* const microarchitecture =
       MicroArchitecture::FromCpuModelId(cpu_model_id);
   if (microarchitecture == nullptr) {

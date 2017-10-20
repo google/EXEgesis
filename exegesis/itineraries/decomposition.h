@@ -16,6 +16,7 @@
 #define EXEGESIS_ITINERARIES_DECOMPOSITION_H_
 
 #include <algorithm>
+#include <string>
 #include <vector>
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/base/port_mask.h"
@@ -23,7 +24,6 @@
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "ortools/linear_solver/linear_solver.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "strings/string.h"
 #include "util/task/status.h"
 
 // Mixed Integer Programming model for decomposing an observation into execution
@@ -137,7 +137,7 @@ class DecompositionSolver {
 
   // Returns a string detailing the port masks used by each micro-operation,
   // and the allocation of each execution port to each micro-operation.
-  string DebugString() const;
+  std::string DebugString() const;
 
   // Returns the result as list of micro-operations.
   MicroOps GetMicroOps() const;
@@ -179,7 +179,7 @@ class DecompositionSolver {
   operations_research::MPModelProto GetModelProto() const;
 
   // Returns the MIP to solve in LP format.
-  string GetModelLPString() const;
+  std::string GetModelLPString() const;
 
  private:
   // Fills in the results (port_masks_list_, port_loads_, error_values_) at the

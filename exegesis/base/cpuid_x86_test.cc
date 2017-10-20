@@ -15,9 +15,9 @@
 #include "exegesis/base/cpuid_x86.h"
 
 #include <initializer_list>
+#include <string>
 #include <unordered_set>
 #include <utility>
-#include "strings/string.h"
 
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
@@ -195,7 +195,7 @@ TEST(CpuIdDumpTest, FromString) {
 }
 
 void TestToCpuInfo(
-    const string& dump_string, const string& expected_cpu_model,
+    const std::string& dump_string, const std::string& expected_cpu_model,
     const std::initializer_list<const char*>& expected_features) {
   const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(dump_string);
   ASSERT_OK(dump_or_status.status());

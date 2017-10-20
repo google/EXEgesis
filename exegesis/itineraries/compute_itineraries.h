@@ -17,9 +17,9 @@
 #ifndef EXEGESIS_ITINERARIES_COMPUTE_ITINERARIES_H_
 #define EXEGESIS_ITINERARIES_COMPUTE_ITINERARIES_H_
 
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"

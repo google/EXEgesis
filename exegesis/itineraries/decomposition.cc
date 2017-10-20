@@ -19,9 +19,9 @@
 #include <cmath>
 #include <iterator>
 #include <numeric>
+#include <string>
 #include <unordered_map>
 #include <utility>
-#include "strings/string.h"
 
 #include "base/stringprintf.h"
 #include "exegesis/base/microarchitecture.h"
@@ -75,14 +75,14 @@ MPModelProto DecompositionSolver::GetModelProto() const {
   return model;
 }
 
-string DecompositionSolver::GetModelLPString() const {
-  string lp_string;
+std::string DecompositionSolver::GetModelLPString() const {
+  std::string lp_string;
   solver_->ExportModelAsLpFormat(/*obfuscated=*/false, &lp_string);
   return lp_string;
 }
 
 Status DecompositionSolver::Run(const ObservationVector& observations) {
-  std::unordered_map<string, double> key_val;
+  std::unordered_map<std::string, double> key_val;
   for (const auto& observation : observations.observations()) {
     key_val[observation.event_name()] = observation.measurement();
   }
@@ -388,9 +388,9 @@ void DecompositionSolver::FillInResults() {
   }
 }
 
-string DecompositionSolver::DebugString() const {
+std::string DecompositionSolver::DebugString() const {
   const double kThreshold = 1e-6;
-  string output;
+  std::string output;
   DCHECK_EQ(port_masks_list_.size(), port_loads_.size());
   for (const int port_mask_index : signature_) {
     const PortMask& port_mask =

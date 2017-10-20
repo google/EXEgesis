@@ -17,8 +17,8 @@
 #include <stdint.h>
 #include <cstdlib>
 #include <memory>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "base/stringprintf.h"
 #include "gflags/gflags.h"
@@ -145,8 +145,8 @@ std::string DumpMCInstToString(const llvm::MCInst* instruction) {
     *buffer += ", " #property;                              \
   }
 
-string DumpSDepToString(const llvm::SDep& sdep) {
-  string buffer = "SDep: ";
+std::string DumpSDepToString(const llvm::SDep& sdep) {
+  std::string buffer = "SDep: ";
   StrAppend(&buffer, "\n  Kind: ", sdep.getKind());
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isNormalMemory, &buffer);
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isBarrier, &buffer);
@@ -164,13 +164,13 @@ string DumpSDepToString(const llvm::SDep& sdep) {
 
 #undef ADD_SDEP_PROPERTY_TO_BUFFER
 
-string DumpMCOperandToString(const llvm::MCOperand& operand,
-                             const llvm::MCRegisterInfo* register_info) {
+std::string DumpMCOperandToString(const llvm::MCOperand& operand,
+                                  const llvm::MCRegisterInfo* register_info) {
   CHECK(register_info != nullptr);
   // TODO(ondrasej): We also need to detect memory operands properly. However,
   // this might be tricky because this information is not represented explicitly
   // in the LLVM MC layer.
-  string debug_string;
+  std::string debug_string;
   if (operand.isValid()) {
     if (operand.isImm()) {
       debug_string = StrCat("Imm(", operand.getImm(), ")");
@@ -193,16 +193,16 @@ string DumpMCOperandToString(const llvm::MCOperand& operand,
   return debug_string;
 }
 
-string DumpMCInstToString(const llvm::MCInst& instruction,
-                          const llvm::MCInstrInfo* mc_instruction_info,
-                          const llvm::MCRegisterInfo* register_info) {
+std::string DumpMCInstToString(const llvm::MCInst& instruction,
+                               const llvm::MCInstrInfo* mc_instruction_info,
+                               const llvm::MCRegisterInfo* register_info) {
   CHECK(mc_instruction_info != nullptr);
   CHECK(register_info != nullptr);
   const unsigned opcode = instruction.getOpcode();
   const llvm::MCInstrDesc& instruction_descriptor =
       mc_instruction_info->get(opcode);
 
-  string debug_string =
+  std::string debug_string =
       mc_instruction_info->getName(instruction.getOpcode()).str();
   for (int i = 0; i < instruction.getNumOperands(); ++i) {
     const llvm::MCOperand& operand = instruction.getOperand(i);
@@ -220,7 +220,7 @@ string DumpMCInstToString(const llvm::MCInst& instruction,
     StrAppend(&debug_string, ", may load");
   }
 
-  string implicit_defs_str;
+  std::string implicit_defs_str;
   const uint16_t* const implicit_defs =
       instruction_descriptor.getImplicitDefs();
   for (int i = 0; i < instruction_descriptor.getNumImplicitDefs(); ++i) {
@@ -230,7 +230,7 @@ string DumpMCInstToString(const llvm::MCInst& instruction,
   }
   StrAppend(&debug_string, ", implicit def:", implicit_defs_str);
 
-  string implicit_uses_str;
+  std::string implicit_uses_str;
   const uint16_t* const implicit_uses =
       instruction_descriptor.getImplicitUses();
   for (int i = 0; i < instruction_descriptor.getNumImplicitUses(); ++i) {
@@ -243,7 +243,7 @@ string DumpMCInstToString(const llvm::MCInst& instruction,
   return debug_string;
 }
 
-std::vector<string> GetLLVMMnemonicListOrDie() {
+std::vector<std::string> GetLLVMMnemonicListOrDie() {
   EnsureLLVMWasInitialized();
   std::string error_message;
   const llvm::Target* target = llvm::TargetRegistry::lookupTarget(
@@ -254,7 +254,7 @@ std::vector<string> GetLLVMMnemonicListOrDie() {
   CHECK(instr_info != nullptr);
 
   const int num_opcodes = instr_info->getNumOpcodes();
-  std::vector<string> mnemonics;
+  std::vector<std::string> mnemonics;
   mnemonics.reserve(num_opcodes);
   for (int i = 0; i < num_opcodes; ++i) {
     mnemonics.emplace_back(instr_info->getName(i));
@@ -262,7 +262,7 @@ std::vector<string> GetLLVMMnemonicListOrDie() {
   return mnemonics;
 }
 
-llvm::StringRef MakeStringRef(const string& source) {
+llvm::StringRef MakeStringRef(const std::string& source) {
   return llvm::StringRef(source.data(), source.size());
 }
 
@@ -271,8 +271,8 @@ llvm::StringRef MakeStringRef(StringPiece source) {
 }
 
 StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
-    const string& asm_dialect_name) {
-  const string canonical_name = strings::ToUpper(asm_dialect_name);
+    const std::string& asm_dialect_name) {
+  const std::string canonical_name = strings::ToUpper(asm_dialect_name);
   if (canonical_name == "INTEL") {
     return ::llvm::InlineAsm::AD_Intel;
   } else if (canonical_name == "ATT" || canonical_name == "AT&T") {

@@ -25,14 +25,14 @@ namespace {
 
 RegisterSetProto MakeRegisters(
     const std::vector<RegisterTemplate>& templates,
-    const std::function<string(int)>& base_name_callback, int num_registers,
-    int base_binary_encoding) {
+    const std::function<std::string(int)>& base_name_callback,
+    int num_registers, int base_binary_encoding) {
   CHECK_GT(templates.size(), 0);
   CHECK_GT(num_registers, 0);
   RegisterSetProto register_set;
   for (int i = 0; i < num_registers; ++i) {
     RegisterGroupProto* const group = register_set.add_register_groups();
-    const string base_name = base_name_callback(i);
+    const std::string base_name = base_name_callback(i);
     for (const auto& tpl : templates) {
       RegisterProto* const reg = group->add_registers();
       reg->set_name(StrCat(tpl.prefix, base_name, tpl.suffix));
@@ -48,7 +48,7 @@ RegisterSetProto MakeRegisters(
     // Use the name of the first register in the group for naming the group. By
     // convention, this should be the most "representative" register of the
     // group.
-    const string& register_name = group->registers(0).name();
+    const std::string& register_name = group->registers(0).name();
     group->set_name(StrCat(register_name, " group"));
     group->set_description(
         StrCat("The group of registers aliased with ", register_name));
@@ -60,7 +60,7 @@ RegisterSetProto MakeRegisters(
 
 RegisterSetProto MakeRegistersFromBaseNames(
     const std::vector<RegisterTemplate>& templates,
-    const std::vector<string>& base_names, int base_binary_encoding) {
+    const std::vector<std::string>& base_names, int base_binary_encoding) {
   const auto base_name_callback = [&base_names](int i) {
     return base_names[i];
   };
@@ -69,8 +69,9 @@ RegisterSetProto MakeRegistersFromBaseNames(
 }
 
 RegisterSetProto MakeRegistersFromBaseNameAndIndices(
-    const std::vector<RegisterTemplate>& templates, const string& base_name,
-    int begin_index, int end_index, int base_binary_encoding) {
+    const std::vector<RegisterTemplate>& templates,
+    const std::string& base_name, int begin_index, int end_index,
+    int base_binary_encoding) {
   const auto base_name_callback = [&base_name, begin_index](int i) {
     return StrCat(base_name, begin_index + i);
   };

@@ -20,9 +20,9 @@
 #include <cstdint>
 #include <functional>
 #include <iterator>
+#include <string>
 #include <unordered_map>
 #include <utility>
-#include "strings/string.h"
 
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
@@ -94,11 +94,13 @@ class EncodingSpecificationParser {
 
   // Hash maps mapping tokens of the instruction encoding specification language
   // to enum values of the encoding protos.
-  const std::unordered_map<string, VexOperandUsage> vex_operand_usage_tokens_;
-  const std::unordered_map<string, VexVectorSize> vector_size_tokens_;
-  const std::unordered_map<string, VexEncoding::MandatoryPrefix>
+  const std::unordered_map<std::string, VexOperandUsage>
+      vex_operand_usage_tokens_;
+  const std::unordered_map<std::string, VexVectorSize> vector_size_tokens_;
+  const std::unordered_map<std::string, VexEncoding::MandatoryPrefix>
       mandatory_prefix_tokens_;
-  const std::unordered_map<string, VexPrefixEncodingSpecification::VexWUsage>
+  const std::unordered_map<std::string,
+                           VexPrefixEncodingSpecification::VexWUsage>
       vex_w_usage_tokens_;
   const std::unordered_map<uint32_t, VexEncoding::MapSelect> map_select_tokens_;
 };
@@ -216,11 +218,11 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
       "(?: *\\+ *)?";
   static constexpr char kRexWPrefix[] = "REX.W";
   static const LazyRE2 legacy_prefix_parser = {kLegacyPrefixRegex};
-  string operand_size_override_prefix;
-  string address_size_override_prefix;
-  string repne_prefix;
-  string repe_prefix;
-  string rex_prefix;
+  std::string operand_size_override_prefix;
+  std::string address_size_override_prefix;
+  std::string repne_prefix;
+  std::string repe_prefix;
+  std::string rex_prefix;
   bool has_mandatory_address_size_override_prefix = false;
   bool has_mandatory_operand_size_override_prefix = false;
   bool has_mandatory_repe_prefix = false;
@@ -278,12 +280,12 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
       specification_.mutable_vex_prefix();
 
   static const LazyRE2 vex_prefix_parser = {kVexPrefixRegexp};
-  string prefix_type_str;
-  string vex_operand_directionality;
-  string vex_l_usage_str;
-  string mandatory_prefix_str;
+  std::string prefix_type_str;
+  std::string vex_operand_directionality;
+  std::string vex_l_usage_str;
+  std::string mandatory_prefix_str;
   uint32_t opcode_map;
-  string vex_w_str;
+  std::string vex_w_str;
   if (!RE2::Consume(specification, *vex_prefix_parser, &prefix_type_str,
                     &vex_operand_directionality, &vex_l_usage_str,
                     &mandatory_prefix_str, RE2::Hex(&opcode_map), &vex_w_str)) {
@@ -335,7 +337,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
       " *([0-9A-F]{2})(?: *\\+ *(i|rb|rw|rd|ro))?"};
   int opcode_byte = 0;
   int num_opcode_bytes = 0;
-  string opcode_encoded_register;
+  std::string opcode_encoded_register;
   uint32_t opcode = specification_.opcode();
   while (RE2::Consume(&specification, *opcode_byte_parser,
                       RE2::Hex(&opcode_byte), &opcode_encoded_register)) {
@@ -369,11 +371,11 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
   // The variable that receives the value must be string. If we used chars
   // directly, the matching would fail because RE2 doesn't know how to convert
   // an empty matching group to a char.
-  string is4_suffix_str;
-  string modrm_suffix_str;
-  string vsib_suffix_str;
-  string immediate_value_size_str;
-  string code_offset_size_str;
+  std::string is4_suffix_str;
+  std::string modrm_suffix_str;
+  std::string vsib_suffix_str;
+  std::string immediate_value_size_str;
+  std::string code_offset_size_str;
   // Notes on the suffix regexp:
   // * There might be a m64/m128 suffix that is not explained in the Intel
   //   manuals, but that most likely means that the operand in the ModR/M byte
@@ -488,7 +490,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
 }  // namespace
 
 StatusOr<EncodingSpecification> ParseEncodingSpecification(
-    const string& specification) {
+    const std::string& specification) {
   EncodingSpecificationParser parser;
   return parser.ParseFromString(specification);
 }

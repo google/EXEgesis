@@ -14,8 +14,8 @@
 
 #include "exegesis/x86/microarchitectures.h"
 
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/microarchitecture.pb.h"
@@ -526,7 +526,7 @@ constexpr const char kCoreModels[] = R"(
 
 const MicroArchitecturesProto& GetMicroArchitecturesProto() {
   static const MicroArchitecturesProto* const microarchitectures = []() {
-    const std::vector<string> sources = {
+    const std::vector<std::string> sources = {
         StrCat(kSkylakeConsumerModels, kSkylakeMicroarchitecture),
         StrCat(kSkylakeXeonModels, kSkylakeMicroarchitecture),
         StrCat(kHaswellModels, kHaswellMicroarchitecture),
@@ -539,7 +539,7 @@ const MicroArchitecturesProto& GetMicroArchitecturesProto() {
         // Core and Enhanced Core architectures.
         kEnhancedCoreModels, kCoreModels};
     auto* const result = new MicroArchitecturesProto();
-    for (const string& source : sources) {
+    for (const std::string& source : sources) {
       CHECK(::google::protobuf::TextFormat::ParseFromString(
           source, result->add_microarchitectures()));
     }

@@ -17,7 +17,7 @@
 #ifndef EXEGESIS_BASE_CLEANUP_INSTRUCTION_SET_TEST_UTILS_H_
 #define EXEGESIS_BASE_CLEANUP_INSTRUCTION_SET_TEST_UTILS_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/base/cleanup_instruction_set.h"
 
@@ -26,8 +26,8 @@ namespace exegesis {
 // Tests 'transform' by running it on 'input_proto', and comparing the modified
 // proto with 'expected_output_proto'.
 void TestTransform(const InstructionSetTransform& transform,
-                   const string& input_proto,
-                   const string& expected_output_proto);
+                   const std::string& input_proto,
+                   const std::string& expected_output_proto);
 
 }  // namespace exegesis
 

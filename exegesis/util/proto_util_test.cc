@@ -15,7 +15,7 @@
 #include "exegesis/util/proto_util.h"
 
 #include <cstdio>
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"
@@ -35,7 +35,8 @@ TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
     llvm_mnemonic: 'ADD32mr')";
   const InstructionProto page =
       ParseProtoFromStringOrDie<InstructionProto>(kExpected);
-  const string filename = file::JoinPath(getenv("TEST_TMPDIR"), "test.pbtxt");
+  const std::string filename =
+      file::JoinPath(getenv("TEST_TMPDIR"), "test.pbtxt");
   WriteTextProtoOrDie(filename, page);
   const InstructionProto read_proto =
       ReadTextProtoOrDie<InstructionProto>(filename);

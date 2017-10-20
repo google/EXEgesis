@@ -17,8 +17,8 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "llvm/ADT/Triple.h"
 #include "llvm/MC/MCAsmBackend.h"
@@ -41,7 +41,7 @@ class Disassembler {
  public:
   // Creates a disassembler for triple_name. If triple_name is "", the
   // default one will be used.
-  explicit Disassembler(const string& triple_name);
+  explicit Disassembler(const std::string& triple_name);
 
   // Disassembles an instruction from an array of bytes pointed to by memory.
   // The return value is the length of the disassembled instruction in bytes (or
@@ -56,15 +56,16 @@ class Disassembler {
   //   *att_instruction contains the x86 instruction (mnemonic and operands)
   //   in ATT format.
   int Disassemble(const std::vector<uint8_t>& bytes, unsigned* llvm_opcode,
-                  string* llvm_mnemonic, std::vector<string>* llvm_operands,
-                  string* intel_instruction, string* att_instruction);
+                  std::string* llvm_mnemonic,
+                  std::vector<std::string>* llvm_operands,
+                  std::string* intel_instruction, std::string* att_instruction);
 
   // Disassembles a hex string and returns a (possibly multi-line) string
   // containing: "Address; Hex code; Intel syntax; ATT syntax; LLVM Mnemonic"
   // For example: disasm.DisassembleString("48B85634129078563412") returns:
   // "00000000; 48B85634129078563412; movabs rax, 0x1234567890123456; movabsq "
   // "$0x1234567890123456, %rax; MOV64ri",
-  string DisassembleHexString(const string& hex_bytes);
+  std::string DisassembleHexString(const std::string& hex_bytes);
 
  private:
   // Initializes the Disassembler. This is done automatically when needed.

@@ -14,7 +14,7 @@
 
 #include "exegesis/arm/xml/docvars.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/testing/test_util.h"
@@ -38,7 +38,7 @@ using ::testing::HasSubstr;
 using ::tinyxml2::XMLDocument;
 using ::tinyxml2::XMLElement;
 
-void ParseXML(const string& xml, XMLDocument* doc) {
+void ParseXML(const std::string& xml, XMLDocument* doc) {
   ASSERT_EQ(doc->Parse(xml.data(), xml.size()), ::tinyxml2::XML_SUCCESS);
 }
 

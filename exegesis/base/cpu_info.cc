@@ -23,14 +23,14 @@
 
 namespace exegesis {
 
-bool CpuInfo::HasExactFeature(const string& name) const {
+bool CpuInfo::HasExactFeature(const std::string& name) const {
   return ContainsKey(indexed_features_, name);
 }
 
 // TODO(courbet): Right now strings::Split() does not support a string literal
 // delimiter. Switch to it when it does.
 template <bool is_or>
-bool CpuInfo::IsFeatureSet(const string& name, bool* const value) const {
+bool CpuInfo::IsFeatureSet(const std::string& name, bool* const value) const {
   char kSeparator[5] = " && ";
   if (is_or) {
     kSeparator[1] = kSeparator[2] = '|';
@@ -42,7 +42,7 @@ bool CpuInfo::IsFeatureSet(const string& name, bool* const value) const {
   }
 
   while (end != nullptr) {
-    const bool has_feature = HasExactFeature(string(begin, end));
+    const bool has_feature = HasExactFeature(std::string(begin, end));
     if (is_or && has_feature) {
       *value = true;
       return true;
@@ -58,10 +58,10 @@ bool CpuInfo::IsFeatureSet(const string& name, bool* const value) const {
   return true;
 }
 
-bool CpuInfo::SupportsFeature(const string& feature_name) const {
+bool CpuInfo::SupportsFeature(const std::string& feature_name) const {
   // We don't support parenthesized features combinations for now.
-  CHECK(feature_name.find('(') == string::npos);
-  CHECK(feature_name.find(')') == string::npos);
+  CHECK(feature_name.find('(') == std::string::npos);
+  CHECK(feature_name.find(')') == std::string::npos);
 
   bool value = false;
   if (IsFeatureSet<true>(feature_name, &value) ||
@@ -71,9 +71,9 @@ bool CpuInfo::SupportsFeature(const string& feature_name) const {
   return HasExactFeature(feature_name);
 }
 
-string CpuInfo::DebugString() const {
-  string result = StrCat(proto_.model_id(), "\nfeatures:");
-  for (const string& feature : indexed_features_) {
+std::string CpuInfo::DebugString() const {
+  std::string result = StrCat(proto_.model_id(), "\nfeatures:");
+  for (const std::string& feature : indexed_features_) {
     StrAppend(&result, "\n", feature);
   }
   return result;

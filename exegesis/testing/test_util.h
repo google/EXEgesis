@@ -58,10 +58,10 @@
 #define EXEGESIS_TESTING_TEST_UTIL_H_
 
 #include <iterator>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include "strings/string.h"
 
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -81,12 +81,13 @@ using ::exegesis::util::StatusOr;
 
 void AddIgnoredFieldsToDifferencer(
     const ::google::protobuf::Descriptor* descriptor,
-    const std::vector<string>& ignored_field_names,
+    const std::vector<std::string>& ignored_field_names,
     ::google::protobuf::util::MessageDifferencer* differencer);
 
 template <typename ProtoType>
-bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
-                const std::vector<string>& ignored_fields,
+bool MatchProto(const ProtoType& actual_proto,
+                const std::string& expected_proto_str,
+                const std::vector<std::string>& ignored_fields,
                 ::testing::MatchResultListener* listener) {
   using ::google::protobuf::TextFormat;
   using ::google::protobuf::util::MessageDifferencer;
@@ -97,7 +98,7 @@ bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
   }
 
   MessageDifferencer differencer;
-  string differences;
+  std::string differences;
   differencer.ReportDifferencesToString(&differences);
   AddIgnoredFieldsToDifferencer(expected_proto.descriptor(), ignored_fields,
                                 &differencer);
@@ -115,7 +116,7 @@ bool MatchProto(const ProtoType& actual_proto, const string& expected_proto_str,
 // against this text representation. Used to implement EqualsProto(str).
 class EqualsProtoMatcher {
  public:
-  explicit EqualsProtoMatcher(string expected_proto_str)
+  explicit EqualsProtoMatcher(std::string expected_proto_str)
       : expected_proto_str_(std::move(expected_proto_str)) {}
 
   template <typename ProtoType>
@@ -139,13 +140,13 @@ class EqualsProtoMatcher {
   }
 
  private:
-  const string expected_proto_str_;
-  std::vector<string> ignored_fields_;
+  const std::string expected_proto_str_;
+  std::vector<std::string> ignored_fields_;
 };
 
 // Creates a polymorphic proto matcher based on the given proto in text format.
 inline ::testing::PolymorphicMatcher<EqualsProtoMatcher> EqualsProto(
-    string expected_proto_str) {
+    std::string expected_proto_str) {
   return ::testing::MakePolymorphicMatcher(
       EqualsProtoMatcher(std::move(expected_proto_str)));
 }
@@ -153,7 +154,7 @@ inline ::testing::PolymorphicMatcher<EqualsProtoMatcher> EqualsProto(
 // Creates a polymorphic proto matcher based on the given proto.
 inline ::testing::PolymorphicMatcher<EqualsProtoMatcher> EqualsProto(
     const google::protobuf::Message& expected_proto) {
-  string expected_proto_str;
+  std::string expected_proto_str;
   using ::google::protobuf::TextFormat;
   CHECK(TextFormat::PrintToString(expected_proto, &expected_proto_str));
   return ::testing::MakePolymorphicMatcher(
@@ -228,7 +229,7 @@ bool StatusIsMatcher(const StatusOr<T>& actual_status_or,
 // Monomorphic matcher for the error code & message of a Status.
 bool StatusIsMatcher(
     const Status& actual_status, const Code& expected_error_code,
-    const ::testing::Matcher<const string&>& expected_message) {
+    const ::testing::Matcher<const std::string&>& expected_message) {
   ::testing::StringMatchResultListener sink;
   return actual_status.error_code() == expected_error_code &&
          expected_message.MatchAndExplain(actual_status.error_message(), &sink);
@@ -238,7 +239,7 @@ bool StatusIsMatcher(
 template <typename T>
 bool StatusIsMatcher(
     const StatusOr<T>& actual_status_or, const Code& expected_error_code,
-    const ::testing::Matcher<const string&>& expected_message) {
+    const ::testing::Matcher<const std::string&>& expected_message) {
   return StatusIsMatcher(actual_status_or.status(), expected_error_code,
                          expected_message);
 }
@@ -290,7 +291,7 @@ class IsOkAndHoldsMatcherImpl
     ::testing::StringMatchResultListener inner_listener;
     const bool matches = inner_matcher_.MatchAndExplain(
         actual_value.ValueOrDie(), &inner_listener);
-    const string inner_explanation = inner_listener.str();
+    const std::string inner_explanation = inner_listener.str();
     if (!inner_explanation.empty()) {
       *listener << "which contains value "
                 << ::testing::PrintToString(actual_value.ValueOrDie()) << ", "

@@ -35,7 +35,7 @@ namespace {
 using ::re2::StringPiece;
 
 template <typename PrefixCollection>
-bool ContainsPrefix(const string& str, const PrefixCollection& prefixes) {
+bool ContainsPrefix(const std::string& str, const PrefixCollection& prefixes) {
   for (const auto& prefix : prefixes) {
     if (strings::StartsWith(str, prefix)) {
       return true;
@@ -44,8 +44,8 @@ bool ContainsPrefix(const string& str, const PrefixCollection& prefixes) {
   return false;
 }
 
-std::vector<string> SeparateOperandsWithCommas(const string& s) {
-  std::vector<string> result;
+std::vector<std::string> SeparateOperandsWithCommas(const std::string& s) {
+  std::vector<std::string> result;
   bool in_parenthesis = false;
   int start = 0;
   for (int i = 0; i < s.size(); ++i) {
@@ -89,16 +89,16 @@ InstructionOperand ParseOperand(StringPiece source) {
 
 }  // namespace
 
-InstructionFormat ParseAssemblyStringOrDie(const string& code) {
+InstructionFormat ParseAssemblyStringOrDie(const std::string& code) {
   // The syntax always has the format [prefix] mnemonic op1, op2[, op3].
   // We parse it by first splitting the string by commas; this will separate the
   // mnemonic and the first operand from the other operands. Then we split the
   // mnemonic and the first operand by spaces.
   InstructionFormat proto;
-  std::vector<string> parts = SeparateOperandsWithCommas(code);
+  std::vector<std::string> parts = SeparateOperandsWithCommas(code);
   CHECK(!parts.empty());
   // Parse the mnemonic and the optional first operand.
-  string mnemonic_and_first_operand = parts[0];
+  std::string mnemonic_and_first_operand = parts[0];
   StripWhitespace(&mnemonic_and_first_operand);
   std::replace(mnemonic_and_first_operand.begin(),
                mnemonic_and_first_operand.end(), '\t', ' ');
@@ -106,12 +106,12 @@ InstructionFormat ParseAssemblyStringOrDie(const string& code) {
   CHECK(!mnemonic_and_first_operand.empty());
   constexpr const char* kX86Prefixes[] = {"LOCK", "REP"};
   size_t delimiting_space = mnemonic_and_first_operand.find_first_of(' ');
-  if (delimiting_space != string::npos &&
+  if (delimiting_space != std::string::npos &&
       ContainsPrefix(mnemonic_and_first_operand, kX86Prefixes)) {
     delimiting_space =
         mnemonic_and_first_operand.find_first_of(' ', delimiting_space + 1);
   }
-  if (delimiting_space == string::npos) {
+  if (delimiting_space == std::string::npos) {
     proto.set_mnemonic(mnemonic_and_first_operand);
   } else {
     proto.set_mnemonic(mnemonic_and_first_operand.substr(0, delimiting_space));
@@ -126,8 +126,8 @@ InstructionFormat ParseAssemblyStringOrDie(const string& code) {
   return proto;
 }
 
-string ConvertToCodeString(const InstructionFormat& instruction) {
-  string result = instruction.mnemonic();
+std::string ConvertToCodeString(const InstructionFormat& instruction) {
+  std::string result = instruction.mnemonic();
   bool run_once = false;
   for (const auto& operand : instruction.operands()) {
     StrAppend(&result, run_once ? ", " : " ", operand.name());

@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_X86_PDF_VENDOR_SYNTAX_H_
 #define EXEGESIS_X86_PDF_VENDOR_SYNTAX_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/instructions.pb.h"
 
@@ -26,7 +26,8 @@ namespace pdf {
 constexpr const char kUnknown[] = "<UNKNOWN>";
 
 // Parses the vendor syntax (e.g. "ADC r/m16, imm8").
-bool ParseVendorSyntax(string content, InstructionFormat* instruction_format);
+bool ParseVendorSyntax(std::string content,
+                       InstructionFormat* instruction_format);
 
 }  // namespace pdf
 }  // namespace x86

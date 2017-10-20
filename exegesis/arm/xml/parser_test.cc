@@ -14,7 +14,7 @@
 
 #include "exegesis/arm/xml/parser.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -34,7 +34,7 @@ using ::testing::HasSubstr;
 
 const char kTestDataPath[] = "/__main__/exegesis/arm/xml/testdata/";
 
-string GetFilePath(const string& filename) {
+std::string GetFilePath(const std::string& filename) {
   return StrCat(getenv("TEST_SRCDIR"), kTestDataPath, filename);
 }
 

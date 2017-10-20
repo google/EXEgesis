@@ -21,10 +21,10 @@
 #include <iterator>
 #include <map>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#include "strings/string.h"
 
 #include "base/stringprintf.h"
 #include "exegesis/base/category_utils.h"
@@ -68,133 +68,134 @@ using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
 
-const std::unordered_set<
-    string>* const kExcludedInstructions = new std::unordered_set<string>({
-    // Before execution, "DX:AX" == 0x00010001 and "word ptr[RSI]" == 0x0001, so
-    // 0x00010001/0x0001 == 0x00010001 overflows, resulting in #DE.
-    "DIV",
-    "IDIV",
-    // Interrupt-related.
-    "INT3",
-    "INT",
-    "IRET",
-    "IRETD",
-    "IRETQ",
-    // This tries to read FPU state from RSI, which does not have the right
-    // structure. This would require the contents of RSI to be properly
-    // structured.
-    "FLDENV",
-    "FLDCW",
-    "FXRSTOR",
-    "FXRSTOR64",
-    // This tries to set reserved bits to 1 ("Bits 16 through 31 of the MXCSR
-    // register are reserved and are cleared on a power-up or reset of the
-    // processor;attempting to write a non-zero value to these bits, using
-    // either the FXRSTOR or LDMXCSR instructions, will result in a
-    // general-protection exception (#GP) being generated.")
-    "LDMXCSR",
-    "VLDMXCSR",
-    // The value loaded in RSI correspond to an invalid descriptor (null) or not
-    // within writable bounds, and thus triggers a #GP.
-    "LFS",
-    "LGS",
-    "LSL",
-    "LSS",
-    // LOCK requires and accompanying instruction.
-    "LOCK",
-    // #GP because "the value in EAX is outside the CS, DS, ES, FS, or GS
-    // segment limit".
-    "MONITOR",
-    // Stack instructions. Obviously running a million POPs is a bad idea.
-    "POP",
-    "POPF",
-    "POPFQ",
-    "PUSH",
-    "PUSHF",
-    "PUSHFQ",
-    // This cannot be tested (by design).
-    "UD2",
-    // These require memory to be aligned more than 16 bytes.
-    "VMOVAPD",
-    "VMOVAPS",
-    "VMOVDQA",
-    "VMOVNTDQ",
-    "VMOVNTDQA",
-    "VMOVNTPD",
-    "VMOVNTPS",
-    // These cannot be called several times successively.
-    "VPGATHERDD",
-    "VGATHERDPS",
-    // This would require ECX to be 0 instead of 1: "XCR0 is supported on any
-    // processor that supports the XGETBV instruction."
-    "XGETBV",
-    "XSETBV",
-    // This tries to read extended registers state from RSI, which does not have
-    // the right structure. This would require the contents of RSI to be
-    // properly structured.
-    "XRSTOR",
-    "XRSTOR64",
-    // These require memory to be 64-byte aligned and EDX:EAX to be set to
-    // specific values.
-    "XSAVE",
-    "XSAVE64",
-    "XSAVEC",
-    "XSAVEC64",
-    "XSAVEOPT",
-    "XSAVEOPT64",
-    "XSAVES",
-    "XSAVES64",
+const std::unordered_set<std::string>* const kExcludedInstructions =
+    new std::unordered_set<std::string>({
+        // Before execution, "DX:AX" == 0x00010001 and
+        // "word ptr[RSI]" == 0x0001, so 0x00010001/0x0001 == 0x00010001
+        // overflows, resulting in #DE.
+        "DIV",
+        "IDIV",
+        // Interrupt-related.
+        "INT3",
+        "INT",
+        "IRET",
+        "IRETD",
+        "IRETQ",
+        // This tries to read FPU state from RSI, which does not have the right
+        // structure. This would require the contents of RSI to be properly
+        // structured.
+        "FLDENV",
+        "FLDCW",
+        "FXRSTOR",
+        "FXRSTOR64",
+        // This tries to set reserved bits to 1 ("Bits 16 through 31 of the
+        // MXCSR register are reserved and are cleared on a power-up or reset of
+        // the processor;attempting to write a non-zero value to these bits,
+        // using either the FXRSTOR or LDMXCSR instructions, will result in a
+        // general-protection exception (#GP) being generated.")
+        "LDMXCSR",
+        "VLDMXCSR",
+        // The value loaded in RSI correspond to an invalid descriptor (null) or
+        // not within writable bounds, and thus triggers a #GP.
+        "LFS",
+        "LGS",
+        "LSL",
+        "LSS",
+        // LOCK requires and accompanying instruction.
+        "LOCK",
+        // #GP because "the value in EAX is outside the CS, DS, ES, FS, or GS
+        // segment limit".
+        "MONITOR",
+        // Stack instructions. Obviously running a million POPs is a bad idea.
+        "POP",
+        "POPF",
+        "POPFQ",
+        "PUSH",
+        "PUSHF",
+        "PUSHFQ",
+        // This cannot be tested (by design).
+        "UD2",
+        // These require memory to be aligned more than 16 bytes.
+        "VMOVAPD",
+        "VMOVAPS",
+        "VMOVDQA",
+        "VMOVNTDQ",
+        "VMOVNTDQA",
+        "VMOVNTPD",
+        "VMOVNTPS",
+        // These cannot be called several times successively.
+        "VPGATHERDD",
+        "VGATHERDPS",
+        // This would require ECX to be 0 instead of 1: "XCR0 is supported on
+        // any processor that supports the XGETBV instruction."
+        "XGETBV",
+        "XSETBV",
+        // This tries to read extended registers state from RSI, which does not
+        // have the right structure. This would require the contents of RSI to
+        // be properly structured.
+        "XRSTOR",
+        "XRSTOR64",
+        // These require memory to be 64-byte aligned and EDX:EAX to be set to
+        // specific values.
+        "XSAVE",
+        "XSAVE64",
+        "XSAVEC",
+        "XSAVEC64",
+        "XSAVEOPT",
+        "XSAVEOPT64",
+        "XSAVES",
+        "XSAVES64",
 
-    // Sys instructions.
-    "SYSCALL",
-    "SYSENTER",
-    "SYSEXIT",
-    "SYSRET",
-    // Program flow.
-    "CALL",
-    "JMP",
-    "ENTER",
-    "LEAVE",
-    "RET",
-    // Conditional jumps.
-    "JA",
-    "JAE",
-    "JB",
-    "JBE",
-    "JC",
-    "JE",
-    "JG",
-    "JGE",
-    "JL",
-    "JLE",
-    "JNA",
-    "JNAE",
-    "JNB",
-    "JNBE",
-    "JNC",
-    "JNE",
-    "JNG",
-    "JNGE",
-    "JNL",
-    "JNLE",
-    "JNO",
-    "JNP",
-    "JNS",
-    "JNZ",
-    "JO",
-    "JP",
-    "JPE",
-    "JPO",
-    "JS",
-    "JZ",
-    "JCXZ",
-    "JECXZ",
-    "JRCXZ",
-    // LOOP.
-    "LOOP",
-    "LOOPE",
-    "LOOPNE",
-});
+        // Sys instructions.
+        "SYSCALL",
+        "SYSENTER",
+        "SYSEXIT",
+        "SYSRET",
+        // Program flow.
+        "CALL",
+        "JMP",
+        "ENTER",
+        "LEAVE",
+        "RET",
+        // Conditional jumps.
+        "JA",
+        "JAE",
+        "JB",
+        "JBE",
+        "JC",
+        "JE",
+        "JG",
+        "JGE",
+        "JL",
+        "JLE",
+        "JNA",
+        "JNAE",
+        "JNB",
+        "JNBE",
+        "JNC",
+        "JNE",
+        "JNG",
+        "JNGE",
+        "JNL",
+        "JNLE",
+        "JNO",
+        "JNP",
+        "JNS",
+        "JNZ",
+        "JO",
+        "JP",
+        "JPE",
+        "JPO",
+        "JS",
+        "JZ",
+        "JCXZ",
+        "JECXZ",
+        "JRCXZ",
+        // LOOP.
+        "LOOP",
+        "LOOPE",
+        "LOOPNE",
+    });
 
 ObservationVector CreateObservationVector(const PerfResult& perf_result) {
   ObservationVector observations;
@@ -203,7 +204,7 @@ ObservationVector CreateObservationVector(const PerfResult& perf_result) {
   for (const auto& name : perf_result.Keys()) {
     // Make all the events look like Haswell events.
     // TODO(bdb): This should depend on CPUInfo.
-    string key = name;
+    std::string key = name;
     GlobalReplaceSubstring("uops_dispatched_port:port_",
                            "uops_executed_port:port_", &key);
     GlobalReplaceSubstring("uops_executed:port", "uops_executed_port:port_",
@@ -306,8 +307,8 @@ class ComputeItinerariesHelper {
       ++num_subtract_update_code_errors_;
     }
 
-    string DebugString() const {
-      string result;
+    std::string DebugString() const {
+      std::string result;
       for (int quantile = 0; quantile < kNumQuantiles; ++quantile) {
         const double q = static_cast<double>(quantile);
         StringAppendF(&result, "[%.02f %.02f), ", q / kNumQuantiles,
@@ -338,16 +339,16 @@ class ComputeItinerariesHelper {
   };
 
   // Returns the initialization code.
-  static string MakeInitCode(uint8* fx_state_buffer);
+  static std::string MakeInitCode(uint8* fx_state_buffer);
 
   // Code to setup runtime environment to ensure that instructions execute
   // "normally" (e.g. setup operands to avoid division by zero).
-  static string MakePrefixCode(char* src_buffer, char* dst_buffer);
+  static std::string MakePrefixCode(char* src_buffer, char* dst_buffer);
   // Update code run between every instruction execution.
-  static string MakeUpdateCode(int rsi_step);
+  static std::string MakeUpdateCode(int rsi_step);
 
   // Returns the cleanup code.
-  static string MakeCleanupCode(uint8* fx_state_buffer);
+  static std::string MakeCleanupCode(uint8* fx_state_buffer);
 
   // Computes the itineraries for the update code.
   StatusOr<PortMaskCount> ComputeUpdateCodeMicroOps() const;
@@ -359,7 +360,7 @@ class ComputeItinerariesHelper {
 
   const MicroArchitecture& microarchitecture_;
   const CpuInfo& cpu_info_;
-  const string host_mcpu_;
+  const std::string host_mcpu_;
   const Parameters parameters_;
   // Source and destination buffers for instructions that read from or write to
   // memory.
@@ -367,11 +368,11 @@ class ComputeItinerariesHelper {
   std::unique_ptr<char[]> dst_buffer_;
   // A buffer for saving and restoring the FPU state.
   FXStateBuffer fx_state_buffer_;
-  const string init_code_;
-  const string prefix_code_;
-  const string update_code_;
-  const string cleanup_code_;
-  const string constraints_;
+  const std::string init_code_;
+  const std::string prefix_code_;
+  const std::string update_code_;
+  const std::string cleanup_code_;
+  const std::string constraints_;
 };
 
 ComputeItinerariesHelper::ComputeItinerariesHelper(
@@ -402,7 +403,8 @@ ComputeItinerariesHelper::ComputeItinerariesHelper(
 
 // Note that LLVM's inline assembly does not understand MOV r,imm64
 // in the Intel mode. We have to use movabs instead.
-string ComputeItinerariesHelper::MakeInitCode(uint8* const fx_state_buffer) {
+std::string ComputeItinerariesHelper::MakeInitCode(
+    uint8* const fx_state_buffer) {
   // Store the FPU/MMX/SSE state. We'll reinstate it after the code under
   // test. This is to ensure that there is no contamination between
   // measurements.
@@ -414,8 +416,8 @@ string ComputeItinerariesHelper::MakeInitCode(uint8* const fx_state_buffer) {
       fx_state_buffer);
 }
 
-string ComputeItinerariesHelper::MakePrefixCode(char* const src_buffer,
-                                                char* const dst_buffer) {
+std::string ComputeItinerariesHelper::MakePrefixCode(char* const src_buffer,
+                                                     char* const dst_buffer) {
   return StringPrintf(
       R"(
         # Load constants into registers to not break instructions like
@@ -442,7 +444,7 @@ string ComputeItinerariesHelper::MakePrefixCode(char* const src_buffer,
 // data_write micro-operations.
 // TODO(bdb): Use RDI as the destination register. Increment only when
 // memory is written to.
-string ComputeItinerariesHelper::MakeUpdateCode(const int rsi_step) {
+std::string ComputeItinerariesHelper::MakeUpdateCode(const int rsi_step) {
   return StringPrintf(
       R"(
         ADD RSI,%i
@@ -450,7 +452,8 @@ string ComputeItinerariesHelper::MakeUpdateCode(const int rsi_step) {
       rsi_step);
 }
 
-string ComputeItinerariesHelper::MakeCleanupCode(uint8* const fx_state_buffer) {
+std::string ComputeItinerariesHelper::MakeCleanupCode(
+    uint8* const fx_state_buffer) {
   return StringPrintf(
       R"(
         # Restore FPU/MMX/SSE state.
@@ -524,12 +527,12 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
     Stats* const stats) const {
   // The following registers are excluded because they can't be accessed in user
   // mode.
-  static const std::unordered_set<string>* const kExcludedMovOperands =
-      new std::unordered_set<string>({"CR0-CR7", "DR0-DR7"});
+  static const std::unordered_set<std::string>* const kExcludedMovOperands =
+      new std::unordered_set<std::string>({"CR0-CR7", "DR0-DR7"});
 
   const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
   LOG(INFO) << "Processing " << PrettyPrintInstruction(instruction);
-  const string& mnemonic = vendor_syntax.mnemonic();
+  const std::string& mnemonic = vendor_syntax.mnemonic();
   if (!instruction.feature_name().empty() &&
       !cpu_info_.SupportsFeature(instruction.feature_name())) {
     LOG(INFO) << "Ignoring instruction " << mnemonic
@@ -561,7 +564,7 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
     return OkStatus();
   }
   const InstructionFormat asm_syntax = x86::InstantiateOperands(instruction);
-  const string measured_code = ConvertToCodeString(asm_syntax);
+  const std::string measured_code = ConvertToCodeString(asm_syntax);
   VLOG(1) << measured_code;
   VLOG(1) << instruction.DebugString();
 
@@ -666,7 +669,7 @@ Status ComputeItineraries(const InstructionSetProto& instruction_set,
            itineraries->itineraries_size());
   const CpuInfo& host_cpu_info = HostCpuInfoOrDie();
   LOG(INFO) << "Host CPU info: " << host_cpu_info.DebugString();
-  const string& host_cpu_model_id = host_cpu_info.cpu_model_id();
+  const std::string& host_cpu_model_id = host_cpu_info.cpu_model_id();
 
   // Check that we know the details (port masks, ...) of the CPU model.
   const MicroArchitecture* const microarchitecture =

@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "strings/string.h"
+#include <string>
 
 #include "gflags/gflags.h"
 
+#include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/base/transform_factory.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
@@ -68,7 +69,7 @@ void Main() {
   }
 
   // Write transformed intruction set.
-  const string architecture_filename =
+  const std::string architecture_filename =
       StrCat(FLAGS_exegesis_output_file_base, ".pbtxt");
   LOG(INFO) << "Saving ArchitectureProto as: " << architecture_filename;
   WriteTextProtoOrDie(architecture_filename, architecture);

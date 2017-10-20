@@ -28,9 +28,9 @@ PortMask::PortMask(const PortMaskProto& proto) {
   mask_ = result;
 }
 
-string PortMask::ToString() const {
+std::string PortMask::ToString() const {
   if (mask_ == 0) return "";
-  string result = "P";
+  std::string result = "P";
   uint64_t mask = mask_;
   for (int i = 0; mask != 0; ++i) {
     if (mask & (uint64_t{1} << i)) {

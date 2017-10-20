@@ -22,8 +22,8 @@
 #include <cstdint>
 #include <initializer_list>
 #include <map>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/cpu_info.h"
 #include "exegesis/proto/cpuid.pb.h"
@@ -58,7 +58,7 @@ class CpuIdDump {
   // parser.
   // Returns INVALID_ARGUMENT when the parsed dump is not valid (in the sense of
   // CpuIdDump::IsValid).
-  static StatusOr<CpuIdDump> FromString(const string& source);
+  static StatusOr<CpuIdDump> FromString(const std::string& source);
 
   // The default constructor creates an empty/invalid CPUID dump.
   CpuIdDump() {}
@@ -73,10 +73,10 @@ class CpuIdDump {
 
   // Returns the processor brand string extracted from subleafs
   // 80000002 - 80000004.
-  string GetProcessorBrandString() const;
+  std::string GetProcessorBrandString() const;
 
   // Returns the vendor string extracted from the main leaf.
-  string GetVendorString() const;
+  std::string GetVendorString() const;
 
   // Returns the CpuInfo structure corresponding to the CPU information in the
   // CPUID dump. Terminates the process with a CHECK failure when called on an
@@ -85,7 +85,7 @@ class CpuIdDump {
 
   // Returns a string representation of the CPUID dump, in the format accepted
   // by CpuIdDump::FromString().
-  string ToString() const;
+  std::string ToString() const;
 
   // Returns the entry for the given leaf and, optionally, subleaf, or nullptr
   // if the dump does not contain this entry.

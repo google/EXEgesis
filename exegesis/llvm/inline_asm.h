@@ -17,8 +17,8 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "glog/logging.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
@@ -63,7 +63,7 @@ class JitCompiler {
   // that the generated code will be able to run all hosts, but that the
   // compiler wil refuse to compile newer instructions (since all processors
   // might not support them).
-  explicit JitCompiler(const string& mcpu);
+  explicit JitCompiler(const std::string& mcpu);
 
   // Builds, compiles and returns a pointer to a void() function that executes
   // a loop of 'num_iterations' around 'loop_code'. Registers touched by
@@ -133,7 +133,7 @@ class JitCompiler {
   static void HandleInlineAsmDiagnostic(const llvm::SMDiagnostic& diagnostic,
                                         void* context, unsigned loc_cookie);
 
-  const string mcpu_;
+  const std::string mcpu_;
 
   std::unique_ptr<llvm::LLVMContext> context_;
 
@@ -157,8 +157,8 @@ class JitCompiler {
 
   // The list of compiler error messages from inline assembly collected during
   // the build.
-  std::vector<string> compile_errors_;
-  std::vector<string> intercepted_unknown_symbols_;
+  std::vector<std::string> compile_errors_;
+  std::vector<std::string> intercepted_unknown_symbols_;
 };
 
 }  // namespace exegesis

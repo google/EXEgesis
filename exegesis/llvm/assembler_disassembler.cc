@@ -44,7 +44,7 @@ AssemblerDisassembler::AssemblerDisassembler()
 
 StatusOr<AssemblerDisassemblerResult>
 AssemblerDisassembler::AssembleDisassemble(
-    const string& code, llvm::InlineAsm::AsmDialect asm_dialect) {
+    const std::string& code, llvm::InlineAsm::AsmDialect asm_dialect) {
   const auto function = jit_->CompileInlineAssemblyToFunction(
       1, "\t" + code,
       /*loop_constraints=*/"", asm_dialect);
@@ -64,7 +64,8 @@ AssemblerDisassembler::AssembleDisassemble(
 std::pair<StatusOr<AssemblerDisassemblerResult>,
           AssemblerDisassemblerInterpretation>
 AssemblerDisassembler::AssembleDisassemble(
-    const string& input, AssemblerDisassemblerInterpretation interpretation) {
+    const std::string& input,
+    AssemblerDisassemblerInterpretation interpretation) {
   switch (interpretation) {
     case AssemblerDisassemblerInterpretation::
         HUMAN_READABLE_BINARY_OR_INTEL_ASM: {
@@ -105,9 +106,9 @@ AssemblerDisassembler::AssembleDisassemble(
 StatusOr<AssemblerDisassemblerResult> AssemblerDisassembler::Disassemble(
     const std::vector<uint8_t>& encoded_instruction) {
   AssemblerDisassemblerResult result;
-  std::vector<string> llvm_operands;
-  string intel_code;
-  string att_code;
+  std::vector<std::string> llvm_operands;
+  std::string intel_code;
+  std::string att_code;
   unsigned llvm_opcode = 0;
   const int binary_encoding_size_in_bytes = disasm_->Disassemble(
       encoded_instruction, &llvm_opcode, result.mutable_llvm_mnemonic(),

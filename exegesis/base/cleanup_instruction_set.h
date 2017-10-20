@@ -20,9 +20,9 @@
 
 #include <functional>
 #include <limits>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
@@ -42,7 +42,7 @@ using InstructionSetTransform = std::function<Status(InstructionSetProto*)>;
 
 // The list of instruction database transforms indexed by their names.
 using InstructionSetTransformsByName =
-    std::unordered_map<string, InstructionSetTransform>;
+    std::unordered_map<std::string, InstructionSetTransform>;
 
 // Returns the list of all available transforms, indexed by their names.
 const InstructionSetTransformsByName& GetTransformsByName();
@@ -61,8 +61,9 @@ std::vector<InstructionSetTransform> GetDefaultTransformPipeline();
 // diff of the changes made by the transform. The changes are returned as a
 // human-readable string; the returned string is empty if and only if the
 // transform did not make any changes to the proto.
-StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
-                                      InstructionSetProto* instruction_set);
+StatusOr<std::string> RunTransformWithDiff(
+    const InstructionSetTransform& transform,
+    InstructionSetProto* instruction_set);
 
 // Runs all transforms from 'pipeline' on the given instruction set proto.
 // Returns Status::OK if all transform succeeds; otherwise, stops on the first
@@ -105,7 +106,7 @@ namespace internal {
 // registers the transform to all the relevant lists.
 class RegisterInstructionSetTransform {
  public:
-  RegisterInstructionSetTransform(const string& transform_name,
+  RegisterInstructionSetTransform(const std::string& transform_name,
                                   int rank_in_default_pipeline,
                                   InstructionSetTransformRawFunction transform);
 };

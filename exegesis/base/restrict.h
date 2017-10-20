@@ -17,7 +17,7 @@
 #ifndef EXEGESIS_BASE_RESTRICT_H_
 #define EXEGESIS_BASE_RESTRICT_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/instructions.pb.h"
 
@@ -25,8 +25,8 @@ namespace exegesis {
 
 // Keeps only the instructions whose mnemonic is in the range
 // [first_mnemonic, last_mnemonic].
-void RestrictToMnemonicRange(const string& first_mnemonic,
-                             const string& last_mnemonic,
+void RestrictToMnemonicRange(const std::string& first_mnemonic,
+                             const std::string& last_mnemonic,
                              InstructionSetProto* instruction_set);
 
 // Keeps only the instructions whose index is in the range

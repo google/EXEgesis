@@ -19,7 +19,7 @@
 #include <fstream>
 #include <functional>
 #include <memory>
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/util/pdf/pdf_document_utils.h"
 #include "exegesis/util/pdf/xpdf_util.h"
@@ -52,7 +52,7 @@ using ::exegesis::pdf::PdfParseRequest;
 constexpr const char kSourceName[] = "IntelSDMParser V2";
 
 InstructionSetSourceInfo CreateInstructionSetSourceInfo(
-    const google::protobuf::Map<string, string>& map) {
+    const google::protobuf::Map<std::string, std::string>& map) {
   InstructionSetSourceInfo source_info;
   source_info.set_source_name(kSourceName);
 
@@ -74,12 +74,12 @@ InstructionSetSourceInfo CreateInstructionSetSourceInfo(
 
 // Parses the input specification (see FLAGS_exegesis_input_spec for the
 // format).
-std::vector<PdfParseRequest> ParseRequestsOrDie(const string& input_spec) {
-  const std::vector<string> specs =
+std::vector<PdfParseRequest> ParseRequestsOrDie(const std::string& input_spec) {
+  const std::vector<std::string> specs =
       strings::Split(input_spec, ",", strings::SkipEmpty());  // NOLINT
   std::vector<PdfParseRequest> parsed_specs;
   parsed_specs.reserve(specs.size());
-  for (const string& spec : specs) {
+  for (const std::string& spec : specs) {
     parsed_specs.push_back(exegesis::pdf::ParseRequestOrDie(spec));
   }
   return parsed_specs;
@@ -87,9 +87,9 @@ std::vector<PdfParseRequest> ParseRequestsOrDie(const string& input_spec) {
 
 }  // namespace
 
-ArchitectureProto ParseSdmOrDie(const string& input_spec,
-                                const string& patches_folder,
-                                const string& output_base) {
+ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
+                                const std::string& patches_folder,
+                                const std::string& output_base) {
   const PdfDocumentsChanges patch_sets = LoadConfigurations(patches_folder);
 
   const auto requests = ParseRequestsOrDie(input_spec);
@@ -101,7 +101,7 @@ ArchitectureProto ParseSdmOrDie(const string& input_spec,
     const PdfParseRequest& spec = requests[request_id];
     const PdfDocument pdf_document = ParseOrDie(spec, patch_sets);
     if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
-      const string pb_filename =
+      const std::string pb_filename =
           StrCat(output_base, "_", request_id, ".pdf.pb");
       LOG(INFO) << "Saving pdf as proto file : " << pb_filename;
       WriteBinaryProtoOrDie(pb_filename, pdf_document);
@@ -111,7 +111,7 @@ ArchitectureProto ParseSdmOrDie(const string& input_spec,
     const SdmDocument sdm_document =
         ConvertPdfDocumentToSdmDocument(pdf_document);
     if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
-      const string sdm_pb_filename =
+      const std::string sdm_pb_filename =
           StrCat(output_base, "_", request_id, ".sdm.pb");
       LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
       WriteBinaryProtoOrDie(sdm_pb_filename, sdm_document);
@@ -128,7 +128,7 @@ ArchitectureProto ParseSdmOrDie(const string& input_spec,
 
   // Outputs the instructions.
   if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
-    const string instructions_filename = StrCat(output_base, ".raw.pbtxt");
+    const std::string instructions_filename = StrCat(output_base, ".raw.pbtxt");
     LOG(INFO) << "Saving instruction database as: " << instructions_filename;
     WriteTextProtoOrDie(instructions_filename, architecture);
   }

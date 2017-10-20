@@ -19,7 +19,7 @@
 // --exegesis_pdf_input_file=/path/to/file.pdf \
 // --exegesis_pdf_output_file=/path/to/file.pdf.pb
 
-#include "strings/string.h"
+#include <string>
 
 #include "gflags/gflags.h"
 

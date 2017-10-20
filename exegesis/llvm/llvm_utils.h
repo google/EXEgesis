@@ -17,8 +17,8 @@
 #ifndef EXEGESIS_LLVM_LLVM_UTILS_H_
 #define EXEGESIS_LLVM_LLVM_UTILS_H_
 
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "llvm/ADT/StringRef.h"
 #include "llvm/CodeGen/MachineInstr.h"
@@ -79,16 +79,16 @@ std::string DumpMCInstToString(const llvm::MCInst* instruction);
 // Creates a human-readable string representation of the MC instruction object.
 // Unlike the version with a single argument above, this function translates
 // instruction and register codes to their symbolic names.
-string DumpMCInstToString(const llvm::MCInst& instruction,
-                          const llvm::MCInstrInfo* mc_instruction_info,
-                          const llvm::MCRegisterInfo* register_info);
+std::string DumpMCInstToString(const llvm::MCInst& instruction,
+                               const llvm::MCInstrInfo* mc_instruction_info,
+                               const llvm::MCRegisterInfo* register_info);
 
 // Creates a human-readable string representation of the scheduling dependency.
-string DumpSDepToString(const llvm::SDep& sdep);
+std::string DumpSDepToString(const llvm::SDep& sdep);
 
 // Creates a human-readable string representation of the MC operand object.
-string DumpMCOperandToString(const llvm::MCOperand& operand,
-                             const llvm::MCRegisterInfo* register_info);
+std::string DumpMCOperandToString(const llvm::MCOperand& operand,
+                                  const llvm::MCRegisterInfo* register_info);
 
 // Creates a human-readable string representation of 'mem_operand' that can be
 // used e.g. for logging.
@@ -96,15 +96,15 @@ std::string DumpMachineMemOperandToString(
     const llvm::MachineMemOperand* mem_operand);
 
 // Returns the list of X86 LLVM instruction mnemonics.
-std::vector<string> GetLLVMMnemonicListOrDie();
+std::vector<std::string> GetLLVMMnemonicListOrDie();
 
-llvm::StringRef MakeStringRef(const string& source);
+llvm::StringRef MakeStringRef(const std::string& source);
 llvm::StringRef MakeStringRef(StringPiece source);
 
 // Parses the asm dialect from a human-readable string representation. Accepted
 // values are "att" and "intel".
 StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
-    const string& asm_dialect_name);
+    const std::string& asm_dialect_name);
 
 // Wrapper around LLVM InitTargetOptionsFromCodeGenFlags to avoid linker issues.
 llvm::TargetOptions LLVMInitTargetOptionsFromCodeGenFlags();

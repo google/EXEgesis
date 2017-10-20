@@ -15,7 +15,7 @@
 #ifndef FILE_BASE_PATH_H_
 #define FILE_BASE_PATH_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "strings/string_view.h"
 
@@ -26,7 +26,7 @@ namespace file {
 // regardless of whether or not they start with a leading '/'. That is, all
 // paths will be concatenated together, with the appropriate path separator
 // inserted in between.
-string JoinPath(StringPiece a, StringPiece b);
+std::string JoinPath(StringPiece a, StringPiece b);
 
 }  // namespace file
 }  // namespace exegesis

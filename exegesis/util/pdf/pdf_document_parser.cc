@@ -18,9 +18,9 @@
 #include <cfloat>
 #include <cmath>
 #include <map>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/util/pdf/geometry.h"
 #include "gflags/gflags.h"
@@ -208,7 +208,7 @@ class Segments {
       InsertIfNotPresent(&text_to_index_, segments->Get(i).text(), i);
     }
     for (const auto& prevent_binding : prevent_bindings) {
-      const string key =
+      const std::string key =
           CreateKey(prevent_binding.first(), prevent_binding.second());
       if (!InsertIfNotPresent(&prevent_bindings_, key)) {
         LOG(FATAL) << "Duplicated prevent_segment_bindings '" << key
@@ -243,7 +243,7 @@ class Segments {
 
   bool ConsumePreventSegmentBinding(const PdfTextSegment& a,
                                     const PdfTextSegment& b) {
-    const string key = CreateKey(a.text(), b.text());
+    const std::string key = CreateKey(a.text(), b.text());
     const bool prevent = ContainsKey(prevent_bindings_, key);
     if (prevent) {
       LOG(INFO) << "Preventing segment binding between '" << key << "'";
@@ -253,7 +253,7 @@ class Segments {
   }
 
  private:
-  static string CreateKey(const string& a, const string& b) {
+  static std::string CreateKey(const std::string& a, const std::string& b) {
     return StrCat(a, " <-> ", b);
   }
 
@@ -271,7 +271,7 @@ class Segments {
   std::unordered_map<size_t, size_t> first_char_index_to_segment_index_;
   // ok to store StringPieces we own the data.
   std::map<StringPiece, size_t> text_to_index_;
-  std::unordered_set<string> prevent_bindings_;
+  std::unordered_set<std::string> prevent_bindings_;
 };
 
 // Clusters the consecutive segments and link them together into PdfTextBlocks.
@@ -330,7 +330,7 @@ void ClusterSegments(Segments* segments, PdfTextBlocks* blocks) {
     std::sort(indices.begin(), indices.end(), reading_order_cmp);
     PdfTextBlock block;
     BoundingBox* bounding_box = block.mutable_bounding_box();
-    string* text = block.mutable_text();
+    std::string* text = block.mutable_text();
     bool first = true;
     for (const size_t index : indices) {
       const auto& segment = segments->Get(index);
@@ -411,7 +411,7 @@ void ClusterColumns(const Blocks& row_blocks, PdfTextBlocks* output) {
     PdfTextBlock output_block;
 
     BoundingBox* bounding_box = output_block.mutable_bounding_box();
-    string* text = output_block.mutable_text();
+    std::string* text = output_block.mutable_text();
     bool first = true;
     for (const size_t index : col_indices) {
       const PdfTextBlock& block = row_blocks.Get(index);

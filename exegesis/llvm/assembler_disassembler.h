@@ -17,8 +17,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/llvm/assembler_disassembler.pb.h"
 #include "exegesis/llvm/disassembler.h"
@@ -44,7 +44,7 @@ class AssemblerDisassembler {
   // Assembles (but does not execute) the assembly code given in code, and fill
   // the fields in result.
   StatusOr<AssemblerDisassemblerResult> AssembleDisassemble(
-      const string& code, llvm::InlineAsm::AsmDialect asm_dialect);
+      const std::string& code, llvm::InlineAsm::AsmDialect asm_dialect);
 
   // Disassembles the binary code given in encoded_instruction
   // It is assumed that the memory pointed to by binary_code either holds the
@@ -57,7 +57,7 @@ class AssemblerDisassembler {
   // element of the result contains the interpretation that was used.
   std::pair<StatusOr<AssemblerDisassemblerResult>,
             AssemblerDisassemblerInterpretation>
-  AssembleDisassemble(const string& input,
+  AssembleDisassemble(const std::string& input,
                       AssemblerDisassemblerInterpretation interpretation);
 
  private:

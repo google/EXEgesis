@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_ITINERARIES_JIT_PERF_EVALUATOR_H_
 #define EXEGESIS_ITINERARIES_JIT_PERF_EVALUATOR_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/x86/cpu_state.h"
@@ -49,7 +49,7 @@ using ::exegesis::util::Status;
 // 'constraints' contains the constraints on the assembly line, in a way similar
 // to the inline assembly syntax of gcc or LLVM.
 Status EvaluateAssemblyString(
-    llvm::InlineAsm::AsmDialect dialect, const string& mcpu,
+    llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
     int num_outer_iterations, int num_inner_iterations,
     const std::string& init_code, const std::string& prefix_code,
     const std::string& measured_code, const std::string& update_code,
@@ -59,13 +59,11 @@ Status EvaluateAssemblyString(
 // Executes the given code, measuring the CPU state before and after execution
 // of 'code'. 'prefix_code' is run before measurements, and cleanup_code
 // afterwards.
-Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
-                           const string& mcpu, const std::string& prefix_code,
-                           const std::string& code,
-                           const std::string& cleanup_code,
-                           const std::string& constraints,
-                           FXStateBuffer* fx_state_buffer_in,
-                           FXStateBuffer* fx_state_buffer_out);
+Status DebugCPUStateChange(
+    llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
+    const std::string& prefix_code, const std::string& code,
+    const std::string& cleanup_code, const std::string& constraints,
+    FXStateBuffer* fx_state_buffer_in, FXStateBuffer* fx_state_buffer_out);
 
 }  // namespace exegesis
 

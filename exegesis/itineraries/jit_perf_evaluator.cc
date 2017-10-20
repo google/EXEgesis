@@ -16,8 +16,8 @@
 
 #include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "base/stringprintf.h"
 #include "exegesis/itineraries/perf_subsystem.h"
@@ -44,14 +44,14 @@ constexpr const PerfSubsystem::EventCategory kPerfEventCategories[] = {
     &PerfEventsProto::memory_events, &PerfEventsProto::uops_events};
 
 Status EvaluateAssemblyString(
-    llvm::InlineAsm::AsmDialect dialect, const string& mcpu,
+    llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
     const int num_outer_iterations, const int num_inner_iterations,
     const std::string& init_code, const std::string& prefix_code,
     const std::string& measured_code, const std::string& update_code,
     const std::string& suffix_code, const std::string& cleanup_code,
     const std::string& constraints, PerfResult* result) {
   JitCompiler jit(mcpu);
-  const string code =
+  const std::string code =
       StrCat(prefix_code, "\n",
              RepeatCode(num_inner_iterations,
                         StrCat(measured_code, "\n\t", update_code)),
@@ -89,13 +89,11 @@ Status EvaluateAssemblyString(
   return OkStatus();
 }
 
-Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
-                           const string& mcpu, const std::string& prefix_code,
-                           const std::string& code,
-                           const std::string& cleanup_code,
-                           const std::string& constraints,
-                           FXStateBuffer* fx_state_buffer_in,
-                           FXStateBuffer* fx_state_buffer_out) {
+Status DebugCPUStateChange(
+    llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
+    const std::string& prefix_code, const std::string& code,
+    const std::string& cleanup_code, const std::string& constraints,
+    FXStateBuffer* fx_state_buffer_in, FXStateBuffer* fx_state_buffer_out) {
   JitCompiler jit(mcpu);
 
   constexpr const char kGetStateCodeTemplate[] = R"(
@@ -105,10 +103,10 @@ Status DebugCPUStateChange(llvm::InlineAsm::AsmDialect dialect,
     pop rax
   )";
 
-  const string in_code =
+  const std::string in_code =
       StringPrintf(kGetStateCodeTemplate, fx_state_buffer_in->get());
 
-  const string out_code =
+  const std::string out_code =
       StringPrintf(kGetStateCodeTemplate, fx_state_buffer_out->get());
 
   const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(

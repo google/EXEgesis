@@ -30,7 +30,8 @@ constexpr const char kTestArchitectureProto[] = R"(
 )";
 
 TEST(ArchitectureProtoProviderTest, TestPbTxtSource) {
-  const string filename = StrCat(getenv("TEST_TMPDIR"), "/test_arch.pbtxt");
+  const std::string filename =
+      StrCat(getenv("TEST_TMPDIR"), "/test_arch.pbtxt");
   WriteTextProtoOrDie(filename, ParseProtoFromStringOrDie<ArchitectureProto>(
                                     kTestArchitectureProto));
   EXPECT_THAT(*GetArchitectureProtoOrDie(StrCat(kPbTxtSource, ":", filename)),
@@ -38,7 +39,7 @@ TEST(ArchitectureProtoProviderTest, TestPbTxtSource) {
 }
 
 TEST(ArchitectureProtoProviderTest, TestPbSource) {
-  const string filename = StrCat(getenv("TEST_TMPDIR"), "/test_arch.pb");
+  const std::string filename = StrCat(getenv("TEST_TMPDIR"), "/test_arch.pb");
   WriteBinaryProtoOrDie(filename, ParseProtoFromStringOrDie<ArchitectureProto>(
                                       kTestArchitectureProto));
   EXPECT_THAT(*GetArchitectureProtoOrDie(StrCat(kPbSource, ":", filename)),

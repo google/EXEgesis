@@ -28,17 +28,18 @@ namespace exegesis {
 namespace {
 
 // Returns the registered providers.
-std::unordered_map<string, std::unique_ptr<const ArchitectureProtoProvider>>*
+std::unordered_map<std::string,
+                   std::unique_ptr<const ArchitectureProtoProvider>>*
 GetProviders() {
   static auto* const registry = new std::unordered_map<
-      string, std::unique_ptr<const ArchitectureProtoProvider>>();
+      std::string, std::unique_ptr<const ArchitectureProtoProvider>>();
   return registry;
 }
 
 // Architecture provider for proto files.
-template <void (*Read)(const string&, google::protobuf::Message* message)>
+template <void (*Read)(const std::string&, google::protobuf::Message* message)>
 std::shared_ptr<const ArchitectureProto> GetArchitectureProtoFromFileOrDie(
-    const string& id) {
+    const std::string& id) {
   auto result = std::make_shared<ArchitectureProto>();
   Read(id, result.get());
   return result;
@@ -47,13 +48,13 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoFromFileOrDie(
 }  // namespace
 
 std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
-    const string& uri) {
+    const std::string& uri) {
   const auto sep = uri.find(':');
   // If sep is npos, source is the whole thing, and id is empty.
-  const string source = uri.substr(0, sep);
+  const std::string source = uri.substr(0, sep);
   // Call GetProtoOrDie() even if the id is empty to give the provider a chance
   // to explain the issue.
-  const string id = sep == string::npos ? "" : uri.substr(sep + 1);
+  const std::string id = sep == std::string::npos ? "" : uri.substr(sep + 1);
   if (source == kPbTxtSource) {
     return GetArchitectureProtoFromFileOrDie<ReadTextProtoOrDie>(id);
   } else if (source == kPbSource) {
@@ -73,8 +74,8 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
   return nullptr;
 }
 
-std::vector<string> GetRegisteredArchitectureIds() {
-  std::vector<string> result;
+std::vector<std::string> GetRegisteredArchitectureIds() {
+  std::vector<std::string> result;
   for (const auto& name_provider : *GetProviders()) {
     result.push_back(name_provider.first);
   }
@@ -84,7 +85,8 @@ std::vector<string> GetRegisteredArchitectureIds() {
 ArchitectureProtoProvider::~ArchitectureProtoProvider() {}
 
 internal::RegisterArchitectureProtoProvider::RegisterArchitectureProtoProvider(
-    const string& name, std::unique_ptr<ArchitectureProtoProvider> provider) {
+    const std::string& name,
+    std::unique_ptr<ArchitectureProtoProvider> provider) {
   const bool inserted =
       GetProviders()->emplace(name, std::move(provider)).second;
   CHECK(inserted) << "Duplicate provider '" << name << "'";

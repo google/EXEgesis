@@ -14,7 +14,7 @@
 
 #include "exegesis/arm/xml/markdown.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "gtest/gtest.h"
 #include "tinyxml2.h"
@@ -27,7 +27,7 @@ namespace {
 using ::tinyxml2::XMLDocument;
 using ::tinyxml2::XMLElement;
 
-void ParseXML(const string& xml, XMLDocument* doc) {
+void ParseXML(const std::string& xml, XMLDocument* doc) {
   ASSERT_EQ(doc->Parse(xml.data(), xml.size()), ::tinyxml2::XML_SUCCESS);
 }
 

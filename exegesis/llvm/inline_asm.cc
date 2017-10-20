@@ -71,7 +71,7 @@ class JitCompiler::StoreSizeMemoryManager : public llvm::SectionMemoryManager {
   std::unordered_map<const uint8_t*, int> address_to_size_;
 };
 
-JitCompiler::JitCompiler(const string& mcpu) : mcpu_(mcpu) {}
+JitCompiler::JitCompiler(const std::string& mcpu) : mcpu_(mcpu) {}
 
 void JitCompiler::Init() {
   initialized_ = true;

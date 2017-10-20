@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_UTIL_INSTRUCTION_SYNTAX_H_
 #define EXEGESIS_UTIL_INSTRUCTION_SYNTAX_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/instructions.pb.h"
 
@@ -25,11 +25,11 @@ namespace exegesis {
 // InstructionFormat.
 // NOTE(bdb): This only handles x86 prefixes.
 // TODO(bdb): Make this x86-independent.
-InstructionFormat ParseAssemblyStringOrDie(const string& code);
+InstructionFormat ParseAssemblyStringOrDie(const std::string& code);
 
 // Returns an assembler-ready string corresponding to the InstructionFormat
 // passed as argument.
-string ConvertToCodeString(const InstructionFormat& proto);
+std::string ConvertToCodeString(const InstructionFormat& proto);
 
 }  // namespace exegesis
 

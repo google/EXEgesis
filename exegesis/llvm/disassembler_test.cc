@@ -309,10 +309,10 @@ TEST(DisassemblerTest, InvalidateTLBEntry) {
 TEST(DisassemblerTest, TooShortABuffer) {
   Disassembler disasm("");
   unsigned llvm_opcode;
-  string llvm_mnemonic;
-  std::vector<string> llvm_operands;
-  string intel_instruction;
-  string att_instruction;
+  std::string llvm_mnemonic;
+  std::vector<std::string> llvm_operands;
+  std::string intel_instruction;
+  std::string att_instruction;
   std::vector<uint8_t> full = {0x66, 0x0F, 0x2F, 0x0C, 0x25,
                                0xFF, 0x7F, 0x00, 0x00};
 

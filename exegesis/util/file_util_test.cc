@@ -14,7 +14,7 @@
 
 #include "exegesis/util/file_util.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,9 +25,10 @@ namespace {
 
 TEST(FileUtilTest, WriteToFileAndReadItAgain) {
   constexpr char kContents[] = "Hello world!";
-  const string test_file = StrCat(getenv("TEST_TMPDIR"), "testfile");
+  const std::string test_file = StrCat(getenv("TEST_TMPDIR"), "testfile");
   WriteTextToFileOrStdOutOrDie(test_file, kContents);
-  const string contents_from_file = ReadTextFromFileOrStdInOrDie(test_file);
+  const std::string contents_from_file =
+      ReadTextFromFileOrStdInOrDie(test_file);
   EXPECT_EQ(contents_from_file, kContents);
 }
 

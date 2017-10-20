@@ -14,7 +14,6 @@ cc_library(
         "str_join.h",
         "str_replace.h",
         "str_split.h",
-        "string.h",
         "string_view.h",
         "string_view_utils.h",
         "strip.h",

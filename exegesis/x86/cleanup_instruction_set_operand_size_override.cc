@@ -19,10 +19,10 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/util/instruction_syntax.h"
@@ -55,7 +55,7 @@ const char* const k16BitInstructionsWithImplicitOperands[] = {
 Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<string> string_instructions(
+  const std::unordered_set<std::string> string_instructions(
       std::begin(k16BitInstructionsWithImplicitOperands),
       std::end(k16BitInstructionsWithImplicitOperands));
   for (InstructionProto& instruction :
@@ -73,12 +73,12 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(
 Status AddOperandSizeOverrideToSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<string> k16BitOperands = {"r16", "r/m16"};
+  const std::unordered_set<std::string> k16BitOperands = {"r16", "r/m16"};
   // One of the operands of the instructions gives away its 16-bit-ness;
   // unfortunately, the position of these operands may differ from instruction
   // to instruction. In this map, we keep the list of affected binary encodings,
   // and the index of the operand that can be used to find the 16-bit version.
-  const std::unordered_map<string, int> kOperandIndex = {
+  const std::unordered_map<std::string, int> kOperandIndex = {
       {"0F 01 /4", 0},        // SMSW r/m16; SMSW r32/m16
       {"0F B2 /r", 0},        // LSS r16,m16:16; LSS r32,m16:32
       {"0F B2 /r", 0},        // LSS r16,m16:16; LSS r32,m16:32
@@ -134,9 +134,9 @@ bool HasDataOperandOfSize(int size, const InstructionProto& instruction) {
 
 // Prints a string that contains the vendor syntax of all instructions in
 // 'instructions' in a human-readable format.
-string FormatAllInstructions(
+std::string FormatAllInstructions(
     const std::vector<InstructionProto*>& instructions) {
-  std::vector<string> vendor_syntaxes;
+  std::vector<std::string> vendor_syntaxes;
   vendor_syntaxes.reserve(instructions.size());
   for (const InstructionProto* const instruction : instructions) {
     vendor_syntaxes.push_back(
@@ -149,7 +149,7 @@ string FormatAllInstructions(
 
 Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  std::unordered_map<string, std::vector<InstructionProto*>>
+  std::unordered_map<std::string, std::vector<InstructionProto*>>
       instructions_by_raw_encoding_specification;
 
   // First we cluster instructions by their binary encoding. We ignore the
@@ -157,7 +157,7 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
   // they do not have a relation to the 16/32-bit dichotomy.
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const string& raw_encoding_specification =
+    const std::string& raw_encoding_specification =
         instruction.raw_encoding_specification();
     if (raw_encoding_specification.empty()) {
       return InvalidArgumentError(
@@ -186,7 +186,8 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
     // Remove information about immediate values from the encoding, and then
     // index the instructions by the serialized version of the proto.
     specification.clear_immediate_value_bytes();
-    const string serialized_specification = specification.SerializeAsString();
+    const std::string serialized_specification =
+        specification.SerializeAsString();
     instructions_by_raw_encoding_specification[serialized_specification]
         .push_back(&instruction);
   }
@@ -243,12 +244,12 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefix, 5000);
 Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<string> k16BitOperands = {"r16", "r/m16"};
+  const std::unordered_set<std::string> k16BitOperands = {"r16", "r/m16"};
   // Following instructions can have operand size override prefix or not,
   // because they implicitly operate on 16 bit data. Since, it is up to compiler
   // to add the prefix or not we are adding both versions to be able to match
   // them in any case.
-  const std::unordered_map<string, int> kOperandIndex = {
+  const std::unordered_map<std::string, int> kOperandIndex = {
       {"8C /r", 0},     // MOV Sreg to r/m16; MOV Sreg to r/m64
       {"0F 00 /0", 0},  // SLDT r/m16; SLDT r64/m16
       {"0F 00 /1", 0},  // STR r/m16; STR r64/m16

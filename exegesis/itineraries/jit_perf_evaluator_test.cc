@@ -43,7 +43,7 @@ void TestEvaluateAssemblyString(const std::string& measured_code,
                                    /*update_code=*/"",
                                    /*suffix_code=*/"",
                                    /*cleanup_code=*/"", constraints, &result));
-  const string result_string = result.ToString();
+  const std::string result_string = result.ToString();
   EXPECT_THAT(result_string, HasSubstr("num_times"));
   LOG(INFO) << result_string;
 }
@@ -96,7 +96,7 @@ TEST(JitPerfEvaluatorTest, AddsdrmIntel) {
       /*suffix_code=*/"",
       /*cleanup_code=*/"",
       /*constraints=*/"~{r11},~{xmm0}", &result));
-  const string result_string = result.ToString();
+  const std::string result_string = result.ToString();
   EXPECT_THAT(result_string, HasSubstr("num_times"));
   LOG(INFO) << result_string;
 }
@@ -115,7 +115,7 @@ TEST(JitPerfEvaluatorTest, Mov64mi32ATT) {
       /*cleanup_code=*/"",
       /*constraints=*/"~{r11}", &result));
   DCHECK_EQ(64, memory);
-  const string result_string = result.ToString();
+  const std::string result_string = result.ToString();
   EXPECT_THAT(result_string, HasSubstr("num_times"));
   LOG(INFO) << result_string;
 }
@@ -134,7 +134,7 @@ TEST(JitPerfEvaluatorTest, DebugCPUStateChange) {
   uint16_t fpu_control_word_out = kExpectedFPUControlWord;
 
   // Save previous control word.
-  const string prefix_code = StringPrintf(
+  const std::string prefix_code = StringPrintf(
       R"(
         movabs rsi,%p
         fstcw word ptr[rsi]
@@ -142,7 +142,7 @@ TEST(JitPerfEvaluatorTest, DebugCPUStateChange) {
       &fpu_control_word_save);
 
   // Load control word from fpu_control_word_out.
-  const string code = StringPrintf(
+  const std::string code = StringPrintf(
       R"(
         movabs rdi,%p
         fldcw word ptr[rdi]
@@ -150,7 +150,7 @@ TEST(JitPerfEvaluatorTest, DebugCPUStateChange) {
       &fpu_control_word_out);
 
   // Restore previous control word.
-  const string cleanup_code =
+  const std::string cleanup_code =
       R"(
         fldcw word ptr[rsi]
       )";

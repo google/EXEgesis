@@ -27,8 +27,8 @@
 #ifndef EXEGESIS_X86_ENCODING_SPECIFICATION_H_
 #define EXEGESIS_X86_ENCODING_SPECIFICATION_H_
 
+#include <string>
 #include <unordered_set>
-#include "strings/string.h"
 
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
@@ -47,7 +47,7 @@ using ::exegesis::util::StatusOr;
 // CHECK_OK(specification_or_status.status());
 // printf("%x\n", specification_or_status.ValueOrDie().opcode());
 StatusOr<EncodingSpecification> ParseEncodingSpecification(
-    const string& specification);
+    const std::string& specification);
 
 // A collection of instruction operand encodings.
 using InstructionOperandEncodingMultiset =

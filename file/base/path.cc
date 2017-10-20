@@ -14,7 +14,7 @@
 
 #include "file/base/path.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "strings/str_cat.h"
 #include "strings/string_view.h"
@@ -23,9 +23,9 @@
 namespace exegesis {
 namespace file {
 
-string JoinPath(StringPiece a, StringPiece b) {
-  if (a.empty()) return string(b);
-  if (b.empty()) return string(a);
+std::string JoinPath(StringPiece a, StringPiece b) {
+  if (a.empty()) return std::string(b);
+  if (b.empty()) return std::string(a);
   if (strings::EndsWith(a, "/")) {
     if (strings::StartsWith(b, "/")) return StrCat(a, b.substr(1));
   } else {

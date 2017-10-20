@@ -42,12 +42,12 @@ double PerfResult::Scale(const TimingInfo& timing) const {
          static_cast<double>(num_times_);
 }
 
-double PerfResult::GetScaledOrDie(const string& name) const {
+double PerfResult::GetScaledOrDie(const std::string& name) const {
   return Scale(FindOrDie(timings_, name));
 }
 
-string PerfResult::ToString() const {
-  string result;
+std::string PerfResult::ToString() const {
+  std::string result;
   for (const auto& key_value : timings_) {
     StringAppendF(&result, "%s: %.2f, ", key_value.first.c_str(),
                   Scale(key_value.second));
@@ -58,13 +58,13 @@ string PerfResult::ToString() const {
 
 void PerfResult::Accumulate(const PerfResult& delta) {
   for (const auto& key_val : delta.timings_) {
-    const string& name = key_val.first;
+    const std::string& name = key_val.first;
     timings_[name].Accumulate(key_val.second);
   }
 }
 
-std::vector<string> PerfResult::Keys() const {
-  std::vector<string> result;
+std::vector<std::string> PerfResult::Keys() const {
+  std::vector<std::string> result;
   for (const auto& key_val : timings_) {
     result.push_back(key_val.first);
   }
@@ -73,8 +73,8 @@ std::vector<string> PerfResult::Keys() const {
 
 namespace {
 
-bool Contains(const string& big, const string& small) {
-  return big.find(small) != string::npos;
+bool Contains(const std::string& big, const std::string& small) {
+  return big.find(small) != std::string::npos;
 }
 
 }  // namespace
@@ -87,13 +87,8 @@ PerfSubsystem::PerfSubsystem()
   timers_.resize(kMaxNumCounters);
 
   // Check the consistency between CPUs that p4lib and we detect.
-  // p4lib does not make a difference between skl and skx.
-  const string cpu_id = microarchitecture_.proto().id() == "skx"
-                            ? "skl"
-                            : microarchitecture_.proto().id();
-  CHECK(Contains(Info(), cpu_id))
-      << "'" << Info() << "' vs '" << cpu_id << "' ('"
-      << microarchitecture_.proto().id() << "')";
+  const std::string& cpu_id = microarchitecture_.proto().id();
+  CHECK(Contains(Info(), cpu_id)) << "'" << Info() << "' vs '" << cpu_id;
 }
 
 PerfSubsystem::~PerfSubsystem() { CleanUp(); }
@@ -106,8 +101,8 @@ void PerfSubsystem::CleanUp() {
   event_names_.resize(0);
 }
 
-string PerfSubsystem::Info() const {
-  string result;
+std::string PerfSubsystem::Info() const {
+  std::string result;
   int i;
   pfm_for_all_pmus(i) {
     pfm_pmu_info_t pmu_info;
@@ -147,7 +142,7 @@ void PerfSubsystem::ListEvents() {
   }
 }
 
-int PerfSubsystem::AddEvent(const string& event_name) {
+int PerfSubsystem::AddEvent(const std::string& event_name) {
   struct perf_event_attr attr = {0};
   memset(&attr, 0, sizeof(attr));
   attr.size = sizeof(attr);
@@ -181,7 +176,7 @@ void PerfSubsystem::StartCollectingEvents(EventCategory category) {
   const auto& events = (microarchitecture_.proto().perf_events().*(category))();
   CHECK_LE(events.size(), 4)
       << "There should be less that 4 events to avoid multiplexing";
-  for (const string& event : events) {
+  for (const std::string& event : events) {
     AddEvent(event);
   }
   StartCollecting();
@@ -204,7 +199,7 @@ PerfResult PerfSubsystem::ReadCounters() {
   }
   // We copy the result to the resulting vector here to avoid polluting the
   // counters with the call to resize().
-  std::map<string, TimingInfo> timings;
+  std::map<std::string, TimingInfo> timings;
   for (int i = 0; i < num_fds; ++i) {
     InsertOrDie(&timings, event_names_[i], timers_[i]);
   }

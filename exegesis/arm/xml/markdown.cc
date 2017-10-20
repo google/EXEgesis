@@ -14,8 +14,8 @@
 
 #include "exegesis/arm/xml/markdown.h"
 
+#include <string>
 #include <unordered_map>
-#include "strings/string.h"
 
 #include "exegesis/util/xml/xml_util.h"
 #include "re2/re2.h"
@@ -49,19 +49,20 @@ enum class TagType {
 
 // Returns the canonical type of a given tag.
 TagType GetType(const XMLElement& element) {
-  static const auto* const kTagTypes = new std::unordered_map<string, TagType>({
-      {"arm-defined-word", TagType::CODE},
-      {"hexnumber", TagType::CODE},
-      {"image", TagType::IMAGE},
-      {"instruction", TagType::CODE},
-      {"list", TagType::LIST},
-      {"listitem", TagType::LISTITEM},
-      {"note", TagType::BLOCKQUOTE},
-      {"para", TagType::PARAGRAPH},
-      {"syntax", TagType::CODE},
-      {"value", TagType::CODE},
-      {"xref", TagType::LINK},
-  });
+  static const auto* const kTagTypes =
+      new std::unordered_map<std::string, TagType>({
+          {"arm-defined-word", TagType::CODE},
+          {"hexnumber", TagType::CODE},
+          {"image", TagType::IMAGE},
+          {"instruction", TagType::CODE},
+          {"list", TagType::LIST},
+          {"listitem", TagType::LISTITEM},
+          {"note", TagType::BLOCKQUOTE},
+          {"para", TagType::PARAGRAPH},
+          {"syntax", TagType::CODE},
+          {"value", TagType::CODE},
+          {"xref", TagType::LINK},
+      });
   return FindWithDefault(*kTagTypes, element.Name(), TagType::UNKNOWN);
 }
 
@@ -123,20 +124,20 @@ class TinyMarkdownParser : public XMLVisitor {
     return true;
   }
 
-  const string& markdown() { return md_; }
+  const std::string& markdown() { return md_; }
 
  private:
-  string md_;
+  std::string md_;
 };
 
 }  // namespace
 
-string ExportToMarkdown(const XMLElement* element) {
+std::string ExportToMarkdown(const XMLElement* element) {
   if (!element) return "";
 
   TinyMarkdownParser parser;
   element->Accept(&parser);
-  string md = parser.markdown();
+  std::string md = parser.markdown();
 
   // Remove all non-newline whitespace before/after all newlines.
   RE2::GlobalReplace(&md, R"([^\S\n]*\n[^\S\n]*)", "\n");

@@ -60,7 +60,7 @@ constexpr const float kPageMargin = 50.0f;
 // satisfy the requirements: std::map<ValueType, RE2*> and
 // std::vector<std::pair<ValueType, RE2*>>.
 template <typename ValueType, typename Container>
-const RE2* TryParse(const Container& matchers, const string& text,
+const RE2* TryParse(const Container& matchers, const std::string& text,
                     ValueType* output) {
   CHECK(output != nullptr) << "must not be nullptr";
   for (const auto& pair : matchers) {
@@ -75,7 +75,7 @@ const RE2* TryParse(const Container& matchers, const string& text,
 // Returns the value associated to the first matching regexp in the map or the
 // provided default value.
 template <typename ValueType, typename Container>
-ValueType ParseWithDefault(const Container& matchers, const string& text,
+ValueType ParseWithDefault(const Container& matchers, const std::string& text,
                            const ValueType& default_value) {
   for (const auto& pair : matchers) {
     if (RE2::FullMatch(text, *pair.second)) return pair.first;
@@ -87,7 +87,7 @@ typedef std::vector<const PdfPage*> Pages;
 typedef std::vector<const PdfTextTableRow*> Rows;
 typedef google::protobuf::RepeatedField<InstructionTable::Column> Columns;
 
-void RemoveSpaceAndLF(string* text) { strrmm(text, "\n "); }
+void RemoveSpaceAndLF(std::string* text) { strrmm(text, "\n "); }
 
 constexpr const size_t kMaxInstructionIdSize = 60;
 constexpr const char kInstructionSetRef[] = "INSTRUCTION SET REFERENCE";
@@ -98,7 +98,7 @@ constexpr const char kInstructionSetRef[] = "INSTRUCTION SET REFERENCE";
 // It does so by removing some characters and imposing a limit on the text size.
 // Limiting the size is necessary because when text is too long it gets
 // truncated in different ways.
-string Normalize(string text) {
+std::string Normalize(std::string text) {
   strrmm(&text, "\n ∗*");
   if (text.size() > kMaxInstructionIdSize) text.resize(kMaxInstructionIdSize);
   return text;
@@ -106,18 +106,19 @@ string Normalize(string text) {
 
 // If page number is even, returns the rightmost string in the footer, else the
 // leftmost string.
-const string& GetFooterSectionName(const PdfPage& page) {
+const std::string& GetFooterSectionName(const PdfPage& page) {
   return page.number() % 2 == 0 ? GetCellTextOrEmpty(page, -1, -1)
                                 : GetCellTextOrEmpty(page, -1, 0);
 }
 
 // If 'page' is the first page of an instruction, returns a unique identifier
 // for this instruction. Otherwise return empty string.
-string GetInstructionGroupId(const PdfPage& page) {
+std::string GetInstructionGroupId(const PdfPage& page) {
   if (!strings::StartsWith(GetCellTextOrEmpty(page, 0, 0), kInstructionSetRef))
     return {};
-  const string maybe_instruction = Normalize(GetCellTextOrEmpty(page, 1, 0));
-  const string& footer_section_name = GetFooterSectionName(page);
+  const std::string maybe_instruction =
+      Normalize(GetCellTextOrEmpty(page, 1, 0));
+  const std::string& footer_section_name = GetFooterSectionName(page);
   if (maybe_instruction == Normalize(footer_section_name)) {
     return footer_section_name;
   }
@@ -126,7 +127,7 @@ string GetInstructionGroupId(const PdfPage& page) {
 
 // True if page footer's corresponds to the same instruction_id.
 bool IsPageInstruction(const PdfPage& page,
-                       const string& instruction_group_id) {
+                       const std::string& instruction_group_id) {
   return Normalize(GetFooterSectionName(page)) ==
          Normalize(instruction_group_id);
 }
@@ -134,7 +135,7 @@ bool IsPageInstruction(const PdfPage& page,
 // Returns the list of pages an instruction spans.
 std::vector<const PdfPage*> GetInstructionsPages(
     const PdfDocument& document, const int first_page,
-    const string& instruction_group_id) {
+    const std::string& instruction_group_id) {
   std::vector<const PdfPage*> result;
   for (int i = first_page; i < document.pages_size(); ++i) {
     const auto& page = document.pages(i);
@@ -146,11 +147,11 @@ std::vector<const PdfPage*> GetInstructionsPages(
 
 constexpr const float kMinSubSectionTitleFontSize = 9.5f;
 
-string GetSubSectionTitle(const PdfTextTableRow& row) {
+std::string GetSubSectionTitle(const PdfTextTableRow& row) {
   if (row.blocks().empty() || row.blocks_size() > 2) return {};
   const auto& block = row.blocks(0);
   if (block.font_size() < kMinSubSectionTitleFontSize) return {};
-  string text = block.text();
+  std::string text = block.text();
   StripWhitespace(&text);
   if (strings::StartsWith(text, "Table") ||
       strings::StartsWith(text, "Figure") ||
@@ -234,8 +235,8 @@ GetInstructionModeMatchers() {
   return *kModes;
 }
 
-const std::set<string>& GetValidFeatureSet() {
-  static const auto* kValidFeatures = new std::set<string>{
+const std::set<std::string>& GetValidFeatureSet() {
+  static const auto* kValidFeatures = new std::set<std::string>{
       "3DNOW",      "ADX",      "AES",        "AVX",      "AVX2",
       "AVX512BW",   "AVX512CD", "AVX512DQ",   "AVX512ER", "AVX512F",
       "AVX512IFMA", "AVX512PF", "AVX512VBMI", "AVX512VL", "BMI1",
@@ -288,12 +289,12 @@ const OperandEncodingMatchers& GetOperandEncodingSpecMatchers() {
   return *kOperandEncodingSpec;
 }
 
-void Cleanup(string* text) {
+void Cleanup(std::string* text) {
   StripWhitespace(text);
   while (!text->empty() && text->back() == '*') text->pop_back();
 }
 
-bool IsValidMode(const string& text) {
+bool IsValidMode(const std::string& text) {
   InstructionTable::Mode mode;
   if (TryParse(GetInstructionModeMatchers(), text, &mode) != nullptr) {
     return mode == InstructionTable::MODE_V;
@@ -304,7 +305,7 @@ bool IsValidMode(const string& text) {
 // We want to normalize features to the set defined by GetValidFeatureSet or
 // logical composition of them (several features separated by '&&' or '||')
 // TODO(gchatelet): Move this to configuration file.
-string FixFeature(string feature) {
+std::string FixFeature(std::string feature) {
   StripWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
   const char kAvxRegex[] =
@@ -312,8 +313,8 @@ string FixFeature(string feature) {
       "AVX512VBMI|AVX512VL)+";
   if (RE2::FullMatch(feature, kAvxRegex)) {
     StringPiece remainder(feature);
-    string piece;
-    std::vector<string> pieces;
+    std::string piece;
+    std::vector<std::string> pieces;
     while (RE2::Consume(&remainder, kAvxRegex, &piece)) {
       pieces.push_back(piece);
     }
@@ -330,7 +331,7 @@ string FixFeature(string feature) {
 
 // Applies transformations to normalize binary encoding.
 // TODO(gchatelet): Move this to document specific configuration.
-string FixEncodingSpecification(string feature) {
+std::string FixEncodingSpecification(std::string feature) {
   StripWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([,\n])", " ");  // remove commas and LF
   RE2::GlobalReplace(&feature, R"([ ]+)", " ");   // collapse multiple spaces
@@ -349,7 +350,7 @@ string FixEncodingSpecification(string feature) {
 
 const LazyRE2 kInstructionRegexp = {R"(\n([A-Z][0-9A-Z]+))"};
 
-void ParseCell(const InstructionTable::Column column, string text,
+void ParseCell(const InstructionTable::Column column, std::string text,
                InstructionProto* instruction) {
   StripWhitespace(&text);
   switch (column) {
@@ -361,12 +362,12 @@ void ParseCell(const InstructionTable::Column column, string text,
       ParseVendorSyntax(text, instruction->mutable_vendor_syntax());
       break;
     case InstructionTable::IT_OPCODE_INSTRUCTION: {
-      string mnemonic;
+      std::string mnemonic;
       if (RE2::PartialMatch(text, *kInstructionRegexp, &mnemonic)) {
         const size_t index_of_mnemonic = text.find(mnemonic);
         CHECK_NE(index_of_mnemonic, StringPiece::npos);
-        const string opcode_text = text.substr(0, index_of_mnemonic);
-        const string instruction_text = text.substr(index_of_mnemonic);
+        const std::string opcode_text = text.substr(0, index_of_mnemonic);
+        const std::string instruction_text = text.substr(index_of_mnemonic);
         ParseVendorSyntax(instruction_text,
                           instruction->mutable_vendor_syntax());
         instruction->set_raw_encoding_specification(
@@ -388,12 +389,13 @@ void ParseCell(const InstructionTable::Column column, string text,
       instruction->set_available_in_64_bit(IsValidMode(text));
       break;
     case InstructionTable::IT_MODE_SUPPORT_64_32BIT: {
-      const std::vector<string> pieces = strings::Split(text, "/");  // NOLINT
+      const std::vector<std::string> pieces =
+          strings::Split(text, "/");  // NOLINT
       instruction->set_available_in_64_bit(IsValidMode(pieces[0]));
       if (pieces.size() == 2) {
         instruction->set_legacy_instruction(IsValidMode(pieces[1]));
       } else {
-        LOG(ERROR) << "Invalid 64/32 mode support string '" << text << "'";
+        LOG(ERROR) << "Invalid 64/32 mode support std::string '" << text << "'";
       }
       break;
     }
@@ -404,10 +406,10 @@ void ParseCell(const InstructionTable::Column column, string text,
     case InstructionTable::IT_FEATURE_FLAG: {
       // Feature flags are not always consitent. FixFeature makes sure cleaned
       // is one of the valid feature values.
-      const string cleaned = FixFeature(text);
-      string* feature_name = instruction->mutable_feature_name();
+      const std::string cleaned = FixFeature(text);
+      std::string* feature_name = instruction->mutable_feature_name();
       for (StringPiece raw_piece : strings::Split(cleaned, " ")) {  // NOLINT
-        const string piece = raw_piece.ToString();
+        const std::string piece = raw_piece.ToString();
         if (!feature_name->empty()) feature_name->append(" ");
         const bool is_logic_operator = piece == "&&" || piece == "||";
         if (is_logic_operator || ContainsKey(GetValidFeatureSet(), piece)) {
@@ -453,7 +455,7 @@ void ParseInstructionTable(const SubSection& sub_section,
     } else {
       // Header is parsed, we have a set of valid columns and we start to parse
       // a row of the instruction table.
-      const string& first_cell = row.blocks(0).text();
+      const std::string& first_cell = row.blocks(0).text();
       // Sometimes there are notes after the instruction table if so we stop the
       // parsing.
       if (strings::StartsWith(first_cell, "NOTE")) {
@@ -509,7 +511,7 @@ OperandEncodingTableType GetOperandEncodingTableHeaderType(
     const PdfTextTableRow& row) {
   bool has_tuple_type_column = false;
   for (const auto& block : row.blocks()) {
-    string text = block.text();
+    std::string text = block.text();
     RemoveSpaceAndLF(&text);
     if (text == "TupleType") {
       has_tuple_type_column = true;
@@ -534,7 +536,7 @@ void ParseOperandEncodingTableRow(const OperandEncodingTableType table_type,
   }
   // The cell can specify several cross references (e.g. "HVM, QVM, OVM")
   // We instantiate as many operand encoding as cross references.
-  const string& cross_references = row.blocks(0).text();
+  const std::string& cross_references = row.blocks(0).text();
   for (auto cross_reference :
        strings::Split(cross_references, ",", strings::SkipEmpty())) {  // NOLINT
     StripWhitespace(&cross_reference);
@@ -589,7 +591,7 @@ std::vector<SubSection> ExtractSubSectionRows(const Pages& pages) {
   SubSection current;
   for (const auto* page : pages) {
     for (const auto* pdf_row : GetPageBodyRows(*page, kPageMargin)) {
-      const string section_title = GetSubSectionTitle(*pdf_row);
+      const std::string section_title = GetSubSectionTitle(*pdf_row);
       const SubSection::Type section_type =
           first_row ? SubSection::INSTRUCTION_TABLE
                     : ParseWithDefault(GetSubSectionMatchers(), section_title,
@@ -619,10 +621,11 @@ std::vector<SubSection> ExtractSubSectionRows(const Pages& pages) {
 // Table are discarded and encoding is set to ANY_ENCODING.
 void PairOperandEncodings(InstructionSection* section) {
   auto* table = section->mutable_instruction_table();
-  std::map<string, const InstructionTable::OperandEncodingCrossref*> mapping;
-  std::set<string> duplicated_crossreference;
+  std::map<std::string, const InstructionTable::OperandEncodingCrossref*>
+      mapping;
+  std::set<std::string> duplicated_crossreference;
   for (const auto& operand_encoding : table->operand_encoding_crossrefs()) {
-    const string& cross_reference = operand_encoding.crossreference_name();
+    const std::string& cross_reference = operand_encoding.crossreference_name();
     if (!InsertIfNotPresent(&mapping, cross_reference, &operand_encoding)) {
       LOG(ERROR) << "Duplicated Operand Encoding Scheme for " << section->id()
                  << ", this will result in UNKNOWN operand encoding sheme";
@@ -630,12 +633,12 @@ void PairOperandEncodings(InstructionSection* section) {
     }
   }
   // Removing duplicated reference, they will be encoded as ANY_ENCODING.
-  for (const string& duplicated : duplicated_crossreference) {
+  for (const std::string& duplicated : duplicated_crossreference) {
     mapping[duplicated] = nullptr;
   }
   // Assigning encoding specifications to all instructions.
   for (auto& instruction : *table->mutable_instructions()) {
-    string encoding_scheme = instruction.encoding_scheme();
+    std::string encoding_scheme = instruction.encoding_scheme();
     RemoveSpaceAndLF(&encoding_scheme);
     if (encoding_scheme.empty()) {
       continue;
@@ -746,7 +749,7 @@ void ProcessSubSections(std::vector<SubSection> sub_sections,
 // TODO(gchatelet): if one of the block's text contains a tab or a line feed the
 // resulting formatting will be broken. Nevertheless after looking at a few
 // examples, tab separated cells seems to be a good strategy.
-void ToString(const PdfTextTableRow& row, string* output) {
+void ToString(const PdfTextTableRow& row, std::string* output) {
   bool first_block = true;
   for (const auto& block : row.blocks()) {
     if (!first_block) StrAppend(output, "\t");
@@ -758,7 +761,7 @@ void ToString(const PdfTextTableRow& row, string* output) {
 // Outputs a section to a string separating rows by line feeds.
 // If type is not filled returns false.
 bool ToString(const InstructionSection& section, const SubSection::Type type,
-              string* output) {
+              std::string* output) {
   CHECK(output);
   const auto& sub_sections = section.sub_sections();
   const auto itr = std::find_if(sub_sections.begin(), sub_sections.end(),
@@ -780,17 +783,17 @@ bool ToString(const InstructionSection& section, const SubSection::Type type,
 void FillGroupProto(const InstructionSection& section,
                     InstructionGroupProto* group) {
   const size_t first_hyphen_position = section.id().find('-');
-  if (first_hyphen_position == string::npos) {
+  if (first_hyphen_position == std::string::npos) {
     group->set_name(section.id());
   } else {
-    string name = section.id().substr(0, first_hyphen_position);
-    string description = section.id().substr(first_hyphen_position + 1);
+    std::string name = section.id().substr(0, first_hyphen_position);
+    std::string description = section.id().substr(first_hyphen_position + 1);
     StripWhitespace(&name);
     StripWhitespace(&description);
     group->set_name(name);
     group->set_short_description(description);
   }
-  string buffer;
+  std::string buffer;
   if (ToString(section, SubSection::DESCRIPTION, &buffer)) {
     group->set_description(buffer);
   }
@@ -805,7 +808,7 @@ void FillGroupProto(const InstructionSection& section,
 
 }  // namespace
 
-OperandEncoding ParseOperandEncodingTableCell(const string& content) {
+OperandEncoding ParseOperandEncodingTableCell(const std::string& content) {
   OperandEncoding::OperandEncodingSpec spec = OperandEncoding::OE_NA;
   const RE2* const regexp =
       content.empty()
@@ -834,7 +837,7 @@ OperandEncoding ParseOperandEncodingTableCell(const string& content) {
     case OperandEncoding::OE_REGISTERS:
     case OperandEncoding::OE_REGISTERS2: {
       CHECK(regexp != nullptr);
-      string usage;
+      std::string usage;
       if (RE2::FullMatch(content, *regexp, &usage) && !usage.empty()) {
         LowerString(&usage);
         strrmm(&usage, " ,");
@@ -862,9 +865,10 @@ SdmDocument ConvertPdfDocumentToSdmDocument(
     const exegesis::pdf::PdfDocument& pdf) {
   // Find all instruction pages.
   SdmDocument sdm_document;
-  std::map<string, Pages> instruction_group_id_to_pages;
+  std::map<std::string, Pages> instruction_group_id_to_pages;
   for (int i = 0; i < pdf.pages_size(); ++i) {
-    const string instruction_group_id = GetInstructionGroupId(pdf.pages(i));
+    const std::string instruction_group_id =
+        GetInstructionGroupId(pdf.pages(i));
     if (instruction_group_id.empty()) continue;
     instruction_group_id_to_pages[instruction_group_id] =
         GetInstructionsPages(pdf, i, instruction_group_id);

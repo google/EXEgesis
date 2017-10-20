@@ -22,10 +22,10 @@
 // --exegesis_page_numbers=662
 
 #include <algorithm>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "gflags/gflags.h"
 
@@ -50,12 +50,13 @@ namespace exegesis {
 namespace pdf {
 namespace {
 
-string GetFilename(const string& name) {
+std::string GetFilename(const std::string& name) {
   return StrCat(FLAGS_exegesis_output_file_base, "_", name, ".pb.txt");
 }
 
-void WritePatchesOrDie(const string& name, const PdfDocumentChanges& changes) {
-  const string filename = GetFilename(name);
+void WritePatchesOrDie(const std::string& name,
+                       const PdfDocumentChanges& changes) {
+  const std::string filename = GetFilename(name);
   WriteTextProtoOrDie(filename, changes);
   size_t count = 0;
   for (const auto& page : changes.pages()) {
@@ -87,7 +88,8 @@ void CheckPatchesOrDie(const PdfDocument& document,
     const auto page_number = page_changes.page_number();
     for (const auto& patch : page_changes.patches()) {
       const auto& page = FindPage(page_number);
-      const string found = GetCellTextOrEmpty(page, patch.row(), patch.col());
+      const std::string found =
+          GetCellTextOrEmpty(page, patch.row(), patch.col());
       CHECK_EQ(patch.expected(), found)
           << "The original patch is invalid at page " << page.number()
           << ", row " << patch.row() << ", col " << patch.col();

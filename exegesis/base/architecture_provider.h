@@ -20,7 +20,7 @@
 #define EXEGESIS_BASE_ARCHITECTURE_PROVIDER_H_
 
 #include <memory>
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/instructions.pb.h"
 #include "util/gtl/ptr_util.h"
@@ -45,10 +45,10 @@ constexpr const char kRegisteredSource[] = "registered";
 // Dies with a useful error message if the provider is not found or if it
 // returns an error. On success the result is guaranteed to be non-null.
 std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
-    const string& uri);
+    const std::string& uri);
 
 // Returns the list of registered architectures.
-std::vector<string> GetRegisteredArchitectureIds();
+std::vector<std::string> GetRegisteredArchitectureIds();
 
 // See top comment.
 class ArchitectureProtoProvider {
@@ -76,7 +76,7 @@ namespace internal {
 class RegisterArchitectureProtoProvider {
  public:
   RegisterArchitectureProtoProvider(
-      const string& provider_name,
+      const std::string& provider_name,
       std::unique_ptr<ArchitectureProtoProvider> provider);
 };
 

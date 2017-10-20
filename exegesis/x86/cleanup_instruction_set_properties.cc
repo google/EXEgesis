@@ -14,8 +14,8 @@
 
 #include "exegesis/x86/cleanup_instruction_set_properties.h"
 
+#include <string>
 #include <unordered_map>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "glog/logging.h"
@@ -28,11 +28,12 @@ namespace {
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 
-const std::unordered_map<string, string>& GetMissingCpuFlags() {
-  static const std::unordered_map<string, string>* const kMissingFlags =
-      new std::unordered_map<string, string>({{"CLFLUSH", "CLFSH"},
-                                              {"CLFLUSHOPT", "CLFLUSHOPT"},
-                                              {"MOVBE", "MOVBE"}});
+const std::unordered_map<std::string, std::string>& GetMissingCpuFlags() {
+  static const std::unordered_map<std::string, std::string>* const
+      kMissingFlags = new std::unordered_map<std::string, std::string>(
+          {{"CLFLUSH", "CLFSH"},
+           {"CLFLUSHOPT", "CLFLUSHOPT"},
+           {"MOVBE", "MOVBE"}});
   return *kMissingFlags;
 }
 
@@ -41,7 +42,7 @@ const std::unordered_map<string, string>& GetMissingCpuFlags() {
 Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
-    const string* const feature_name = FindOrNull(
+    const std::string* const feature_name = FindOrNull(
         GetMissingCpuFlags(), instruction.vendor_syntax().mnemonic());
     if (feature_name) {
       // Be warned if they fix it someday. If this triggers, just remove the
@@ -58,9 +59,9 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingCpuFlags, 1000);
 namespace {
 
 // Returns the list of protection modes for priviledged instructions.
-const std::unordered_map<string, int>& GetProtectionModesByMnemonic() {
-  static const std::unordered_map<string, int>* const kProtectionModes =
-      new std::unordered_map<string, int>({
+const std::unordered_map<std::string, int>& GetProtectionModesByMnemonic() {
+  static const std::unordered_map<std::string, int>* const kProtectionModes =
+      new std::unordered_map<std::string, int>({
           // -----------------------
           // Restricted operations.
           {"CLAC", 0},
@@ -114,9 +115,9 @@ const std::unordered_map<string, int>& GetProtectionModesByMnemonic() {
 
 // Returns the list of protection modes for privileged instructions that are not
 // covered by GetProtectionModesByMnemonic().
-const std::unordered_map<string, int>& GetProtectionModesByEncoding() {
-  static const std::unordered_map<string, int>* const kProtectionModes =
-      new std::unordered_map<string, int>({
+const std::unordered_map<std::string, int>& GetProtectionModesByEncoding() {
+  static const std::unordered_map<std::string, int>* const kProtectionModes =
+      new std::unordered_map<std::string, int>({
           // MOV from/to debug register.
           {"0F 21/r", 0},
           {"0F 23 /r", 0},

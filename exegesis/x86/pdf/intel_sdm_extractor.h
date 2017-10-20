@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_X86_PDF_INTEL_SDM_EXTRACTOR_H_
 #define EXEGESIS_X86_PDF_INTEL_SDM_EXTRACTOR_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
@@ -32,7 +32,7 @@ InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document);
 
 // Parses the contents of an operand encoding cell.
 InstructionTable::OperandEncodingCrossref::OperandEncoding
-ParseOperandEncodingTableCell(const string& content);
+ParseOperandEncodingTableCell(const std::string& content);
 
 }  // namespace pdf
 }  // namespace x86

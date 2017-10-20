@@ -15,8 +15,8 @@
 #include "exegesis/arm/xml/parser.h"
 
 #include <memory>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/arm/xml/docvars.h"
 #include "exegesis/arm/xml/docvars.pb.h"
@@ -94,7 +94,7 @@ Status ParseDescriptions(const XMLNode* desc, XmlInstruction* instruction) {
 // Valid only for NOT_MATCHING (or transforming UNDECIDED to NOT_MATCHING).
 //   >  "N" means that the bit isn't one.
 //   >  "Z" means that the bit isn't zero.
-StatusOr<BitPattern::Bit> ParseBit(const string& bit, PatternType* type) {
+StatusOr<BitPattern::Bit> ParseBit(const std::string& bit, PatternType* type) {
   CHECK(type != nullptr);
   if (bit.empty() || bit == "x") {
     return BitPattern::VARIABLE;
@@ -124,8 +124,8 @@ StatusOr<BitPattern::Bit> ParseBit(const string& bit, PatternType* type) {
 // Parses a field-wise constraint string like "!= 0000" or "!= 111x" into
 // individual constraint bits. Returns an empty vector if there is no constraint
 // or fails if the constraint is non-empty but malformed.
-StatusOr<std::vector<string>> ParsePattern(const string& constraint) {
-  if (constraint.empty()) return std::vector<string>{};
+StatusOr<std::vector<std::string>> ParsePattern(const std::string& constraint) {
+  if (constraint.empty()) return std::vector<std::string>{};
   StringPiece raw_pattern(constraint);
 
   if (!strings::ConsumePrefix(&raw_pattern, "!=")) {
@@ -133,7 +133,7 @@ StatusOr<std::vector<string>> ParsePattern(const string& constraint) {
         StrCat("Invalid constraint '", constraint, "', expected leading '!='"));
   }
   strings::RemoveWhitespaceContext(&raw_pattern);
-  std::vector<string> pattern(raw_pattern.size());
+  std::vector<std::string> pattern(raw_pattern.size());
   for (int i = 0; i < raw_pattern.size(); ++i) {
     const char bit = raw_pattern[i];
     switch (bit) {
@@ -147,8 +147,8 @@ StatusOr<std::vector<string>> ParsePattern(const string& constraint) {
         pattern[i] = "x";
         break;
       default:
-        return InvalidArgumentError(
-            StrCat("Invalid bit '", string(1, bit), "' in '", constraint, "'"));
+        return InvalidArgumentError(StrCat("Invalid bit '", std::string(1, bit),
+                                           "' in '", constraint, "'"));
     }
   }
   return pattern;
@@ -160,7 +160,7 @@ Status ParseRawBits(XMLElement* box, RawInstructionLayout::Field* field) {
   for (XMLElement* c : FindChildren(box, "c")) {
     const int span = ReadIntAttributeOrDefault(c, "colspan", 1);
     if (span <= 0) return InvalidArgumentError(StrCat("Invalid span ", span));
-    const string bit = ReadSimpleText(c);
+    const std::string bit = ReadSimpleText(c);
     for (int span_idx = 0; span_idx < span; ++span_idx, ++bit_idx) {
       if (bit_idx > field->bits_size() - 1) {
         return InvalidArgumentError("Oversized bit initialization pattern");
@@ -207,10 +207,10 @@ StatusOr<RawInstructionLayout::Field*> FindField(
 // parsed. Returns NOT_FOUND if no constraint is detected, or any other error
 // if a constraint exists but can't be decoded.
 Status DetectConstraint(XMLElement* box, RawInstructionLayout::Field* field) {
-  const string constraint = ReadAttribute(box, "constraint");
+  const std::string constraint = ReadAttribute(box, "constraint");
   const auto pattern = ParsePattern(constraint);
   if (!pattern.ok()) return pattern.status();
-  const std::vector<string>& pattern_bits = pattern.ValueOrDie();
+  const std::vector<std::string>& pattern_bits = pattern.ValueOrDie();
   if (pattern_bits.empty()) return NotFoundError("No constraint detected");
 
   // Validate pattern size.
@@ -294,7 +294,7 @@ StatusOr<RawInstructionLayout> ParseBaseInstructionLayout(
     return FailedPreconditionError(
         StrCat("Unexpected regdiagram form:\n", DebugString(regdiagram)));
   }
-  const string name = ReadAttribute(regdiagram, "psname");
+  const std::string name = ReadAttribute(regdiagram, "psname");
   if (name.empty()) {
     return NotFoundError(StrCat("Missing psname:\n", DebugString(regdiagram)));
   }
@@ -347,7 +347,7 @@ StatusOr<AsmTemplate> ParseAsmTemplate(XMLNode* asmtemplate) {
   AsmTemplate result;
 
   for (XMLElement* element : FindChildren(asmtemplate, nullptr)) {
-    const string tag = element->Name() ? string(element->Name()) : "";
+    const std::string tag = element->Name() ? std::string(element->Name()) : "";
     if (tag == "text") {
       auto* piece = result.add_pieces();
       piece->set_text(ReadSimpleText(element));
@@ -428,7 +428,7 @@ StatusOr<RepeatedPtrField<InstructionClass>> ParseInstructionClasses(
 
 }  // namespace
 
-StatusOr<XmlIndex> ParseXmlIndex(const string& filename) {
+StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename) {
   XmlIndex index;
 
   XMLDocument xml_doc;
@@ -440,7 +440,8 @@ StatusOr<XmlIndex> ParseXmlIndex(const string& filename) {
 
   const auto toptitle = FindChild(root.ValueOrDie(), "toptitle");
   if (!toptitle.ok()) return toptitle.status();
-  const string isa = ReadAttribute(toptitle.ValueOrDie(), "instructionset");
+  const std::string isa =
+      ReadAttribute(toptitle.ValueOrDie(), "instructionset");
   if (isa == "A32") {
     index.set_isa(Isa::A32);
   } else if (isa == "A64") {
@@ -462,7 +463,7 @@ StatusOr<XmlIndex> ParseXmlIndex(const string& filename) {
   return index;
 }
 
-StatusOr<XmlInstruction> ParseXmlInstruction(const string& filename) {
+StatusOr<XmlInstruction> ParseXmlInstruction(const std::string& filename) {
   XmlInstruction instruction;
 
   XMLDocument xml_doc;
@@ -496,7 +497,7 @@ StatusOr<XmlInstruction> ParseXmlInstruction(const string& filename) {
   return instruction;
 }
 
-StatusOr<XmlDatabase> ParseXmlDatabase(const string& path) {
+StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path) {
   XmlDatabase database;
 
   const auto base_index = ParseXmlIndex(file::JoinPath(path, "index.xml"));
@@ -510,7 +511,8 @@ StatusOr<XmlDatabase> ParseXmlDatabase(const string& path) {
 
   for (const auto& index : {database.base_index(), database.fp_simd_index()}) {
     for (const auto& file : index.files()) {
-      const string instruction_filename = file::JoinPath(path, file.filename());
+      const std::string instruction_filename =
+          file::JoinPath(path, file.filename());
       const auto instruction = ParseXmlInstruction(instruction_filename);
       if (!instruction.ok()) {
         return Annotate(instruction.status(),
@@ -523,7 +525,7 @@ StatusOr<XmlDatabase> ParseXmlDatabase(const string& path) {
   return database;
 }
 
-XmlDatabase ParseXmlDatabaseOrDie(const string& path) {
+XmlDatabase ParseXmlDatabaseOrDie(const std::string& path) {
   return ParseXmlDatabase(path).ValueOrDie();
 }
 

@@ -91,7 +91,7 @@ TEST(EqualsProtoTupleMatcherTest, Pointwise) {
   actual_protos[1].set_string_field("hello");
   actual_protos[2].set_integer_field(2);
   actual_protos[2].set_string_field("world");
-  const std::vector<string> expected_protos = {
+  const std::vector<std::string> expected_protos = {
       "integer_field: 1", "string_field: 'hello'",
       "integer_field: 2 string_field: 'world'"};
   EXPECT_THAT(actual_protos, Pointwise(EqualsProto(), expected_protos));
@@ -99,7 +99,7 @@ TEST(EqualsProtoTupleMatcherTest, Pointwise) {
 
 TEST(EqualsProtoTupleMatcherTest, InvalidExpectedProto) {
   const TestProto actual_proto;
-  const string expected_proto = "foobar!";
+  const std::string expected_proto = "foobar!";
   auto tuple = ::testing::make_tuple(actual_proto, expected_proto);
   EqualsProtoTupleMatcher matcher;
   StringMatchResultListener listener;

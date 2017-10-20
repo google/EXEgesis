@@ -31,10 +31,10 @@ std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags() {
   static constexpr const char kDefaultSet[] = "default";
   const auto& transforms_by_name = GetTransformsByName();
   std::vector<InstructionSetTransform> transforms;
-  const std::vector<string> transform_names =
+  const std::vector<std::string> transform_names =
       strings::Split(FLAGS_exegesis_transforms, ",",  // NOLINT
                      strings::SkipEmpty());
-  for (const string& transform_name : transform_names) {
+  for (const std::string& transform_name : transform_names) {
     if (transform_name == kDefaultSet) {
       const auto default_transforms = GetDefaultTransformPipeline();
       transforms.insert(transforms.end(), default_transforms.begin(),

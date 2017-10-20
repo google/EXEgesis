@@ -14,9 +14,9 @@
 
 #include "exegesis/arm/xml/docvars.h"
 
+#include <string>
 #include <unordered_map>
 #include <utility>
-#include "strings/string.h"
 
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/util/xml/xml_util.h"
@@ -49,9 +49,9 @@ using ::google::protobuf::util::MessageDifferencer;
 using ::tinyxml2::XMLElement;
 using ::tinyxml2::XMLNode;
 
-using KeyString = string;
+using KeyString = std::string;
 using KeyProtoId = int;
-using ValueString = string;
+using ValueString = std::string;
 using ValueEnum = int;
 using ValueStringToEnumMapping = std::unordered_map<ValueString, ValueEnum>;
 
@@ -655,7 +655,7 @@ Status DocVarsContains(const DocVars& docvars, const DocVars& subset) {
   MessageDifferencer differencer;
   differencer.set_scope(MessageDifferencer::PARTIAL);
   differencer.set_repeated_field_comparison(MessageDifferencer::AS_SET);
-  string diff;
+  std::string diff;
   differencer.ReportDifferencesToString(&diff);
   if (!differencer.Compare(subset, docvars)) {
     return FailedPreconditionError(StrCat("DocVars subset mismatch:\n", diff));

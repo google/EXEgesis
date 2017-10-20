@@ -15,10 +15,10 @@
 #include "exegesis/x86/cleanup_instruction_set_alternatives.h"
 
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -50,7 +50,7 @@ struct OperandAlternative {
   uint32_t value_size;
 };
 using OperandAlternativeMap =
-    std::unordered_map<string, std::vector<OperandAlternative>>;
+    std::unordered_map<std::string, std::vector<OperandAlternative>>;
 
 // Returns the list of operand alternatives indexed by the name of the operand.
 // TODO(ondrasej): Re-enable broadcasted arguments when we have a way to
@@ -247,9 +247,9 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
 // name encountered by AddAlternatives must be defined either in
 // GetOperandAlternativesByName(), or in GetUnmodifiedOperandNames(), so that we
 // can catch new operand names whenever a new version of the SDM is released.
-const std::unordered_set<string> GetUnmodifiedOperandNames() {
+const std::unordered_set<std::string> GetUnmodifiedOperandNames() {
   static const auto* const kFallThroughOperandNames =
-      new std::unordered_set<string>(
+      new std::unordered_set<std::string>(
           {// Concrete operands.
            "AL", "AX", "EAX", "RAX", "CL", "CR0-CR7", "DR0-DR7", "DX", "FS",
            "GS", "ST(0)",
@@ -289,10 +289,10 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
   Status status = OkStatus();
   const OperandAlternativeMap& alternatives_by_name =
       GetOperandAlternativesByName();
-  const std::unordered_set<string>& unmodified_operand_names =
+  const std::unordered_set<std::string>& unmodified_operand_names =
       GetUnmodifiedOperandNames();
   std::vector<InstructionProto> new_instructions;
-  std::set<string> unknown_operand_names;
+  std::set<std::string> unknown_operand_names;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -350,7 +350,7 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
     instruction_set->add_instructions()->Swap(&new_instruction);
   }
   if (!unknown_operand_names.empty()) {
-    const string error_message =
+    const std::string error_message =
         StrCat("Encountered unknown operand names: ",
                strings::Join(unknown_operand_names, ", "));
     return InvalidArgumentError(error_message);

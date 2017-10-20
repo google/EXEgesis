@@ -15,8 +15,8 @@
 #include "exegesis/x86/cleanup_instruction_set_evex.h"
 
 #include <algorithm>
+#include <string>
 #include <unordered_set>
-#include "strings/string.h"
 
 #include "exegesis/base/category_utils.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -56,10 +56,10 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
     // to all slots in a vector register.
     const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
     for (const InstructionOperand& operand : vendor_syntax.operands()) {
-      if (operand.name().find(kBroadcast32Bit) != string::npos) {
+      if (operand.name().find(kBroadcast32Bit) != std::string::npos) {
         vex_prefix->add_evex_b_interpretations(EVEX_B_ENABLES_32_BIT_BROADCAST);
         break;
-      } else if (operand.name().find(kBroadcast64Bit) != string::npos) {
+      } else if (operand.name().find(kBroadcast64Bit) != std::string::npos) {
         vex_prefix->add_evex_b_interpretations(EVEX_B_ENABLES_64_BIT_BROADCAST);
         break;
       }
@@ -89,7 +89,7 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
   // The list of instructions that do not allow using k0 as opmask. This
   // behavior is specified only in the free-text description of the instruction,
   // so we had to list them explicitly by their mnemonic.
-  const std::unordered_set<string> kOpmaskRequiredMnemonics = {
+  const std::unordered_set<std::string> kOpmaskRequiredMnemonics = {
       "VGATHERDPS",  "VGATHERDPD",  "VGATHERQPS",  "VGATHERQPD",
       "VPGATHERDD",  "VPGATHERDQ",  "VPGATHERQD",  "VPGATHERQQ",
       "VPSCATTERDD", "VPSCATTERDQ", "VPSCATTERQD", "VPSCATTERQQ",
@@ -147,7 +147,7 @@ namespace {
 
 inline bool IsPseudoOperandTag(const InstructionOperand::Tag& tag) {
   static const auto* const kPseudoOperandTags =
-      new std::unordered_set<string>({"er", "sae"});
+      new std::unordered_set<std::string>({"er", "sae"});
   return ContainsKey(*kPseudoOperandTags, tag.name());
 }
 

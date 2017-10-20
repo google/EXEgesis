@@ -15,19 +15,20 @@
 #ifndef EXEGESIS_UTIL_FILE_UTIL_H_
 #define EXEGESIS_UTIL_FILE_UTIL_H_
 
-#include "strings/string.h"
+#include <string>
 
 namespace exegesis {
 
 // Reads all data from the given source, until reaching EOF. When 'source' is
 // '-', the function reads the data fromm STDIN. Otherwise, assumes that
 // 'source' is the name of a file and reads from that file.
-string ReadTextFromFileOrStdInOrDie(const string& source);
+std::string ReadTextFromFileOrStdInOrDie(const std::string& source);
 
 // Writes 'text' to the given target. When 'target' is '-', the text is written
 // to STDOUT. Otherwise, assumes that 'target' is the name of the file, and
 // writes the data to that file, replacing the original contents.
-void WriteTextToFileOrStdOutOrDie(const string& target, const string& data);
+void WriteTextToFileOrStdOutOrDie(const std::string& target,
+                                  const std::string& data);
 
 }  // namespace exegesis
 

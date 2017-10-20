@@ -27,10 +27,10 @@ const uint64_t kIter = 1000;
 
 TEST(PerfSubsystemTest, Accumulate) {
   PerfResult r1({{"a", TimingInfo(1, 2, 3)}, {"b", TimingInfo(4, 5, 6)}});
-  const string r1_string = r1.ToString();
+  const std::string r1_string = r1.ToString();
   EXPECT_EQ("a: 1.50, b: 4.80, (num_times: 1)", r1_string);
   PerfResult r2({{"b", TimingInfo(4, 5, 6)}, {"c", TimingInfo(7, 8, 9)}});
-  const string r2_string = r2.ToString();
+  const std::string r2_string = r2.ToString();
   EXPECT_EQ("b: 4.80, c: 7.88, (num_times: 1)", r2_string);
   LOG(INFO) << r2_string;
   r2.Accumulate(r1);

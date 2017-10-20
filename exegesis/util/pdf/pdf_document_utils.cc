@@ -221,7 +221,7 @@ std::ostream& operator<<(std::ostream& s, const BlockPosition& p) {
 struct BlockIndex {
   BlockIndex(const BlockIndex&) = delete;
   BlockIndex(const PdfDocument& document) {
-    const std::hash<string> fingerprint_;
+    const std::hash<std::string> fingerprint_;
     for (const auto& page : document.pages()) {
       for (const auto& row : page.rows()) {
         for (const auto& block : row.blocks()) {
@@ -289,34 +289,34 @@ void SetPatches(const std::map<size_t, std::vector<PdfPagePatch>>& page_patches,
 
 }  // namespace
 
-const string& GetCellTextOrEmpty(const PdfPage& page, int row, int col) {
-  static const string kEmpty;
+const std::string& GetCellTextOrEmpty(const PdfPage& page, int row, int col) {
+  static const std::string kEmpty;
   const int row_index = GetIndex(page.rows_size(), row);
   if (row_index < 0) return kEmpty;
   return GetCellTextOrEmpty(page.rows(row_index), col);
 }
 
-const string& GetCellTextOrEmpty(const PdfTextTableRow& row, int col) {
-  static const string kEmpty;
+const std::string& GetCellTextOrEmpty(const PdfTextTableRow& row, int col) {
+  static const std::string kEmpty;
   const int col_index = GetIndex(row.blocks_size(), col);
   if (col_index < 0) return kEmpty;
   return row.blocks(col_index).text();
 }
 
-string* GetMutableCellTextOrNull(PdfPage* page, int row, int col) {
+std::string* GetMutableCellTextOrNull(PdfPage* page, int row, int col) {
   const int row_index = GetIndex(page->rows_size(), row);
   if (row_index < 0) return nullptr;
   return GetMutableCellTextOrNull(page->mutable_rows(row_index), col);
 }
 
-string* GetMutableCellTextOrNull(PdfTextTableRow* row, int col) {
+std::string* GetMutableCellTextOrNull(PdfTextTableRow* row, int col) {
   const int col_index = GetIndex(row->blocks_size(), col);
   if (col_index < 0) return nullptr;
   return row->mutable_blocks(col_index)->mutable_text();
 }
 
 void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page) {
-  string* text = GetMutableCellTextOrNull(page, patch.row(), patch.col());
+  std::string* text = GetMutableCellTextOrNull(page, patch.row(), patch.col());
   CHECK(text != nullptr) << "No valid cell for patch "
                          << patch.ShortDebugString();
   CHECK_EQ(*text, patch.expected())
@@ -356,13 +356,13 @@ std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
   return result;
 }
 
-PdfDocumentsChanges LoadConfigurations(const string& directory) {
+PdfDocumentsChanges LoadConfigurations(const std::string& directory) {
   PdfDocumentsChanges patch_sets;
   DIR* dir = nullptr;
   struct dirent* ent = nullptr;
   if ((dir = opendir(directory.c_str())) != nullptr) {
     while ((ent = readdir(dir)) != nullptr) {
-      const string full_path = StrCat(directory, "/", ent->d_name);
+      const std::string full_path = StrCat(directory, "/", ent->d_name);
       LOG(INFO) << "Reading configuration file " << full_path;
       ReadTextProtoOrDie(full_path, patch_sets.add_documents());
     }

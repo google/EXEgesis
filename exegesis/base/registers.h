@@ -18,8 +18,8 @@
 #ifndef EXEGESIS_BASE_REGISTERS_H_
 #define EXEGESIS_BASE_REGISTERS_H_
 
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/proto/registers.pb.h"
 
@@ -73,7 +73,7 @@ struct RegisterTemplate {
 // first register in the group.
 RegisterSetProto MakeRegistersFromBaseNames(
     const std::vector<RegisterTemplate>& templates,
-    const std::vector<string>& base_names, int base_binary_encoding);
+    const std::vector<std::string>& base_names, int base_binary_encoding);
 
 // Creates a RegisterSetProto from the given templates, a base name, and a range
 // of indices. The function creates one group for each index in the range, and
@@ -87,8 +87,9 @@ RegisterSetProto MakeRegistersFromBaseNames(
 // first register in the group. Note that begin_index is inclusive, and
 // end_index is exclusive.
 RegisterSetProto MakeRegistersFromBaseNameAndIndices(
-    const std::vector<RegisterTemplate>& templates, const string& base_name,
-    int begin_index, int end_index, int base_binary_encoding);
+    const std::vector<RegisterTemplate>& templates,
+    const std::string& base_name, int begin_index, int end_index,
+    int base_binary_encoding);
 
 }  // namespace exegesis
 

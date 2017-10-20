@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
-#include "strings/string.h"
+#include <string>
 
 #include "glog/logging.h"
 
@@ -62,7 +62,7 @@ class FPUControlWord {
  public:
   explicit FPUControlWord(uint16_t raw_value) : raw_value_(raw_value) {}
 
-  string DebugString() const;
+  std::string DebugString() const;
 
   // Returns the number of bits of precision (24/53/64), or 0 if invalid.
   int GetPrecision() const;
@@ -79,7 +79,7 @@ class FPUStatusWord {
  public:
   explicit FPUStatusWord(uint16_t raw_value) : raw_value_(raw_value) {}
 
-  string DebugString() const;
+  std::string DebugString() const;
 
   int GetStackTop() const;
 
@@ -94,7 +94,7 @@ class FPUTagWord {
  public:
   explicit FPUTagWord(uint16_t raw_value) : raw_value_(raw_value) {}
 
-  string DebugString() const;
+  std::string DebugString() const;
 
   // Return a string representing the status of ST(i). For debug only.
   const char* GetStatus(int i) const;
@@ -137,7 +137,7 @@ class FXStateBuffer : public UniqueAlignedStorage<16, uint8_t[512]> {
 
   uint32_t GetMXCSR_MASK() const { return GetDWordAt<28>(); }
 
-  string DebugString() const;
+  std::string DebugString() const;
 
  private:
   // Returns the byte at the given offset.

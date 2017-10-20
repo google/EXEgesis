@@ -18,8 +18,8 @@
 #define EXEGESIS_BASE_MICROARCHITECTURE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/port_mask.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -34,13 +34,15 @@ namespace exegesis {
 class MicroArchitecture {
  public:
   // Returns nullptr if unknown.
-  static const MicroArchitecture* FromId(const string& microarchitecture_id);
-  static const MicroArchitecture* FromCpuModelId(const string& cpu_model_id);
+  static const MicroArchitecture* FromId(
+      const std::string& microarchitecture_id);
+  static const MicroArchitecture* FromCpuModelId(
+      const std::string& cpu_model_id);
   // Dies if unknown.
   static const MicroArchitecture& FromIdOrDie(
-      const string& microarchitecture_id);
+      const std::string& microarchitecture_id);
   static const MicroArchitecture& FromCpuModelIdOrDie(
-      const string& cpu_model_id);
+      const std::string& cpu_model_id);
 
   explicit MicroArchitecture(const MicroArchitectureProto& proto);
 
@@ -102,7 +104,7 @@ class MicroArchitectureData {
   // model id.
   static StatusOr<MicroArchitectureData> ForCpuModelId(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
-      const string& cpu_model_id);
+      const std::string& cpu_model_id);
 
   // StatusOr<T> requires T to be default-constructible.
   // TODO(courbet): Remove when StatusOr is fixed.

@@ -20,13 +20,13 @@
 
 namespace exegesis {
 
-void RestrictToMnemonicRange(const string& first_mnemonic,
-                             const string& last_mnemonic,
+void RestrictToMnemonicRange(const std::string& first_mnemonic,
+                             const std::string& last_mnemonic,
                              InstructionSetProto* instruction_set) {
   RemoveIf(
       instruction_set->mutable_instructions(),
       [first_mnemonic, last_mnemonic](const InstructionProto* instruction) {
-        const string& mnemonic = instruction->vendor_syntax().mnemonic();
+        const std::string& mnemonic = instruction->vendor_syntax().mnemonic();
         return StringCaseCompare(mnemonic, first_mnemonic) < 0 ||
                StringCaseCompare(mnemonic, last_mnemonic) > 0;
       });

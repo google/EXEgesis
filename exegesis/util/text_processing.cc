@@ -18,18 +18,18 @@
 
 namespace exegesis {
 
-void DehyphenateInPlace(string* input) {
+void DehyphenateInPlace(std::string* input) {
   // We need to match characters before hypen so we don't join items in lists.
   static const LazyRE2 re = {R"((\pL)-\r?\n(\pL))"};
   RE2::GlobalReplace(input, *re, R"(\1\2)");
 }
 
-string Dehyphenate(string input) {
+std::string Dehyphenate(std::string input) {
   DehyphenateInPlace(&input);
   return input;
 }
 
-void RemoveLineLeadingTrailingWhitespaceInPlace(string* input) {
+void RemoveLineLeadingTrailingWhitespaceInPlace(std::string* input) {
   static const LazyRE2 leading_whitespace = {R"((?m:^([ \t\p{Zs}]+)))"};
   RE2::GlobalReplace(input, *leading_whitespace, "");
 
@@ -37,32 +37,32 @@ void RemoveLineLeadingTrailingWhitespaceInPlace(string* input) {
   RE2::GlobalReplace(input, *trailing_whitespace, "");
 }
 
-string RemoveLineLeadingTrailingWhitespace(string input) {
+std::string RemoveLineLeadingTrailingWhitespace(std::string input) {
   RemoveLineLeadingTrailingWhitespaceInPlace(&input);
   return input;
 }
 
-void CleanupLineFeedInPlace(string* input) {
+void CleanupLineFeedInPlace(std::string* input) {
   static const LazyRE2 cleanup_line_feed = {R"((\r?\n))"};
   RE2::GlobalReplace(input, *cleanup_line_feed, "\n");
 }
 
-string CleanupLineFeed(string input) {
+std::string CleanupLineFeed(std::string input) {
   CleanupLineFeedInPlace(&input);
   return input;
 }
 
-void CondenseLineFeedsInPlace(string* input) {
+void CondenseLineFeedsInPlace(std::string* input) {
   static const LazyRE2 condense_line_feed = {R"((\n){3,})"};
   RE2::GlobalReplace(input, *condense_line_feed, "\n\n");
 }
 
-string CondenseLineFeeds(string input) {
+std::string CondenseLineFeeds(std::string input) {
   CondenseLineFeedsInPlace(&input);
   return input;
 }
 
-string CleanupParagraph(string input) {
+std::string CleanupParagraph(std::string input) {
   RemoveLineLeadingTrailingWhitespaceInPlace(&input);
   CleanupLineFeedInPlace(&input);
   CondenseLineFeedsInPlace(&input);

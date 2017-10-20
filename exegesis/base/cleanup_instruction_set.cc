@@ -16,8 +16,8 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "gflags/gflags.h"
 #include "glog/logging.h"
@@ -65,7 +65,7 @@ InstructionSetTransformOrder* GetMutableDefaultTransformOrder() {
 }
 
 Status RunSingleTransform(
-    const string& transform_name,
+    const std::string& transform_name,
     InstructionSetTransformRawFunction* transform_function,
     InstructionSetProto* instruction_set) {
   CHECK(transform_function != nullptr);
@@ -76,10 +76,10 @@ Status RunSingleTransform(
   }
   Status transform_status = OkStatus();
   if (FLAGS_exegesis_print_transform_diffs_to_log) {
-    const StatusOr<string> diff_or_status =
+    const StatusOr<std::string> diff_or_status =
         RunTransformWithDiff(transform_function, instruction_set);
     if (diff_or_status.ok()) {
-      const string& diff = diff_or_status.ValueOrDie();
+      const std::string& diff = diff_or_status.ValueOrDie();
       // TODO(ondrasej): Consider trimming the output, so that we don't flood
       // the output when there are too many diffs.
       if (!diff.empty()) {
@@ -101,7 +101,7 @@ Status RunSingleTransform(
 }  // namespace
 
 RegisterInstructionSetTransform::RegisterInstructionSetTransform(
-    const string& transform_name, int rank_in_default_pipeline,
+    const std::string& transform_name, int rank_in_default_pipeline,
     InstructionSetTransformRawFunction transform) {
   InstructionSetTransformsByName& transforms_by_name =
       *GetMutableTransformsByName();
@@ -150,7 +150,7 @@ Status RunTransformPipeline(
 // ignores all matched & moved items.
 class ConciseDifferenceReporter : public MessageDifferencer::Reporter {
  public:
-  explicit ConciseDifferenceReporter(string* output_string)
+  explicit ConciseDifferenceReporter(std::string* output_string)
       : stream_(output_string), base_reporter_(&stream_) {}
 
   void ReportAdded(const Message& message1, const Message& message2,
@@ -174,14 +174,15 @@ class ConciseDifferenceReporter : public MessageDifferencer::Reporter {
   MessageDifferencer::StreamReporter base_reporter_;
 };
 
-StatusOr<string> RunTransformWithDiff(const InstructionSetTransform& transform,
-                                      InstructionSetProto* instruction_set) {
+StatusOr<std::string> RunTransformWithDiff(
+    const InstructionSetTransform& transform,
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   InstructionSetProto original_instruction_set = *instruction_set;
 
   RETURN_IF_ERROR(transform(instruction_set));
 
-  string differences;
+  std::string differences;
   {
     // NOTE(ondrasej): The block here is necessary because the differencer and
     // the reporter must be destroyed before the return value is constructed.
@@ -215,8 +216,10 @@ int CompareOperands(const InstructionFormat& vendor_syntax_a,
                                     vendor_syntax_b.operands_size());
   for (int operand_index = 0; comparison == 0 && operand_index < num_operands;
        ++operand_index) {
-    const string& operand_a = vendor_syntax_a.operands(operand_index).name();
-    const string& operand_b = vendor_syntax_b.operands(operand_index).name();
+    const std::string& operand_a =
+        vendor_syntax_a.operands(operand_index).name();
+    const std::string& operand_b =
+        vendor_syntax_b.operands(operand_index).name();
     comparison = operand_a.compare(operand_b);
   }
   if (comparison == 0) {
@@ -241,8 +244,8 @@ int CompareOperandTags(const InstructionFormat& vendor_syntax_a,
     const int num_tags = std::min(operand_a.tags_size(), operand_b.tags_size());
     for (int tag_index = 0; comparison == 0 && tag_index < num_tags;
          ++tag_index) {
-      const string& tag_a = operand_a.tags(tag_index).name();
-      const string& tag_b = operand_b.tags(tag_index).name();
+      const std::string& tag_a = operand_a.tags(tag_index).name();
+      const std::string& tag_b = operand_b.tags(tag_index).name();
       comparison = tag_a.compare(tag_b);
     }
     if (comparison == 0) {
@@ -266,8 +269,10 @@ bool LessThan(const InstructionProto& instruction_a,
     comparison = CompareOperandTags(vendor_syntax_a, vendor_syntax_b);
   }
   if (comparison == 0) {
-    const string& specification_a = instruction_a.raw_encoding_specification();
-    const string& specification_b = instruction_b.raw_encoding_specification();
+    const std::string& specification_a =
+        instruction_a.raw_encoding_specification();
+    const std::string& specification_b =
+        instruction_b.raw_encoding_specification();
     comparison = specification_a.compare(specification_b);
   }
 

@@ -18,10 +18,10 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -46,12 +46,13 @@ using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 
-using EncodingMap = std::unordered_map<string, InstructionOperand::Encoding>;
+using EncodingMap =
+    std::unordered_map<std::string, InstructionOperand::Encoding>;
 using AddressingModeMap =
-    std::unordered_map<string, InstructionOperand::AddressingMode>;
-using ValueSizeMap = std::unordered_map<string, uint32_t>;
+    std::unordered_map<std::string, InstructionOperand::AddressingMode>;
+using ValueSizeMap = std::unordered_map<std::string, uint32_t>;
 using RegisterClassMap =
-    std::unordered_map<string, RegisterProto::RegisterClass>;
+    std::unordered_map<std::string, RegisterProto::RegisterClass>;
 
 // Contains mapping from operand names to their encoding types. Note that this
 // mapping is incomplete, because it contains the mapping only for the cases in
@@ -997,7 +998,7 @@ Status AssignEncodingByEncodingScheme(
     const std::vector<int>& operands_with_no_encoding,
     InstructionOperandEncodingMultiset* available_encodings) {
   InstructionFormat* const vendor_syntax = instruction->mutable_vendor_syntax();
-  const string& encoding_scheme = instruction->encoding_scheme();
+  const std::string& encoding_scheme = instruction->encoding_scheme();
   if (encoding_scheme.length() >= vendor_syntax->operands_size()) {
     for (const int operand_index : operands_with_no_encoding) {
       InstructionOperand* const operand =

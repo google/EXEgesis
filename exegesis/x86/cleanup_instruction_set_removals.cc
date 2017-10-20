@@ -15,8 +15,8 @@
 #include "exegesis/x86/cleanup_instruction_set_removals.h"
 
 #include <algorithm>
+#include <string>
 #include <unordered_set>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -50,13 +50,14 @@ using ::google::protobuf::util::MessageDifferencer;
 
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  std::unordered_set<string> visited_instructions;
+  std::unordered_set<std::string> visited_instructions;
 
   // A function that keeps track of instruction it has already encountered.
   // Returns true if an instruction was already seen, false otherwise.
   auto remove_instruction_if_visited =
       [&visited_instructions](const InstructionProto& instruction) {
-        const string serialized_instruction = instruction.SerializeAsString();
+        const std::string serialized_instruction =
+            instruction.SerializeAsString();
         return !visited_instructions.insert(serialized_instruction).second;
       };
 
@@ -125,8 +126,8 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
 // saying whether the REP/REPE/REPNE prefix is allowed.
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveRepAndRepneInstructions, 0);
 
-const std::unordered_set<string>* const kRemovedEncodingSpecifications =
-    new std::unordered_set<string>(
+const std::unordered_set<std::string>* const kRemovedEncodingSpecifications =
+    new std::unordered_set<std::string>(
         {// Specializations of the ENTER instruction that create stack frame
          // pointer. There is a more generic encoding scheme C8 iw ib that
          // already covers both of these cases.
@@ -156,8 +157,8 @@ const std::unordered_set<string>* const kRemovedEncodingSpecifications =
          "F2 REX 0F 38 F0 /r"});
 // NOTE(ondrasej): XLAT is not recognized by the LLVM assembler (unlike its
 // no-operand version XLATB).
-const std::unordered_set<string>* const kRemovedMnemonics =
-    new std::unordered_set<string>({"XLAT"});
+const std::unordered_set<std::string>* const kRemovedMnemonics =
+    new std::unordered_set<std::string>({"XLAT"});
 
 Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -199,12 +200,12 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
   // NOTE(ondrasej): We need to store a copy of the instruction protos, not
   // pointers those in instruction_set, because the contents of instruction_set
   // is modified by std::remove_if().
-  std::unordered_map<string, std::vector<InstructionProto>>
+  std::unordered_map<std::string, std::vector<InstructionProto>>
       instructions_by_encoding;
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   for (const InstructionProto& instruction : instruction_set->instructions()) {
-    const string& specification = instruction.raw_encoding_specification();
+    const std::string& specification = instruction.raw_encoding_specification();
     instructions_by_encoding[specification].push_back(instruction);
   }
   Status result = OkStatus();
@@ -260,7 +261,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructionsWithRexPrefix,
 Status RemoveX87InstructionsWithGeneralVersions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<string> kRemovedEncodingSpecifications = {
+  const std::unordered_set<std::string> kRemovedEncodingSpecifications = {
       "D8 D1", "D8 D9", "DE C9", "DE E9", "D9 C9"};
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();

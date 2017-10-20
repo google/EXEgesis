@@ -20,41 +20,43 @@
 
 namespace exegesis {
 
-string PrettyPrintCpuInfo(const CpuInfo& cpu_info,
-                          const PrettyPrintOptions& options) {
+std::string PrettyPrintCpuInfo(const CpuInfo& cpu_info,
+                               const PrettyPrintOptions& options) {
   return StrCat(cpu_info.proto().model_id(), " (name: '",
                 cpu_info.proto().code_name(), "')");
 }
 
-string PrettyPrintMicroArchitecture(const MicroArchitecture& microarchitecture,
-                                    const PrettyPrintOptions& options) {
-  string result = microarchitecture.proto().id();
+std::string PrettyPrintMicroArchitecture(
+    const MicroArchitecture& microarchitecture,
+    const PrettyPrintOptions& options) {
+  std::string result = microarchitecture.proto().id();
   if (options.cpu_details_) {
     StrAppend(&result, "\nport masks:\n  ",
               strings::Join(microarchitecture.port_masks(), "\n  ",
-                            [](string* out, const PortMask& mask) {
+                            [](std::string* out, const PortMask& mask) {
                               out->append(mask.ToString());
                             }));
   }
   return result;
 }
 
-string PrettyPrintSyntax(const InstructionFormat& syntax,
-                         const PrettyPrintOptions& options) {
-  string result = syntax.mnemonic();
+std::string PrettyPrintSyntax(const InstructionFormat& syntax,
+                              const PrettyPrintOptions& options) {
+  std::string result = syntax.mnemonic();
   if (!syntax.operands().empty()) {
-    StrAppend(&result, " ",
-              strings::Join(syntax.operands(), ", ",
-                            [](string* out, const InstructionOperand& operand) {
-                              out->append(operand.name());
-                            }));
+    StrAppend(
+        &result, " ",
+        strings::Join(syntax.operands(), ", ",
+                      [](std::string* out, const InstructionOperand& operand) {
+                        out->append(operand.name());
+                      }));
   }
   return result;
 }
 
-string PrettyPrintMicroOperation(const MicroOperationProto& uop,
-                                 const PrettyPrintOptions& options) {
-  string result = PortMask(uop.port_mask()).ToString();
+std::string PrettyPrintMicroOperation(const MicroOperationProto& uop,
+                                      const PrettyPrintOptions& options) {
+  std::string result = PortMask(uop.port_mask()).ToString();
   if (options.microop_latencies_) {
     StrAppend(&result, " (lat:", uop.latency(), ")");
   }
@@ -64,9 +66,9 @@ string PrettyPrintMicroOperation(const MicroOperationProto& uop,
   return result;
 }
 
-string PrettyPrintInstruction(const InstructionProto& instruction,
-                              const PrettyPrintOptions& options) {
-  string result = StrCat(PrettyPrintSyntax(instruction.vendor_syntax()));
+std::string PrettyPrintInstruction(const InstructionProto& instruction,
+                                   const PrettyPrintOptions& options) {
+  std::string result = StrCat(PrettyPrintSyntax(instruction.vendor_syntax()));
   if (!instruction.llvm_mnemonic().empty()) {
     StrAppend(&result, "\nllvm: ", instruction.llvm_mnemonic(), "");
   }
@@ -82,17 +84,17 @@ string PrettyPrintInstruction(const InstructionProto& instruction,
   return result;
 }
 
-string PrettyPrintItinerary(const ItineraryProto& itineraries,
-                            const PrettyPrintOptions& options) {
-  string result;
+std::string PrettyPrintItinerary(const ItineraryProto& itineraries,
+                                 const PrettyPrintOptions& options) {
+  std::string result;
   if (!itineraries.micro_ops().empty()) {
-    StrAppend(
-        &result, options.itineraries_on_one_line_ ? "" : "  ",
-        strings::Join(itineraries.micro_ops(),
-                      options.itineraries_on_one_line_ ? " " : "\n  ",
-                      [&options](string* out, const MicroOperationProto& uop) {
-                        out->append(PrettyPrintMicroOperation(uop, options));
-                      }));
+    StrAppend(&result, options.itineraries_on_one_line_ ? "" : "  ",
+              strings::Join(
+                  itineraries.micro_ops(),
+                  options.itineraries_on_one_line_ ? " " : "\n  ",
+                  [&options](std::string* out, const MicroOperationProto& uop) {
+                    out->append(PrettyPrintMicroOperation(uop, options));
+                  }));
   }
   return result;
 }

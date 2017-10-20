@@ -25,7 +25,8 @@ namespace exegesis {
 using ::exegesis::testing::EqualsProto;
 
 void TestTransform(const InstructionSetTransform& transform,
-                   const string& input_proto, const string& expected_output) {
+                   const std::string& input_proto,
+                   const std::string& expected_output) {
   InstructionSetProto instruction_set;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
       input_proto, &instruction_set));

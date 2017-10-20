@@ -22,10 +22,10 @@
 // --exegesis_page_numbers=662
 
 #include <algorithm>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "gflags/gflags.h"
 

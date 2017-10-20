@@ -15,7 +15,7 @@
 #ifndef STRINGS_STRIP_H_
 #define STRINGS_STRIP_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "src/google/protobuf/stubs/strutil.h"
 
@@ -23,16 +23,16 @@ namespace exegesis {
 
 using ::google::protobuf::StripWhitespace;
 
-inline ptrdiff_t strrmm(string* str, const string& chars) {
+inline ptrdiff_t strrmm(std::string* str, const std::string& chars) {
   size_t str_len = str->length();
   size_t in_index = str->find_first_of(chars);
-  if (in_index == string::npos) return str_len;
+  if (in_index == std::string::npos) return str_len;
 
   size_t out_index = in_index++;
 
   while (in_index < str_len) {
     char c = (*str)[in_index++];
-    if (chars.find(c) == string::npos) (*str)[out_index++] = c;
+    if (chars.find(c) == std::string::npos) (*str)[out_index++] = c;
   }
 
   str->resize(out_index);

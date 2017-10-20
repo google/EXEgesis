@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_ARM_XML_MARKDOWN_H_
 #define EXEGESIS_ARM_XML_MARKDOWN_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "tinyxml2.h"
 
@@ -27,7 +27,7 @@ namespace xml {
 // an empty string if element is nullptr. This is a basic utility only dedicated
 // to transforming <authored> description nodes present in ARM's XML instruction
 // database, not any generic HTML content.
-string ExportToMarkdown(const ::tinyxml2::XMLElement* element);
+std::string ExportToMarkdown(const ::tinyxml2::XMLElement* element);
 
 }  // namespace xml
 }  // namespace arm

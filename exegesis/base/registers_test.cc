@@ -14,8 +14,8 @@
 
 #include "exegesis/base/registers.h"
 
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -76,7 +76,7 @@ TEST(RegistersTest, MakeRegistersFromBaseNames) {
       {"R", "X", 0, 63, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
       {"", "L", 0, 7, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
       {"", "H", 8, 15, 4, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT}};
-  const std::vector<string> kBaseNames = {"A", "C"};
+  const std::vector<std::string> kBaseNames = {"A", "C"};
   EXPECT_THAT(MakeRegistersFromBaseNames(kTemplates, kBaseNames, 0),
               EqualsProto(kExpectedRegisters));
 }

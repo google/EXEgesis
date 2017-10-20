@@ -25,12 +25,12 @@ using ::google::protobuf::FieldDescriptor;
 
 void AddIgnoredFieldsToDifferencer(
     const ::google::protobuf::Descriptor* descriptor,
-    const std::vector<string>& ignored_field_names,
+    const std::vector<std::string>& ignored_field_names,
     ::google::protobuf::util::MessageDifferencer* differencer) {
   CHECK(descriptor != nullptr);
   CHECK(differencer != nullptr);
   const DescriptorPool* const pool = descriptor->file()->pool();
-  for (const string& field_name : ignored_field_names) {
+  for (const std::string& field_name : ignored_field_names) {
     const FieldDescriptor* const field = pool->FindFieldByName(field_name);
     if (field == nullptr) {
       ADD_FAILURE() << "Field \"" << field_name << "\" was not found.";

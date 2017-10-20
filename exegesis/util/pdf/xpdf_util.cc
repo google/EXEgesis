@@ -73,7 +73,7 @@ GlobalParams* GetXpdfGlobalParams() {
 void ReadMetadata(PDFDoc* doc, PdfDocument* document) {
   CHECK(document != nullptr);
   CHECK(doc != nullptr);
-  google::protobuf::Map<string, string>& metadata_map =
+  google::protobuf::Map<std::string, std::string>& metadata_map =
       *document->mutable_metadata();
   UnicodeMap* const unicode_map = GetXpdfGlobalParams()->getTextEncoding();
 
@@ -117,7 +117,8 @@ void ReadMetadata(PDFDoc* doc, PdfDocument* document) {
 void CreateDocumentId(PdfDocument* document) {
   CHECK(document != nullptr);
 
-  const google::protobuf::Map<string, string>& map = document->metadata();
+  const google::protobuf::Map<std::string, std::string>& map =
+      document->metadata();
   PdfDocumentId* const document_id = document->mutable_document_id();
   if (ContainsKey(map, kMetadataTitle))
     document_id->set_title(FindOrDie(map, kMetadataTitle));
@@ -128,7 +129,7 @@ void CreateDocumentId(PdfDocument* document) {
         FindOrDie(map, kMetadataModificationDate));
 }
 
-std::unique_ptr<PDFDoc> OpenOrDie(const string& filename) {
+std::unique_ptr<PDFDoc> OpenOrDie(const std::string& filename) {
   GetXpdfGlobalParams();  // Maybe initialize xpdf globals.
   auto doc =
       gtl::MakeUnique<PDFDoc>(new GString(filename.c_str()), nullptr, nullptr);
@@ -210,11 +211,11 @@ BoundingBox GetBoundingBox(const float x, const float y, const float dx,
 }
 
 // Converts the unicode data from xpdf into a string.
-string GetUtf8String(Unicode* u, int uLen) {
+std::string GetUtf8String(Unicode* u, int uLen) {
   CHECK_EQ(uLen, 1);
   char buffer[UTFmax];
   const int length = runetochar(buffer, reinterpret_cast<Rune*>(u));
-  const string output(buffer, length);
+  const std::string output(buffer, length);
   // TODO(gchatelet): Moves this in the parser configuration.
   if (output == "—") return "-";
   if (output == "–") return "-";
@@ -293,13 +294,13 @@ void ProtobufOutputDevice::drawChar(GfxState* state, double x, double y,
       CHECK_NOTNULL(state->getFillColorSpace())->getNComps() *
       sizeof(GfxColorComp);
   pdf_char->set_fill_color_hash(
-      std::hash<string>()(string(color_buffer, color_buffer_size)));
+      std::hash<std::string>()(std::string(color_buffer, color_buffer_size)));
   *pdf_char->mutable_bounding_box() = bounding_box;
 }
 
 }  // namespace
 
-PdfParseRequest ParseRequestOrDie(const string& spec) {
+PdfParseRequest ParseRequestOrDie(const std::string& spec) {
   PdfParseRequest request;
   CHECK(RE2::FullMatch(spec, R"(([^:]+)(:[0-9]+-[0-9]+)?)",
                        request.mutable_filename()))

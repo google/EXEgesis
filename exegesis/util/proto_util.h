@@ -15,54 +15,54 @@
 #ifndef EXEGESIS_UTIL_PROTO_UTIL_H_
 #define EXEGESIS_UTIL_PROTO_UTIL_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "src/google/protobuf/message.h"
 
 namespace exegesis {
 
 // Reads a proto in text format from a file.
-void ReadTextProtoOrDie(const string& filename,
+void ReadTextProtoOrDie(const std::string& filename,
                         google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>
-Proto ReadTextProtoOrDie(const string& filename) {
+Proto ReadTextProtoOrDie(const std::string& filename) {
   Proto proto;
   ReadTextProtoOrDie(filename, &proto);
   return proto;
 }
 
 // Reads a proto in binary format from a file.
-void ReadBinaryProtoOrDie(const string& filename,
+void ReadBinaryProtoOrDie(const std::string& filename,
                           google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>
-Proto ReadBinaryProtoOrDie(const string& filename) {
+Proto ReadBinaryProtoOrDie(const std::string& filename) {
   Proto proto;
   ReadBinaryProtoOrDie(filename, &proto);
   return proto;
 }
 
 // Reads a proto in text format from a string.
-void ParseProtoFromStringOrDie(const string& text,
+void ParseProtoFromStringOrDie(const std::string& text,
                                google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>
-Proto ParseProtoFromStringOrDie(const string& text) {
+Proto ParseProtoFromStringOrDie(const std::string& text) {
   Proto proto;
   ParseProtoFromStringOrDie(text, &proto);
   return proto;
 }
 
 // Writes a proto in text format to a file.
-void WriteTextProtoOrDie(const string& filename,
+void WriteTextProtoOrDie(const std::string& filename,
                          const google::protobuf::Message& message);
 
 // Writes a proto in binary format to a file.
-void WriteBinaryProtoOrDie(const string& filename,
+void WriteBinaryProtoOrDie(const std::string& filename,
                            const google::protobuf::Message& message);
 
 }  // namespace exegesis

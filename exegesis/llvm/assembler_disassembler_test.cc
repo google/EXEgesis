@@ -25,9 +25,9 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::proto::IgnoringFields;
 
-void CheckAssemblyDisassemblyOK(const string& asm_code,
+void CheckAssemblyDisassemblyOK(const std::string& asm_code,
                                 llvm::InlineAsm::AsmDialect asm_dialect,
-                                const string& expected) {
+                                const std::string& expected) {
   AssemblerDisassembler asm_disasm;
   const auto result = asm_disasm.AssembleDisassemble(asm_code, asm_dialect);
   EXPECT_OK(result);
@@ -38,7 +38,8 @@ void CheckAssemblyDisassemblyOK(const string& asm_code,
                      EqualsProto(expected)));
 }
 
-void CheckDisassemblyOK(const string& binary, const string& expected) {
+void CheckDisassemblyOK(const std::string& binary,
+                        const std::string& expected) {
   AssemblerDisassembler asm_disasm;
   const auto result = asm_disasm.AssembleDisassemble(
       binary,

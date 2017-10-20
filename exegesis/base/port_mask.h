@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <cstdint>
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
@@ -39,7 +39,7 @@ class PortMask {
 
   explicit constexpr PortMask(uint64_t mask) : mask_(mask) {}
 
-  explicit PortMask(const string& string_mask) {
+  explicit PortMask(const std::string& string_mask) {
     mask_ = 0;
     for (int c : string_mask) {
       if (toupper(c) == 'P') continue;
@@ -70,7 +70,7 @@ class PortMask {
 
   // Returns a string representing the port mask. For example the port mask
   // for an instruction executable on ports 0,1,5,6 would return "P0156".
-  string ToString() const;
+  std::string ToString() const;
 
   // Returns a MicroOp proto corresponding to the port mask
   PortMaskProto ToProto() const;

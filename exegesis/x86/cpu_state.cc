@@ -24,7 +24,7 @@
 
 namespace exegesis {
 
-string FPUControlWord::DebugString() const {
+std::string FPUControlWord::DebugString() const {
   return StringPrintf(
       "%i bits precision, rounding: %s, enabled exceptions: %s%s%s%s%s%s",
       GetPrecision(), GetRoundingMode(),
@@ -68,7 +68,7 @@ const char* FPUControlWord::GetRoundingMode() const {
   return nullptr;
 }
 
-string FPUStatusWord::DebugString() const {
+std::string FPUStatusWord::DebugString() const {
   return StringPrintf(
       "Busy: %i, Condition Code: 0x%x, top: %i, Err: %i StackFail: %i, "
       "exceptions: %s%s%s%s%s%s",
@@ -92,8 +92,8 @@ int FPUStatusWord::GetConditionCode() const {
   return GetBitRange(raw_value_, 14, 15) << 3 | GetBitRange(raw_value_, 8, 11);
 }
 
-string FPUTagWord::DebugString() const {
-  string buffer;
+std::string FPUTagWord::DebugString() const {
+  std::string buffer;
   for (int i = 0; i < 8; ++i) {
     StrAppend(&buffer, "ST(", i, "): ", GetStatus(i));
     if (i < 7) {
@@ -128,7 +128,7 @@ FXStateBuffer::FXStateBuffer() {
   std::memset(get(), 0, size);
 }
 
-string FXStateBuffer::DebugString() const {
+std::string FXStateBuffer::DebugString() const {
   const auto control = GetFPUControlWord();
   const auto status = GetFPUStatusWord();
   const auto tag = GetAbridgedFPUTagWord();

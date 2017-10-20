@@ -17,8 +17,8 @@
 #ifndef EXEGESIS_UTIL_XML_XML_UTIL_H_
 #define EXEGESIS_UTIL_XML_XML_UTIL_H_
 
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "tinyxml2.h"
 #include "util/task/status.h"
@@ -34,7 +34,7 @@ using ::exegesis::util::StatusOr;
 Status GetStatus(const ::tinyxml2::XMLError& status);
 
 // Returns the XML string representation of the given node.
-string DebugString(const ::tinyxml2::XMLNode* node);
+std::string DebugString(const ::tinyxml2::XMLNode* node);
 
 // Returns the first direct child element of node with the specified name.
 // If name is nullptr, finds the first child element regardless of its name.
@@ -48,7 +48,8 @@ std::vector<::tinyxml2::XMLElement*> FindChildren(::tinyxml2::XMLNode* node,
 
 // Reads the specified attribute from the given element as a string.
 // Returns an empty string if no such attribute is found.
-string ReadAttribute(const ::tinyxml2::XMLElement* element, const char* name);
+std::string ReadAttribute(const ::tinyxml2::XMLElement* element,
+                          const char* name);
 
 // Reads the specified attribute from the given element as an integer.
 // Returns an error if no such attribute is found or if it can't be parsed.
@@ -61,10 +62,10 @@ int ReadIntAttributeOrDefault(const ::tinyxml2::XMLElement* element,
                               const char* name, int default_value);
 
 // Reads the text lying directly inside the given element, skipping nested tags.
-string ReadSimpleText(const ::tinyxml2::XMLElement* element);
+std::string ReadSimpleText(const ::tinyxml2::XMLElement* element);
 
 // Reads the element as a full HTML text, also considering nested tags.
-string ReadHtmlText(const ::tinyxml2::XMLElement* element);
+std::string ReadHtmlText(const ::tinyxml2::XMLElement* element);
 
 }  // namespace xml
 }  // namespace exegesis

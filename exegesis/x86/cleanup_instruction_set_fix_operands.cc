@@ -16,9 +16,9 @@
 
 #include <algorithm>
 #include <iterator>
+#include <string>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -56,12 +56,12 @@ const char* kRDIIndexes[] = {"BYTE PTR [RDI]", "WORD PTR [RDI]",
 
 Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<string> kMnemonics = {"CMPS", "MOVS"};
-  const std::unordered_set<string> kSourceOperands(std::begin(kRSIIndexes),
-                                                   std::begin(kRSIIndexes));
-  const std::unordered_set<string> kDestinationOperands(
+  const std::unordered_set<std::string> kMnemonics = {"CMPS", "MOVS"};
+  const std::unordered_set<std::string> kSourceOperands(
+      std::begin(kRSIIndexes), std::begin(kRSIIndexes));
+  const std::unordered_set<std::string> kDestinationOperands(
       std::begin(kRDIIndexes), std::begin(kRDIIndexes));
-  const std::unordered_map<string, string> operand_to_pointer_size(
+  const std::unordered_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   Status status = OkStatus();
   for (InstructionProto& instruction :
@@ -78,7 +78,7 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
       LOG(ERROR) << status;
       continue;
     }
-    string pointer_size;
+    std::string pointer_size;
     if (!FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
                   &pointer_size) &&
         !ContainsKey(kSourceOperands, vendor_syntax->operands(0).name()) &&
@@ -114,7 +114,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfCmpsAndMovs, 2000);
 Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
   constexpr char kIns[] = "INS";
   constexpr char kOuts[] = "OUTS";
-  const std::unordered_map<string, string> operand_to_pointer_size(
+  const std::unordered_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   Status status = OkStatus();
   for (InstructionProto& instruction :
@@ -133,7 +133,7 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
       LOG(ERROR) << status;
       continue;
     }
-    string pointer_size;
+    std::string pointer_size;
     if (!FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
                   &pointer_size) &&
         !FindCopy(operand_to_pointer_size, vendor_syntax->operands(1).name(),
@@ -176,9 +176,9 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
   constexpr char kLods[] = "LODS";
   constexpr char kScas[] = "SCAS";
   constexpr char kStos[] = "STOS";
-  const std::unordered_map<string, string> operand_to_pointer_size(
+  const std::unordered_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  const std::unordered_map<string, string> kOperandToRegister = {
+  const std::unordered_map<std::string, std::string> kOperandToRegister = {
       {"m8", "AL"}, {"m16", "AX"}, {"m32", "EAX"}, {"m64", "RAX"}};
   Status status = OkStatus();
   for (InstructionProto& instruction :
@@ -198,8 +198,8 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
       LOG(ERROR) << status;
       continue;
     }
-    string register_operand;
-    string pointer_size;
+    std::string register_operand;
+    std::string pointer_size;
     if (!FindCopy(kOperandToRegister, vendor_syntax->operands(0).name(),
                   &register_operand) ||
         !FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
@@ -240,7 +240,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLodsScasAndStos, 2000);
 
 Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<string> kEncodings = {"0F 01 /0", "0F 01 /1"};
+  const std::unordered_set<std::string> kEncodings = {"0F 01 /0", "0F 01 /1"};
   constexpr char kMemoryOperandName[] = "m";
   constexpr char kUpdatedMemoryOperandName[] = "m16&64";
   for (InstructionProto& instruction :
@@ -289,11 +289,11 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
   constexpr char kR64Operand[] = "r64";
   constexpr char kRegOperand[] = "reg";
   // The mnemonics for which we add new entries.
-  const std::unordered_set<string> kExpandToAllSizes = {"LAR"};
+  const std::unordered_set<std::string> kExpandToAllSizes = {"LAR"};
   // The mnemonics for which we just replace reg with r8/r16/r32.
-  const std::unordered_set<string> kRenameToReg8 = {"VPBROADCASTB"};
-  const std::unordered_set<string> kRenameToReg16 = {"VPBROADCASTW"};
-  const std::unordered_set<string> kRenameToReg32 = {
+  const std::unordered_set<std::string> kRenameToReg8 = {"VPBROADCASTB"};
+  const std::unordered_set<std::string> kRenameToReg16 = {"VPBROADCASTW"};
+  const std::unordered_set<std::string> kRenameToReg32 = {
       "EXTRACTPS", "MOVMSKPD",  "MOVMSKPS", "PEXTRB",  "PEXTRW",   "PMOVMSKB",
       "VMOVMSKPD", "VMOVMSKPS", "VPEXTRB",  "VPEXTRW", "VPMOVMSKB"};
   // We can't safely add new entries to 'instructions' while we iterate over it.
@@ -306,7 +306,7 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
   for (InstructionProto& instruction : *instructions) {
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
-    const string& mnemonic = vendor_syntax->mnemonic();
+    const std::string& mnemonic = vendor_syntax->mnemonic();
     for (auto& operand : *vendor_syntax->mutable_operands()) {
       if (operand.name() == kRegOperand) {
         if (ContainsKey(kExpandToAllSizes, mnemonic)) {
@@ -346,7 +346,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixRegOperands, 2000);
 
 Status RenameOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_map<string, string> kOperandRenaming = {
+  const std::unordered_map<std::string, std::string> kOperandRenaming = {
       // Synonyms (different names used for the same type in different parts of
       // the manual).
       {"m80dec", "m80bcd"},
@@ -364,7 +364,8 @@ Status RenameOperands(InstructionSetProto* instruction_set) {
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
     for (auto& operand : *vendor_syntax->mutable_operands()) {
-      const string* renaming = FindOrNull(kOperandRenaming, operand.name());
+      const std::string* renaming =
+          FindOrNull(kOperandRenaming, operand.name());
       if (renaming != nullptr) {
         operand.set_name(*renaming);
       }
@@ -377,7 +378,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RenameOperands, 2000);
 Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr char kImplicitST0Operand[] = "ST(0)";
-  const std::unordered_set<string> kUpdatedInstructionEncodings = {
+  const std::unordered_set<std::string> kUpdatedInstructionEncodings = {
       "D8 C0+i", "D8 C8+i", "D8 E0+i", "D8 E8+i", "D8 F0+i", "D8 F8+i",
       "DB E8+i", "DB F0+i", "DE C0+i", "DE C8+i", "DE E0+i", "DE E8+i",
       "DE F0+i", "DE F8+i", "DF E8+i", "DF F0+i",

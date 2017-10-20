@@ -14,7 +14,7 @@
 
 #include "exegesis/util/xml/xml_util.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -39,7 +39,7 @@ using ::tinyxml2::XMLDocument;
 using ::tinyxml2::XMLElement;
 using ::tinyxml2::XMLError;
 
-void ParseXML(const string& xml, XMLDocument* doc) {
+void ParseXML(const std::string& xml, XMLDocument* doc) {
   ASSERT_EQ(doc->Parse(xml.data(), xml.size()), ::tinyxml2::XML_SUCCESS);
 }
 

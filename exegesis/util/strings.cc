@@ -23,7 +23,7 @@ namespace exegesis {
 
 using ::exegesis::util::StatusOr;
 
-StatusOr<std::vector<uint8_t>> ParseHexString(const string& hex_string) {
+StatusOr<std::vector<uint8_t>> ParseHexString(const std::string& hex_string) {
   ::re2::
 
       StringPiece hex_stringpiece(hex_string);

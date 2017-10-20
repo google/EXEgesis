@@ -32,7 +32,7 @@ using ::exegesis::testing::EqualsProto;
 const char kTestDataPath[] = "/__main__/exegesis/x86/pdf/testdata/";
 
 template <typename Proto>
-Proto GetProto(const string& name) {
+Proto GetProto(const std::string& name) {
   return ReadTextProtoOrDie<Proto>(
       StrCat(getenv("TEST_SRCDIR"), kTestDataPath, name, ".pbtxt"));
 }

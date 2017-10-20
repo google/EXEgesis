@@ -14,7 +14,7 @@
 
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "glog/logging.h"
@@ -43,10 +43,10 @@ void AddOperandSizeOverrideToInstructionProto(InstructionProto* instruction) {
     encoding_specification->mutable_legacy_prefixes()
         ->set_has_mandatory_operand_size_override_prefix(true);
   }
-  const string& raw_encoding_specification =
+  const std::string& raw_encoding_specification =
       instruction->raw_encoding_specification();
   if (raw_encoding_specification.find(kOperandSizeOverridePrefix) ==
-      string::npos) {
+      std::string::npos) {
     instruction->set_raw_encoding_specification(
         StrCat(kOperandSizeOverridePrefix, raw_encoding_specification));
   } else {

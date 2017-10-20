@@ -15,10 +15,10 @@
 #include "exegesis/x86/cleanup_instruction_set_encoding.h"
 
 #include <algorithm>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
@@ -47,13 +47,13 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
   constexpr char kAddressSizeOverridePrefix[] = "67 ";
   constexpr char k32BitImmediateValueSuffix[] = " id";
   constexpr char k64BitImmediateValueSuffix[] = " io";
-  const std::unordered_set<string> kEncodingSpecifications = {
+  const std::unordered_set<std::string> kEncodingSpecifications = {
       "A0", "REX.W + A0", "A1", "REX.W + A1",
       "A2", "REX.W + A2", "A3", "REX.W + A3"};
   std::vector<InstructionProto> new_instructions;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const string& specification = instruction.raw_encoding_specification();
+    const std::string& specification = instruction.raw_encoding_specification();
     if (ContainsKey(kEncodingSpecifications, specification)) {
       new_instructions.push_back(instruction);
       InstructionProto& new_instruction = new_instructions.back();
@@ -83,8 +83,8 @@ namespace {
 void AddRexWPrefixToInstructionProto(InstructionProto* instruction) {
   CHECK(instruction != nullptr);
   constexpr char kRexWPrefix[] = "REX.W";
-  const string& specification = instruction->raw_encoding_specification();
-  if (specification.find(kRexWPrefix) == string::npos) {
+  const std::string& specification = instruction->raw_encoding_specification();
+  if (specification.find(kRexWPrefix) == std::string::npos) {
     instruction->set_raw_encoding_specification(
         StrCat(kRexWPrefix, " ", specification));
   } else {
@@ -101,7 +101,7 @@ Status FixEncodingSpecificationOfPopFsAndGs(
   constexpr char kPopInstruction[] = "POP";
   constexpr char k16Bits[] = "16 bits";
   constexpr char k64Bits[] = "64 bits";
-  const std::unordered_set<string> kFsAndGsOperands = {"FS", "GS"};
+  const std::unordered_set<std::string> kFsAndGsOperands = {"FS", "GS"};
 
   // First find all occurences of the POP FS and GS instructions.
   std::vector<InstructionProto*> pop_instructions;
@@ -123,10 +123,10 @@ Status FixEncodingSpecificationOfPopFsAndGs(
   for (InstructionProto* const instruction : pop_instructions) {
     // The only way to find out which version it is from the description of the
     // instruction.
-    const string& description = instruction->description();
-    if (description.find(k16Bits) != string::npos) {
+    const std::string& description = instruction->description();
+    if (description.find(k16Bits) != std::string::npos) {
       AddOperandSizeOverrideToInstructionProto(instruction);
-    } else if (description.find(k64Bits) != string::npos) {
+    } else if (description.find(k64Bits) != std::string::npos) {
       new_pop_instructions.push_back(*instruction);
       AddRexWPrefixToInstructionProto(&new_pop_instructions.back());
     }
@@ -143,7 +143,7 @@ Status FixEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kPushInstruction[] = "PUSH";
-  const std::unordered_set<string> kFsAndGsOperands = {"FS", "GS"};
+  const std::unordered_set<std::string> kFsAndGsOperands = {"FS", "GS"};
 
   // Find the existing PUSH instructions for FS and GS, and create the remaining
   // versions of the instructions. Note that we can't add the new versions
@@ -180,8 +180,8 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
       "0F 95", "0F 96", "0F 97", "0F 98", "0F 99", "0F 9A",
       "0F 9B", "0F 9C", "0F 9D", "0F 9E", "0F 9F",
   };
-  std::unordered_set<string> replaced_specifications;
-  std::unordered_set<string> removed_specifications;
+  std::unordered_set<std::string> replaced_specifications;
+  std::unordered_set<std::string> removed_specifications;
   for (const char* const specification : kEncodingSpecifications) {
     replaced_specifications.insert(specification);
     removed_specifications.insert(StrCat("REX + ", specification));
@@ -202,7 +202,7 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
 
   // Fix the binary encoding of the non-REX versions.
   for (InstructionProto& instruction : *instructions) {
-    const string& specification = instruction.raw_encoding_specification();
+    const std::string& specification = instruction.raw_encoding_specification();
     if (ContainsKey(replaced_specifications, specification)) {
       instruction.set_raw_encoding_specification(StrCat(specification, " /0"));
     }
@@ -216,8 +216,9 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(
 Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kXBeginEncodingSpecification[] = "C7 F8";
-  const std::unordered_map<string, string> kOperandToEncodingSpecification = {
-      {"rel16", "66 C7 F8 cw"}, {"rel32", "C7 F8 cd"}};
+  const std::unordered_map<std::string, std::string>
+      kOperandToEncodingSpecification = {{"rel16", "66 C7 F8 cw"},
+                                         {"rel32", "C7 F8 cd"}};
   Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
@@ -249,7 +250,7 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
   const RE2 fix_w0_regexp("^(VEX[^ ]*\\.)0 ");
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    string specification = instruction.raw_encoding_specification();
+    std::string specification = instruction.raw_encoding_specification();
 
     GlobalReplaceSubstring("0f", "0F", &specification);
     GlobalReplaceSubstring("imm8", "ib", &specification);
@@ -265,26 +266,27 @@ Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kFullModRmSuffix[] = "/r";
-  const std::unordered_set<string> kMissingModRMInstructionMnemonics = {
+  const std::unordered_set<std::string> kMissingModRMInstructionMnemonics = {
       "CVTDQ2PD", "VMOVD"};
   constexpr char kImmediateByteSuffix[] = "ib";
-  const std::unordered_set<string> kMissingImmediateInstructionMnemonics = {
-      "KSHIFTLB", "KSHIFTLW", "KSHIFTLD",  "KSHIFTLQ",    "KSHIFTRB",
-      "KSHIFTRW", "KSHIFTRD", "KSHIFTRQ",  "VFIXUPIMMPS", "VFPCLASSSS",
-      "VRANGESD", "VRANGESS", "VREDUCESD",
-  };
+  const std::unordered_set<std::string> kMissingImmediateInstructionMnemonics =
+      {
+          "KSHIFTLB", "KSHIFTLW", "KSHIFTLD",  "KSHIFTLQ",    "KSHIFTRB",
+          "KSHIFTRW", "KSHIFTRD", "KSHIFTRQ",  "VFIXUPIMMPS", "VFPCLASSSS",
+          "VRANGESD", "VRANGESS", "VREDUCESD",
+      };
   constexpr char kVSibSuffix[] = "/vsib";
-  const std::unordered_set<string> kMissingVSibInstructionMnemonics = {
+  const std::unordered_set<std::string> kMissingVSibInstructionMnemonics = {
       "VGATHERDPD", "VGATHERQPD", "VGATHERDPS", "VGATHERQPS",
       "VPGATHERDD", "VPGATHERDQ", "VPGATHERQD", "VPGATHERQQ",
   };
 
   // Fixes instruction encodings for instructions matching the given mnemonics
   // by adding the given suffix if need be.
-  const auto maybe_fix = [](const std::unordered_set<string>& mnemonics,
+  const auto maybe_fix = [](const std::unordered_set<std::string>& mnemonics,
                             const StringPiece suffix,
                             InstructionProto* instruction) {
-    const string& mnemonic = instruction->vendor_syntax().mnemonic();
+    const std::string& mnemonic = instruction->vendor_syntax().mnemonic();
     Status status = OkStatus();
     if (ContainsKey(mnemonics, mnemonic)) {
       if (instruction->raw_encoding_specification().empty()) {
@@ -319,14 +321,14 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingModRmAndImmediateSpecification,
 
 Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_map<string, string> kReplacements = {
+  const std::unordered_map<std::string, std::string> kReplacements = {
       {"REX + 0F B2 /r", "REX.W + 0F B2 /r"},
       {"REX + 0F B4 /r", "REX.W + 0F B4 /r"},
       {"REX + 0F B5 /r", "REX.W + 0F B5 /r"},
       {"REX + 0F BE /r", "REX.W + 0F BE /r"}};
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const string* const replacement_raw_encoding_specification =
+    const std::string* const replacement_raw_encoding_specification =
         FindOrNull(kReplacements, instruction.raw_encoding_specification());
     if (replacement_raw_encoding_specification == nullptr) continue;
     instruction.set_raw_encoding_specification(
@@ -361,7 +363,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(ParseEncodingSpecifications, 1010);
 Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_map<string, string> kReplacements = {
+  const std::unordered_map<std::string, std::string> kReplacements = {
       {"D8 C0+i", "D8 /0"},  // FADD store to ST(0)
       {"DC C0+i", "DC /0"},  // FADD store to ST(i)
       {"DE C0+i", "DE /0"},  // FADDP
@@ -404,7 +406,7 @@ Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
   };
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const string* const replacement_raw_encoding_specification =
+    const std::string* const replacement_raw_encoding_specification =
         FindOrNull(kReplacements, instruction.raw_encoding_specification());
     if (replacement_raw_encoding_specification == nullptr) continue;
     instruction.set_raw_encoding_specification(

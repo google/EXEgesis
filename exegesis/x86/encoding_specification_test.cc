@@ -20,8 +20,8 @@
 #include <functional>
 #include <initializer_list>
 #include <memory>
+#include <string>
 #include <unordered_set>
-#include "strings/string.h"
 
 #include "base/macros.h"
 #include "exegesis/testing/test_util.h"
@@ -44,14 +44,14 @@ using ::testing::Not;
 using ::testing::ResultOf;
 using ::testing::UnorderedElementsAreArray;
 
-void CheckParser(const string& specification_str,
-                 const string& expected_specification_proto) {
+void CheckParser(const std::string& specification_str,
+                 const std::string& expected_specification_proto) {
   SCOPED_TRACE(StrCat("Specification: ", specification_str));
   EXPECT_THAT(ParseEncodingSpecification(specification_str),
               IsOkAndHolds(EqualsProto(expected_specification_proto)));
 }
 
-void CheckParserFailure(const string& specification_str) {
+void CheckParserFailure(const std::string& specification_str) {
   SCOPED_TRACE(specification_str);
   EXPECT_THAT(ParseEncodingSpecification(specification_str), Not(IsOk()));
 }

@@ -15,7 +15,7 @@
 #ifndef EXEGESIS_ARM_XML_PARSER_H_
 #define EXEGESIS_ARM_XML_PARSER_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/arm/xml/parser.pb.h"
 #include "util/task/statusor.h"
@@ -27,16 +27,16 @@ namespace xml {
 using ::exegesis::util::StatusOr;
 
 // Parses the specified XML database index file.
-StatusOr<XmlIndex> ParseXmlIndex(const string& filename);
+StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename);
 
 // Parses the specified XML instruction file.
-StatusOr<XmlInstruction> ParseXmlInstruction(const string& filename);
+StatusOr<XmlInstruction> ParseXmlInstruction(const std::string& filename);
 
 // Parses the ARM XML instruction database, reading files from the given path.
-StatusOr<XmlDatabase> ParseXmlDatabase(const string& path);
+StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path);
 
 // Same as ParseXmlDatabase, but dies on errors.
-XmlDatabase ParseXmlDatabaseOrDie(const string& path);
+XmlDatabase ParseXmlDatabaseOrDie(const std::string& path);
 
 }  // namespace xml
 }  // namespace arm

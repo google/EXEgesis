@@ -14,8 +14,8 @@
 
 #include "exegesis/x86/cleanup_instruction_set_asm_syntax.h"
 
+#include <string>
 #include <unordered_set>
-#include "strings/string.h"
 
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -35,7 +35,7 @@ using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 
 char GetSuffixFromPointerType(StringPiece operand) {
-  string result;
+  std::string result;
   constexpr const char* const kPointerTypes[] = {"BYTE", "WORD", "DWORD",
                                                  "QWORD"};
   for (const char* const pointer_type : kPointerTypes) {
@@ -49,7 +49,7 @@ char GetSuffixFromPointerType(StringPiece operand) {
 }  // anonymous namespace
 
 Status AddIntelAsmSyntax(InstructionSetProto* instruction_set) {
-  const std::unordered_set<string> kStringMnemonics = {
+  const std::unordered_set<std::string> kStringMnemonics = {
       "CMPS", "INS", "LODS", "MOVS", "OUTS", "SCAS", "STOS"};
   Status status = OkStatus();
   for (InstructionProto& instruction :

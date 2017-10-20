@@ -28,15 +28,15 @@ using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::ElementsAreArray;
 
-void CheckInput(const string& hex_string,
+void CheckInput(const std::string& hex_string,
                 const std::vector<uint8_t>& expected_bytes) {
   SCOPED_TRACE(StrCat("hex_string = ", hex_string));
   EXPECT_THAT(ParseHexString(hex_string),
               IsOkAndHolds(ElementsAreArray(expected_bytes)));
 }
 
-void CheckError(const string& hex_string,
-                const string& expected_unparsed_part) {
+void CheckError(const std::string& hex_string,
+                const std::string& expected_unparsed_part) {
   SCOPED_TRACE(StrCat("hex_string = ", hex_string));
   EXPECT_THAT(ParseHexString(hex_string),
               StatusIs(INVALID_ARGUMENT,
@@ -66,7 +66,7 @@ TEST(ParseHexStringTest, TestIntelManualWithCommas) {
 }
 
 TEST(ParseHexStringTest, TestNonHexString) {
-  CheckError("I'm not a hex string", "I'm not a hex string");
+  CheckError("I'm not a hex std::string", "I'm not a hex std::string");
 }
 
 TEST(ParseHexStringTest, TestValidPrefix) {

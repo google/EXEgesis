@@ -15,7 +15,7 @@
 #include "exegesis/arm/xml/converter.h"
 
 #include <map>
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/arm/xml/parser.pb.h"
@@ -30,7 +30,7 @@ namespace xml {
 
 namespace {
 
-InstructionFormat ConvertAsmTemplate(const string& mnemonic,
+InstructionFormat ConvertAsmTemplate(const std::string& mnemonic,
                                      const AsmTemplate& asm_template) {
   InstructionFormat format;
   format.set_mnemonic(mnemonic);
@@ -55,7 +55,7 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
   // TODO(npaglieri): Add more details, e.g. the version of the database.
   isp->add_source_infos()->set_source_name("ARM XML Database");
 
-  std::map<string, int> known_groups;
+  std::map<std::string, int> known_groups;
   for (const auto& index :
        {xml_database.base_index(), xml_database.fp_simd_index()}) {
     for (const auto& file : index.files()) {
@@ -67,8 +67,8 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
   }
 
   for (const auto& xml_instruction : xml_database.instructions()) {
-    const string& mnemonic = xml_instruction.docvars().mnemonic();
-    const string& alias = xml_instruction.docvars().alias_mnemonic();
+    const std::string& mnemonic = xml_instruction.docvars().mnemonic();
+    const std::string& alias = xml_instruction.docvars().alias_mnemonic();
 
     // TODO(npaglieri): Decide whether to use the <aliasto> tag to merge groups.
     const int group_index = FindOrDie(known_groups, xml_instruction.xml_id());

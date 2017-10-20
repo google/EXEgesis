@@ -258,12 +258,12 @@ const char* const kValidOperandTypes[] = {
     "k2/m64",
 };
 
-string FixOperandName(const string& operand_name) {
+std::string FixOperandName(const std::string& operand_name) {
   // List of substitutions in operand names. Note that these substitutions are
   // only used to fix obvious typos and formatting errors in the manual.
   // Systematic inconsistencies are fixed by the transforms library.
   static const auto* const kOperandNameSubstitutions =
-      new std::unordered_map<string, string>({
+      new std::unordered_map<std::string, std::string>({
           {"imm8/r", "imm8"},
           {"r32/m161", "r32/m16"},
           {"r32/m32", "r/m32"},
@@ -287,10 +287,11 @@ const LazyRE2 kOperandRegexp = {
 
 }  // namespace
 
-bool ParseVendorSyntax(string content, InstructionFormat* instruction_format) {
+bool ParseVendorSyntax(std::string content,
+                       InstructionFormat* instruction_format) {
   static const auto* const kValidIntelOperandTypes =
-      new std::unordered_set<string>(std::begin(kValidOperandTypes),
-                                     std::end(kValidOperandTypes));
+      new std::unordered_set<std::string>(std::begin(kValidOperandTypes),
+                                          std::end(kValidOperandTypes));
   // Remove any asterisks (typically artifacts from notes).
   content.erase(std::remove(content.begin(), content.end(), '*'),
                 content.end());
@@ -304,9 +305,9 @@ bool ParseVendorSyntax(string content, InstructionFormat* instruction_format) {
     return false;
   }
 
-  string operand_name;
-  string tag1;
-  string tag2;
+  std::string operand_name;
+  std::string tag1;
+  std::string tag2;
   while (RE2::Consume(&input, *kOperandRegexp, &operand_name, &tag1, &tag2)) {
     StripWhitespace(&operand_name);
     StripWhitespace(&tag1);

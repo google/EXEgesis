@@ -15,9 +15,9 @@
 #include "exegesis/x86/registers.h"
 
 #include <algorithm>
+#include <string>
 #include <unordered_set>
 #include <vector>
-#include "strings/string.h"
 
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -32,7 +32,7 @@ using ::exegesis::testing::EqualsProto;
 using ::testing::Not;
 
 RegisterGroupProto FindGroupByRegister(const RegisterSetProto& registers,
-                                       const string& register_name) {
+                                       const std::string& register_name) {
   for (const RegisterGroupProto& group : registers.register_groups()) {
     for (const RegisterProto& reg : group.registers()) {
       if (reg.name() == register_name) {
@@ -59,7 +59,7 @@ TEST(GetRegisterSetTest, IsNotEmpty) {
 
 TEST(GetRegisterSetTest, RegisterNamesAreUnique) {
   const RegisterSetProto& registers = GetRegisterSet();
-  std::unordered_set<string> register_names;
+  std::unordered_set<std::string> register_names;
   for (const RegisterGroupProto& group : registers.register_groups()) {
     for (const RegisterProto& reg : group.registers()) {
       SCOPED_TRACE(StrCat("reg.name = ", reg.name()));
@@ -284,7 +284,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
           }
         })"}};
   for (const auto& test_case : kTestCases) {
-    const string register_name = test_case.register_name;
+    const std::string register_name = test_case.register_name;
     SCOPED_TRACE(StrCat("register_name = ", register_name));
     EXPECT_THAT(FindGroupByRegister(GetRegisterSet(), test_case.register_name),
                 EqualsProto(test_case.expected_proto));
@@ -294,7 +294,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
   constexpr const char* kCheckedRegisters[] = {"RFLAGS", "EFLAGS", "FPSW",
                                                "MXCSR",  "FPCW",   "GDTR",
                                                "LDTR",   "IDTR",   "TR"};
-  for (const string register_name : kCheckedRegisters) {
+  for (const std::string register_name : kCheckedRegisters) {
     SCOPED_TRACE(StrCat("register_name = ", register_name));
     EXPECT_THAT(FindGroupByRegister(GetRegisterSet(), register_name),
                 Not(EqualsProto("")));

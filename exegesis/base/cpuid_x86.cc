@@ -353,15 +353,15 @@ void AddHostCpuIdEntriesFromSeed(uint32_t seed, X86CpuIdDumpProto* dump_proto) {
 constexpr char CpuIdDump::kVendorStringAMD[];
 constexpr char CpuIdDump::kVendorStringIntel[];
 
-StatusOr<CpuIdDump> CpuIdDump::FromString(const string& source) {
+StatusOr<CpuIdDump> CpuIdDump::FromString(const std::string& source) {
   static const LazyRE2 regex = {
       " *CPUID +([0-9a-fA-F]+): +"
       "([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)(?: .*)?"};
   CpuIdDump dump;
   X86CpuIdDumpProto* const dump_proto =
       dump.dump_proto_.mutable_x86_cpuid_dump();
-  const std::vector<string> lines = strings::Split(source, "\n");
-  for (const string& line : lines) {
+  const std::vector<std::string> lines = strings::Split(source, "\n");
+  for (const std::string& line : lines) {
     uint32_t leaf = 0;
     uint32_t eax = 0;
     uint32_t ebx = 0;
@@ -391,7 +391,7 @@ CpuIdDump CpuIdDump::FromHost() {
   return dump;
 }
 
-string CpuIdDump::GetProcessorBrandString() const {
+std::string CpuIdDump::GetProcessorBrandString() const {
   constexpr uint32_t kStartLeaf = 0x80000002;
   constexpr uint32_t kEndLeaf = 0x80000004;
   constexpr int kBytesPerLeaf = 16;
@@ -405,7 +405,7 @@ string CpuIdDump::GetProcessorBrandString() const {
   int entry = 0;
   for (uint32_t leaf = kStartLeaf; leaf <= kEndLeaf; ++leaf) {
     const CpuIdOutputProto* const leaf_data = GetEntryOrNull(leaf, 0);
-    if (leaf_data == nullptr) return string();
+    if (leaf_data == nullptr) return std::string();
     data[entry] = leaf_data->eax();
     data[entry + 1] = leaf_data->ebx();
     data[entry + 2] = leaf_data->ecx();
@@ -421,7 +421,7 @@ string CpuIdDump::GetProcessorBrandString() const {
   return buffer;
 }
 
-string CpuIdDump::GetVendorString() const {
+std::string CpuIdDump::GetVendorString() const {
   const CpuIdOutputProto* const root = GetEntryOrNull(0, 0);
   CHECK(root) << "Invalid CPUID dump!";
   char buffer[12];
@@ -429,7 +429,7 @@ string CpuIdDump::GetVendorString() const {
   data[0] = root->ebx();
   data[1] = root->edx();
   data[2] = root->ecx();
-  return string(buffer, 12);
+  return std::string(buffer, 12);
 }
 
 #define PROCESS_FEATURE(name, reg, field)  \
@@ -465,11 +465,11 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
     }
   }
 
-  const string vendor = GetVendorString();
+  const std::string vendor = GetVendorString();
   const bool is_intel = vendor == kVendorStringIntel;
   const bool is_amd = vendor == kVendorStringAMD;
 
-  std::unordered_set<string> indexed_features;
+  std::unordered_set<std::string> indexed_features;
 
   if (is_intel) {
     PROCESS_FEATURE(3DNOW, ext_features.ecx, intel_only_prefetchwt1);
@@ -520,7 +520,7 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
 
   // If there is any AVX-512 feature, also add a meta-feature AVX512.
   constexpr char kAvx512[] = "AVX512";
-  for (const string& feature_name : indexed_features) {
+  for (const std::string& feature_name : indexed_features) {
     if (strings::StartsWith(feature_name, kAvx512)) {
       indexed_features.insert(kAvx512);
       break;
@@ -548,8 +548,8 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
 #undef PROCESS_FEATURE
 #undef PROCESS_FEATURE_IF
 
-string CpuIdDump::ToString() const {
-  string buffer;
+std::string CpuIdDump::ToString() const {
+  std::string buffer;
   for (const CpuIdEntryProto& entry : dump_proto_.x86_cpuid_dump().entries()) {
     if (!buffer.empty()) buffer += "\n";
     StringAppendF(&buffer, "CPUID %08X: %08X-%08X-%08X-%08X",

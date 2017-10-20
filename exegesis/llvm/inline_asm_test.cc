@@ -127,14 +127,14 @@ TEST(JitCompilerTest, CreateAFunctionAndRunItInJIT) {
       10, kAssemblyCode, kConstraints, llvm::InlineAsm::AD_ATT);
   ASSERT_OK(function);
   // We need to encode at least two two movs (two times 0x89d8).
-  const string kTwoMovsEncoding = "\x89\xd8\x89\xd8";
+  const std::string kTwoMovsEncoding = "\x89\xd8\x89\xd8";
   EXPECT_GE(function.ValueOrDie().size, kTwoMovsEncoding.size());
-  const string compiled_function(
+  const std::string compiled_function(
       reinterpret_cast<const char*>(function.ValueOrDie().ptr),
       function.ValueOrDie().size);
   LOG(INFO) << "Compiled function: "
             << ToHumanReadableHexString(compiled_function);
-  EXPECT_NE(compiled_function.find(kTwoMovsEncoding), string::npos);
+  EXPECT_NE(compiled_function.find(kTwoMovsEncoding), std::string::npos);
   LOG(INFO) << "Calling the function at " << function.ValueOrDie().ptr;
   function.ValueOrDie().CallOrDie();
   LOG(INFO) << "Function called";

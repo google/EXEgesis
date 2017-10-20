@@ -15,7 +15,7 @@
 #ifndef UTIL_TASK_STATUS_H_
 #define UTIL_TASK_STATUS_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "src/google/protobuf/stubs/status.h"
 #include "strings/str_cat.h"
@@ -41,7 +41,7 @@ using ::google::protobuf::util::operator<<;
 inline Status Annotate(const Status& s, StringPiece msg) {
   if (s.ok() || msg.empty()) return s;
   StringPiece new_msg = msg;
-  string annotated;
+  std::string annotated;
   if (!s.error_message().empty()) {
     StrAppend(&annotated, s.error_message(), "; ", msg);
     new_msg = annotated;

@@ -37,7 +37,7 @@ using ::testing::Eq;
 TEST(DecompositionTest, Negate) {
   DecompositionSolver solver(HaswellMicroArchitecture());
   // TODO(bdb): Only consider user-time measurements with the :u modifier.
-  const string kObservationProto =
+  const std::string kObservationProto =
       R"(observations {
            event_name: 'cycles'                     measurement: 2.3336 }
          observations {
@@ -66,7 +66,7 @@ TEST(DecompositionTest, Negate) {
   google::protobuf::TextFormat::ParseFromString(kObservationProto,
                                                 &observation);
   ASSERT_OK(solver.Run(observation));
-  const string kExpectedResult =
+  const std::string kExpectedResult =
       "P23 P0156 P0156 P237 P4 "
       "\nP0156: {0: 0.22060, 1: 0.25980, 5: 0.25980, 6: 0.25980, }"
       "\nP0156: {0: 0.21220, 1: 0.21220, 5: 0.28780, 6: 0.28780, }"

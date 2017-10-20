@@ -37,7 +37,7 @@ using ::exegesis::util::Status;
 
 constexpr const uint8_t kModRmDirectAddressing = 0x3;
 
-void LogErrorAndUpdateStatus(const string& error_message,
+void LogErrorAndUpdateStatus(const std::string& error_message,
                              const InstructionProto& instruction,
                              Status* status) {
   const Status error = InvalidArgumentError(

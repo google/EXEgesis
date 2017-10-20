@@ -14,8 +14,8 @@
 
 #include "exegesis/util/xml/xml_util.h"
 
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "glog/logging.h"
 #include "strings/str_cat.h"
@@ -51,11 +51,11 @@ Status GetStatus(const XMLError& status) {
   return InternalError(StrCat("XML Error ", status, ": ", dummy.ErrorName()));
 }
 
-string DebugString(const XMLNode* node) {
+std::string DebugString(const XMLNode* node) {
   CHECK(node != nullptr);
   XMLPrinter printer;
   node->Accept(&printer);
-  return string(printer.CStr());
+  return std::string(printer.CStr());
 }
 
 StatusOr<XMLElement*> FindChild(XMLNode* node, const char* name) {
@@ -76,11 +76,11 @@ std::vector<XMLElement*> FindChildren(XMLNode* node, const char* name) {
   return children;
 }
 
-string ReadAttribute(const XMLElement* element, const char* name) {
+std::string ReadAttribute(const XMLElement* element, const char* name) {
   CHECK(element != nullptr);
   CHECK(name != nullptr);
   const char* value = element->Attribute(name);
-  return value ? string(value) : "";
+  return value ? std::string(value) : "";
 }
 
 StatusOr<int> ReadIntAttribute(const XMLElement* element, const char* name) {
@@ -99,17 +99,17 @@ int ReadIntAttributeOrDefault(const XMLElement* element, const char* name,
   return value.ok() ? value.ValueOrDie() : default_value;
 }
 
-string ReadSimpleText(const XMLElement* element) {
+std::string ReadSimpleText(const XMLElement* element) {
   CHECK(element != nullptr);
   const char* text = element->GetText();
-  return text ? string(text) : "";
+  return text ? std::string(text) : "";
 }
 
-string ReadHtmlText(const XMLElement* element) {
+std::string ReadHtmlText(const XMLElement* element) {
   CHECK(element != nullptr);
   XMLPrinter printer(nullptr, /* compact = */ true, /* depth = */ 0);
   element->Accept(&printer);
-  return string(CHECK_NOTNULL(printer.CStr()));
+  return std::string(CHECK_NOTNULL(printer.CStr()));
 }
 
 }  // namespace xml

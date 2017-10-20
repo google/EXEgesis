@@ -138,6 +138,7 @@ cc_library(
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
     ],
+    alwayslink = 1,
 )
 
 cc_test(

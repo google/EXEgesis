@@ -20,8 +20,8 @@
 //      --exegesis_output_cpu_model=-
 
 #include <algorithm>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "gflags/gflags.h"
 
@@ -61,29 +61,30 @@ using ::exegesis::util::StatusOr;
 using ::google::protobuf::RepeatedFieldBackInserter;
 using ::google::protobuf::RepeatedPtrField;
 
-CpuIdDumpProto ParseX86CpuIdDumpOrDie(const string& input) {
-  const string cpuid_dump_text = ReadTextFromFileOrStdInOrDie(input);
+CpuIdDumpProto ParseX86CpuIdDumpOrDie(const std::string& input) {
+  const std::string cpuid_dump_text = ReadTextFromFileOrStdInOrDie(input);
   const StatusOr<x86::CpuIdDump> dump_or_status =
       x86::CpuIdDump::FromString(cpuid_dump_text);
   CHECK_OK(dump_or_status.status());
   return dump_or_status.ValueOrDie().dump_proto();
 }
 
-CpuIdDumpProto ParseCpuIdDumpProtoOrDie(const string& input) {
-  const string text_proto = ReadTextFromFileOrStdInOrDie(input);
+CpuIdDumpProto ParseCpuIdDumpProtoOrDie(const std::string& input) {
+  const std::string text_proto = ReadTextFromFileOrStdInOrDie(input);
   return ParseProtoFromStringOrDie<CpuIdDumpProto>(text_proto);
 }
 
-void PrintCpuIdDump(const CpuIdDumpProto& cpuid_dump, const string& output) {
+void PrintCpuIdDump(const CpuIdDumpProto& cpuid_dump,
+                    const std::string& output) {
   WriteTextToFileOrStdOutOrDie(output, cpuid_dump.DebugString());
 }
 
 void PrintCpuModelFromCpuIdDump(const CpuIdDumpProto& cpuid_dump,
-                                const string& output) {
+                                const std::string& output) {
   const CpuInfo cpu_info = CpuInfoFromCpuIdDump(cpuid_dump);
   CpuInfoProto cpu_info_proto;
   cpu_info_proto.set_model_id(cpu_info.cpu_model_id());
-  RepeatedPtrField<string>* const features =
+  RepeatedPtrField<std::string>* const features =
       cpu_info_proto.mutable_feature_names();
   std::copy(cpu_info.supported_features().begin(),
             cpu_info.supported_features().end(),

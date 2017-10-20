@@ -14,8 +14,8 @@
 
 #include "exegesis/x86/operand_translator.h"
 
+#include <string>
 #include <unordered_map>
-#include "strings/string.h"
 
 #include "base/stringprintf.h"
 #include "glog/logging.h"
@@ -39,9 +39,9 @@ namespace {
 
 // Returns an example of operand value for a given operand specification,
 // e.g. '0x11' for 'imm8', or 'xmm5' for 'xmm'.
-string TranslateOperand(const string& operand) {
-  static const std::unordered_map<string, string>* const kOperandTranslation =
-      new std::unordered_map<string, string>({
+std::string TranslateOperand(const std::string& operand) {
+  static const std::unordered_map<std::string, std::string>* const
+      kOperandTranslation = new std::unordered_map<std::string, std::string>({
           {"CR0-CR7", "CR0"},
           {"DR0-DR7", "DR0"},
           {"<XMM0>", ""},
@@ -113,10 +113,10 @@ string TranslateOperand(const string& operand) {
 #undef ADDRESS
 #undef OFFSET_ADDRESS
 
-string TranslateGPR(const string& operand) {
+std::string TranslateGPR(const std::string& operand) {
   // Note: keep in sync with clobbered registers in AddItineraries.
-  static const std::unordered_map<string, string>* const kGPRLegacyTranslation =
-      new std::unordered_map<string, string>({
+  static const std::unordered_map<std::string, std::string>* const
+      kGPRLegacyTranslation = new std::unordered_map<std::string, std::string>({
           {"r8", "ch"},
           {"r16", "cx"},
           {"r32", "ecx"},
@@ -132,10 +132,10 @@ string TranslateGPR(const string& operand) {
   return FindWithDefault(*kGPRLegacyTranslation, operand, operand);
 }
 
-string TranslateREX(const string& operand) {
+std::string TranslateREX(const std::string& operand) {
   // Note: keep in sync with clobbered registers in AddItineraries.
-  static const std::unordered_map<string, string>* const kGPRREXTranslation =
-      new std::unordered_map<string, string>({
+  static const std::unordered_map<std::string, std::string>* const
+      kGPRREXTranslation = new std::unordered_map<std::string, std::string>({
           {"r8", "r8b"},
           {"r16", "r10w"},
           {"r32", "r10d"},
@@ -153,7 +153,7 @@ string TranslateREX(const string& operand) {
 InstructionOperand::Tag TranslateOperandTag(
     const InstructionOperand::Tag& tag) {
   static const auto* const kTagTranslation =
-      new std::unordered_map<string, string>({{"er", "rn-sae"}});
+      new std::unordered_map<std::string, std::string>({{"er", "rn-sae"}});
   InstructionOperand::Tag code_tag;
   code_tag.set_name(FindWithDefault(*kTagTranslation, tag.name(), tag.name()));
   return code_tag;
@@ -169,7 +169,7 @@ InstructionFormat InstantiateOperands(const InstructionProto& instruction) {
                          vendor_syntax.operands(1).name() == "imm64";
   result.set_mnemonic(is_movabs ? "MOVABS" : vendor_syntax.mnemonic());
   for (const auto& operand : vendor_syntax.operands()) {
-    string code_operand = TranslateOperand(operand.name());
+    std::string code_operand = TranslateOperand(operand.name());
     if (code_operand == operand.name()) {
       code_operand = instruction.legacy_instruction()
                          ? TranslateGPR(operand.name())

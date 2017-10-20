@@ -17,8 +17,8 @@
 
 #include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
-#include "strings/string.h"
 
 #include "base/mutex.h"
 #include "exegesis/base/microarchitecture.h"
@@ -62,31 +62,31 @@ class PerfResult {
   PerfResult& operator=(const PerfResult&) = default;
 
   // For tests.
-  explicit PerfResult(std::map<string, TimingInfo> timings)
+  explicit PerfResult(std::map<std::string, TimingInfo> timings)
       : timings_(std::move(timings)) {}
 
-  bool HasTiming(const string& name) const {
+  bool HasTiming(const std::string& name) const {
     return ContainsKey(timings_, name);
   }
 
   // Returns the scaled value for the given counter name.
-  double GetScaledOrDie(const string& name) const;
+  double GetScaledOrDie(const std::string& name) const;
 
   void SetScaleFactor(uint64_t num_times) { num_times_ = num_times; }
 
   // Returns a human-readable cycle count for `result`.
-  string ToString() const;
+  std::string ToString() const;
 
   // Accumulates the counters in delta.
   void Accumulate(const PerfResult& delta);
 
   // Returns all keys.
-  std::vector<string> Keys() const;
+  std::vector<std::string> Keys() const;
 
  private:
   double Scale(const TimingInfo& info) const;
 
-  std::map<string, TimingInfo> timings_;
+  std::map<std::string, TimingInfo> timings_;
   uint64_t num_times_ = 1;
 };  // namespace exegesis
 
@@ -94,8 +94,9 @@ class PerfResult {
 class PerfSubsystem {
  public:
   // Represents an event category from PerfEventsProto.
-  using EventCategory = const ::google::protobuf::RepeatedPtrField<string>& (
-      PerfEventsProto::*)() const;
+  using EventCategory =
+      const ::google::protobuf::RepeatedPtrField<std::string>& (
+          PerfEventsProto::*)() const;
 
   // Creates a perf subsystem for the host microarchitecture.
   PerfSubsystem();
@@ -108,14 +109,14 @@ class PerfSubsystem {
 
   // Returns a string indicating which performance monitoring unit is
   // supported by the running system.
-  string Info() const;
+  std::string Info() const;
 
   // Lists all the events supported by the running platform.
   void ListEvents();
 
   // Adds an event to be measured by the current object. Returns the index of
   // the newly added event.
-  int AddEvent(const string& event_name);
+  int AddEvent(const std::string& event_name);
 
   // Starts collecting data, i.e. hardware counters will be updated from here.
   void StartCollecting();
@@ -158,7 +159,7 @@ class PerfSubsystem {
   // File descriptor for each counter.
   std::vector<int> counter_fds_;
   // Name as given by libpfm4, of the event for each counter.
-  std::vector<string> event_names_;
+  std::vector<std::string> event_names_;
   // Used to store the result of the profiling.
   std::vector<TimingInfo> timers_;
   ScopedLibPfmInitialization scoped_libpfm_;

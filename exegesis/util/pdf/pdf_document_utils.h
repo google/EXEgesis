@@ -16,7 +16,7 @@
 #ifndef EXEGESIS_UTIL_PDF_PDF_DOCUMENT_UTILS_H_
 #define EXEGESIS_UTIL_PDF_PDF_DOCUMENT_UTILS_H_
 
-#include "strings/string.h"
+#include <string>
 
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "strings/string_view.h"
@@ -28,20 +28,20 @@ namespace pdf {
 // row and col indices can be negative to indicate reverse order.
 // e.g. row = -1 means 'last row of the page'.
 // e.g. col = -1 means 'last column of the row'.
-const string& GetCellTextOrEmpty(const PdfPage& page, int row, int col);
+const std::string& GetCellTextOrEmpty(const PdfPage& page, int row, int col);
 
 // Mutable version of the above function.
 // Returns nullptr if cell does not exist.
-string* GetMutableCellTextOrNull(PdfPage* page, int row, int col);
+std::string* GetMutableCellTextOrNull(PdfPage* page, int row, int col);
 
 // Returns the text for the corresponding cell in the row or empty string.
 // col index can be negative to indicate reverse order.
 // e.g. col = -1 means 'last column of row'.
-const string& GetCellTextOrEmpty(const PdfTextTableRow& row, int col);
+const std::string& GetCellTextOrEmpty(const PdfTextTableRow& row, int col);
 
 // Mutable version of the above function.
 // Returns nullptr if cell does not exist.
-string* GetMutableCellTextOrNull(PdfTextTableRow* row, int col);
+std::string* GetMutableCellTextOrNull(PdfTextTableRow* row, int col);
 
 // Applies patches to the page.
 void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page);
@@ -54,7 +54,7 @@ std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
                                                     float margin);
 
 // Loads all files in directory and returns the merged PdfDocumentsChanges.
-PdfDocumentsChanges LoadConfigurations(const string& directory);
+PdfDocumentsChanges LoadConfigurations(const std::string& directory);
 
 // Returns the changes corresponding to the given document id, or nullptr if not
 // found.

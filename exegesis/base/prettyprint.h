@@ -64,30 +64,30 @@ class PrettyPrintOptions {
   bool microop_dependencies_ = true;
 };
 
-string PrettyPrintInstruction(
+std::string PrettyPrintInstruction(
     const InstructionProto& instruction,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintItinerary(
+std::string PrettyPrintItinerary(
     const ItineraryProto& instruction,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintCpuInfo(
+std::string PrettyPrintCpuInfo(
     const CpuInfo& cpu_info,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintMicroArchitecture(
+std::string PrettyPrintMicroArchitecture(
     const MicroArchitecture& microarchitecture,
     const PrettyPrintOptions& options = PrettyPrintOptions());
-string PrettyPrintSyntax(
+std::string PrettyPrintSyntax(
     const InstructionFormat& syntax,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintMicroOperation(
+std::string PrettyPrintMicroOperation(
     const MicroOperationProto& uop,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
-string PrettyPrintMicroOperations(
+std::string PrettyPrintMicroOperations(
     const ::google::protobuf::RepeatedPtrField<MicroOperationProto>& uops,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 

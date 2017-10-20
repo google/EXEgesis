@@ -22,9 +22,9 @@ namespace x86 {
 namespace {
 
 void CheckCPU(const char* cpu_model_id, int num_port_masks,
-              const string& load_store_address_generation_ports,
-              const string& store_address_generation_ports,
-              const string& store_data_ports) {
+              const std::string& load_store_address_generation_ports,
+              const std::string& store_address_generation_ports,
+              const std::string& store_data_ports) {
   const auto& uarch = MicroArchitecture::FromCpuModelIdOrDie(cpu_model_id);
   EXPECT_EQ(uarch.port_masks().size(), num_port_masks);
   const PortMask* mask = uarch.load_store_address_generation();
