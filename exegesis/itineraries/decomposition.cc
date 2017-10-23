@@ -411,7 +411,8 @@ std::string DecompositionSolver::DebugString() const {
   for (int port = 0; port < num_execution_ports_; ++port) {
     StringAppendF(&output, "%d: %.5f, ", port, error_values_[port]);
   }
-  StrAppend(&output, "}\nis_order_unique = ", is_order_unique(), "\n");
+  StrAppend(&output,
+            "}\nis_order_unique = ", static_cast<int>(is_order_unique()), "\n");
   return output;
 }
 
