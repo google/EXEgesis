@@ -16,24 +16,13 @@
 
 #include <initializer_list>
 
-#include "exegesis/base/cpuid_x86.h"
 #include "exegesis/proto/cpuid.pb.h"
-#include "exegesis/proto/microarchitecture.pb.h"
-#include "exegesis/proto/x86/cpuid.pb.h"
 #include "exegesis/util/proto_util.h"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/string_view.h"
-#include "strings/string_view_utils.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
-
-using ::exegesis::util::StatusOr;
-using ::exegesis::x86::CpuIdDump;
-using ::testing::UnorderedElementsAreArray;
 
 TEST(CpuInfoTest, SupportsFeature) {
   const CpuInfo cpu_info(ParseProtoFromStringOrDie<CpuInfoProto>(R"(
