@@ -98,8 +98,10 @@ std::string DumpMachineMemOperandToString(
 // Returns the list of X86 LLVM instruction mnemonics.
 std::vector<std::string> GetLLVMMnemonicListOrDie();
 
-llvm::StringRef MakeStringRef(const std::string& source);
-llvm::StringRef MakeStringRef(StringPiece source);
+template <typename StringType>
+llvm::StringRef MakeStringRef(const StringType& source) {
+  return llvm::StringRef(source.data(), source.size());
+}
 
 // Parses the asm dialect from a human-readable string representation. Accepted
 // values are "att" and "intel".

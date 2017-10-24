@@ -262,14 +262,6 @@ std::vector<std::string> GetLLVMMnemonicListOrDie() {
   return mnemonics;
 }
 
-llvm::StringRef MakeStringRef(const std::string& source) {
-  return llvm::StringRef(source.data(), source.size());
-}
-
-llvm::StringRef MakeStringRef(StringPiece source) {
-  return llvm::StringRef(source.data(), source.size());
-}
-
 StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
     const std::string& asm_dialect_name) {
   const std::string canonical_name = strings::ToUpper(asm_dialect_name);
