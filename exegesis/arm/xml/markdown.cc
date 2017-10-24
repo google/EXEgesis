@@ -14,13 +14,13 @@
 
 #include "exegesis/arm/xml/markdown.h"
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 
 #include "exegesis/util/xml/xml_util.h"
 #include "re2/re2.h"
 #include "strings/str_cat.h"
-#include "strings/str_replace.h"
 #include "tinyxml2.h"
 #include "util/gtl/map_util.h"
 
@@ -120,7 +120,9 @@ class TinyMarkdownParser : public XMLVisitor {
   }
 
   bool Visit(const XMLText& text) override {
-    StrAppend(&md_, StringReplace(text.Value(), "\n", " ", true));
+    std::string value = text.Value();
+    std::replace(value.begin(), value.end(), '\n', ' ');
+    StrAppend(&md_, value);
     return true;
   }
 
