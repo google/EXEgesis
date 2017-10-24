@@ -16,6 +16,7 @@
 
 #include <unordered_map>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/llvm/llvm_utils.h"
@@ -39,7 +40,6 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/SourceMgr.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
 
 namespace exegesis {
@@ -83,7 +83,7 @@ void JitCompiler::Init() {
                                          /*RespectFilters=*/true);
   module_ = new llvm::Module("Temp Module for JIT", *context_);
   CHECK(module_ != nullptr);
-  auto memory_manager = gtl::MakeUnique<StoreSizeMemoryManager>();
+  auto memory_manager = absl::make_unique<StoreSizeMemoryManager>();
   memory_manager_ = memory_manager.get();
   execution_engine_.reset(
       llvm::EngineBuilder(std::unique_ptr<llvm::Module>(module_))

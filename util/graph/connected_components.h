@@ -52,9 +52,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/memory/memory.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 
 // A connected components finder that only works on dense ints.
 class DenseConnectedComponentsFinder {

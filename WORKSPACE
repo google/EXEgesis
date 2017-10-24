@@ -6,6 +6,13 @@ git_repository(
     commit = "6cf9c731027f4d8aebe3c60df8e64317e6870870",
 )
 
+# CCTZ (Time-zone framework).
+http_archive(
+    name = "com_googlesource_code_cctz",
+    urls = ["https://github.com/google/cctz/archive/master.zip"],
+    strip_prefix = "cctz-master",
+)
+
 # ===== re2 =====
 
 git_repository(

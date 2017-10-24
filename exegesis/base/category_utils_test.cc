@@ -17,7 +17,6 @@
 #include <cstdint>
 
 #include "absl/strings/str_cat.h"
-#include "base/macros.h"
 #include "gtest/gtest.h"
 
 namespace exegesis {

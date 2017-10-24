@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "base/mutex.h"
+#include "absl/synchronization/mutex.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
@@ -143,7 +143,7 @@ class PerfSubsystem {
     ~ScopedLibPfmInitialization();
 
    private:
-    static Mutex refcount_mutex_;
+    static absl::Mutex refcount_mutex_;
     static int refcount_;
   };
 

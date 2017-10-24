@@ -26,6 +26,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
@@ -51,7 +52,6 @@
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/text_format.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 #include "util/task/status_macros.h"

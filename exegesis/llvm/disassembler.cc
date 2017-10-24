@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
+#include "absl/base/macros.h"
 #include "base/stringprintf.h"
 #include "exegesis/llvm/llvm_utils.h"
 #include "glog/logging.h"
@@ -130,7 +130,7 @@ int Disassembler::Disassemble(const std::vector<uint8_t>& bytes,
       break;
     case llvm::MCDisassembler::SoftFail:
       LOG(INFO) << "Potentially undefined instruction encoding";
-      FALLTHROUGH_INTENDED;
+      ABSL_FALLTHROUGH_INTENDED;
     case llvm::MCDisassembler::Success:
       tmp.clear();
       llvm::raw_string_ostream att_stream(tmp);

@@ -200,19 +200,19 @@ PerfResult PerfSubsystem::ReadCounters() {
   return PerfResult(std::move(timings));
 }
 
-Mutex PerfSubsystem::ScopedLibPfmInitialization::  // NOLINT
+absl::Mutex PerfSubsystem::ScopedLibPfmInitialization::  // NOLINT
     refcount_mutex_;
 int PerfSubsystem::ScopedLibPfmInitialization::refcount_ = 0;
 
 PerfSubsystem::ScopedLibPfmInitialization::ScopedLibPfmInitialization() {
-  MutexLock l(&refcount_mutex_);
+  absl::MutexLock l(&refcount_mutex_);
   if (refcount_++ == 0) {
     CHECK_EQ(PFM_SUCCESS, pfm_initialize());
   }
 }
 
 PerfSubsystem::ScopedLibPfmInitialization::~ScopedLibPfmInitialization() {
-  MutexLock l(&refcount_mutex_);
+  absl::MutexLock l(&refcount_mutex_);
   if (--refcount_ == 0) {
     pfm_terminate();
   }

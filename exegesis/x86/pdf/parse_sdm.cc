@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
@@ -33,7 +34,6 @@
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 
 DEFINE_bool(exegesis_parse_sdm_store_intermediate_files, false,
             "Set to true to write intermediate files: the PDF and SDM protos "

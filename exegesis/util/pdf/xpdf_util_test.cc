@@ -14,12 +14,12 @@
 
 #include "exegesis/util/pdf/xpdf_util.h"
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/gtl/ptr_util.h"
 
 namespace exegesis {
 namespace pdf {

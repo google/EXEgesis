@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "absl/memory/memory.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/geometry.h"
 #include "exegesis/util/pdf/pdf_document_parser.h"
@@ -29,7 +30,6 @@
 #include "libutf/utf.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 #include "xpdf-3.04/xpdf/GfxState.h"
 #include "xpdf-3.04/xpdf/GlobalParams.h"
 #include "xpdf-3.04/xpdf/OutputDev.h"
@@ -130,8 +130,8 @@ void CreateDocumentId(PdfDocument* document) {
 
 std::unique_ptr<PDFDoc> OpenOrDie(const std::string& filename) {
   GetXpdfGlobalParams();  // Maybe initialize xpdf globals.
-  auto doc =
-      gtl::MakeUnique<PDFDoc>(new GString(filename.c_str()), nullptr, nullptr);
+  auto doc = absl::make_unique<PDFDoc>(new GString(filename.c_str()), nullptr,
+                                       nullptr);
   CHECK(doc->isOk()) << "Could not open PDF file: '" << filename << "'";
   CHECK_GT(doc->getNumPages(), 0) << "PDF has no pages: '" << filename << "'";
   return doc;

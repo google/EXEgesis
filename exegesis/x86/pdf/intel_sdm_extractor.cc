@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -33,7 +34,6 @@
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 
 namespace exegesis {
 namespace x86 {

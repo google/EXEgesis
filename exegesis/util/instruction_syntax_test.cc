@@ -14,7 +14,6 @@
 
 #include "exegesis/util/instruction_syntax.h"
 
-#include "base/macros.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"

@@ -22,8 +22,8 @@
 #include <memory>
 #include <string>
 
+#include "absl/memory/memory.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/gtl/ptr_util.h"
 
 namespace exegesis {
 
@@ -68,7 +68,7 @@ class ArchitectureProtoProvider {
 #define REGISTER_ARCHITECTURE_PROTO_PROVIDER(provider_name, Type) \
   ::exegesis::internal::RegisterArchitectureProtoProvider         \
       register_architectures_provider##Type(provider_name,        \
-                                            gtl::MakeUnique<Type>());
+                                            absl::make_unique<Type>());
 
 namespace internal {
 

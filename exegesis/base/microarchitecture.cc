@@ -17,11 +17,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
 
 namespace exegesis {
@@ -97,7 +97,7 @@ void RegisterMicroArchitectures::RegisterFromProto(
   for (const MicroArchitectureProto& microarchitecture_proto :
        microarchitectures.microarchitectures()) {
     auto microarchitecture =
-        gtl::MakeUnique<MicroArchitecture>(microarchitecture_proto);
+        absl::make_unique<MicroArchitecture>(microarchitecture_proto);
     for (const std::string& model_id : microarchitecture_proto.model_ids()) {
       InsertOrDie(microarchitectures_by_cpu_model_id, model_id,
                   microarchitecture.get());
