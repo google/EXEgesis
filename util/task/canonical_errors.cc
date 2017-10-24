@@ -17,29 +17,36 @@
 
 namespace exegesis {
 namespace util {
+namespace {
 
-Status FailedPreconditionError(StringPiece error_message) {
-  return Status(error::FAILED_PRECONDITION, error_message);
+::google::protobuf::StringPiece ToStringPiece(absl::string_view text) {
+  return ::google::protobuf::StringPiece(text.data(), text.size());
 }
 
-Status InternalError(StringPiece error_message) {
-  return Status(error::INTERNAL, error_message);
+}  // namespace
+
+Status FailedPreconditionError(absl::string_view error_message) {
+  return Status(error::FAILED_PRECONDITION, ToStringPiece(error_message));
 }
 
-Status InvalidArgumentError(StringPiece error_message) {
-  return Status(error::INVALID_ARGUMENT, error_message);
+Status InternalError(absl::string_view error_message) {
+  return Status(error::INTERNAL, ToStringPiece(error_message));
 }
 
-Status NotFoundError(StringPiece error_message) {
-  return Status(error::NOT_FOUND, error_message);
+Status InvalidArgumentError(absl::string_view error_message) {
+  return Status(error::INVALID_ARGUMENT, ToStringPiece(error_message));
 }
 
-Status UnimplementedError(StringPiece error_message) {
-  return Status(error::UNIMPLEMENTED, error_message);
+Status NotFoundError(absl::string_view error_message) {
+  return Status(error::NOT_FOUND, ToStringPiece(error_message));
 }
 
-Status UnknownError(StringPiece error_message) {
-  return Status(error::UNKNOWN, error_message);
+Status UnimplementedError(absl::string_view error_message) {
+  return Status(error::UNIMPLEMENTED, ToStringPiece(error_message));
+}
+
+Status UnknownError(absl::string_view error_message) {
+  return Status(error::UNKNOWN, ToStringPiece(error_message));
 }
 
 bool IsNotFound(const Status& status) {

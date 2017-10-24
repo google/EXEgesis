@@ -22,11 +22,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/util/pdf/geometry.h"
 #include "gflags/gflags.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
-#include "strings/string_view.h"
 #include "util/graph/connected_components.h"
 #include "util/gtl/map_util.h"
 
@@ -220,7 +220,7 @@ class Segments {
   ~Segments() {
     if (!prevent_bindings_.empty()) {
       LOG(ERROR) << "The following prevent_segment_bindings were not consumed\n"
-                 << strings::Join(prevent_bindings_, "\n");
+                 << absl::StrJoin(prevent_bindings_, "\n");
     }
   }
 
@@ -237,8 +237,8 @@ class Segments {
                            following_char_index, index);
   }
 
-  size_t GetIndexFor(StringPiece text) const {
-    return FindWithDefault(text_to_index_, text, StringPiece::npos);
+  size_t GetIndexFor(absl::string_view text) const {
+    return FindWithDefault(text_to_index_, text, absl::string_view::npos);
   }
 
   bool ConsumePreventSegmentBinding(const PdfTextSegment& a,
@@ -254,7 +254,7 @@ class Segments {
 
  private:
   static std::string CreateKey(const std::string& a, const std::string& b) {
-    return StrCat(a, " <-> ", b);
+    return absl::StrCat(a, " <-> ", b);
   }
 
   size_t GetFirstCharIndex(size_t index) const {
@@ -269,8 +269,8 @@ class Segments {
 
   const PdfTextSegments* segments_;
   std::unordered_map<size_t, size_t> first_char_index_to_segment_index_;
-  // ok to store StringPieces we own the data.
-  std::map<StringPiece, size_t> text_to_index_;
+  // ok to store absl::string_view we own the data.
+  std::map<absl::string_view, size_t> text_to_index_;
   std::unordered_set<std::string> prevent_bindings_;
 };
 

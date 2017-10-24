@@ -16,12 +16,12 @@
 
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/llvm/assembler_disassembler.pb.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/strings.h"
 #include "glog/logging.h"
 #include "llvm/IR/InlineAsm.h"
-#include "strings/str_cat.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/statusor.h"
 
@@ -49,11 +49,13 @@ AssemblerDisassembler::AssembleDisassemble(
       1, "\t" + code,
       /*loop_constraints=*/"", asm_dialect);
   if (!function.ok()) {
-    return InvalidArgumentError(StrCat("Could not assemble '", code, "': ",
-                                       function.status().error_message()));
+    return InvalidArgumentError(
+        absl::StrCat("Could not assemble '", code,
+                     "': ", ToStringView(function.status().error_message())));
   }
   if (function.ValueOrDie().size <= 0) {
-    return InvalidArgumentError(StrCat("Non-positive size for '", code, "'"));
+    return InvalidArgumentError(
+        absl::StrCat("Non-positive size for '", code, "'"));
   }
   const auto data = reinterpret_cast<const uint8_t*>(function.ValueOrDie().ptr);
   const std::vector<uint8_t> encoded_instruction(
@@ -89,7 +91,7 @@ AssemblerDisassembler::AssembleDisassemble(
       const auto bytes_or_status = ParseHexString(input);
       if (!bytes_or_status.ok()) {
         return std::make_pair(
-            InvalidArgumentError(StrCat(
+            InvalidArgumentError(absl::StrCat(
                 "Input '", input, "' is not in human readable binary format")),
             AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY);
       }
@@ -115,8 +117,8 @@ StatusOr<AssemblerDisassemblerResult> AssemblerDisassembler::Disassemble(
       &llvm_operands, &intel_code, &att_code);
   if (binary_encoding_size_in_bytes == 0) {
     return InvalidArgumentError(
-        StrCat("Could not disassemble: ",
-               ToHumanReadableHexString(encoded_instruction)));
+        absl::StrCat("Could not disassemble: ",
+                     ToHumanReadableHexString(encoded_instruction)));
   }
   CHECK_LE(binary_encoding_size_in_bytes, encoded_instruction.size());
   // Make a copy of the binary encoding of the instruction.

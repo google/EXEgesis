@@ -16,6 +16,8 @@
 
 #include <unordered_map>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "exegesis/llvm/llvm_utils.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
@@ -36,8 +38,6 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/SourceMgr.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
@@ -179,8 +179,9 @@ StatusOr<llvm::Function*> JitCompiler::WrapInlineAsmInLoopingFunction(
   CHECK_GE(num_iterations, 1);
   constexpr char kModuleNameBase[] = "inline_assembly_module_";
   constexpr char kFunctionNameBase[] = "inline_assembly_";
-  const std::string module_name = StrCat(kModuleNameBase, function_id_);
-  const std::string function_name = StrCat(kFunctionNameBase, function_id_);
+  const std::string module_name = absl::StrCat(kModuleNameBase, function_id_);
+  const std::string function_name =
+      absl::StrCat(kFunctionNameBase, function_id_);
   ++function_id_;
   llvm::Module* module = new llvm::Module(module_name, *context_);
   llvm::Function* const function = llvm::Function::Create(
@@ -245,7 +246,8 @@ StatusOr<llvm::Function*> JitCompiler::WrapInlineAsmInLoopingFunction(
   std::string error_msg;
   ::llvm::raw_string_ostream os(error_msg);
   if (llvm::verifyFunction(*function, &os)) {
-    return InternalError(StrCat("llvm::verifyFunction failed: ", os.str()));
+    return InternalError(
+        absl::StrCat("llvm::verifyFunction failed: ", os.str()));
   }
 
   return function;
@@ -276,12 +278,12 @@ StatusOr<VoidFunction> JitCompiler::CreatePointerToInlineAssemblyFunction(
         "getFunctionAddress returned nullptr. Are you sure you use MCJIT?");
   }
   if (!compile_errors_.empty()) {
-    return InvalidArgumentError(strings::Join(compile_errors_, "; "));
+    return InvalidArgumentError(absl::StrJoin(compile_errors_, "; "));
   }
   if (!intercepted_unknown_symbols_.empty()) {
     return InvalidArgumentError(
-        StrCat("The following unknown symbols are referenced: '",
-               strings::Join(intercepted_unknown_symbols_, "', '"), "'"));
+        absl::StrCat("The following unknown symbols are referenced: '",
+                     absl::StrJoin(intercepted_unknown_symbols_, "', '"), "'"));
   }
   return VoidFunction(reinterpret_cast<void (*)()>(function_ptr),
                       memory_manager_->GetSectionSize(

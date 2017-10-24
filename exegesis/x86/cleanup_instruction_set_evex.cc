@@ -18,11 +18,12 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "exegesis/base/category_utils.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -56,10 +57,10 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
     // to all slots in a vector register.
     const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
     for (const InstructionOperand& operand : vendor_syntax.operands()) {
-      if (operand.name().find(kBroadcast32Bit) != std::string::npos) {
+      if (absl::StrContains(operand.name(), kBroadcast32Bit)) {
         vex_prefix->add_evex_b_interpretations(EVEX_B_ENABLES_32_BIT_BROADCAST);
         break;
-      } else if (operand.name().find(kBroadcast64Bit) != std::string::npos) {
+      } else if (absl::StrContains(operand.name(), kBroadcast64Bit)) {
         vex_prefix->add_evex_b_interpretations(EVEX_B_ENABLES_64_BIT_BROADCAST);
         break;
       }
@@ -125,7 +126,7 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
     if (!supports_opmask) {
       // The instruction does not support opmasks.
       if (supports_zeroing) {
-        return InvalidArgumentError(StrCat(
+        return InvalidArgumentError(absl::StrCat(
             "Instructopn supports zeroing without also supporting opmasks: ",
             instruction.DebugString()));
       }

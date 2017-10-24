@@ -18,6 +18,10 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/algorithm/container.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/status_util.h"
@@ -25,10 +29,6 @@
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
-#include "strings/string_view_utils.h"
-#include "util/gtl/container_algorithm.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -41,7 +41,7 @@ namespace x86 {
 // implementation.
 using ::re2::StringPiece;
 
-using ::exegesis::gtl::c_linear_search;
+using ::absl::c_linear_search;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
@@ -80,8 +80,8 @@ Status RemoveInstructionsWaitingForFpuSync(
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_fwait_for_sync = [](const InstructionProto& instruction) {
-    return strings::StartsWith(instruction.raw_encoding_specification(),
-                               kFWaitPrefix);
+    return absl::StartsWith(instruction.raw_encoding_specification(),
+                            kFWaitPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_fwait_for_sync),
@@ -114,8 +114,7 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_rep_or_repne = [](const InstructionProto& instruction) {
-    return strings::StartsWith(instruction.vendor_syntax().mnemonic(),
-                               kRepPrefix);
+    return absl::StartsWith(instruction.vendor_syntax().mnemonic(), kRepPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_rep_or_repne),
@@ -227,7 +226,7 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
         // FixRexPrefixSpecification() which runs in the default pipeline
         // before this transform, and they should not cause any failures here.
         if (other_instructions == nullptr) {
-          const Status error = InvalidArgumentError(StrCat(
+          const Status error = InvalidArgumentError(absl::StrCat(
               "Instruction does not have a version without the REX prefix: ",
               instruction.raw_encoding_specification()));
           LOG(WARNING) << error;
@@ -241,8 +240,8 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
           }
         }
         const Status error = InvalidArgumentError(
-            StrCat("The REX and the non-REX versions differ: ",
-                   instruction.raw_encoding_specification()));
+            absl::StrCat("The REX and the non-REX versions differ: ",
+                         instruction.raw_encoding_specification()));
         LOG(WARNING) << error;
         UpdateStatus(&result, error);
         return false;

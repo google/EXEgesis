@@ -17,10 +17,10 @@
 #include <tuple>
 #include <unordered_map>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -63,7 +63,7 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
     const auto* provider = FindOrNull(*GetProviders(), id);
     CHECK(provider) << "No ArchitectureProtoProvider registered for id '" << id
                     << "'. Known ids are:\n"
-                    << strings::Join(GetRegisteredArchitectureIds(), "\n");
+                    << absl::StrJoin(GetRegisteredArchitectureIds(), "\n");
     auto proto = (*provider)->GetProtoOrDie();
     CHECK(proto) << "broken contract: GetProtoOrDie() != nullptr";
     return proto;

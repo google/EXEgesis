@@ -18,8 +18,8 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
-#include "strings/string_view.h"
 
 namespace exegesis {
 namespace pdf {

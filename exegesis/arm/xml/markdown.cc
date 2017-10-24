@@ -18,9 +18,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/util/xml/xml_util.h"
 #include "re2/re2.h"
-#include "strings/str_cat.h"
 #include "tinyxml2.h"
 #include "util/gtl/map_util.h"
 
@@ -73,23 +73,23 @@ class TinyMarkdownParser : public XMLVisitor {
                   const XMLAttribute* first_attribute) override {
     switch (GetType(element)) {
       case TagType::BLOCKQUOTE:
-        StrAppend(&md_, "\n\n> ");
+        absl::StrAppend(&md_, "\n\n> ");
         break;
       case TagType::CODE:
-        StrAppend(&md_, "`");
+        absl::StrAppend(&md_, "`");
         break;
       case TagType::IMAGE:
-        StrAppend(&md_, "![", ReadAttribute(&element, "label"), "]");
-        StrAppend(&md_, "(", ReadAttribute(&element, "file"), ")");
+        absl::StrAppend(&md_, "![", ReadAttribute(&element, "label"), "]");
+        absl::StrAppend(&md_, "(", ReadAttribute(&element, "file"), ")");
         break;
       case TagType::LINK:
-        StrAppend(&md_, "[");
+        absl::StrAppend(&md_, "[");
         break;
       case TagType::LIST:
-        StrAppend(&md_, "\n");
+        absl::StrAppend(&md_, "\n");
         break;
       case TagType::LISTITEM:
-        StrAppend(&md_, "+ ");
+        absl::StrAppend(&md_, "+ ");
         break;
       default:
         break;
@@ -100,29 +100,29 @@ class TinyMarkdownParser : public XMLVisitor {
   bool VisitExit(const tinyxml2::XMLElement& element) override {
     switch (GetType(element)) {
       case TagType::CODE:
-        StrAppend(&md_, "`");
+        absl::StrAppend(&md_, "`");
         break;
       case TagType::LINK:
-        StrAppend(&md_, "](", ReadAttribute(&element, "linkend"), ")");
+        absl::StrAppend(&md_, "](", ReadAttribute(&element, "linkend"), ")");
         break;
       case TagType::LIST:
       case TagType::LISTITEM:
-        StrAppend(&md_, "\n");
+        absl::StrAppend(&md_, "\n");
         break;
       case TagType::PARAGRAPH:
-        StrAppend(&md_, "\n\n");
+        absl::StrAppend(&md_, "\n\n");
         break;
       default:
         break;
     }
-    StrAppend(&md_, " ");
+    absl::StrAppend(&md_, " ");
     return true;
   }
 
   bool Visit(const XMLText& text) override {
     std::string value = text.Value();
     std::replace(value.begin(), value.end(), '\n', ' ');
-    StrAppend(&md_, value);
+    absl::StrAppend(&md_, value);
     return true;
   }
 

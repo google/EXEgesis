@@ -18,13 +18,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
-#include "strings/string_view_utils.h"
-#include "strings/strip.h"
 
 namespace exegesis {
 namespace {
@@ -37,7 +37,7 @@ using ::re2::StringPiece;
 template <typename PrefixCollection>
 bool ContainsPrefix(const std::string& str, const PrefixCollection& prefixes) {
   for (const auto& prefix : prefixes) {
-    if (strings::StartsWith(str, prefix)) {
+    if (absl::StartsWith(str, prefix)) {
       return true;
     }
   }
@@ -99,7 +99,7 @@ InstructionFormat ParseAssemblyStringOrDie(const std::string& code) {
   CHECK(!parts.empty());
   // Parse the mnemonic and the optional first operand.
   std::string mnemonic_and_first_operand = parts[0];
-  StripWhitespace(&mnemonic_and_first_operand);
+  absl::StripAsciiWhitespace(&mnemonic_and_first_operand);
   std::replace(mnemonic_and_first_operand.begin(),
                mnemonic_and_first_operand.end(), '\t', ' ');
 
@@ -130,10 +130,10 @@ std::string ConvertToCodeString(const InstructionFormat& instruction) {
   std::string result = instruction.mnemonic();
   bool run_once = false;
   for (const auto& operand : instruction.operands()) {
-    StrAppend(&result, run_once ? ", " : " ", operand.name());
+    absl::StrAppend(&result, run_once ? ", " : " ", operand.name());
     for (const InstructionOperand::Tag& tag : operand.tags()) {
       if (!result.empty() && result.back() != ' ') result += ' ';
-      StrAppend(&result, "{", tag.name(), "}");
+      absl::StrAppend(&result, "{", tag.name(), "}");
     }
     run_once = true;
   }

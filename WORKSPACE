@@ -1,3 +1,11 @@
+# ===== Abseil =====
+
+git_repository(
+    name = "com_google_absl",
+    remote = "https://github.com/abseil/abseil-cpp.git",
+    commit = "6cf9c731027f4d8aebe3c60df8e64317e6870870",
+)
+
 # ===== re2 =====
 
 git_repository(

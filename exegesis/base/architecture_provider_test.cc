@@ -14,11 +14,11 @@
 
 #include "exegesis/base/architecture_provider.h"
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
@@ -31,19 +31,22 @@ constexpr const char kTestArchitectureProto[] = R"(
 
 TEST(ArchitectureProtoProviderTest, TestPbTxtSource) {
   const std::string filename =
-      StrCat(getenv("TEST_TMPDIR"), "/test_arch.pbtxt");
+      absl::StrCat(getenv("TEST_TMPDIR"), "/test_arch.pbtxt");
   WriteTextProtoOrDie(filename, ParseProtoFromStringOrDie<ArchitectureProto>(
                                     kTestArchitectureProto));
-  EXPECT_THAT(*GetArchitectureProtoOrDie(StrCat(kPbTxtSource, ":", filename)),
-              EqualsProto(kTestArchitectureProto));
+  EXPECT_THAT(
+      *GetArchitectureProtoOrDie(absl::StrCat(kPbTxtSource, ":", filename)),
+      EqualsProto(kTestArchitectureProto));
 }
 
 TEST(ArchitectureProtoProviderTest, TestPbSource) {
-  const std::string filename = StrCat(getenv("TEST_TMPDIR"), "/test_arch.pb");
+  const std::string filename =
+      absl::StrCat(getenv("TEST_TMPDIR"), "/test_arch.pb");
   WriteBinaryProtoOrDie(filename, ParseProtoFromStringOrDie<ArchitectureProto>(
                                       kTestArchitectureProto));
-  EXPECT_THAT(*GetArchitectureProtoOrDie(StrCat(kPbSource, ":", filename)),
-              EqualsProto(kTestArchitectureProto));
+  EXPECT_THAT(
+      *GetArchitectureProtoOrDie(absl::StrCat(kPbSource, ":", filename)),
+      EqualsProto(kTestArchitectureProto));
 }
 
 // A provider that returns an architecture with name equal to id.
@@ -63,7 +66,7 @@ REGISTER_ARCHITECTURE_PROTO_PROVIDER("test:provider:with:colon", TestProvider);
 
 TEST(ArchitectureProtoProviderTest, TestRegistration) {
   EXPECT_THAT(*GetArchitectureProtoOrDie(
-                  StrCat(kRegisteredSource, ":test:provider:with:colon")),
+                  absl::StrCat(kRegisteredSource, ":test:provider:with:colon")),
               EqualsProto("name: 'an_id'"));
 }
 
@@ -72,9 +75,9 @@ TEST(ArchitectureProtoProviderDeathTest, UnknownSource) {
 }
 
 TEST(ArchitectureProtoProviderDeathTest, UnknownProvider) {
-  ASSERT_DEATH(
-      GetArchitectureProtoOrDie(StrCat(kRegisteredSource, ":does_not_exist")),
-      "test:provider");
+  ASSERT_DEATH(GetArchitectureProtoOrDie(
+                   absl::StrCat(kRegisteredSource, ":does_not_exist")),
+               "test:provider");
 }
 
 TEST(ArchitectureProtoProviderTest, TestRegisteredProviders) {

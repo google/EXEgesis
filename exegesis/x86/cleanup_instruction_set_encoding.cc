@@ -20,6 +20,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/status_util.h"
@@ -28,8 +31,6 @@
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "strings/str_cat.h"
-#include "strings/str_replace.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -58,14 +59,14 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
       new_instructions.push_back(instruction);
       InstructionProto& new_instruction = new_instructions.back();
       new_instruction.set_raw_encoding_specification(
-          StrCat(kAddressSizeOverridePrefix, specification,
-                 k32BitImmediateValueSuffix));
+          absl::StrCat(kAddressSizeOverridePrefix, specification,
+                       k32BitImmediateValueSuffix));
       // NOTE(ondrasej): Changing the binary encoding of the original proto will
       // either invalidate or change the value of the variable specification.
       // We must thus be careful to not use this variable after it is changed by
       // instruction.set_raw_encoding_specification.
       instruction.set_raw_encoding_specification(
-          StrCat(specification, k64BitImmediateValueSuffix));
+          absl::StrCat(specification, k64BitImmediateValueSuffix));
     }
   }
   for (InstructionProto& new_instruction : new_instructions) {
@@ -84,9 +85,9 @@ void AddRexWPrefixToInstructionProto(InstructionProto* instruction) {
   CHECK(instruction != nullptr);
   constexpr char kRexWPrefix[] = "REX.W";
   const std::string& specification = instruction->raw_encoding_specification();
-  if (specification.find(kRexWPrefix) == std::string::npos) {
+  if (!absl::StrContains(specification, kRexWPrefix)) {
     instruction->set_raw_encoding_specification(
-        StrCat(kRexWPrefix, " ", specification));
+        absl::StrCat(kRexWPrefix, " ", specification));
   } else {
     LOG(WARNING) << "The instruction already has a REX.W prefix: "
                  << specification;
@@ -124,9 +125,9 @@ Status FixEncodingSpecificationOfPopFsAndGs(
     // The only way to find out which version it is from the description of the
     // instruction.
     const std::string& description = instruction->description();
-    if (description.find(k16Bits) != std::string::npos) {
+    if (absl::StrContains(description, k16Bits)) {
       AddOperandSizeOverrideToInstructionProto(instruction);
-    } else if (description.find(k64Bits) != std::string::npos) {
+    } else if (absl::StrContains(description, k64Bits)) {
       new_pop_instructions.push_back(*instruction);
       AddRexWPrefixToInstructionProto(&new_pop_instructions.back());
     }
@@ -184,7 +185,7 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
   std::unordered_set<std::string> removed_specifications;
   for (const char* const specification : kEncodingSpecifications) {
     replaced_specifications.insert(specification);
-    removed_specifications.insert(StrCat("REX + ", specification));
+    removed_specifications.insert(absl::StrCat("REX + ", specification));
   }
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -204,7 +205,8 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
   for (InstructionProto& instruction : *instructions) {
     const std::string& specification = instruction.raw_encoding_specification();
     if (ContainsKey(replaced_specifications, specification)) {
-      instruction.set_raw_encoding_specification(StrCat(specification, " /0"));
+      instruction.set_raw_encoding_specification(
+          absl::StrCat(specification, " /0"));
     }
   }
 
@@ -235,8 +237,8 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
                     vendor_syntax.operands(0).name(),
                     instruction.mutable_raw_encoding_specification())) {
         status = InvalidArgumentError(
-            StrCat("Unexpected argument of a XBEGIN instruction: ",
-                   vendor_syntax.operands(0).name()));
+            absl::StrCat("Unexpected argument of a XBEGIN instruction: ",
+                         vendor_syntax.operands(0).name()));
         LOG(ERROR) << status;
         continue;
       }
@@ -250,10 +252,9 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
   const RE2 fix_w0_regexp("^(VEX[^ ]*\\.)0 ");
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    std::string specification = instruction.raw_encoding_specification();
-
-    GlobalReplaceSubstring("0f", "0F", &specification);
-    GlobalReplaceSubstring("imm8", "ib", &specification);
+    std::string specification =
+        absl::StrReplaceAll(instruction.raw_encoding_specification(),
+                            {{"0f", "0F"}, {"imm8", "ib"}});
     RE2::Replace(&specification, fix_w0_regexp, "\\1W0 ");
 
     instruction.set_raw_encoding_specification(specification);
@@ -284,22 +285,20 @@ Status AddMissingModRmAndImmediateSpecification(
   // Fixes instruction encodings for instructions matching the given mnemonics
   // by adding the given suffix if need be.
   const auto maybe_fix = [](const std::unordered_set<std::string>& mnemonics,
-                            const StringPiece suffix,
+                            const absl::string_view suffix,
                             InstructionProto* instruction) {
     const std::string& mnemonic = instruction->vendor_syntax().mnemonic();
     Status status = OkStatus();
     if (ContainsKey(mnemonics, mnemonic)) {
       if (instruction->raw_encoding_specification().empty()) {
-        status = InvalidArgumentError(StrCat(
+        status = InvalidArgumentError(absl::StrCat(
             "The instruction does not have binary encoding specification: ",
             mnemonic));
       }
 
-      const StringPiece specification =
-          instruction->raw_encoding_specification();
-      if (!specification.ends_with(suffix)) {
-        instruction->set_raw_encoding_specification(
-            StrCat(instruction->raw_encoding_specification(), " ", suffix));
+      if (!absl::EndsWith(instruction->raw_encoding_specification(), suffix)) {
+        instruction->set_raw_encoding_specification(absl::StrCat(
+            instruction->raw_encoding_specification(), " ", suffix));
       }
     }
     return status;

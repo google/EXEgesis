@@ -17,9 +17,9 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "src/google/protobuf/stubs/status.h"
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
 
 namespace exegesis {
 namespace util {
@@ -38,15 +38,13 @@ using ::google::protobuf::util::error::UNKNOWN;
 using ::google::protobuf::util::Status;
 using ::google::protobuf::util::operator<<;
 
-inline Status Annotate(const Status& s, StringPiece msg) {
+inline Status Annotate(const Status& s, absl::string_view msg) {
   if (s.ok() || msg.empty()) return s;
-  StringPiece new_msg = msg;
-  std::string annotated;
-  if (!s.error_message().empty()) {
-    StrAppend(&annotated, s.error_message(), "; ", msg);
-    new_msg = annotated;
-  }
-  return Status(static_cast<error::Code>(s.error_code()), new_msg);
+  const std::string annotated =
+      s.error_message().empty()
+          ? std::string(msg)
+          : absl::StrCat(s.error_message().as_string(), "; ", msg);
+  return Status(static_cast<error::Code>(s.error_code()), annotated);
 }
 
 inline Status OkStatus() { return Status(); }

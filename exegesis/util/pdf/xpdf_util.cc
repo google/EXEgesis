@@ -28,7 +28,6 @@
 #include "glog/logging.h"
 #include "libutf/utf.h"
 #include "re2/re2.h"
-#include "strings/string_view_utils.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 #include "xpdf-3.04/xpdf/GfxState.h"

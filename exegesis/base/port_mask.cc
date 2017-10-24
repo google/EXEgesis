@@ -14,7 +14,7 @@
 
 #include "exegesis/base/port_mask.h"
 
-#include "strings/str_cat.h"
+#include "absl/strings/str_cat.h"
 
 namespace exegesis {
 
@@ -35,7 +35,7 @@ std::string PortMask::ToString() const {
   for (int i = 0; mask != 0; ++i) {
     if (mask & (uint64_t{1} << i)) {
       mask -= (uint64_t{1} << i);
-      StrAppend(&result, i);
+      absl::StrAppend(&result, i);
     }
   }
   return result;

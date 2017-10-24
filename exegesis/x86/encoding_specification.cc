@@ -24,12 +24,12 @@
 #include <unordered_map>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status_macros.h"
@@ -289,8 +289,8 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   if (!RE2::Consume(specification, *vex_prefix_parser, &prefix_type_str,
                     &vex_operand_directionality, &vex_l_usage_str,
                     &mandatory_prefix_str, RE2::Hex(&opcode_map), &vex_w_str)) {
-    return InvalidArgumentError(StrCat("Could not parse the VEX prefix: '",
-                                       specification->ToString(), "'"));
+    return InvalidArgumentError(absl::StrCat(
+        "Could not parse the VEX prefix: '", specification->ToString(), "'"));
   }
 
   // Parse the fields of the VEX prefix specification.
@@ -425,8 +425,8 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
           specification_.add_immediate_value_bytes(8);
           break;
         default:
-          return InvalidArgumentError(StrCat("Invalid immediate value size: ",
-                                             immediate_value_size_str));
+          return InvalidArgumentError(absl::StrCat(
+              "Invalid immediate value size: ", immediate_value_size_str));
       }
     } else if (!code_offset_size_str.empty()) {
       switch (code_offset_size_str[0]) {
@@ -449,8 +449,8 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
           specification_.set_code_offset_bytes(10);
           break;
         default:
-          return InvalidArgumentError(
-              StrCat("Invalid code offset size: ", immediate_value_size_str));
+          return InvalidArgumentError(absl::StrCat("Invalid code offset size: ",
+                                                   immediate_value_size_str));
       }
     } else if (!is4_suffix_str.empty()) {
       CHECK_EQ("/is4", is4_suffix_str);
@@ -482,7 +482,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
 
   ConsumeWhitespace(&specification);
   return specification.empty() ? OkStatus()
-                               : InvalidArgumentError(StrCat(
+                               : InvalidArgumentError(absl::StrCat(
                                      "The specification was not fully parsed: ",
                                      specification.ToString()));
 }

@@ -29,14 +29,14 @@
 
 #include "gflags/gflags.h"
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "strings/str_cat.h"
-#include "strings/str_split.h"
 #include "util/gtl/map_util.h"
 
 DEFINE_string(exegesis_from_proto_file, "", "");
@@ -51,7 +51,7 @@ namespace pdf {
 namespace {
 
 std::string GetFilename(const std::string& name) {
-  return StrCat(FLAGS_exegesis_output_file_base, "_", name, ".pb.txt");
+  return absl::StrCat(FLAGS_exegesis_output_file_base, "_", name, ".pb.txt");
 }
 
 void WritePatchesOrDie(const std::string& name,

@@ -16,9 +16,10 @@
 
 #include <string>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace x86 {
@@ -45,10 +46,10 @@ void AddOperandSizeOverrideToInstructionProto(InstructionProto* instruction) {
   }
   const std::string& raw_encoding_specification =
       instruction->raw_encoding_specification();
-  if (raw_encoding_specification.find(kOperandSizeOverridePrefix) ==
-      std::string::npos) {
+  if (!absl::StrContains(raw_encoding_specification,
+                         kOperandSizeOverridePrefix)) {
     instruction->set_raw_encoding_specification(
-        StrCat(kOperandSizeOverridePrefix, raw_encoding_specification));
+        absl::StrCat(kOperandSizeOverridePrefix, raw_encoding_specification));
   } else {
     LOG(WARNING)
         << "The instruction already has an operand size override prefix: "

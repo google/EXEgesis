@@ -14,9 +14,9 @@
 
 #include "exegesis/base/transform_factory.h"
 
+#include "absl/strings/str_split.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
-#include "strings/str_split.h"
 #include "util/gtl/map_util.h"
 
 DEFINE_string(
@@ -32,8 +32,8 @@ std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags() {
   const auto& transforms_by_name = GetTransformsByName();
   std::vector<InstructionSetTransform> transforms;
   const std::vector<std::string> transform_names =
-      strings::Split(FLAGS_exegesis_transforms, ",",  // NOLINT
-                     strings::SkipEmpty());
+      absl::StrSplit(FLAGS_exegesis_transforms, ",",  // NOLINT
+                     absl::SkipEmpty());
   for (const std::string& transform_name : transform_names) {
     if (transform_name == kDefaultSet) {
       const auto default_transforms = GetDefaultTransformPipeline();

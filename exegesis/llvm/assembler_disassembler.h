@@ -20,12 +20,12 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "exegesis/llvm/assembler_disassembler.pb.h"
 #include "exegesis/llvm/disassembler.h"
 #include "exegesis/llvm/inline_asm.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "llvm/IR/InlineAsm.h"
-#include "strings/string_view.h"
 #include "util/task/statusor.h"
 
 namespace exegesis {

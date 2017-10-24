@@ -10,6 +10,6 @@ cc_library(
     srcs = ["path.cc"],
     hdrs = ["path.h"],
     deps = [
-        "//strings",
+        "@com_google_absl//absl/strings",
     ],
 )

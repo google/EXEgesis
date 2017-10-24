@@ -16,10 +16,10 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace arm {
@@ -35,7 +35,7 @@ using ::testing::HasSubstr;
 const char kTestDataPath[] = "/__main__/exegesis/arm/xml/testdata/";
 
 std::string GetFilePath(const std::string& filename) {
-  return StrCat(getenv("TEST_SRCDIR"), kTestDataPath, filename);
+  return absl::StrCat(getenv("TEST_SRCDIR"), kTestDataPath, filename);
 }
 
 TEST(ParserTest, ParseXmlIndex) {

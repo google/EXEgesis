@@ -14,7 +14,7 @@ cc_library(
         "status_macros.h",
     ],
     deps = [
-        "//strings",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
     ],
 )

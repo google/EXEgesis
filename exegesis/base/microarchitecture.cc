@@ -17,9 +17,9 @@
 #include <unordered_map>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_split.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
@@ -147,7 +147,7 @@ StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuModelId(
       MicroArchitecture::FromCpuModelId(cpu_model_id);
   if (microarchitecture == nullptr) {
     return util::InvalidArgumentError(
-        StrCat("Unknown CPU model '", cpu_model_id, "'"));
+        absl::StrCat("Unknown CPU model '", cpu_model_id, "'"));
   }
   for (const InstructionSetItinerariesProto& itineraries :
        architecture_proto->per_microarchitecture_itineraries()) {
@@ -161,8 +161,8 @@ StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuModelId(
   }
 
   return util::InvalidArgumentError(
-      StrCat("No itineraries for microarchitecture '",
-             microarchitecture->proto().id(), "'"));
+      absl::StrCat("No itineraries for microarchitecture '",
+                   microarchitecture->proto().id(), "'"));
 }
 
 MicroArchitectureData::MicroArchitectureData(

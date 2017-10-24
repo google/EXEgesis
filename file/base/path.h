@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "strings/string_view.h"
+#include "absl/strings/string_view.h"
 
 namespace exegesis {
 namespace file {
@@ -26,7 +26,7 @@ namespace file {
 // regardless of whether or not they start with a leading '/'. That is, all
 // paths will be concatenated together, with the appropriate path separator
 // inserted in between.
-std::string JoinPath(StringPiece a, StringPiece b);
+std::string JoinPath(absl::string_view a, absl::string_view b);
 
 }  // namespace file
 }  // namespace exegesis

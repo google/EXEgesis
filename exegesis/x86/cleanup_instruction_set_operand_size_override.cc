@@ -24,13 +24,13 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
 #include "exegesis/x86/encoding_specification.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -101,8 +101,8 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
       const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
       if (operand_index >= vendor_syntax.operands_size()) {
         return InvalidArgumentError(
-            StrCat("Unexpected number of operands of instruction: ",
-                   instruction.raw_encoding_specification()));
+            absl::StrCat("Unexpected number of operands of instruction: ",
+                         instruction.raw_encoding_specification()));
       }
       // We can't rely just on the information in value_size_bits, because
       // technically, even the 32 or 64-bit versions of the instruction often
@@ -142,7 +142,7 @@ std::string FormatAllInstructions(
     vendor_syntaxes.push_back(
         ConvertToCodeString(instruction->vendor_syntax()));
   }
-  return strings::Join(vendor_syntaxes, "; ");
+  return absl::StrJoin(vendor_syntaxes, "; ");
 }
 
 }  // namespace
@@ -161,13 +161,13 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
         instruction.raw_encoding_specification();
     if (raw_encoding_specification.empty()) {
       return InvalidArgumentError(
-          StrCat("No binary encoding specification for instruction ",
-                 instruction.vendor_syntax().mnemonic()));
+          absl::StrCat("No binary encoding specification for instruction ",
+                       instruction.vendor_syntax().mnemonic()));
     }
     if (!instruction.has_x86_encoding_specification()) {
-      return FailedPreconditionError(
-          StrCat("Instruction does not have a parsed encoding spcification: ",
-                 instruction.DebugString()));
+      return FailedPreconditionError(absl::StrCat(
+          "Instruction does not have a parsed encoding spcification: ",
+          instruction.DebugString()));
     }
     EncodingSpecification specification =
         instruction.x86_encoding_specification();
@@ -264,8 +264,8 @@ Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
       const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
       if (operand_index >= vendor_syntax.operands_size()) {
         return InvalidArgumentError(
-            StrCat("Unexpected number of operands of instruction: ",
-                   instruction.raw_encoding_specification()));
+            absl::StrCat("Unexpected number of operands of instruction: ",
+                         instruction.raw_encoding_specification()));
       }
       // We can't rely just on the information in value_size_bits, because
       // technically, even the 32 or 64-bit versions of the instruction often

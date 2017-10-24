@@ -23,12 +23,12 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "base/macros.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
@@ -46,7 +46,7 @@ using ::testing::UnorderedElementsAreArray;
 
 void CheckParser(const std::string& specification_str,
                  const std::string& expected_specification_proto) {
-  SCOPED_TRACE(StrCat("Specification: ", specification_str));
+  SCOPED_TRACE(absl::StrCat("Specification: ", specification_str));
   EXPECT_THAT(ParseEncodingSpecification(specification_str),
               IsOkAndHolds(EqualsProto(expected_specification_proto)));
 }

@@ -20,11 +20,11 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -313,15 +313,15 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
       // alternatives anywhere else means that there is an error in the data.
       if (operand->encoding() != InstructionOperand::MODRM_RM_ENCODING) {
         return InvalidArgumentError(
-            StrCat("Instruction does not use modrm.rm encoding:\n",
-                   instruction.DebugString()));
+            absl::StrCat("Instruction does not use modrm.rm encoding:\n",
+                         instruction.DebugString()));
       }
       // The altenatives are always "register" vs "memory", because that is the
       // only kind of alternatives that can be expressed through operand
       // encoding.
       if (operand->addressing_mode() !=
           InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS) {
-        return InvalidArgumentError(StrCat(
+        return InvalidArgumentError(absl::StrCat(
             "The addressing mode does not allow splitting: ",
             InstructionOperand::AddressingMode_Name(operand->addressing_mode()),
             "\n", instruction.DebugString()));
@@ -351,8 +351,8 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
   }
   if (!unknown_operand_names.empty()) {
     const std::string error_message =
-        StrCat("Encountered unknown operand names: ",
-               strings::Join(unknown_operand_names, ", "));
+        absl::StrCat("Encountered unknown operand names: ",
+                     absl::StrJoin(unknown_operand_names, ", "));
     return InvalidArgumentError(error_message);
   }
   return status;

@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
@@ -33,8 +35,6 @@
 #include "llvm/Support/Host.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "strings/case.h"
-#include "strings/str_cat.h"
 #include "util/task/canonical_errors.h"
 
 DEFINE_string(exegesis_llvm_arch, "",
@@ -147,7 +147,7 @@ std::string DumpMCInstToString(const llvm::MCInst* instruction) {
 
 std::string DumpSDepToString(const llvm::SDep& sdep) {
   std::string buffer = "SDep: ";
-  StrAppend(&buffer, "\n  Kind: ", sdep.getKind());
+  absl::StrAppend(&buffer, "\n  Kind: ", sdep.getKind());
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isNormalMemory, &buffer);
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isBarrier, &buffer);
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isMustAlias, &buffer);
@@ -156,8 +156,8 @@ std::string DumpSDepToString(const llvm::SDep& sdep) {
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isCluster, &buffer);
   ADD_SDEP_PROPERTY_TO_BUFFER(sdep, isAssignedRegDep, &buffer);
   if (sdep.getSUnit() && sdep.getSUnit()->isInstr()) {
-    StrAppend(&buffer, "\n  Other SUnit: ",
-              DumpMachineInstrSUnitToString(sdep.getSUnit()));
+    absl::StrAppend(&buffer, "\n  Other SUnit: ",
+                    DumpMachineInstrSUnitToString(sdep.getSUnit()));
   }
   return buffer;
 }
@@ -173,13 +173,14 @@ std::string DumpMCOperandToString(const llvm::MCOperand& operand,
   std::string debug_string;
   if (operand.isValid()) {
     if (operand.isImm()) {
-      debug_string = StrCat("Imm(", operand.getImm(), ")");
+      debug_string = absl::StrCat("Imm(", operand.getImm(), ")");
     } else if (operand.isFPImm()) {
-      debug_string =
-          StrCat("FPImm(", StringPrintf("%.17g", operand.getFPImm()), ")");
+      debug_string = absl::StrCat(
+          "FPImm(", StringPrintf("%.17g", operand.getFPImm()), ")");
     } else if (operand.isReg()) {
-      debug_string = StrCat("R:", register_info->getName(operand.getReg()), "(",
-                            operand.getReg(), ")");
+      debug_string =
+          absl::StrCat("R:", register_info->getName(operand.getReg()), "(",
+                       operand.getReg(), ")");
     } else if (operand.isExpr()) {
       debug_string = "expr";
     } else if (operand.isInst()) {
@@ -206,18 +207,18 @@ std::string DumpMCInstToString(const llvm::MCInst& instruction,
       mc_instruction_info->getName(instruction.getOpcode()).str();
   for (int i = 0; i < instruction.getNumOperands(); ++i) {
     const llvm::MCOperand& operand = instruction.getOperand(i);
-    StrAppend(&debug_string, " ",
-              DumpMCOperandToString(operand, register_info));
+    absl::StrAppend(&debug_string, " ",
+                    DumpMCOperandToString(operand, register_info));
   }
-  StrAppend(&debug_string, ", ", instruction_descriptor.getNumDefs(),
-            " def(s)");
-  StrAppend(&debug_string, ", ", instruction_descriptor.getNumOperands(),
-            " operand(s)");
+  absl::StrAppend(&debug_string, ", ", instruction_descriptor.getNumDefs(),
+                  " def(s)");
+  absl::StrAppend(&debug_string, ", ", instruction_descriptor.getNumOperands(),
+                  " operand(s)");
   if (instruction_descriptor.mayStore()) {
-    StrAppend(&debug_string, ", may store");
+    absl::StrAppend(&debug_string, ", may store");
   }
   if (instruction_descriptor.mayLoad()) {
-    StrAppend(&debug_string, ", may load");
+    absl::StrAppend(&debug_string, ", may load");
   }
 
   std::string implicit_defs_str;
@@ -225,20 +226,20 @@ std::string DumpMCInstToString(const llvm::MCInst& instruction,
       instruction_descriptor.getImplicitDefs();
   for (int i = 0; i < instruction_descriptor.getNumImplicitDefs(); ++i) {
     const uint16_t implicit_def_register = implicit_defs[i];
-    StrAppend(&implicit_defs_str, " ",
-              register_info->getName(implicit_def_register));
+    absl::StrAppend(&implicit_defs_str, " ",
+                    register_info->getName(implicit_def_register));
   }
-  StrAppend(&debug_string, ", implicit def:", implicit_defs_str);
+  absl::StrAppend(&debug_string, ", implicit def:", implicit_defs_str);
 
   std::string implicit_uses_str;
   const uint16_t* const implicit_uses =
       instruction_descriptor.getImplicitUses();
   for (int i = 0; i < instruction_descriptor.getNumImplicitUses(); ++i) {
     const uint16_t implicit_use_register = implicit_uses[i];
-    StrAppend(&implicit_uses_str, " ",
-              register_info->getName(implicit_use_register));
+    absl::StrAppend(&implicit_uses_str, " ",
+                    register_info->getName(implicit_use_register));
   }
-  StrAppend(&debug_string, ", implicit use: ", implicit_uses_str);
+  absl::StrAppend(&debug_string, ", implicit use: ", implicit_uses_str);
 
   return debug_string;
 }
@@ -264,14 +265,14 @@ std::vector<std::string> GetLLVMMnemonicListOrDie() {
 
 StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
     const std::string& asm_dialect_name) {
-  const std::string canonical_name = strings::ToUpper(asm_dialect_name);
+  const std::string canonical_name = absl::AsciiStrToUpper(asm_dialect_name);
   if (canonical_name == "INTEL") {
     return ::llvm::InlineAsm::AD_Intel;
   } else if (canonical_name == "ATT" || canonical_name == "AT&T") {
     return ::llvm::InlineAsm::AD_ATT;
   } else {
     return InvalidArgumentError(
-        StrCat("Unknown assembly dialect '", asm_dialect_name, "'"));
+        absl::StrCat("Unknown assembly dialect '", asm_dialect_name, "'"));
   }
 }
 

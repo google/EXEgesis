@@ -17,13 +17,13 @@
 #include <cstdint>
 #include <unordered_set>
 
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/bits.h"
 #include "exegesis/util/status_util.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 
@@ -40,8 +40,8 @@ constexpr const uint8_t kModRmDirectAddressing = 0x3;
 void LogErrorAndUpdateStatus(const std::string& error_message,
                              const InstructionProto& instruction,
                              Status* status) {
-  const Status error = InvalidArgumentError(
-      StrCat(error_message, "\nInstruction:\n", instruction.DebugString()));
+  const Status error = InvalidArgumentError(absl::StrCat(
+      error_message, "\nInstruction:\n", instruction.DebugString()));
   // In case of the check cleanups, we want to print as many errors as possible
   // to make their analysis easier.
   LOG(WARNING) << error;

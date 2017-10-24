@@ -18,10 +18,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/str_split.h"
+#include "absl/strings/strip.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "strings/str_split.h"
-#include "strings/strip.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -309,9 +309,9 @@ bool ParseVendorSyntax(std::string content,
   std::string tag1;
   std::string tag2;
   while (RE2::Consume(&input, *kOperandRegexp, &operand_name, &tag1, &tag2)) {
-    StripWhitespace(&operand_name);
-    StripWhitespace(&tag1);
-    StripWhitespace(&tag2);
+    absl::StripAsciiWhitespace(&operand_name);
+    absl::StripAsciiWhitespace(&tag1);
+    absl::StripAsciiWhitespace(&tag2);
     operand_name = FixOperandName(operand_name);
     if (!ContainsKey(*kValidIntelOperandTypes, operand_name)) {
       LOG(ERROR) << "Unknown operand '" << operand_name << "' while parsing '"

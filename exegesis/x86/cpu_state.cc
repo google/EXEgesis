@@ -17,10 +17,10 @@
 #include <cstdio>
 #include <cstring>
 
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "exegesis/util/bits.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 
@@ -95,9 +95,9 @@ int FPUStatusWord::GetConditionCode() const {
 std::string FPUTagWord::DebugString() const {
   std::string buffer;
   for (int i = 0; i < 8; ++i) {
-    StrAppend(&buffer, "ST(", i, "): ", GetStatus(i));
+    absl::StrAppend(&buffer, "ST(", i, "): ", GetStatus(i));
     if (i < 7) {
-      StrAppend(&buffer, ", ");
+      absl::StrAppend(&buffer, ", ");
     }
   }
   return buffer;

@@ -17,8 +17,8 @@
 #include <cstring>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -27,7 +27,7 @@ bool CpuInfo::HasExactFeature(const std::string& name) const {
   return ContainsKey(indexed_features_, name);
 }
 
-// TODO(courbet): Right now strings::Split() does not support a string literal
+// TODO(courbet): Right now absl::StrSplit() does not support a string literal
 // delimiter. Switch to it when it does.
 template <bool is_or>
 bool CpuInfo::IsFeatureSet(const std::string& name, bool* const value) const {
@@ -72,9 +72,9 @@ bool CpuInfo::SupportsFeature(const std::string& feature_name) const {
 }
 
 std::string CpuInfo::DebugString() const {
-  std::string result = StrCat(proto_.model_id(), "\nfeatures:");
+  std::string result = absl::StrCat(proto_.model_id(), "\nfeatures:");
   for (const std::string& feature : indexed_features_) {
-    StrAppend(&result, "\n", feature);
+    absl::StrAppend(&result, "\n", feature);
   }
   return result;
 }

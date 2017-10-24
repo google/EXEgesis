@@ -27,6 +27,7 @@ namespace {
 
 using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::testing::HasSubstr;
 
 constexpr const char kGenericMcpu[] = "generic";
 
@@ -134,7 +135,7 @@ TEST(JitCompilerTest, CreateAFunctionAndRunItInJIT) {
       function.ValueOrDie().size);
   LOG(INFO) << "Compiled function: "
             << ToHumanReadableHexString(compiled_function);
-  EXPECT_NE(compiled_function.find(kTwoMovsEncoding), std::string::npos);
+  EXPECT_THAT(compiled_function, HasSubstr(kTwoMovsEncoding));
   LOG(INFO) << "Calling the function at " << function.ValueOrDie().ptr;
   function.ValueOrDie().CallOrDie();
   LOG(INFO) << "Function called";

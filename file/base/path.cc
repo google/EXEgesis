@@ -16,22 +16,22 @@
 
 #include <string>
 
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
-#include "strings/string_view_utils.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 
 namespace exegesis {
 namespace file {
 
-std::string JoinPath(StringPiece a, StringPiece b) {
+std::string JoinPath(absl::string_view a, absl::string_view b) {
   if (a.empty()) return std::string(b);
   if (b.empty()) return std::string(a);
-  if (strings::EndsWith(a, "/")) {
-    if (strings::StartsWith(b, "/")) return StrCat(a, b.substr(1));
+  if (absl::EndsWith(a, "/")) {
+    if (absl::StartsWith(b, "/")) return absl::StrCat(a, b.substr(1));
   } else {
-    if (!strings::StartsWith(b, "/")) return StrCat(a, "/", b);
+    if (!absl::StartsWith(b, "/")) return absl::StrCat(a, "/", b);
   }
-  return StrCat(a, b);
+  return absl::StrCat(a, b);
 }
 
 }  // namespace file

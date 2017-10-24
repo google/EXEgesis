@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/registers.pb.h"
@@ -30,7 +31,6 @@
 #include "exegesis/util/status_util.h"
 #include "exegesis/x86/encoding_specification.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -878,10 +878,10 @@ Status EraseOperandEncoding(
     const auto iterator = available_encodings->find(encoding);
     if (iterator == available_encodings->end()) {
       status = InvalidArgumentError(
-          StrCat("Operand '", operand.name(), "' encoded using ",
-                 InstructionOperand::Encoding_Name(encoding),
-                 " is not specified in the encoding specification: ",
-                 instruction.raw_encoding_specification()));
+          absl::StrCat("Operand '", operand.name(), "' encoded using ",
+                       InstructionOperand::Encoding_Name(encoding),
+                       " is not specified in the encoding specification: ",
+                       instruction.raw_encoding_specification()));
       LOG(WARNING) << status;
     } else {
       available_encodings->erase(iterator);
@@ -921,7 +921,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     if (operand->addressing_mode() == InstructionOperand::ANY_ADDRESSING_MODE) {
       InstructionOperand::AddressingMode addressing_mode;
       if (!FindCopy(addressing_mode_map, operand->name(), &addressing_mode)) {
-        status = InvalidArgumentError(StrCat(
+        status = InvalidArgumentError(absl::StrCat(
             "Could not determine addressing mode of operand: ", operand->name(),
             ", instruction ", vendor_syntax->mnemonic()));
         LOG(ERROR) << status;
@@ -1047,8 +1047,8 @@ Status AssignEncodingRandomlyFromAvailableEncodings(
     if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
       if (available_encodings->empty()) {
         return InvalidArgumentError(
-            StrCat("No available encodings for instruction:\n",
-                   instruction->DebugString()));
+            absl::StrCat("No available encodings for instruction:\n",
+                         instruction->DebugString()));
       }
       operand.set_encoding(*available_encodings->begin());
       available_encodings->erase(available_encodings->begin());
@@ -1072,8 +1072,8 @@ Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
           FindOrNull(register_class_map, operand.name());
       if (register_class == nullptr) {
         return InvalidArgumentError(
-            StrCat("Unexpected operand name:", operand.name(),
-                   "\nInstruction:", instruction.DebugString()));
+            absl::StrCat("Unexpected operand name:", operand.name(),
+                         "\nInstruction:", instruction.DebugString()));
       } else {
         operand.set_register_class(*register_class);
       }
@@ -1101,9 +1101,9 @@ Status AddOperandInfo(InstructionSetProto* instruction_set) {
     InstructionFormat* const vendor_syntax =
         instruction.mutable_vendor_syntax();
     if (!instruction.has_x86_encoding_specification()) {
-      return FailedPreconditionError(
-          StrCat("Instruction does not have a parsed encoding specification: ",
-                 instruction.DebugString()));
+      return FailedPreconditionError(absl::StrCat(
+          "Instruction does not have a parsed encoding specification: ",
+          instruction.DebugString()));
     }
     InstructionOperandEncodingMultiset available_encodings =
         GetAvailableEncodings(instruction.x86_encoding_specification());
@@ -1151,7 +1151,7 @@ Status AddOperandInfo(InstructionSetProto* instruction_set) {
                   << InstructionOperand::Encoding_Name(available_encoding);
         }
         // We don't have enough available encodings to encode all the operands.
-        status = InvalidArgumentError(StrCat(
+        status = InvalidArgumentError(absl::StrCat(
             "There are more operands remaining than available encodings: ",
             instruction.DebugString()));
         LOG(ERROR) << status;
@@ -1183,10 +1183,10 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
         // A VEX encoded operand is always a source unless explicitly marked as
         // a destination. See table table 2-9 of the SDM volume 2 for details.
         if (operand_pos == 0) {
-          return InvalidArgumentError(
-              StrCat("Unexpected VEX.vvvv operand without usage specification "
-                     "at position 0:\n",
-                     instruction.DebugString()));
+          return InvalidArgumentError(absl::StrCat(
+              "Unexpected VEX.vvvv operand without usage specification "
+              "at position 0:\n",
+              instruction.DebugString()));
         }
         operand->set_usage(InstructionOperand::USAGE_READ);
       } else if (operand->encoding() == InstructionOperand::IMPLICIT_ENCODING &&

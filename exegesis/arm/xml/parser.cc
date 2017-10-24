@@ -18,6 +18,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "exegesis/arm/xml/docvars.h"
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/arm/xml/markdown.h"
@@ -28,12 +33,6 @@
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
-#include "strings/str_replace.h"
-#include "strings/string_view.h"
-#include "strings/string_view_utils.h"
-#include "strings/strip.h"
 #include "tinyxml2.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/statusor.h"
@@ -117,7 +116,7 @@ StatusOr<BitPattern::Bit> ParseBit(const std::string& bit, PatternType* type) {
       return BitPattern::CONSTANT_ZERO;
     }
   }
-  return InvalidArgumentError(StrCat(
+  return InvalidArgumentError(absl::StrCat(
       "Unrecognized bit '", bit, "' for pattern ", PatternType_Name(*type)));
 }
 
@@ -126,13 +125,13 @@ StatusOr<BitPattern::Bit> ParseBit(const std::string& bit, PatternType* type) {
 // or fails if the constraint is non-empty but malformed.
 StatusOr<std::vector<std::string>> ParsePattern(const std::string& constraint) {
   if (constraint.empty()) return std::vector<std::string>{};
-  StringPiece raw_pattern(constraint);
+  absl::string_view raw_pattern(constraint);
 
-  if (!strings::ConsumePrefix(&raw_pattern, "!=")) {
-    return InvalidArgumentError(
-        StrCat("Invalid constraint '", constraint, "', expected leading '!='"));
+  if (!absl::ConsumePrefix(&raw_pattern, "!=")) {
+    return InvalidArgumentError(absl::StrCat("Invalid constraint '", constraint,
+                                             "', expected leading '!='"));
   }
-  strings::RemoveWhitespaceContext(&raw_pattern);
+  raw_pattern = absl::StripAsciiWhitespace(raw_pattern);
   std::vector<std::string> pattern(raw_pattern.size());
   for (int i = 0; i < raw_pattern.size(); ++i) {
     const char bit = raw_pattern[i];
@@ -147,8 +146,8 @@ StatusOr<std::vector<std::string>> ParsePattern(const std::string& constraint) {
         pattern[i] = "x";
         break;
       default:
-        return InvalidArgumentError(StrCat("Invalid bit '", std::string(1, bit),
-                                           "' in '", constraint, "'"));
+        return InvalidArgumentError(absl::StrCat(
+            "Invalid bit '", std::string(1, bit), "' in '", constraint, "'"));
     }
   }
   return pattern;
@@ -159,7 +158,8 @@ Status ParseRawBits(XMLElement* box, RawInstructionLayout::Field* field) {
   int bit_idx = 0;
   for (XMLElement* c : FindChildren(box, "c")) {
     const int span = ReadIntAttributeOrDefault(c, "colspan", 1);
-    if (span <= 0) return InvalidArgumentError(StrCat("Invalid span ", span));
+    if (span <= 0)
+      return InvalidArgumentError(absl::StrCat("Invalid span ", span));
     const std::string bit = ReadSimpleText(c);
     for (int span_idx = 0; span_idx < span; ++span_idx, ++bit_idx) {
       if (bit_idx > field->bits_size() - 1) {
@@ -186,20 +186,20 @@ StatusOr<RawInstructionLayout::Field*> FindField(
     if (exact_overlap) {
       // Allow only a single exact correspondence.
       if (found != nullptr) {
-        return InvalidArgumentError(
-            StrCat("Multiple matches for bit range [", msb, ":", lsb, "]"));
+        return InvalidArgumentError(absl::StrCat(
+            "Multiple matches for bit range [", msb, ":", lsb, "]"));
       }
       found = &field;
     } else if (loose_overlap) {
       return InvalidArgumentError(
-          StrCat("Misalignment of bit range [", msb, ":", lsb, "]",
-                 StrCat(" over field '", field.name(), "' [", field.msb(), ":",
-                        field.lsb(), "]")));
+          absl::StrCat("Misalignment of bit range [", msb, ":", lsb, "]",
+                       absl::StrCat(" over field '", field.name(), "' [",
+                                    field.msb(), ":", field.lsb(), "]")));
     }
   }
   if (found) return found;
   return NotFoundError(
-      StrCat("No field matching bit range [", msb, ":", lsb, "]"));
+      absl::StrCat("No field matching bit range [", msb, ":", lsb, "]"));
 }
 
 // Detects any field-wise constraint like "!= 0000", "!= 111x", ...
@@ -217,8 +217,8 @@ Status DetectConstraint(XMLElement* box, RawInstructionLayout::Field* field) {
   const int width = field->msb() - field->lsb() + 1;
   if (pattern_bits.size() != width) {
     return InvalidArgumentError(
-        StrCat("Constraint size mismatch: expected pattern holding ", width,
-               " bits but got constraint '", constraint, "'"));
+        absl::StrCat("Constraint size mismatch: expected pattern holding ",
+                     width, " bits but got constraint '", constraint, "'"));
   }
 
   // Pattern specifications always totally override any pre-existing base data.
@@ -245,7 +245,7 @@ StatusOr<RawInstructionLayout> MergeInstructionLayout(
     const int lsb = msb - width + 1;
     if (msb > 31 || width < 1 || lsb < 0) {
       return InvalidArgumentError(
-          StrCat("Invalid bit range: [", msb, ":", lsb, "]"));
+          absl::StrCat("Invalid bit range: [", msb, ":", lsb, "]"));
     }
 
     RawInstructionLayout::Field* field = nullptr;
@@ -292,11 +292,12 @@ StatusOr<RawInstructionLayout> ParseBaseInstructionLayout(
   CHECK(regdiagram != nullptr);
   if (ReadAttribute(regdiagram, "form") != "32") {
     return FailedPreconditionError(
-        StrCat("Unexpected regdiagram form:\n", DebugString(regdiagram)));
+        absl::StrCat("Unexpected regdiagram form:\n", DebugString(regdiagram)));
   }
   const std::string name = ReadAttribute(regdiagram, "psname");
   if (name.empty()) {
-    return NotFoundError(StrCat("Missing psname:\n", DebugString(regdiagram)));
+    return NotFoundError(
+        absl::StrCat("Missing psname:\n", DebugString(regdiagram)));
   }
   RawInstructionLayout result;
   result.set_name(name);
@@ -325,10 +326,11 @@ StatusOr<FixedSizeInstructionLayout> ParseFixedSizeInstructionLayout(
       if (!parsed.ok()) {
         return Annotate(
             parsed.status(),
-            StrCat("while parsing bit # ", i, " '", field.bits(i),
-                   "' of field '", field.name(), "' ",
-                   StrCat("['", strings::Join(field.bits(), "','"), "'] ",
-                          "in a ", PatternType_Name(type), " pattern")));
+            absl::StrCat(
+                "while parsing bit # ", i, " '", field.bits(i), "' of field '",
+                field.name(), "' ",
+                absl::StrCat("['", absl::StrJoin(field.bits(), "','"), "'] ",
+                             "in a ", PatternType_Name(type), " pattern")));
       }
       pattern->add_bits(parsed.ValueOrDie());
     }
@@ -447,7 +449,7 @@ StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename) {
   } else if (isa == "A64") {
     index.set_isa(Isa::A64);
   } else {
-    return FailedPreconditionError(StrCat("Unsupported ISA '", isa, "'"));
+    return FailedPreconditionError(absl::StrCat("Unsupported ISA '", isa, "'"));
   }
 
   const auto iforms = FindChild(root.ValueOrDie(), "iforms");
@@ -515,8 +517,9 @@ StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path) {
           file::JoinPath(path, file.filename());
       const auto instruction = ParseXmlInstruction(instruction_filename);
       if (!instruction.ok()) {
-        return Annotate(instruction.status(),
-                        StrCat("while processing file:\n", file.DebugString()));
+        return Annotate(
+            instruction.status(),
+            absl::StrCat("while processing file:\n", file.DebugString()));
       }
       *database.add_instructions() = instruction.ValueOrDie();
     }

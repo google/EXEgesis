@@ -16,10 +16,10 @@
 
 #include <cstdint>
 
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 

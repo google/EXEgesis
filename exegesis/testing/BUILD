@@ -12,7 +12,6 @@ cc_library(
     hdrs = ["test_util.h"],
     deps = [
         "//base",
-        "//strings",
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",

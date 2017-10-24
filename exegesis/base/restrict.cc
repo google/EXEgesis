@@ -14,11 +14,24 @@
 
 #include "exegesis/base/restrict.h"
 
+#include <strings.h>
+
+#include <string>
+
+#include "absl/strings/ascii.h"
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
-#include "strings/case.h"
 
 namespace exegesis {
+namespace {
+
+// TODO(ondrasej): Replace this with an appropriate function from Abseil, once
+// there is one.
+int StringCaseCompare(const std::string& left, const std::string& right) {
+  return strcasecmp(left.c_str(), right.c_str());
+}
+
+}  // namespace
 
 void RestrictToMnemonicRange(const std::string& first_mnemonic,
                              const std::string& last_mnemonic,

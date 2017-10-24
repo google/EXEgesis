@@ -21,6 +21,8 @@
 #include <memory>
 #include <string>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
@@ -30,8 +32,6 @@
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "re2/re2.h"
-#include "strings/str_cat.h"
-#include "strings/str_split.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 
@@ -76,7 +76,7 @@ InstructionSetSourceInfo CreateInstructionSetSourceInfo(
 // format).
 std::vector<PdfParseRequest> ParseRequestsOrDie(const std::string& input_spec) {
   const std::vector<std::string> specs =
-      strings::Split(input_spec, ",", strings::SkipEmpty());  // NOLINT
+      absl::StrSplit(input_spec, ",", absl::SkipEmpty());  // NOLINT
   std::vector<PdfParseRequest> parsed_specs;
   parsed_specs.reserve(specs.size());
   for (const std::string& spec : specs) {
@@ -102,7 +102,7 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
     const PdfDocument pdf_document = ParseOrDie(spec, patch_sets);
     if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
       const std::string pb_filename =
-          StrCat(output_base, "_", request_id, ".pdf.pb");
+          absl::StrCat(output_base, "_", request_id, ".pdf.pb");
       LOG(INFO) << "Saving pdf as proto file : " << pb_filename;
       WriteBinaryProtoOrDie(pb_filename, pdf_document);
     }
@@ -112,7 +112,7 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
         ConvertPdfDocumentToSdmDocument(pdf_document);
     if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
       const std::string sdm_pb_filename =
-          StrCat(output_base, "_", request_id, ".sdm.pb");
+          absl::StrCat(output_base, "_", request_id, ".sdm.pb");
       LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
       WriteBinaryProtoOrDie(sdm_pb_filename, sdm_document);
     }
@@ -128,7 +128,8 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
 
   // Outputs the instructions.
   if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
-    const std::string instructions_filename = StrCat(output_base, ".raw.pbtxt");
+    const std::string instructions_filename =
+        absl::StrCat(output_base, ".raw.pbtxt");
     LOG(INFO) << "Saving instruction database as: " << instructions_filename;
     WriteTextProtoOrDie(instructions_filename, architecture);
   }

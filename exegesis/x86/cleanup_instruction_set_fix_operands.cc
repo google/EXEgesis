@@ -20,12 +20,12 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -84,8 +84,8 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
         !ContainsKey(kSourceOperands, vendor_syntax->operands(0).name()) &&
         !ContainsKey(kDestinationOperands, vendor_syntax->operands(0).name())) {
       status = InvalidArgumentError(
-          StrCat("Unexpected operand of a CMPS/MOVS instruction: ",
-                 vendor_syntax->operands(0).name()));
+          absl::StrCat("Unexpected operand of a CMPS/MOVS instruction: ",
+                       vendor_syntax->operands(0).name()));
       LOG(ERROR) << status;
       continue;
     }
@@ -98,12 +98,12 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
     const int dest = vendor_syntax->mnemonic() == "MOVS" ? 0 : 1;
     const int src = 1 - dest;
     vendor_syntax->mutable_operands(0)->set_name(
-        StrCat(pointer_size, " PTR ", kIndexings[dest]));
+        absl::StrCat(pointer_size, " PTR ", kIndexings[dest]));
     vendor_syntax->mutable_operands(0)->set_usage(
         dest == 0 ? InstructionOperand::USAGE_WRITE
                   : InstructionOperand::USAGE_READ);
     vendor_syntax->mutable_operands(1)->set_name(
-        StrCat(pointer_size, " PTR ", kIndexings[src]));
+        absl::StrCat(pointer_size, " PTR ", kIndexings[src]));
     vendor_syntax->mutable_operands(1)->set_usage(
         InstructionOperand::USAGE_READ);
   }
@@ -139,16 +139,16 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
         !FindCopy(operand_to_pointer_size, vendor_syntax->operands(1).name(),
                   &pointer_size)) {
       status = InvalidArgumentError(
-          StrCat("Unexpected operands of an INS/OUTS instruction: ",
-                 vendor_syntax->operands(0).name(), ", ",
-                 vendor_syntax->operands(1).name()));
+          absl::StrCat("Unexpected operands of an INS/OUTS instruction: ",
+                       vendor_syntax->operands(0).name(), ", ",
+                       vendor_syntax->operands(1).name()));
       LOG(ERROR) << status;
       continue;
     }
     CHECK_EQ(vendor_syntax->operands_size(), 2);
     if (is_ins) {
       vendor_syntax->mutable_operands(0)->set_name(
-          StrCat(pointer_size, " PTR [RDI]"));
+          absl::StrCat(pointer_size, " PTR [RDI]"));
       vendor_syntax->mutable_operands(0)->set_usage(
           InstructionOperand::USAGE_WRITE);
       vendor_syntax->mutable_operands(1)->set_name("DX");
@@ -160,7 +160,7 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
       vendor_syntax->mutable_operands(0)->set_usage(
           InstructionOperand::USAGE_READ);
       vendor_syntax->mutable_operands(1)->set_name(
-          StrCat(pointer_size, " PTR [RSI]"));
+          absl::StrCat(pointer_size, " PTR [RSI]"));
       vendor_syntax->mutable_operands(1)->set_usage(
           InstructionOperand::USAGE_READ);
     }
@@ -205,15 +205,15 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
         !FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
                   &pointer_size)) {
       status = InvalidArgumentError(
-          StrCat("Unexpected operand of a LODS/STOS instruction: ",
-                 vendor_syntax->operands(0).name()));
+          absl::StrCat("Unexpected operand of a LODS/STOS instruction: ",
+                       vendor_syntax->operands(0).name()));
       LOG(ERROR) << status;
       continue;
     }
     vendor_syntax->clear_operands();
     if (is_stos) {
       auto* const operand = vendor_syntax->add_operands();
-      operand->set_name(StrCat(pointer_size, " PTR [RDI]"));
+      operand->set_name(absl::StrCat(pointer_size, " PTR [RDI]"));
       operand->set_encoding(InstructionOperand::IMPLICIT_ENCODING);
       operand->set_usage(InstructionOperand::USAGE_READ);
     }
@@ -224,13 +224,13 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
     if (is_lods) {
       auto* const operand = vendor_syntax->add_operands();
       operand->set_encoding(InstructionOperand::IMPLICIT_ENCODING);
-      operand->set_name(StrCat(pointer_size, " PTR [RSI]"));
+      operand->set_name(absl::StrCat(pointer_size, " PTR [RSI]"));
       operand->set_usage(InstructionOperand::USAGE_READ);
     }
     if (is_scas) {
       auto* const operand = vendor_syntax->add_operands();
       operand->set_encoding(InstructionOperand::IMPLICIT_ENCODING);
-      operand->set_name(StrCat(pointer_size, " PTR [RDI]"));
+      operand->set_name(absl::StrCat(pointer_size, " PTR [RDI]"));
       operand->set_usage(InstructionOperand::USAGE_READ);
     }
   }
@@ -272,8 +272,8 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
         instruction.mutable_vendor_syntax();
     if (vendor_syntax->operands_size() != 2) {
       return InvalidArgumentError(
-          StrCat("Unexpected number of operands of a VMOVQ instruction: ",
-                 instruction.DebugString()));
+          absl::StrCat("Unexpected number of operands of a VMOVQ instruction: ",
+                       instruction.DebugString()));
     }
     vendor_syntax->mutable_operands(1)->set_name(kRegisterOrMemoryOperand);
   }
@@ -330,7 +330,7 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
           operand.set_name(kR32Operand);
         } else {
           status = InvalidArgumentError(
-              StrCat("Unexpected instruction mnemonic: ", mnemonic));
+              absl::StrCat("Unexpected instruction mnemonic: ", mnemonic));
           LOG(ERROR) << status;
           continue;
         }

@@ -16,16 +16,16 @@
 
 #include <string>
 
+#include "absl/strings/str_cat.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
 
 TEST(FileUtilTest, WriteToFileAndReadItAgain) {
   constexpr char kContents[] = "Hello world!";
-  const std::string test_file = StrCat(getenv("TEST_TMPDIR"), "testfile");
+  const std::string test_file = absl::StrCat(getenv("TEST_TMPDIR"), "testfile");
   WriteTextToFileOrStdOutOrDie(test_file, kContents);
   const std::string contents_from_file =
       ReadTextFromFileOrStdInOrDie(test_file);

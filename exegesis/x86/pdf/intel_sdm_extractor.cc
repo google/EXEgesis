@@ -21,17 +21,17 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
 #include "exegesis/util/text_processing.h"
 #include "exegesis/x86/pdf/vendor_syntax.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "strings/case.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
-#include "strings/str_split.h"
-#include "strings/string_view_utils.h"
-#include "strings/strip.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 
@@ -87,7 +87,15 @@ typedef std::vector<const PdfPage*> Pages;
 typedef std::vector<const PdfTextTableRow*> Rows;
 typedef google::protobuf::RepeatedField<InstructionTable::Column> Columns;
 
-void RemoveSpaceAndLF(std::string* text) { strrmm(text, "\n "); }
+void RemoveAllChars(std::string* text, absl::string_view chars) {
+  text->erase(std::remove_if(text->begin(), text->end(),
+                             [chars](const char c) {
+                               return chars.find(c) != absl::string_view::npos;
+                             }),
+              text->end());
+}
+
+void RemoveSpaceAndLF(std::string* text) { RemoveAllChars(text, "\n "); }
 
 constexpr const size_t kMaxInstructionIdSize = 60;
 constexpr const char kInstructionSetRef[] = "INSTRUCTION SET REFERENCE";
@@ -99,7 +107,7 @@ constexpr const char kInstructionSetRef[] = "INSTRUCTION SET REFERENCE";
 // Limiting the size is necessary because when text is too long it gets
 // truncated in different ways.
 std::string Normalize(std::string text) {
-  strrmm(&text, "\n ∗*");
+  RemoveAllChars(&text, "\n ∗*");
   if (text.size() > kMaxInstructionIdSize) text.resize(kMaxInstructionIdSize);
   return text;
 }
@@ -114,7 +122,7 @@ const std::string& GetFooterSectionName(const PdfPage& page) {
 // If 'page' is the first page of an instruction, returns a unique identifier
 // for this instruction. Otherwise return empty string.
 std::string GetInstructionGroupId(const PdfPage& page) {
-  if (!strings::StartsWith(GetCellTextOrEmpty(page, 0, 0), kInstructionSetRef))
+  if (!absl::StartsWith(GetCellTextOrEmpty(page, 0, 0), kInstructionSetRef))
     return {};
   const std::string maybe_instruction =
       Normalize(GetCellTextOrEmpty(page, 1, 0));
@@ -152,10 +160,9 @@ std::string GetSubSectionTitle(const PdfTextTableRow& row) {
   const auto& block = row.blocks(0);
   if (block.font_size() < kMinSubSectionTitleFontSize) return {};
   std::string text = block.text();
-  StripWhitespace(&text);
-  if (strings::StartsWith(text, "Table") ||
-      strings::StartsWith(text, "Figure") ||
-      strings::StartsWith(text, "Example"))
+  absl::StripAsciiWhitespace(&text);
+  if (absl::StartsWith(text, "Table") || absl::StartsWith(text, "Figure") ||
+      absl::StartsWith(text, "Example"))
     return {};
   return text;
 }
@@ -235,8 +242,8 @@ GetInstructionModeMatchers() {
   return *kModes;
 }
 
-const std::set<std::string>& GetValidFeatureSet() {
-  static const auto* kValidFeatures = new std::set<std::string>{
+const std::set<absl::string_view>& GetValidFeatureSet() {
+  static const auto* kValidFeatures = new std::set<absl::string_view>{
       "3DNOW",      "ADX",      "AES",        "AVX",      "AVX2",
       "AVX512BW",   "AVX512CD", "AVX512DQ",   "AVX512ER", "AVX512F",
       "AVX512IFMA", "AVX512PF", "AVX512VBMI", "AVX512VL", "BMI1",
@@ -290,7 +297,7 @@ const OperandEncodingMatchers& GetOperandEncodingSpecMatchers() {
 }
 
 void Cleanup(std::string* text) {
-  StripWhitespace(text);
+  absl::StripAsciiWhitespace(text);
   while (!text->empty() && text->back() == '*') text->pop_back();
 }
 
@@ -306,7 +313,7 @@ bool IsValidMode(const std::string& text) {
 // logical composition of them (several features separated by '&&' or '||')
 // TODO(gchatelet): Move this to configuration file.
 std::string FixFeature(std::string feature) {
-  StripWhitespace(&feature);
+  absl::StripAsciiWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
   const char kAvxRegex[] =
       "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512IFMA|AVX512PF|"
@@ -318,7 +325,7 @@ std::string FixFeature(std::string feature) {
     while (RE2::Consume(&remainder, kAvxRegex, &piece)) {
       pieces.push_back(piece);
     }
-    return strings::Join(pieces, " && ");
+    return absl::StrJoin(pieces, " && ");
   }
   if (feature == "Both AES andAVX flags") return "AES && AVX";
   if (feature == "Both PCLMULQDQ and AVX flags") return "CLMUL && AVX";
@@ -332,7 +339,7 @@ std::string FixFeature(std::string feature) {
 // Applies transformations to normalize binary encoding.
 // TODO(gchatelet): Move this to document specific configuration.
 std::string FixEncodingSpecification(std::string feature) {
-  StripWhitespace(&feature);
+  absl::StripAsciiWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([,\n])", " ");  // remove commas and LF
   RE2::GlobalReplace(&feature, R"([ ]+)", " ");   // collapse multiple spaces
 
@@ -352,7 +359,7 @@ const LazyRE2 kInstructionRegexp = {R"(\n([A-Z][0-9A-Z]+))"};
 
 void ParseCell(const InstructionTable::Column column, std::string text,
                InstructionProto* instruction) {
-  StripWhitespace(&text);
+  absl::StripAsciiWhitespace(&text);
   switch (column) {
     case InstructionTable::IT_OPCODE:
       instruction->set_raw_encoding_specification(
@@ -390,7 +397,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       break;
     case InstructionTable::IT_MODE_SUPPORT_64_32BIT: {
       const std::vector<std::string> pieces =
-          strings::Split(text, "/");  // NOLINT
+          absl::StrSplit(text, "/");  // NOLINT
       instruction->set_available_in_64_bit(IsValidMode(pieces[0]));
       if (pieces.size() == 2) {
         instruction->set_legacy_instruction(IsValidMode(pieces[1]));
@@ -408,12 +415,11 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       // is one of the valid feature values.
       const std::string cleaned = FixFeature(text);
       std::string* feature_name = instruction->mutable_feature_name();
-      for (StringPiece raw_piece : strings::Split(cleaned, " ")) {  // NOLINT
-        const std::string piece = raw_piece.ToString();
+      for (const absl::string_view piece : absl::StrSplit(cleaned, " ")) {
         if (!feature_name->empty()) feature_name->append(" ");
         const bool is_logic_operator = piece == "&&" || piece == "||";
         if (is_logic_operator || ContainsKey(GetValidFeatureSet(), piece)) {
-          StrAppend(feature_name, piece);
+          absl::StrAppend(feature_name, piece);
         } else {
           feature_name->append(kUnknown);
           LOG(ERROR) << "Invalid Feature : " << piece
@@ -458,7 +464,7 @@ void ParseInstructionTable(const SubSection& sub_section,
       const std::string& first_cell = row.blocks(0).text();
       // Sometimes there are notes after the instruction table if so we stop the
       // parsing.
-      if (strings::StartsWith(first_cell, "NOTE")) {
+      if (absl::StartsWith(first_cell, "NOTE")) {
         break;
       }
       // Checking if this line is a repeated header row,
@@ -536,10 +542,10 @@ void ParseOperandEncodingTableRow(const OperandEncodingTableType table_type,
   }
   // The cell can specify several cross references (e.g. "HVM, QVM, OVM")
   // We instantiate as many operand encoding as cross references.
-  const std::string& cross_references = row.blocks(0).text();
-  for (auto cross_reference :
-       strings::Split(cross_references, ",", strings::SkipEmpty())) {  // NOLINT
-    StripWhitespace(&cross_reference);
+  const std::vector<std::string> cross_references =
+      absl::StrSplit(row.blocks(0).text(), ",", absl::SkipEmpty());
+  for (std::string cross_reference : cross_references) {
+    absl::StripAsciiWhitespace(&cross_reference);
     if (RE2::FullMatch(cross_reference, R"([A-Z][-A-Z0-9]*)")) {
       auto* const crossref = table->add_operand_encoding_crossrefs();
       crossref->set_crossreference_name(cross_reference);
@@ -752,8 +758,8 @@ void ProcessSubSections(std::vector<SubSection> sub_sections,
 void ToString(const PdfTextTableRow& row, std::string* output) {
   bool first_block = true;
   for (const auto& block : row.blocks()) {
-    if (!first_block) StrAppend(output, "\t");
-    StrAppend(output, CleanupParagraph(block.text()));
+    if (!first_block) absl::StrAppend(output, "\t");
+    absl::StrAppend(output, CleanupParagraph(block.text()));
     first_block = false;
   }
 }
@@ -773,7 +779,7 @@ bool ToString(const InstructionSection& section, const SubSection::Type type,
   }
   output->clear();
   for (const auto& row : itr->rows()) {
-    if (!output->empty()) StrAppend(output, "\n");
+    if (!output->empty()) absl::StrAppend(output, "\n");
     ToString(row, output);
   }
   return true;
@@ -788,8 +794,8 @@ void FillGroupProto(const InstructionSection& section,
   } else {
     std::string name = section.id().substr(0, first_hyphen_position);
     std::string description = section.id().substr(first_hyphen_position + 1);
-    StripWhitespace(&name);
-    StripWhitespace(&description);
+    absl::StripAsciiWhitespace(&name);
+    absl::StripAsciiWhitespace(&description);
     group->set_name(name);
     group->set_short_description(description);
   }
@@ -839,8 +845,8 @@ OperandEncoding ParseOperandEncodingTableCell(const std::string& content) {
       CHECK(regexp != nullptr);
       std::string usage;
       if (RE2::FullMatch(content, *regexp, &usage) && !usage.empty()) {
-        LowerString(&usage);
-        strrmm(&usage, " ,");
+        absl::AsciiStrToLower(&usage);
+        RemoveAllChars(&usage, " ,");
         if (usage == "r") {
           encoding.set_usage(OperandEncoding::USAGE_READ);
         } else if (usage == "w") {

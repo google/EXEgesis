@@ -26,6 +26,10 @@
 #include <unordered_set>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/category_utils.h"
 #include "exegesis/base/cpu_info.h"
@@ -46,11 +50,6 @@
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/text_format.h"
-#include "strings/case.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
-#include "strings/str_replace.h"
-#include "strings/string_view.h"
 #include "util/gtl/map_util.h"
 #include "util/gtl/ptr_util.h"
 #include "util/task/canonical_errors.h"
@@ -205,11 +204,11 @@ ObservationVector CreateObservationVector(const PerfResult& perf_result) {
     // Make all the events look like Haswell events.
     // TODO(bdb): This should depend on CPUInfo.
     std::string key = name;
-    GlobalReplaceSubstring("uops_dispatched_port:port_",
-                           "uops_executed_port:port_", &key);
-    GlobalReplaceSubstring("uops_executed:port", "uops_executed_port:port_",
-                           &key);
-    GlobalReplaceSubstring("uops_executed.all", "uops_executed", &key);
+    absl::StrReplaceAll(
+        {{"uops_dispatched_port:port_", "uops_executed_port:port_"},
+         {"uops_executed:port", "uops_executed_port:port_"},
+         {"uops_executed.all", "uops_executed"}},
+        &key);
     ObservationVector::Observation* const observation =
         observations.add_observations();
     observation->set_event_name(key);
@@ -313,18 +312,19 @@ class ComputeItinerariesHelper {
         const double q = static_cast<double>(quantile);
         StringAppendF(&result, "[%.02f %.02f), ", q / kNumQuantiles,
                       (q + 1) / kNumQuantiles);
-        StrAppend(&result, strings::Join(uop_stats_[quantile], ", "), "\n");
+        absl::StrAppend(&result, absl::StrJoin(uop_stats_[quantile], ", "),
+                        "\n");
       }
 
-      StrAppend(&result, num_unsolved_mips_, " unsolved MIPs.\n");
-      StrAppend(&result, num_instructions_with_unique_order_,
-                " unique orders.\n");
-      StrAppend(&result, num_instructions_, " instructions.\n");
-      StrAppend(&result, num_assembly_errors_, " assembly errors.\n");
-      StrAppend(&result, num_decode_stalls_,
-                " stalled decode pipeline errors.\n");
-      StrAppend(&result, num_subtract_update_code_errors_,
-                " subtract update code errors.\n");
+      absl::StrAppend(&result, num_unsolved_mips_, " unsolved MIPs.\n");
+      absl::StrAppend(&result, num_instructions_with_unique_order_,
+                      " unique orders.\n");
+      absl::StrAppend(&result, num_instructions_, " instructions.\n");
+      absl::StrAppend(&result, num_assembly_errors_, " assembly errors.\n");
+      absl::StrAppend(&result, num_decode_stalls_,
+                      " stalled decode pipeline errors.\n");
+      absl::StrAppend(&result, num_subtract_update_code_errors_,
+                      " subtract update code errors.\n");
       return result;
     }
 
@@ -514,8 +514,8 @@ Status SubtractMicroOpsFrom(PortMaskCount rhs,
   for (const auto& remaining_count : rhs) {
     if (remaining_count.second > 0) {
       return InternalError(
-          StrCat("The measured code does not include the update code ",
-                 remaining_count.first.ToString()));
+          absl::StrCat("The measured code does not include the update code ",
+                       remaining_count.first.ToString()));
     }
   }
   return OkStatus();
@@ -602,7 +602,7 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
       result.GetScaledOrDie("ild_stall.lcp") > 0.1) {
     stats->IncrementDecodeStallsErrors();
     return InternalError(
-        StrCat("Instruction stalls decode pipeline: ", measured_code));
+        absl::StrCat("Instruction stalls decode pipeline: ", measured_code));
   }
 
   DecompositionSolver solver(microarchitecture_);
@@ -630,8 +630,9 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
     return OkStatus();
   } else {
     stats->IncrementUnsolvedProblems();
-    return InternalError(StrCat("Could not decompose instruction ",
-                                measured_code, " into micro-operations."));
+    return InternalError(absl::StrCat("Could not decompose instruction ",
+                                      measured_code,
+                                      " into micro-operations."));
   }
 }
 
@@ -675,19 +676,19 @@ Status ComputeItineraries(const InstructionSetProto& instruction_set,
   const MicroArchitecture* const microarchitecture =
       MicroArchitecture::FromCpuModelId(host_cpu_model_id);
   if (microarchitecture == nullptr) {
-    return InternalError(StrCat("Nothing known about host CPU model id '",
-                                host_cpu_model_id,
-                                "', cannot compute itineraries."));
+    return InternalError(absl::StrCat("Nothing known about host CPU model id '",
+                                      host_cpu_model_id,
+                                      "', cannot compute itineraries."));
   }
 
   // We can only guarantee that the computed itineraries are going to be valid
   // for the host microarchitecture.
   if (microarchitecture->proto().id() != itineraries->microarchitecture_id()) {
     return InvalidArgumentError(
-        StrCat("Host CPU model id '", host_cpu_model_id,
-               "' is not the requested microarchitecture ('",
-               microarchitecture->proto().id(), "' vs '",
-               itineraries->microarchitecture_id(), "'"));
+        absl::StrCat("Host CPU model id '", host_cpu_model_id,
+                     "' is not the requested microarchitecture ('",
+                     microarchitecture->proto().id(), "' vs '",
+                     itineraries->microarchitecture_id(), "'"));
   }
 
   ComputeItinerariesHelper helper(host_cpu_info, *microarchitecture,

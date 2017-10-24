@@ -14,11 +14,11 @@
 
 #include "exegesis/util/pdf/xpdf_util.h"
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "strings/str_cat.h"
 #include "util/gtl/ptr_util.h"
 
 namespace exegesis {
@@ -32,7 +32,7 @@ const char kTestDataPath[] = "/__main__/exegesis/util/pdf/testdata/";
 TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
   PdfParseRequest request;
   request.set_filename(
-      StrCat(getenv("TEST_SRCDIR"), kTestDataPath, "simple.pdf"));
+      absl::StrCat(getenv("TEST_SRCDIR"), kTestDataPath, "simple.pdf"));
 
   PdfDocument pdf_document = ParseOrDie(request, PdfDocumentsChanges());
 

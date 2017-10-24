@@ -14,16 +14,16 @@
 
 #include "exegesis/base/prettyprint.h"
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "exegesis/base/port_mask.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 
 namespace exegesis {
 
 std::string PrettyPrintCpuInfo(const CpuInfo& cpu_info,
                                const PrettyPrintOptions& options) {
-  return StrCat(cpu_info.proto().model_id(), " (name: '",
-                cpu_info.proto().code_name(), "')");
+  return absl::StrCat(cpu_info.proto().model_id(), " (name: '",
+                      cpu_info.proto().code_name(), "')");
 }
 
 std::string PrettyPrintMicroArchitecture(
@@ -31,11 +31,11 @@ std::string PrettyPrintMicroArchitecture(
     const PrettyPrintOptions& options) {
   std::string result = microarchitecture.proto().id();
   if (options.cpu_details_) {
-    StrAppend(&result, "\nport masks:\n  ",
-              strings::Join(microarchitecture.port_masks(), "\n  ",
-                            [](std::string* out, const PortMask& mask) {
-                              out->append(mask.ToString());
-                            }));
+    absl::StrAppend(&result, "\nport masks:\n  ",
+                    absl::StrJoin(microarchitecture.port_masks(), "\n  ",
+                                  [](std::string* out, const PortMask& mask) {
+                                    out->append(mask.ToString());
+                                  }));
   }
   return result;
 }
@@ -44,9 +44,9 @@ std::string PrettyPrintSyntax(const InstructionFormat& syntax,
                               const PrettyPrintOptions& options) {
   std::string result = syntax.mnemonic();
   if (!syntax.operands().empty()) {
-    StrAppend(
+    absl::StrAppend(
         &result, " ",
-        strings::Join(syntax.operands(), ", ",
+        absl::StrJoin(syntax.operands(), ", ",
                       [](std::string* out, const InstructionOperand& operand) {
                         out->append(operand.name());
                       }));
@@ -58,27 +58,30 @@ std::string PrettyPrintMicroOperation(const MicroOperationProto& uop,
                                       const PrettyPrintOptions& options) {
   std::string result = PortMask(uop.port_mask()).ToString();
   if (options.microop_latencies_) {
-    StrAppend(&result, " (lat:", uop.latency(), ")");
+    absl::StrAppend(&result, " (lat:", uop.latency(), ")");
   }
   if (!uop.dependencies().empty() && options.microop_dependencies_) {
-    StrAppend(&result, " (deps:", strings::Join(uop.dependencies(), ","), ")");
+    absl::StrAppend(&result, " (deps:", absl::StrJoin(uop.dependencies(), ","),
+                    ")");
   }
   return result;
 }
 
 std::string PrettyPrintInstruction(const InstructionProto& instruction,
                                    const PrettyPrintOptions& options) {
-  std::string result = StrCat(PrettyPrintSyntax(instruction.vendor_syntax()));
+  std::string result =
+      absl::StrCat(PrettyPrintSyntax(instruction.vendor_syntax()));
   if (!instruction.llvm_mnemonic().empty()) {
-    StrAppend(&result, "\nllvm: ", instruction.llvm_mnemonic(), "");
+    absl::StrAppend(&result, "\nllvm: ", instruction.llvm_mnemonic(), "");
   }
   if (options.alternative_syntax_) {
     if (instruction.has_syntax()) {
-      StrAppend(&result, "\nintel: ", PrettyPrintSyntax(instruction.syntax()));
+      absl::StrAppend(&result,
+                      "\nintel: ", PrettyPrintSyntax(instruction.syntax()));
     }
     if (instruction.has_att_syntax()) {
-      StrAppend(&result,
-                "\natt: ", PrettyPrintSyntax(instruction.att_syntax()));
+      absl::StrAppend(&result,
+                      "\natt: ", PrettyPrintSyntax(instruction.att_syntax()));
     }
   }
   return result;
@@ -88,13 +91,14 @@ std::string PrettyPrintItinerary(const ItineraryProto& itineraries,
                                  const PrettyPrintOptions& options) {
   std::string result;
   if (!itineraries.micro_ops().empty()) {
-    StrAppend(&result, options.itineraries_on_one_line_ ? "" : "  ",
-              strings::Join(
-                  itineraries.micro_ops(),
-                  options.itineraries_on_one_line_ ? " " : "\n  ",
-                  [&options](std::string* out, const MicroOperationProto& uop) {
-                    out->append(PrettyPrintMicroOperation(uop, options));
-                  }));
+    absl::StrAppend(
+        &result, options.itineraries_on_one_line_ ? "" : "  ",
+        absl::StrJoin(
+            itineraries.micro_ops(),
+            options.itineraries_on_one_line_ ? " " : "\n  ",
+            [&options](std::string* out, const MicroOperationProto& uop) {
+              out->append(PrettyPrintMicroOperation(uop, options));
+            }));
   }
   return result;
 }

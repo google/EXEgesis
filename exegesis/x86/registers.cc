@@ -14,10 +14,10 @@
 
 #include "exegesis/x86/registers.h"
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/base/registers.h"
 #include "exegesis/proto/registers.pb.h"
 #include "exegesis/util/proto_util.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace x86 {

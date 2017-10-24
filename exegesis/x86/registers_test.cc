@@ -19,10 +19,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace x86 {
@@ -48,7 +48,7 @@ TEST(GetRegisterSetTest, IsNotEmpty) {
   EXPECT_GT(registers.register_groups_size(), 0);
 
   for (const RegisterGroupProto& group : registers.register_groups()) {
-    SCOPED_TRACE(StrCat("group.name = ", group.name()));
+    SCOPED_TRACE(absl::StrCat("group.name = ", group.name()));
     EXPECT_GT(group.registers_size(), 0);
 
     for (const RegisterProto& reg : group.registers()) {
@@ -62,7 +62,7 @@ TEST(GetRegisterSetTest, RegisterNamesAreUnique) {
   std::unordered_set<std::string> register_names;
   for (const RegisterGroupProto& group : registers.register_groups()) {
     for (const RegisterProto& reg : group.registers()) {
-      SCOPED_TRACE(StrCat("reg.name = ", reg.name()));
+      SCOPED_TRACE(absl::StrCat("reg.name = ", reg.name()));
       EXPECT_TRUE(register_names.insert(reg.name()).second);
     }
   }
@@ -73,10 +73,10 @@ TEST(GetRegisterSetTest, PositionsAreValid) {
   // Check that all registers have a position in the group, that at all bit
   // indices are non-negative and at least one register starts at bit zero.
   for (const RegisterGroupProto& group : registers.register_groups()) {
-    SCOPED_TRACE(StrCat("group.name = ", group.name()));
+    SCOPED_TRACE(absl::StrCat("group.name = ", group.name()));
     bool has_register_starting_at_zero;
     for (const RegisterProto& reg : group.registers()) {
-      SCOPED_TRACE(StrCat("reg.name = ", reg.name()));
+      SCOPED_TRACE(absl::StrCat("reg.name = ", reg.name()));
       EXPECT_TRUE(reg.has_position_in_group());
       const BitRange& position = reg.position_in_group();
       EXPECT_GE(position.lsb(), 0);
@@ -90,7 +90,7 @@ TEST(GetRegisterSetTest, PositionsAreValid) {
 TEST(GetRegisterSetTest, PositionsAreOverlapping) {
   const RegisterSetProto& registers = GetRegisterSet();
   for (const RegisterGroupProto& group : registers.register_groups()) {
-    SCOPED_TRACE(StrCat("group.name = ", group.name()));
+    SCOPED_TRACE(absl::StrCat("group.name = ", group.name()));
     std::vector<const BitRange*> ranges_by_lsb(group.registers_size(), nullptr);
     std::transform(group.registers().begin(), group.registers().end(),
                    ranges_by_lsb.begin(), [](const RegisterProto& reg) {
@@ -285,7 +285,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
         })"}};
   for (const auto& test_case : kTestCases) {
     const std::string register_name = test_case.register_name;
-    SCOPED_TRACE(StrCat("register_name = ", register_name));
+    SCOPED_TRACE(absl::StrCat("register_name = ", register_name));
     EXPECT_THAT(FindGroupByRegister(GetRegisterSet(), test_case.register_name),
                 EqualsProto(test_case.expected_proto));
   }
@@ -295,7 +295,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
                                                "MXCSR",  "FPCW",   "GDTR",
                                                "LDTR",   "IDTR",   "TR"};
   for (const std::string register_name : kCheckedRegisters) {
-    SCOPED_TRACE(StrCat("register_name = ", register_name));
+    SCOPED_TRACE(absl::StrCat("register_name = ", register_name));
     EXPECT_THAT(FindGroupByRegister(GetRegisterSet(), register_name),
                 Not(EqualsProto("")));
   }

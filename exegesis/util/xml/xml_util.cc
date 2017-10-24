@@ -17,8 +17,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "tinyxml2.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -48,7 +48,8 @@ Status GetStatus(const XMLError& status) {
   // Use a dummy document to print a user-friendly error string.
   XMLDocument dummy;
   dummy.SetError(status, "", "");
-  return InternalError(StrCat("XML Error ", status, ": ", dummy.ErrorName()));
+  return InternalError(
+      absl::StrCat("XML Error ", status, ": ", dummy.ErrorName()));
 }
 
 std::string DebugString(const XMLNode* node) {
@@ -62,8 +63,8 @@ StatusOr<XMLElement*> FindChild(XMLNode* node, const char* name) {
   CHECK(node != nullptr);
   XMLElement* element = node->FirstChildElement(name);
   if (element != nullptr) return element;
-  return NotFoundError(StrCat("Element <", name ? name : "",
-                              "> not found in:\n", DebugString(node)));
+  return NotFoundError(absl::StrCat("Element <", name ? name : "",
+                                    "> not found in:\n", DebugString(node)));
 }
 
 std::vector<XMLElement*> FindChildren(XMLNode* node, const char* name) {

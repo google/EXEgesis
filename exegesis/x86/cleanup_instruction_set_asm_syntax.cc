@@ -17,11 +17,12 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/string_view.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -34,12 +35,12 @@ using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 
-char GetSuffixFromPointerType(StringPiece operand) {
+char GetSuffixFromPointerType(absl::string_view operand) {
   std::string result;
   constexpr const char* const kPointerTypes[] = {"BYTE", "WORD", "DWORD",
                                                  "QWORD"};
   for (const char* const pointer_type : kPointerTypes) {
-    if (operand.starts_with(pointer_type)) {
+    if (absl::StartsWith(operand, pointer_type)) {
       return pointer_type[0];
     }
   }
@@ -60,7 +61,7 @@ Status AddIntelAsmSyntax(InstructionSetProto* instruction_set) {
       // Adds a suffix to all the string mnemonics, because the LLVM assembler
       // does not recognize the mnemonics without the suffix.
       if (syntax->operands().empty()) {
-        status = InvalidArgumentError(StrCat(
+        status = InvalidArgumentError(absl::StrCat(
             "Unexpected number of arguments:\n", instruction.DebugString()));
         LOG(ERROR) << status;
         continue;

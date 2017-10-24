@@ -20,10 +20,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -362,7 +362,7 @@ PdfDocumentsChanges LoadConfigurations(const std::string& directory) {
   struct dirent* ent = nullptr;
   if ((dir = opendir(directory.c_str())) != nullptr) {
     while ((ent = readdir(dir)) != nullptr) {
-      const std::string full_path = StrCat(directory, "/", ent->d_name);
+      const std::string full_path = absl::StrCat(directory, "/", ent->d_name);
       LOG(INFO) << "Reading configuration file " << full_path;
       ReadTextProtoOrDie(full_path, patch_sets.add_documents());
     }

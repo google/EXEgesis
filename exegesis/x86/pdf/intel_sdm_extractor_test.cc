@@ -14,12 +14,12 @@
 
 #include "exegesis/x86/pdf/intel_sdm_extractor.h"
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/pdf/pdf_document_parser.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace x86 {
@@ -34,7 +34,7 @@ const char kTestDataPath[] = "/__main__/exegesis/x86/pdf/testdata/";
 template <typename Proto>
 Proto GetProto(const std::string& name) {
   return ReadTextProtoOrDie<Proto>(
-      StrCat(getenv("TEST_SRCDIR"), kTestDataPath, name, ".pbtxt"));
+      absl::StrCat(getenv("TEST_SRCDIR"), kTestDataPath, name, ".pbtxt"));
 }
 
 TEST(IntelSdmExtractorTest, BitSetPage) {

@@ -15,18 +15,18 @@
 #ifndef UTIL_TASK_CANONICAL_ERRORS_H_
 #define UTIL_TASK_CANONICAL_ERRORS_H_
 
-#include "strings/string_view.h"
+#include "absl/strings/string_view.h"
 #include "util/task/status.h"
 
 namespace exegesis {
 namespace util {
 
-Status FailedPreconditionError(StringPiece error);
-Status InternalError(StringPiece error);
-Status InvalidArgumentError(StringPiece error);
-Status NotFoundError(StringPiece error);
-Status UnimplementedError(StringPiece error);
-Status UnknownError(StringPiece error);
+Status FailedPreconditionError(absl::string_view error);
+Status InternalError(absl::string_view error);
+Status InvalidArgumentError(absl::string_view error);
+Status NotFoundError(absl::string_view error);
+Status UnimplementedError(absl::string_view error);
+Status UnknownError(absl::string_view error);
 
 bool IsNotFound(const Status& status);
 bool IsInvalidArgument(const Status& status);

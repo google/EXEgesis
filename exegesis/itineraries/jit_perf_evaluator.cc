@@ -19,22 +19,23 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/llvm/inline_asm.h"
-#include "strings/str_cat.h"
+#include "exegesis/util/strings.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
 namespace exegesis {
-
 namespace {
-std::string RepeatCode(int num_repeats, const std::string& code) {
-  return StrCat(".rept ", num_repeats, "\n", code, "\n.endr\n");
-}
 
 using util::OkStatus;
+
+std::string RepeatCode(int num_repeats, const std::string& code) {
+  return absl::StrCat(".rept ", num_repeats, "\n", code, "\n.endr\n");
+}
 
 }  // namespace
 
@@ -52,19 +53,19 @@ Status EvaluateAssemblyString(
     const std::string& constraints, PerfResult* result) {
   JitCompiler jit(mcpu);
   const std::string code =
-      StrCat(prefix_code, "\n",
-             RepeatCode(num_inner_iterations,
-                        StrCat(measured_code, "\n\t", update_code)),
-             "\n", suffix_code);
+      absl::StrCat(prefix_code, "\n",
+                   RepeatCode(num_inner_iterations,
+                              absl::StrCat(measured_code, "\n\t", update_code)),
+                   "\n", suffix_code);
   // NOTE(bdb): constraints are the same for 'code', 'init_code' and
   // 'cleanup_code'.
   const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(
       num_outer_iterations, init_code, constraints, code, constraints,
       cleanup_code, constraints, dialect);
   if (!inline_asm_function.ok()) {
-    return util::UnknownError(
-        StrCat("Could not compile the measured code:",
-               inline_asm_function.status().error_message()));
+    return util::UnknownError(absl::StrCat(
+        "Could not compile the measured code:",
+        ToStringView(inline_asm_function.status().error_message())));
   }
 
   // Because of the decode window size, a large instruction is likely going to
@@ -74,8 +75,8 @@ Status EvaluateAssemblyString(
   constexpr int kL1CodeCacheSize = 1 << 15;
   if (inline_asm_function.ValueOrDie().size >= kL1CodeCacheSize) {
     return util::UnknownError(
-        StrCat("Cannot fit ", num_inner_iterations,
-               " repetitions of the measured code in the L1 cache"));
+        absl::StrCat("Cannot fit ", num_inner_iterations,
+                     " repetitions of the measured code in the L1 cache"));
   }
 
   PerfSubsystem perf_subsystem;
@@ -111,8 +112,8 @@ Status DebugCPUStateChange(
 
   const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(
       /*num_iterations=*/1,
-      StrCat(prefix_code, in_code, code, out_code, cleanup_code), constraints,
-      dialect);
+      absl::StrCat(prefix_code, in_code, code, out_code, cleanup_code),
+      constraints, dialect);
   if (!inline_asm_function.ok()) {
     return inline_asm_function.status();
   }

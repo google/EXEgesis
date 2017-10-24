@@ -17,11 +17,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/text_format.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace x86 {
@@ -527,14 +527,14 @@ constexpr const char kCoreModels[] = R"(
 const MicroArchitecturesProto& GetMicroArchitecturesProto() {
   static const MicroArchitecturesProto* const microarchitectures = []() {
     const std::vector<std::string> sources = {
-        StrCat(kSkylakeConsumerModels, kSkylakeMicroarchitecture),
-        StrCat(kSkylakeXeonModels, kSkylakeMicroarchitecture),
-        StrCat(kHaswellModels, kHaswellMicroarchitecture),
-        StrCat(kBroadwellModels, kHaswellMicroarchitecture),
-        StrCat(kIvyBridgeModels, kSandyBridgeMicroarchitecture),
-        StrCat(kSandyBridgeModels, kSandyBridgeMicroarchitecture),
-        StrCat(kWestmireModels, kNehalemMicroarchitecture),
-        StrCat(kNehalemModels, kNehalemMicroarchitecture),
+        absl::StrCat(kSkylakeConsumerModels, kSkylakeMicroarchitecture),
+        absl::StrCat(kSkylakeXeonModels, kSkylakeMicroarchitecture),
+        absl::StrCat(kHaswellModels, kHaswellMicroarchitecture),
+        absl::StrCat(kBroadwellModels, kHaswellMicroarchitecture),
+        absl::StrCat(kIvyBridgeModels, kSandyBridgeMicroarchitecture),
+        absl::StrCat(kSandyBridgeModels, kSandyBridgeMicroarchitecture),
+        absl::StrCat(kWestmireModels, kNehalemMicroarchitecture),
+        absl::StrCat(kNehalemModels, kNehalemMicroarchitecture),
         // NOTE(bdb): As of 2017-03-01 we do not need the itineraries of the
         // Core and Enhanced Core architectures.
         kEnhancedCoreModels, kCoreModels};

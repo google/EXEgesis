@@ -20,13 +20,13 @@
 
 #include <unordered_map>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_split.h"
 #include "base/stringprintf.h"
 #include "exegesis/proto/x86/cpuid.pb.h"
 #include "exegesis/util/structured_register.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "strings/str_split.h"
-#include "strings/string_view_utils.h"
 #include "util/task/canonical_errors.h"
 
 namespace exegesis {
@@ -360,7 +360,7 @@ StatusOr<CpuIdDump> CpuIdDump::FromString(const std::string& source) {
   CpuIdDump dump;
   X86CpuIdDumpProto* const dump_proto =
       dump.dump_proto_.mutable_x86_cpuid_dump();
-  const std::vector<std::string> lines = strings::Split(source, "\n");
+  const std::vector<std::string> lines = absl::StrSplit(source, "\n");
   for (const std::string& line : lines) {
     uint32_t leaf = 0;
     uint32_t eax = 0;
@@ -521,7 +521,7 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
   // If there is any AVX-512 feature, also add a meta-feature AVX512.
   constexpr char kAvx512[] = "AVX512";
   for (const std::string& feature_name : indexed_features) {
-    if (strings::StartsWith(feature_name, kAvx512)) {
+    if (absl::StartsWith(feature_name, kAvx512)) {
       indexed_features.insert(kAvx512);
       break;
     }

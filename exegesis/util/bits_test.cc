@@ -16,8 +16,8 @@
 
 #include <cstdint>
 
+#include "absl/strings/str_cat.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
@@ -32,9 +32,9 @@ TEST(BitsTest, IsNthBitSet) {
                     {0xf00, 0, false}, {0xf00, 7, false}, {0xf00, 8, true},
                     {0xf00, 11, true}, {0xf00, 12, false}};
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(StrCat("test_case = {", test_case.value, ", ",
-                        test_case.bit_position, ", ", test_case.expected_is_set,
-                        "}"));
+    SCOPED_TRACE(absl::StrCat("test_case = {", test_case.value, ", ",
+                              test_case.bit_position, ", ",
+                              test_case.expected_is_set, "}"));
     const bool is_set = IsNthBitSet(test_case.value, test_case.bit_position);
     EXPECT_EQ(is_set, test_case.expected_is_set);
   }
@@ -61,10 +61,10 @@ TEST(BitsTest, ClearBitRange) {
                     {0xffffffff, 8, 16, 0xffff00ff},
                     {0xabcdef01, 24, 32, 0xcdef01}};
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(StrCat("test_case = {", test_case.value, ", ",
-                        test_case.start_bit_position, ", ",
-                        test_case.end_bit_position, ", ",
-                        test_case.expected_result, "}"));
+    SCOPED_TRACE(absl::StrCat("test_case = {", test_case.value, ", ",
+                              test_case.start_bit_position, ", ",
+                              test_case.end_bit_position, ", ",
+                              test_case.expected_result, "}"));
     const uint32_t result =
         ClearBitRange(test_case.value, test_case.start_bit_position,
                       test_case.end_bit_position);
@@ -94,7 +94,7 @@ TEST(BitsTest, GetBitRange) {
                     {0xabcdef89, 24, 32, 0xab},
                     {0xabcdef89, 0, 32, 0xabcdef89}};
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(StrCat(
+    SCOPED_TRACE(absl::StrCat(
         "test_case = {", test_case.value, ", ", test_case.start_bit_position,
         ", ", test_case.end_bit_position, ", ", test_case.expected_bit_range));
     const uint32_t bit_range =

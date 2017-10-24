@@ -17,11 +17,11 @@
 #include <map>
 #include <string>
 
+#include "absl/strings/str_join.h"
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/arm/xml/parser.pb.h"
 #include "exegesis/proto/instruction_encoding.pb.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "strings/str_join.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -83,7 +83,7 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
         auto* instruction = isp->add_instructions();
         instruction->set_instruction_group_index(group_index);
         // The longer authored_description is used as group description.
-        instruction->set_description(strings::Join(
+        instruction->set_description(absl::StrJoin(
             {xml_instruction.brief_description(), instruction_class.name()},
             " | "));
         *instruction->mutable_vendor_syntax() = ConvertAsmTemplate(

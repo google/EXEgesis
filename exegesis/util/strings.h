@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "base/stringprintf.h"
-#include "strings/string_view.h"
 #include "util/task/statusor.h"
 
 namespace exegesis {
@@ -69,6 +69,12 @@ std::string ToPastableHexString(const Range& binary_data) {
     StringAppendF(&buffer, "0x%02X", static_cast<uint32_t>(encoding_byte));
   }
   return buffer;
+}
+
+// Converts a string-like data type to absl::string_view.
+template <typename StringType>
+absl::string_view ToStringView(const StringType& text) {
+  return absl::string_view(text.data(), text.size());
 }
 
 }  // namespace exegesis

@@ -16,9 +16,9 @@
 
 #include <functional>
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/proto/registers.pb.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
@@ -35,7 +35,7 @@ RegisterSetProto MakeRegisters(
     const std::string base_name = base_name_callback(i);
     for (const auto& tpl : templates) {
       RegisterProto* const reg = group->add_registers();
-      reg->set_name(StrCat(tpl.prefix, base_name, tpl.suffix));
+      reg->set_name(absl::StrCat(tpl.prefix, base_name, tpl.suffix));
       const int binary_encoding =
           base_binary_encoding + i + tpl.encoding_offset;
       reg->set_binary_encoding(binary_encoding);
@@ -49,9 +49,9 @@ RegisterSetProto MakeRegisters(
     // convention, this should be the most "representative" register of the
     // group.
     const std::string& register_name = group->registers(0).name();
-    group->set_name(StrCat(register_name, " group"));
+    group->set_name(absl::StrCat(register_name, " group"));
     group->set_description(
-        StrCat("The group of registers aliased with ", register_name));
+        absl::StrCat("The group of registers aliased with ", register_name));
   }
   return register_set;
 }
@@ -73,7 +73,7 @@ RegisterSetProto MakeRegistersFromBaseNameAndIndices(
     const std::string& base_name, int begin_index, int end_index,
     int base_binary_encoding) {
   const auto base_name_callback = [&base_name, begin_index](int i) {
-    return StrCat(base_name, begin_index + i);
+    return absl::StrCat(base_name, begin_index + i);
   };
   return MakeRegisters(templates, base_name_callback, end_index - begin_index,
                        base_binary_encoding);

@@ -18,14 +18,14 @@
 #include <unordered_map>
 #include <utility>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/util/xml/xml_util.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/descriptor.h"
 #include "src/google/protobuf/message.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "strings/case.h"
-#include "strings/str_cat.h"
 #include "tinyxml2.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
@@ -627,23 +627,24 @@ StatusOr<DocVars> ParseDocVars(XMLNode* node) {
 
     // First attempt to fill non-enum fields.
     if (key == "mnemonic") {
-      result.set_mnemonic(strings::ToUpper(value));
+      result.set_mnemonic(absl::AsciiStrToUpper(value));
       continue;
     } else if (key == "alias_mnemonic") {
-      result.set_alias_mnemonic(strings::ToUpper(value));
+      result.set_alias_mnemonic(absl::AsciiStrToUpper(value));
       continue;
     }
 
     // Now handle enum values using reflection.
     const auto* mapping = FindOrNull(GetDocVarsEnumMapping(), key);
     if (!mapping) {
-      return UnimplementedError(StrCat("Unknown docvar key '", key, "'"));
+      return UnimplementedError(absl::StrCat("Unknown docvar key '", key, "'"));
     }
     const auto* desc = DocVars::descriptor()->FindFieldByNumber(mapping->first);
     const auto* enum_value = FindOrNull(mapping->second, value);
     if (!enum_value) {
       const auto& type = reflection->GetEnum(result, desc)->type()->name();
-      return UnimplementedError(StrCat("Bad value '", value, "' for ", type));
+      return UnimplementedError(
+          absl::StrCat("Bad value '", value, "' for ", type));
     }
     reflection->SetEnumValue(&result, desc, *enum_value);
   }
@@ -658,7 +659,8 @@ Status DocVarsContains(const DocVars& docvars, const DocVars& subset) {
   std::string diff;
   differencer.ReportDifferencesToString(&diff);
   if (!differencer.Compare(subset, docvars)) {
-    return FailedPreconditionError(StrCat("DocVars subset mismatch:\n", diff));
+    return FailedPreconditionError(
+        absl::StrCat("DocVars subset mismatch:\n", diff));
   }
   return OkStatus();
 }

@@ -16,13 +16,13 @@
 
 #include "gflags/gflags.h"
 
+#include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/base/transform_factory.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
 #include "exegesis/x86/pdf/parse_sdm.h"
 #include "glog/logging.h"
-#include "strings/str_cat.h"
 #include "util/task/status.h"
 
 DEFINE_string(exegesis_input_spec, "",
@@ -70,7 +70,7 @@ void Main() {
 
   // Write transformed intruction set.
   const std::string architecture_filename =
-      StrCat(FLAGS_exegesis_output_file_base, ".pbtxt");
+      absl::StrCat(FLAGS_exegesis_output_file_base, ".pbtxt");
   LOG(INFO) << "Saving ArchitectureProto as: " << architecture_filename;
   WriteTextProtoOrDie(architecture_filename, architecture);
 }

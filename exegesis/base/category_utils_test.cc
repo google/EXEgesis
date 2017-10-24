@@ -16,9 +16,9 @@
 
 #include <cstdint>
 
+#include "absl/strings/str_cat.h"
 #include "base/macros.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
@@ -34,7 +34,7 @@ TEST(InCategoryTest, TestCategories) {
       {0x2345, 0x123, false}, {0x2, 0x3, false},  {0x2, 0x23, false}};
   constexpr int kNumTestCases = 9;
   for (int i = 0; i < kNumTestCases; ++i) {
-    SCOPED_TRACE(StrCat("i = ", i));
+    SCOPED_TRACE(absl::StrCat("i = ", i));
     EXPECT_EQ(kTestData[i].expected_in_category,
               InCategory(kTestData[i].value, kTestData[i].category));
   }

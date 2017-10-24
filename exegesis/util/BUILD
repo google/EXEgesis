@@ -23,9 +23,9 @@ cc_test(
     deps = [
         ":bits",
         "//base",
-        "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
@@ -39,9 +39,9 @@ cc_library(
     hdrs = ["file_util.h"],
     deps = [
         "//base",
-        "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
     ],
 )
@@ -52,7 +52,7 @@ cc_test(
     srcs = ["file_util_test.cc"],
     deps = [
         ":file_util",
-        "//strings",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -66,9 +66,9 @@ cc_library(
     deps = [
         "//base",
         "//exegesis/proto:instructions_cc_proto",
-        "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
     ],
@@ -83,9 +83,9 @@ cc_test(
         "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
-        "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
@@ -99,9 +99,9 @@ cc_library(
     hdrs = ["proto_util.h"],
     deps = [
         "//base",
-        "//strings",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
     ],
@@ -159,11 +159,11 @@ cc_library(
     hdrs = ["strings.h"],
     deps = [
         "//base",
-        "//strings",
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
     ],
@@ -176,8 +176,8 @@ cc_test(
     deps = [
         ":strings",
         "//exegesis/testing:test_util",
-        "//strings",
         "//util/task:status",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -206,7 +206,7 @@ cc_library(
     srcs = ["text_processing.cc"],
     hdrs = ["text_processing.h"],
     deps = [
-        "//strings",
+        "@com_google_absl//absl/strings",
         "@com_googlesource_code_re2//:re2",
     ],
 )

@@ -23,6 +23,10 @@
 #include <unordered_map>
 #include <utility>
 
+#include "absl/algorithm/container.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/util/instruction_syntax.h"
@@ -30,10 +34,6 @@
 #include "ortools/linear_solver/linear_solver.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/text_format.h"
-#include "strings/str_cat.h"
-#include "strings/str_join.h"
-#include "strings/string_view.h"
-#include "util/gtl/container_algorithm.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -42,7 +42,7 @@
 namespace exegesis {
 namespace itineraries {
 
-using ::exegesis::gtl::c_linear_search;
+using ::absl::c_linear_search;
 using ::exegesis::util::Status;
 using ::operations_research::MPConstraint;
 using ::operations_research::MPModelProto;
@@ -97,8 +97,8 @@ Status DecompositionSolver::Run(const ObservationVector& observations) {
     // TODO(bdb): Add execution port information for architectures other than
     // Haswell.
     // TODO(bdb): Only consider user-time measurements with the :u modifier.
-    measurements[port] =
-        FindWithDefault(key_val, StrCat("uops_executed_port:port_", port), 0.0);
+    measurements[port] = FindWithDefault(
+        key_val, absl::StrCat("uops_executed_port:port_", port), 0.0);
   }
   return Run(measurements, uops_retired);
 }
@@ -108,8 +108,9 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   const double kMaxError = 1.0;
 
   if (uops_retired > 50.0) {
-    return util::InternalError(StrCat("Too many uops to solve the problem",
-                                      StringPrintf("%.17g", uops_retired)));
+    return util::InternalError(
+        absl::StrCat("Too many uops to solve the problem",
+                     StringPrintf("%.17g", uops_retired)));
   }
   // Compute the maximum number of uops per port mask. This enables us to
   // create less variables and to make the model easier to solve.
@@ -130,7 +131,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
       load_[port][mask].resize(max_uops_per_mask[mask]);
       for (int n = 0; n < max_uops_per_mask[mask]; ++n) {
         load_[port][mask][n] = solver_->MakeNumVar(
-            0.0, 1.0, StrCat("load_", port, "_", mask, "_", n));
+            0.0, 1.0, absl::StrCat("load_", port, "_", mask, "_", n));
       }
     }
   }
@@ -141,7 +142,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
     min_load_[mask].resize(max_uops_per_mask[mask]);
     for (int n = 0; n < max_uops_per_mask[mask]; ++n) {
       min_load_[mask][n] = solver_->MakeNumVar(
-          0, MPSolver::infinity(), StrCat("min_load_", mask, "_", n));
+          0, MPSolver::infinity(), absl::StrCat("min_load_", mask, "_", n));
     }
   }
 
@@ -151,7 +152,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
     max_load_[mask].resize(max_uops_per_mask[mask]);
     for (int n = 0; n < max_uops_per_mask[mask]; ++n) {
       max_load_[mask][n] = solver_->MakeNumVar(
-          0, MPSolver::infinity(), StrCat("max_load_", mask, "_", n));
+          0, MPSolver::infinity(), absl::StrCat("max_load_", mask, "_", n));
     }
   }
 
@@ -161,13 +162,14 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
     is_used_[mask].resize(max_uops_per_mask[mask]);
     for (int n = 0; n < max_uops_per_mask[mask]; ++n) {
       is_used_[mask][n] =
-          solver_->MakeIntVar(0, 1, StrCat("is_used_", mask, "_", n));
+          solver_->MakeIntVar(0, 1, absl::StrCat("is_used_", mask, "_", n));
     }
   }
 
   error_.resize(num_execution_ports_);
   for (int port = 0; port < num_execution_ports_; ++port) {
-    error_[port] = solver_->MakeNumVar(0.0, kMaxError, StrCat("error_", port));
+    error_[port] =
+        solver_->MakeNumVar(0.0, kMaxError, absl::StrCat("error_", port));
   }
 
   // max_error_ = max_port error_[port].
@@ -175,7 +177,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   // \forall port max_error_ >= error_[port]
   for (int port = 0; port < num_execution_ports_; ++port) {
     MPConstraint* const max_constraint = solver_->MakeRowConstraint(
-        0.0, MPSolver::infinity(), StrCat("max_error_constraint_", port));
+        0.0, MPSolver::infinity(), absl::StrCat("max_error_constraint_", port));
     max_constraint->SetCoefficient(error_[port], -1.0);
     max_constraint->SetCoefficient(max_error_, 1.0);
   }
@@ -186,8 +188,8 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
     for (int n = 0; n < max_uops_per_mask[mask] - 1; ++n) {
       MPConstraint* const ordering_constraint = solver_->MakeRowConstraint(
           0.0, MPSolver::infinity(),
-          StrCat("is_used_", mask, "_", n + 1, "_le_uop_execution_", mask, "_",
-                 n));
+          absl::StrCat("is_used_", mask, "_", n + 1, "_le_uop_execution_", mask,
+                       "_", n));
       ordering_constraint->SetCoefficient(is_used_[mask][n], 1.0);
       ordering_constraint->SetCoefficient(is_used_[mask][n + 1], -1.0);
     }
@@ -211,8 +213,8 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
     for (int n = 0; n < max_uops_per_mask[mask]; ++n) {
       MPConstraint* const execution_constraint = solver_->MakeRowConstraint(
           0.0, 0.0,
-          StrCat("sum_over_port_in_mask_load_", mask, "_", n,
-                 "_eq_uop_execution_", mask, "_", n));
+          absl::StrCat("sum_over_port_in_mask_load_", mask, "_", n,
+                       "_eq_uop_execution_", mask, "_", n));
       execution_constraint->SetCoefficient(is_used_[mask][n], -1.0);
       for (const int port : microarchitecture_->port_masks()[mask]) {
         execution_constraint->SetCoefficient(load_[port][mask][n], 1.0);
@@ -225,8 +227,8 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   for (int port = 0; port < num_execution_ports_; ++port) {
     MPConstraint* const measurement_constraint = solver_->MakeRowConstraint(
         measurements[port], measurements[port],
-        StrCat("sum_over_mask_in_port_", port, "_sum_over_n_load_", port,
-               "mask_n_plus_error_", port, "_eq_measurement_", port));
+        absl::StrCat("sum_over_mask_in_port_", port, "_sum_over_n_load_", port,
+                     "mask_n_plus_error_", port, "_eq_measurement_", port));
     measurement_constraint->SetCoefficient(error_[port], 1.0);
     for (int mask = 0; mask < num_port_masks_; ++mask) {
       for (int n = 0; n < max_uops_per_mask[mask]; ++n) {
@@ -238,7 +240,8 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   // \forall mask \sum_{port \in mask} error_[port] <= 1.0.
   for (int mask = 0; mask < num_port_masks_; ++mask) {
     MPConstraint* const max_error_constraint = solver_->MakeRowConstraint(
-        0.0, 1.0, StrCat("sum_over_port_in_mask_", mask, "_error_port_le_1"));
+        0.0, 1.0,
+        absl::StrCat("sum_over_port_in_mask_", mask, "_error_port_le_1"));
     for (const int port : microarchitecture_->port_masks()[mask]) {
       max_error_constraint->SetCoefficient(error_[port], 1.0);
     }
@@ -251,7 +254,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
       for (const int port : microarchitecture_->port_masks()[mask]) {
         MPConstraint* const min_load_constraint = solver_->MakeRowConstraint(
             0, MPSolver::infinity(),
-            StrCat("min_load_constraint_", mask, "_", n, "_", port));
+            absl::StrCat("min_load_constraint_", mask, "_", n, "_", port));
         min_load_constraint->SetCoefficient(min_load_[mask][n], -1.0);
         min_load_constraint->SetCoefficient(load_[port][mask][n], 1.0);
       }
@@ -265,7 +268,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
       for (const int port : microarchitecture_->port_masks()[mask]) {
         MPConstraint* const max_load_constraint = solver_->MakeRowConstraint(
             0, MPSolver::infinity(),
-            StrCat("max_load_constraint_", mask, "_", n, "_", port));
+            absl::StrCat("max_load_constraint_", mask, "_", n, "_", port));
         max_load_constraint->SetCoefficient(max_load_[mask][n], 1.0);
         max_load_constraint->SetCoefficient(load_[port][mask][n], -1.0);
       }
@@ -395,24 +398,25 @@ std::string DecompositionSolver::DebugString() const {
   for (const int port_mask_index : signature_) {
     const PortMask& port_mask =
         microarchitecture_->port_masks()[port_mask_index];
-    StrAppend(&output, port_mask.ToString(), " ");
+    absl::StrAppend(&output, port_mask.ToString(), " ");
   }
-  StrAppend(&output, "\n");
+  absl::StrAppend(&output, "\n");
   for (int i = 0; i < port_masks_list_.size(); ++i) {
-    StrAppend(&output, port_masks_list_[i].ToString(), ": {");
+    absl::StrAppend(&output, port_masks_list_[i].ToString(), ": {");
     for (int port = 0; port < num_execution_ports_; ++port) {
       const double load = port_loads_[i][port];
       if (load < kThreshold) continue;
       StringAppendF(&output, "%d: %.5f, ", port, load);
     }
-    StrAppend(&output, "}\n");
+    absl::StrAppend(&output, "}\n");
   }
   StringAppendF(&output, "max_error = %.5f\nerror {", max_error_value_);
   for (int port = 0; port < num_execution_ports_; ++port) {
     StringAppendF(&output, "%d: %.5f, ", port, error_values_[port]);
   }
-  StrAppend(&output,
-            "}\nis_order_unique = ", static_cast<int>(is_order_unique()), "\n");
+  absl::StrAppend(&output,
+                  "}\nis_order_unique = ", static_cast<int>(is_order_unique()),
+                  "\n");
   return output;
 }
 

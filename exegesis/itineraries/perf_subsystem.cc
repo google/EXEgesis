@@ -22,12 +22,13 @@
 #include <cstdio>
 #include <utility>
 
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/host_cpu.h"
 #include "exegesis/base/microarchitecture.h"
 #include "glog/logging.h"
 #include "include/perfmon/pfmlib_perf_event.h"
-#include "strings/str_cat.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -71,14 +72,6 @@ std::vector<std::string> PerfResult::Keys() const {
   return result;
 }
 
-namespace {
-
-bool Contains(const std::string& big, const std::string& small) {
-  return big.find(small) != std::string::npos;
-}
-
-}  // namespace
-
 PerfSubsystem::PerfSubsystem()
     : microarchitecture_(MicroArchitecture::FromCpuModelIdOrDie(
           HostCpuInfoOrDie().cpu_model_id())) {
@@ -88,7 +81,8 @@ PerfSubsystem::PerfSubsystem()
 
   // Check the consistency between CPUs that p4lib and we detect.
   const std::string& cpu_id = microarchitecture_.proto().id();
-  CHECK(Contains(Info(), cpu_id)) << "'" << Info() << "' vs '" << cpu_id;
+  CHECK(absl::StrContains(Info(), cpu_id))
+      << "'" << Info() << "' vs '" << cpu_id;
 }
 
 PerfSubsystem::~PerfSubsystem() { CleanUp(); }

@@ -14,9 +14,9 @@
 
 #include "exegesis/util/strings.h"
 
+#include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "re2/re2.h"
-#include "strings/str_cat.h"
 #include "util/task/canonical_errors.h"
 
 namespace exegesis {
@@ -36,7 +36,7 @@ StatusOr<std::vector<uint8_t>> ParseHexString(const std::string& hex_string) {
   }
   if (!hex_stringpiece.empty()) {
     return util::InvalidArgumentError(
-        StrCat("Could not parse: ", hex_stringpiece.ToString()));
+        absl::StrCat("Could not parse: ", hex_stringpiece.ToString()));
   }
   return bytes;
 }

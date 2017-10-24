@@ -14,11 +14,11 @@
 
 #include "exegesis/base/microarchitecture.h"
 
+#include "absl/strings/str_cat.h"
 #include "base/macros.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
 #include "gtest/gtest.h"
-#include "strings/str_cat.h"
 
 namespace exegesis {
 namespace {
