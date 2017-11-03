@@ -36,9 +36,14 @@ using ::exegesis::util::Status;
 //   0F 3A.
 Status CheckOpcodeFormat(InstructionSetProto* instruction_set);
 
+// Checks that all operands of all instructions have the all their properties
+// filled.
+Status CheckOperandInfo(InstructionSetProto* instruction_set);
+
 // Checks that no instruction with a multi-byte opcode is a special case of
 // another instruction with a shorter opcode and a ModR/M byte specification.
 Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 

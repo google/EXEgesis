@@ -25,10 +25,13 @@ namespace x86 {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::IsOk;
 using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::Status;
 using ::testing::HasSubstr;
+using ::testing::Matcher;
+using ::testing::StartsWith;
 
 TEST(CheckOpcodeFormatTest, ValidOpcodes) {
   constexpr char kInstructionSetProto[] = R"(
@@ -172,7 +175,173 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
   }
 }
 
-TEST(CheckSpecialCaseInstructions, CoveredInstructions) {
+TEST(CheckOperandInfoTest, CheckInstructions) {
+  static const struct {
+    const char* instruction_set;
+    Matcher<Status> expected_status;
+  } kTestCases[] = {
+      {// A valid instruction.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                addressing_mode: INDIRECT_ADDRESSING
+                encoding: MODRM_RM_ENCODING
+                value_size_bits: 64
+                name: "m64"
+                usage: USAGE_READ_WRITE
+              }
+              operands {
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: MODRM_REG_ENCODING
+                value_size_bits: 64
+                name: "r64"
+                usage: USAGE_READ
+                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+              }
+            }
+          })",
+       IsOk()},
+      {// LOAD_EFFECTIVE_ADDRESS operands do not require value_size_bits.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "INVLPG"
+              operands {
+                addressing_mode: LOAD_EFFECTIVE_ADDRESS
+                encoding: MODRM_RM_ENCODING
+                name: "m"
+                usage: USAGE_READ
+              }
+            }
+          })",
+       IsOk()},
+      {// Missing operand encoding.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                addressing_mode: INDIRECT_ADDRESSING
+                encoding: MODRM_RM_ENCODING
+                value_size_bits: 64
+                name: "m64"
+                usage: USAGE_READ_WRITE
+              }
+              operands {
+                addressing_mode: DIRECT_ADDRESSING
+                value_size_bits: 64
+                name: "r64"
+                usage: USAGE_READ
+                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+              }
+            }
+          })",
+       StatusIs(INVALID_ARGUMENT,
+                StartsWith("Operand encoding in InstructionProto.vendor_syntax "
+                           "is not set"))},
+      {// Missing operand addressing mode.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                encoding: MODRM_RM_ENCODING
+                value_size_bits: 64
+                name: "m64"
+                usage: USAGE_READ_WRITE
+              }
+              operands {
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: MODRM_REG_ENCODING
+                value_size_bits: 64
+                name: "r64"
+                usage: USAGE_READ
+                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+              }
+            }
+          })",
+       StatusIs(INVALID_ARGUMENT,
+                StartsWith("Addressing mode in InstructionProto.vendor_syntax "
+                           "is not set"))},
+      {// Missing operand name + no tags.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                addressing_mode: INDIRECT_ADDRESSING
+                encoding: MODRM_RM_ENCODING
+                value_size_bits: 64
+                usage: USAGE_READ_WRITE
+              }
+              operands {
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: MODRM_REG_ENCODING
+                value_size_bits: 64
+                name: "r64"
+                usage: USAGE_READ
+                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+              }
+            }
+          })",
+       StatusIs(INVALID_ARGUMENT,
+                StartsWith("Operand name or tags in "
+                           "InstructionProto.vendor_syntax are not valid"))},
+      {// Missing register class.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                addressing_mode: INDIRECT_ADDRESSING
+                encoding: MODRM_RM_ENCODING
+                value_size_bits: 64
+                name: "m64"
+                usage: USAGE_READ_WRITE
+              }
+              operands {
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: MODRM_REG_ENCODING
+                value_size_bits: 64
+                name: "r64"
+                usage: USAGE_READ
+              }
+            }
+          })",
+       StatusIs(
+           INVALID_ARGUMENT,
+           StartsWith(
+               "Register class in InstructionProto.vendor_syntax is not set"))},
+      {// Missing usage.
+       R"(instructions {
+            vendor_syntax {
+              mnemonic: "ADC"
+              operands {
+                addressing_mode: INDIRECT_ADDRESSING
+                encoding: MODRM_RM_ENCODING
+                value_size_bits: 64
+                name: "m64"
+                usage: USAGE_READ_WRITE
+              }
+              operands {
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: MODRM_REG_ENCODING
+                value_size_bits: 64
+                name: "r64"
+                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+              }
+            }
+          })",
+       StatusIs(
+           INVALID_ARGUMENT,
+           StartsWith(
+               "Operand usage in InstructionProto.vendor_syntax is not set"))},
+  };
+  for (const auto& test_case : kTestCases) {
+    InstructionSetProto instruction_set =
+        ParseProtoFromStringOrDie<InstructionSetProto>(
+            test_case.instruction_set);
+    EXPECT_THAT(CheckOperandInfo(&instruction_set), test_case.expected_status);
+  }
+}
+
+TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
   static constexpr struct {
     const char* instruction_set;
     const char* expected_error_message;

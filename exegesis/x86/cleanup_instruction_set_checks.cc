@@ -20,8 +20,10 @@
 #include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/cleanup_instruction_set.h"
+#include "exegesis/proto/registers.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/bits.h"
+#include "exegesis/util/category_util.h"
 #include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
@@ -160,6 +162,99 @@ Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
 }
 // TODO(ondrasej): Add this transform to the default pipeline when all problems
 // it finds are resolved.
+
+namespace {
+
+// Checks that the combination of the name of an operand and its tags is valid.
+// We allow the following combinations:
+// - non-empty operand name + zero or more tags = a "normal" operand with tags,
+// - empty operand name + one or more tags = a "pseudoperand" tag.
+// Tag names must always be non-empty.
+// TODO(ondrasej): Add more specific checks. Possible ideas:
+// - opmaks register tags seem to be always attached to an operand name,
+// - embedded rounding modes seem to always be pseudo-operands.
+bool OperandNameAndTagsAreValid(const InstructionOperand& operand) {
+  if (operand.name().empty() && operand.tags().empty()) return false;
+  for (const InstructionOperand::Tag& tag : operand.tags()) {
+    if (tag.name().empty()) return false;
+  }
+  return true;
+}
+
+Status CheckOperands(const InstructionProto& instruction,
+                     absl::string_view format_name,
+                     const InstructionFormat& format) {
+  Status status;
+  for (const InstructionOperand& operand : format.operands()) {
+    if (!OperandNameAndTagsAreValid(operand)) {
+      LogErrorAndUpdateStatus(absl::StrCat("Operand name or tags in ",
+                                           format_name, " are not valid"),
+                              instruction, &status);
+    }
+    if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
+      LogErrorAndUpdateStatus(
+          absl::StrCat("Operand encoding in ", format_name, " is not set"),
+          instruction, &status);
+    }
+    // NOTE(ondrasej): After running AddAlternatives on the instruction set, all
+    // operands should have a more specific addressing mode, e.g.
+    // DIRECT_ADDRESSING or INDIRECT_ADDRESSING. Finding ANY_ADDRESSING_MODE
+    // means that we're missing some rewriting rules in AddAlternatives.
+    if (operand.addressing_mode() == InstructionOperand::ANY_ADDRESSING_MODE) {
+      LogErrorAndUpdateStatus(
+          absl::StrCat("Addressing mode in ", format_name, " is not set"),
+          instruction, &status);
+    }
+    if (InCategory(operand.addressing_mode(),
+                   InstructionOperand::DIRECT_ADDRESSING)) {
+      // Register class is important only for direct addressing. In indirect
+      // addressing, x86-64 always uses a combination of general purpose
+      // registers and immediate values for the address.
+      if (operand.register_class() == RegisterProto::INVALID_REGISTER_CLASS) {
+        LogErrorAndUpdateStatus(
+            absl::StrCat("Register class in ", format_name, " is not set"),
+            instruction, &status);
+      }
+    }
+    if (!InCategory(operand.addressing_mode(),
+                    InstructionOperand::LOAD_EFFECTIVE_ADDRESS)) {
+      // Value size is undefined for operands where the instruction uses only
+      // the address, but not the value at that address.
+      if (operand.value_size_bits() == 0) {
+        LogErrorAndUpdateStatus(
+            absl::StrCat("Value size bits in ", format_name, " is not set"),
+            instruction, &status);
+      }
+    }
+    if (operand.usage() == InstructionOperand::USAGE_UNKNOWN) {
+      LogErrorAndUpdateStatus(
+          absl::StrCat("Operand usage in ", format_name, " is not set"),
+          instruction, &status);
+    }
+    // TODO(ondrasej): As of 2017-11-02, we're not filling the data_type field
+    // when importing data from the Intel SDM.
+  }
+  return status;
+}
+
+}  // namespace
+
+Status CheckOperandInfo(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  constexpr char kVendorSyntax[] = "InstructionProto.vendor_syntax";
+  Status status;
+  for (const InstructionProto& instruction : instruction_set->instructions()) {
+    // TODO(ondrasej): As of 2017-11-02, we fill the detailed fields only in
+    // vendor_syntax. We should extend these checks to other fields as well once
+    // we start populating them.
+    UpdateStatus(&status, CheckOperands(instruction, kVendorSyntax,
+                                        instruction.vendor_syntax()));
+  }
+  return status;
+}
+// TODO(ondrasej): As of 2017-11-02, this check fails on the full instruction
+// set data. Enable it in the default pipeline when all errors are fixed.
+// REGISTER_INSTRUCTION_SET_TRANSFORM(CheckOperandInfo, 10000);
 
 Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
