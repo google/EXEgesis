@@ -71,7 +71,6 @@ cc_library(
         "//base",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
-        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
     ],
 )
@@ -236,7 +235,6 @@ cc_library(
     srcs = ["text_processing.cc"],
     hdrs = ["text_processing.h"],
     deps = [
-        "@com_google_absl//absl/strings",
         "@com_googlesource_code_re2//:re2",
     ],
 )
