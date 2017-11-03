@@ -74,6 +74,9 @@ message RegisterProto {
         SPECIAL_REGISTER_CONTROL = 0x122;
         SPECIAL_REGISTER_FLAG = 0x123;
         SPECIAL_REGISTER_MEMORY = 0x124;
+        // These are the memory bounds registers used by the Intel MSX
+        // instruction set extension.
+        SPECIAL_REGISTER_MPX_BOUNDS = 0x125;
 
       VECTOR_REGISTER = 0x13;
         VECTOR_REGISTER_128_BIT = 0x130;

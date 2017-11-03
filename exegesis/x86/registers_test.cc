@@ -282,7 +282,19 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
           position_in_group {
             msb: 63
           }
-        })"}};
+        })"},
+       {"BND1", R"(
+         name: "BND1 group"
+         description: "The group of registers aliased with BND1"
+         registers {
+           name: "BND1"
+           binary_encoding: 1
+           position_in_group {
+             msb: 127
+           }
+           feature_name: "MPX"
+           register_class: SPECIAL_REGISTER_MPX_BOUNDS
+         })"}};
   for (const auto& test_case : kTestCases) {
     const std::string register_name = test_case.register_name;
     SCOPED_TRACE(absl::StrCat("register_name = ", register_name));
@@ -291,9 +303,9 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
   }
   // The definitions of the following registers are too long to repeat here. We
   // only check that we have some definition for them.
-  constexpr const char* kCheckedRegisters[] = {"RFLAGS", "EFLAGS", "FPSW",
-                                               "MXCSR",  "FPCW",   "GDTR",
-                                               "LDTR",   "IDTR",   "TR"};
+  constexpr const char* kCheckedRegisters[] = {
+      "RFLAGS", "EFLAGS", "FPSW", "MXCSR",     "FPCW",    "GDTR",
+      "LDTR",   "IDTR",   "TR",   "BNDSTATUS", "BNDCFGS", "BNDCFGU"};
   for (const std::string register_name : kCheckedRegisters) {
     SCOPED_TRACE(absl::StrCat("register_name = ", register_name));
     EXPECT_THAT(FindGroupByRegister(GetRegisterSet(), register_name),

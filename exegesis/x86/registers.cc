@@ -453,6 +453,97 @@ RegisterSetProto GetFpuAndMmxRegisters() {
   return register_set;
 }
 
+RegisterSetProto GetMpxRegisters() {
+  constexpr const char kMpxStatusAndControlRegisters[] = R"proto(
+      register_groups {
+        name: "BNDCFGU group"
+        description: "The MPX userspace control register"
+        registers {
+          name: "BNDCFGU"
+          register_class: SPECIAL_REGISTER_MEMORY
+          description: "The MPX userspace control register"
+          implicit_encoding_only: true
+          position_in_group { lsb: 0 msb: 63 }
+          subfields {
+            bit_range { lsb: 0 msb: 0 }
+            name: "En"
+            description: "Enable"
+          }
+          subfields {
+            bit_range { lsb: 1 msb: 1 }
+            name: "BNDPRESERVE"
+            description: "Preserve bounds across calls."
+          }
+          subfields {
+            bit_range { lsb: 2 msb: 11 }
+            name: "reserved"
+          }
+          subfields {
+            bit_range { lsb: 12 msb: 63 }
+            name: "Base"
+            description: "Base of the bound directory (linear address)"
+          }
+        }
+      }
+      register_groups {
+        name: "BNDCFGS group"
+        description: "The MPX supervisor control register"
+        registers {
+          name: "BNDCFGS"
+          register_class: SPECIAL_REGISTER_MEMORY
+          description: "The MPX supervisor control register"
+          implicit_encoding_only: true
+          position_in_group { lsb: 0 msb: 63 }
+          subfields {
+            bit_range { lsb: 0 msb: 0 }
+            name: "En"
+            description: "Enable"
+          }
+          subfields {
+            bit_range { lsb: 1 msb: 1 }
+            name: "BNDPRESERVE"
+            description: "Preserve bounds across calls."
+          }
+          subfields {
+            bit_range { lsb: 2 msb: 11 }
+            name: "reserved"
+          }
+          subfields {
+            bit_range { lsb: 12 msb: 63 }
+            name: "Base"
+            description: "Base of the bound directory - Linear Address"
+          }
+        }
+      }
+      register_groups {
+        name: "BNDSTATUS"
+        description: "The MPX status register"
+        registers {
+          name: "BNDSTATUS"
+          register_class: SPECIAL_REGISTER_MEMORY
+          description: "The MPX status register"
+          implicit_encoding_only: true
+          position_in_group { lsb: 0 msb: 63 }
+          subfields {
+            bit_range { lsb: 0 msb: 1 }
+            name: "EC"
+            description: "Error code"
+          }
+          subfields {
+            bit_range { lsb: 2 msb: 63 }
+            name: "ABD"
+            description: "Address Bound Directory Entry - Linear address"
+          }
+        }
+      })proto";
+  RegisterSetProto mpx_registers = MakeRegistersFromBaseNameAndIndices(
+      {{"", "", 0, 127, 0, "MPX", RegisterProto::SPECIAL_REGISTER_MPX_BOUNDS}},
+      "BND", 0, 4, 0);
+  mpx_registers.MergeFrom(ParseProtoFromStringOrDie<RegisterSetProto>(
+      kMpxStatusAndControlRegisters));
+  return mpx_registers;
+}
+
 RegisterSetProto GetOpmaskRegisters() {
   return MakeRegistersFromBaseNameAndIndices(
       {{"", "", 0, 63, 0, "AVX512", RegisterProto::MASK_REGISTER}}, "k", 0, 8,
@@ -634,6 +725,7 @@ const RegisterSetProto& GetRegisterSet() {
     register_set->MergeFrom(GetDebugRegisters());
     register_set->MergeFrom(GetFlagsRegisters());
     register_set->MergeFrom(GetFpuAndMmxRegisters());
+    register_set->MergeFrom(GetMpxRegisters());
     register_set->MergeFrom(GetOpmaskRegisters());
     register_set->MergeFrom(GetSegmentRegisters());
     register_set->MergeFrom(GetXmmRegisters());
