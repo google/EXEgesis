@@ -20,9 +20,9 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "exegesis/base/category_utils.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
+#include "exegesis/util/category_util.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"

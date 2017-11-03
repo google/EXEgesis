@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXEGESIS_BASE_CATEGORY_UTILS_H_
-#define EXEGESIS_BASE_CATEGORY_UTILS_H_
+#ifndef EXEGESIS_BASE_CATEGORY_UTIL_H_
+#define EXEGESIS_BASE_CATEGORY_UTIL_H_
 
 #include <cstdint>
 
@@ -37,4 +37,4 @@ inline bool InCategory(int32_t value, int32_t category) {
 
 }  // namespace exegesis
 
-#endif  // EXEGESIS_BASE_CATEGORY_UTILS_H_
+#endif  // EXEGESIS_BASE_CATEGORY_UTIL_H_

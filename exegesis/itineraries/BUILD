@@ -12,7 +12,6 @@ cc_library(
     hdrs = ["compute_itineraries.h"],
     deps = [
         "//base",
-        "//exegesis/base:category_utils",
         "//exegesis/base:cpu_info",
         "//exegesis/base:host_cpu",
         "//exegesis/base:microarchitecture",
@@ -22,6 +21,7 @@ cc_library(
         "//exegesis/itineraries:perf_subsystem",
         "//exegesis/llvm:inline_asm",
         "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:category_util",
         "//exegesis/util:instruction_syntax",
         "//exegesis/x86:cpu_state",
         "//exegesis/x86:microarchitectures",

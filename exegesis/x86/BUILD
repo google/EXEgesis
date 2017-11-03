@@ -200,10 +200,10 @@ cc_library(
     hdrs = ["cleanup_instruction_set_evex.h"],
     deps = [
         "//base",
-        "//exegesis/base:category_utils",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/util:category_util",
         "//util/gtl:map_util",
         "//util/task:status",
         "@com_github_gflags_gflags//:gflags",

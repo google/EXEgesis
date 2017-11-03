@@ -40,36 +40,6 @@ cc_test(
     ],
 )
 
-# A library of functions for working with categories.
-
-cc_library(
-    name = "category_utils",
-    srcs = [],
-    hdrs = ["category_utils.h"],
-    deps = [
-        "//base",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
-        "@com_google_protobuf//:protobuf_lite",
-    ],
-)
-
-cc_test(
-    name = "category_utils_test",
-    size = "small",
-    srcs = ["category_utils_test.cc"],
-    deps = [
-        ":category_utils",
-        "//base",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
-    ],
-)
-
 # Framework for writing procedural clean-ups of an instruction set.
 cc_library(
     name = "cleanup_instruction_set",
