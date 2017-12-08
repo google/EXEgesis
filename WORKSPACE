@@ -27,13 +27,13 @@ git_repository(
 git_repository(
     name = "com_google_protobuf",
     remote = "https://github.com/google/protobuf.git",
-    commit = "b4b0e304be5a68de3d0ee1af9b286f958750f5e4",
+    commit = "35119e39a07f426f3c48a1bfb41d862994223742",
 )
 
 git_repository(
     name = "com_google_protobuf_cc",
     remote = "https://github.com/google/protobuf.git",
-    commit = "b4b0e304be5a68de3d0ee1af9b286f958750f5e4",
+    commit = "35119e39a07f426f3c48a1bfb41d862994223742",
 )
 
 # ===== googletest =====
