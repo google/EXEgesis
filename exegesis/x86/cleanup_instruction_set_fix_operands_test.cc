@@ -264,6 +264,53 @@ TEST(FixOperandsOfInsAndOutsTest, Outs) {
                 kExpectedInstructionSetProto);
 }
 
+TEST(FixOperandsOfLddquTest, FixOperands) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "LDDQU"
+          operands {
+            encoding: MODRM_REG_ENCODING
+            name: "xmm1"
+            usage: USAGE_WRITE
+          }
+          operands {
+            encoding: MODRM_RM_ENCODING
+            name: "mem"
+            usage: USAGE_READ
+          }
+        }
+        feature_name: "SSE3"
+        available_in_64_bit: true
+        legacy_instruction: true
+        encoding_scheme: "RM"
+        raw_encoding_specification: "F2 0F F0 /r"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "LDDQU"
+          operands {
+            encoding: MODRM_REG_ENCODING
+            name: "xmm1"
+            usage: USAGE_WRITE
+          }
+          operands {
+            encoding: MODRM_RM_ENCODING
+            name: "m128"
+            usage: USAGE_READ
+          }
+        }
+        feature_name: "SSE3"
+        available_in_64_bit: true
+        legacy_instruction: true
+        encoding_scheme: "RM"
+        raw_encoding_specification: "F2 0F F0 /r"
+      })";
+  TestTransform(FixOperandsOfLddqu, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 TEST(FixOperandsOfLodsScasAndStosTest, Scas) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {

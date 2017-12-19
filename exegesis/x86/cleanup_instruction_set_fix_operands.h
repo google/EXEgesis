@@ -50,6 +50,11 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set);
 // operands to more explicit ones.
 Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set);
 
+// Updates the operands of the LDDQU instruction. In the SDM, the SSE version of
+// the instruction uses "mem" for the memory operand, whereas it should be using
+// "m128", similar to the 128-bit AVX version of the instruction.
+Status FixOperandsOfLddqu(InstructionSetProto* instruction_set);
+
 // Updates the operands of LODS, SCAS and STOS instructions. These instructions
 // are documented in the Intel manual in two forms: a form that doesn't use any
 // operands and that encodes the size of its operands using a suffix of the

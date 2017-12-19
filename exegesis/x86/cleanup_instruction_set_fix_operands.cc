@@ -169,6 +169,24 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfInsAndOuts, 2000);
 
+Status FixOperandsOfLddqu(InstructionSetProto* instruction_set) {
+  constexpr char kMemOperand[] = "mem";
+  constexpr char kM128Operand[] = "m128";
+  constexpr char kLddquEncoding[] = "F2 0F F0 /r";
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    if (instruction.raw_encoding_specification() != kLddquEncoding) continue;
+    InstructionFormat* const vendor_syntax =
+        instruction.mutable_vendor_syntax();
+    for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
+      if (operand.name() == kMemOperand) {
+        operand.set_name(kM128Operand);
+      }
+    }
+  }
+  return OkStatus();
+}
+
 Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
   // Note that we're matching only the versions with operands. These versions
   // use the mnemonics without the size suffix. By matching exactly these names,
