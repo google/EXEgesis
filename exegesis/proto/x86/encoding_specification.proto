@@ -265,6 +265,9 @@ message EncodingSpecification {
     // The instruction stores an opcode extension in the reg field of the ModR/M
     // byte.
     OPCODE_EXTENSION_IN_MODRM = 2;
+    // The instruction stores nothing in the reg field of the ModR/M byte - any
+    // data in it is ignored.
+    REG_IGNORED = 3;
   }
 
   // Specifies whether the instruction encodes one of the operands in its opcode
