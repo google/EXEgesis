@@ -83,7 +83,7 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
-        "@or_tools_git//ortools/linear_solver:linear_solver",
+        "@or_tools_git//ortools/linear_solver",
     ],
 )
 
