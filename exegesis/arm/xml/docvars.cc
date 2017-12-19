@@ -364,6 +364,7 @@ GetDocVarsEnumMapping() {
        {DocVars::kHintVariantsFieldNumber,
         {
             {"hint-17-23", dv::HintVariants::HINT_17_23},
+            {"hint-18-23", dv::HintVariants::HINT_18_23},
             {"hint-6-7", dv::HintVariants::HINT_6_7},
             {"hint-8-15-24-127", dv::HintVariants::HINT_8_15_24_127},
         }}},
@@ -634,7 +635,15 @@ StatusOr<DocVars> ParseDocVars(XMLNode* node) {
       continue;
     }
 
-    // Now handle enum values using reflection.
+    // The "atomic-ops" DocVar value always consists in a concatenation of both
+    // "mnemonic" & "reg-type" DocVar values so it's not directly interesting.
+    // However the fact that it is set (vs unmentioned) might be relevant.
+    if (key == "atomic-ops") {
+      result.set_atomic_ops(dv::AtomicOps::ATOMIC_OPS_SET);
+      continue;
+    }
+
+    // Now handle regular DocVar enum values using reflection.
     const auto* mapping = FindOrNull(GetDocVarsEnumMapping(), key);
     if (!mapping) {
       return UnimplementedError(absl::StrCat("Unknown docvar key '", key, "'"));

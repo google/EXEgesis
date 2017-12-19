@@ -46,13 +46,15 @@ TEST(DocVarsTest, ParseDocVars) {
   XMLDocument doc;
   ParseXML(R"(
       <docvars>
-        <docvar key="mnemonic" value="SBFM" />
-        <docvar key="alias_mnemonic" value="ASR" />
+        <docvar key="mnemonic" value="LDADD" />
+        <docvar key="alias_mnemonic" value="STADD" />
         <docvar key="" value="ignored" />
         <docvar nokey="something" value="ignored again" />
         <docvar key="bitfield-fill" value="signed-fill" />
         <docvar key="instr-class" value="general" />
         <docvar key="isa" value="A64" />
+        <docvar key="atomic-ops" value="LDADD-32-reg" />
+        <docvar key="reg-type" value="32-reg" />
         <not_a_docvar key="address-form" value="literal" />
         <docvar key="source-type" value="src-is-immediate" />
       </docvars>
@@ -61,11 +63,13 @@ TEST(DocVarsTest, ParseDocVars) {
   XMLElement* element = doc.RootElement();
 
   DocVars expected;
-  expected.set_mnemonic("SBFM");
-  expected.set_alias_mnemonic("ASR");
+  expected.set_mnemonic("LDADD");
+  expected.set_alias_mnemonic("STADD");
+  expected.set_atomic_ops(dv::AtomicOps::ATOMIC_OPS_SET);
   expected.set_bitfield_fill(dv::BitfieldFill::SIGNED_FILL);
   expected.set_instr_class(dv::InstrClass::GENERAL);
   expected.set_isa(dv::Isa::A64);
+  expected.set_reg_type(dv::RegType::X__32_REG);
   expected.set_source_type(dv::SourceType::SRC_IS_IMMEDIATE);
   EXPECT_THAT(ParseDocVars(element), IsOkAndHolds(EqualsProto(expected)));
 }

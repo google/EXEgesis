@@ -166,6 +166,11 @@ enum AsStructurePostIndex {
   AS_POST_INDEX = 2;
 }
 
+enum AtomicOps {
+  UNKNOWN_ATOMIC_OPS = 0;
+  ATOMIC_OPS_SET = 1;
+}
+
 enum BitfieldFill {
   UNKNOWN_BITFIELD_FILL = 0;
   NOFILL = 1;
@@ -256,6 +261,7 @@ enum Feature {
 enum HintVariants {
   UNKNOWN_HINT_VARIANTS = 0;
   HINT_17_23 = 1;
+  HINT_18_23 = 4;
   HINT_6_7 = 2;
   HINT_8_15_24_127 = 3;
 }
@@ -485,6 +491,7 @@ message DocVars {
   AsStructureIndexSource as_structure_index_source = 12;
   AsStructureOrg as_structure_org = 13;
   AsStructurePostIndex as_structure_post_index = 14;
+  AtomicOps atomic_ops = 46;
   BitfieldFill bitfield_fill = 15;
   BranchOffset branch_offset = 16;
   CompareWith compare_with = 17;
