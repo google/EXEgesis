@@ -22,14 +22,15 @@
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "base/stringprintf.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "llvm/ADT/Triple.h"
-#include "llvm/CodeGen/CommandFlags.h"
+#include "llvm/CodeGen/CommandFlags.def"
 #include "llvm/InitializePasses.h"
 #include "llvm/MC/MCInstrInfo.h"
-#include "llvm/MC/MCTargetOptionsCommandFlags.h"
+#include "llvm/MC/MCTargetOptionsCommandFlags.def"
 #include "llvm/PassRegistry.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Host.h"
@@ -41,6 +42,8 @@ DEFINE_string(exegesis_llvm_arch, "",
               "The architecture, for which the code is compiled.");
 DEFINE_string(exegesis_llvm_triple, "",
               "The LLVM triple, for which the code is compiled.");
+DEFINE_string(exegesis_extra_llvm_args, "",
+              "Additional command-line parameters to pass to LLVM.");
 
 namespace exegesis {
 
@@ -62,14 +65,25 @@ void EnsureLLVMWasInitialized() {
     LLVMInitializeX86AsmParser();
     LLVMInitializeX86Disassembler();
 
+    std::vector<std::string> exegesis_extra_llvm_args;
+    for (const auto& arg :
+         absl::StrSplit(FLAGS_exegesis_extra_llvm_args, ',')) {
+      if (!arg.empty()) {
+        LOG(INFO) << "Adding extra LLVM flag '" << arg << "'";
+        exegesis_extra_llvm_args.emplace_back(arg);
+      }
+    }
     // Create (fake) command-line options for LLVM. We use this to inject our
     // own dumping instruction scheduler without modifying too much LLVM code.
     // TODO(ondrasej): Remove this hack (will need either re-writing a big part
-    // of the codegen path we are using, or patchign LLVM sources to support
+    // of the codegen path we are using, or patching LLVM sources to support
     // "true" dependency injection).
-    const std::vector<const char*> argv = {
+    std::vector<const char*> argv = {
         ProgramUsage() /*, "--pre-RA-sched=dumper"*/
     };
+    for (const auto& arg : exegesis_extra_llvm_args) {
+      argv.push_back(arg.c_str());
+    }
     llvm::cl::ParseCommandLineOptions(argv.size(), argv.data(), ProgramUsage());
     VLOG(1) << "LLVM was initialized";
     return true;

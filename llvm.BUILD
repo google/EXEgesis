@@ -469,7 +469,7 @@ cc_library(
         "lib/Target/X86/Disassembler/X86DisassemblerDecoderCommon.h",
         ]),
     hdrs=[
-        "include/llvm/Target/TargetOpcodes.def",
+        "include/llvm/CodeGen/TargetOpcodes.def",
     ],
     linkopts = ["-ldl"],
     deps = [
@@ -621,7 +621,8 @@ cc_library(
         "lib/MC/MCAnalysis/*.cpp",
         "lib/MC/MCAnalysis/*.h",
     ]),
-    hdrs = glob(["include/llvm/MC/*.h"]),
+    hdrs = glob(["include/llvm/MC/*.h",
+    "include/llvm/MC/*.def"]),
     visibility = ["//visibility:public"],
     deps = [
         ":binary_format",
@@ -793,6 +794,7 @@ cc_library(
     srcs = glob([
         "lib/Transforms/Utils/*.cpp",
         "lib/Transforms/Utils/*.h",
+        "include/llvm/CodeGen/Passes.h",
     ]),
     hdrs = glob(["include/llvm/Transforms/Utils/*.h"]),
     deps = [
@@ -846,7 +848,10 @@ cc_library(
         "lib/Transforms/Instrumentation/*.cpp",
         "lib/Transforms/Instrumentation/*.h",
     ]),
-    hdrs = ["include/llvm/Transforms/Instrumentation.h"],
+    hdrs = [
+        "include/llvm/Transforms/Instrumentation/BoundsChecking.h",
+        "include/llvm/Transforms/Instrumentation.h",
+    ],
     deps = [
         ":analysis",
         ":config",
@@ -913,8 +918,8 @@ cc_library(
     ]) + [
         "include/llvm/Transforms/IPO.h",
         "include/llvm/Transforms/IPO/SCCP.h",
-        "include/llvm-c/Transforms/Scalar.h",
         "include/llvm-c/Initialization.h",
+        "include/llvm-c/Transforms/Scalar.h",
     ],
     hdrs = [
         "include/llvm/Transforms/Scalar.h",

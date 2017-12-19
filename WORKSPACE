@@ -116,12 +116,16 @@ git_repository(
 
 # ===== LLVM =====
 
-new_git_repository(
+# NOTE(ondrasej): As of December 2017, downloading the code as a zip takes less
+# than 30 seconds, while cloning the repository takes several minutes.
+llvm_commit = "e18338969d0ed13427863fb23fa4a5c8e8df0b14"
+new_http_archive(
     name = "llvm_git",
-    remote = "https://git.llvm.org/git/llvm.git",
-    # LLVM has no tags.
-    commit = "eb8a5a38be5e1113b3b8960da1cc39f025b6189f",
+    url = "https://codeload.github.com/llvm-mirror/llvm/zip/" + llvm_commit,
+    sha256 = "bc851e53464e758ea47f5ae987162df62403e3f069995774b641bd04eff4599b",
+    type = "zip",
     build_file = "llvm.BUILD",
+    strip_prefix = "llvm-" + llvm_commit,
 )
 
 # ===== Intel SDM =====
