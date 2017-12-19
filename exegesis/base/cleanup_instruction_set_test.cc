@@ -32,10 +32,10 @@ using ::exegesis::InstructionProto;
 using ::exegesis::InstructionSetProto;
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
 

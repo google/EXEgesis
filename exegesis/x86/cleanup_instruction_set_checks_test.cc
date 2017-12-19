@@ -27,8 +27,8 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOk;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::Status;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::HasSubstr;
 using ::testing::Matcher;
 using ::testing::StartsWith;

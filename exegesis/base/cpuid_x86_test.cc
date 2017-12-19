@@ -31,8 +31,8 @@ namespace {
 
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::StatusOr;
+using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::UnorderedElementsAreArray;
