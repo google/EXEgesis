@@ -440,6 +440,7 @@ cc_library(
     hdrs = ["encoding_specification.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":instruction_encoding_constants",
         "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/x86:encoding_specification_cc_proto",
@@ -449,6 +450,7 @@ cc_library(
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
@@ -473,6 +475,13 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
     ],
+)
+
+# A library that contains constants relating to the encoding of x86
+# instructions.
+cc_library(
+    name = "instruction_encoding_constants",
+    hdrs = ["instruction_encoding_constants.h"],
 )
 
 # A library that contains information about the x86-64 microarchitectures.

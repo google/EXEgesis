@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Contains a parser for the instruction encoding specification language used in
-// the Intel manuals and a class that contains the information from the
-// specification in a better accessible form.
+// Contains a parser and generator for the instruction encoding specification
+// language used in the Intel manuals and a class that contains the information
+// from the specification in a better accessible form.
 //
 // An informal specification of the language can be found in Intel 64 and IA-32
 // Architectures Software Developer's Manual, Volume 2, Chapter 3.1.
@@ -48,6 +48,11 @@ using ::exegesis::util::StatusOr;
 // printf("%x\n", specification_or_status.ValueOrDie().opcode());
 StatusOr<EncodingSpecification> ParseEncodingSpecification(
     const std::string& specification);
+
+// Generates an encoding specification string of the format given in the Intel
+// Architecture manual.
+std::string GenerateEncodingSpec(const InstructionFormat& instruction,
+                                 const EncodingSpecification& encoding_spec);
 
 // A collection of instruction operand encodings.
 using InstructionOperandEncodingMultiset =

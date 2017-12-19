@@ -24,10 +24,13 @@
 #include <unordered_map>
 #include <utility>
 
+#include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "base/stringprintf.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
+#include "exegesis/x86/instruction_encoding_constants.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
@@ -487,12 +490,227 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
                                      specification.ToString()));
 }
 
+std::string GenerateLegacyPrefixEncodingSpec(
+    const LegacyPrefixEncodingSpecification& prefixes) {
+  std::string raw_encoding_spec;
+
+  if (prefixes.has_mandatory_rex_w_prefix()) {
+    raw_encoding_spec.append("REX.W + ");
+  }
+  if (prefixes.has_mandatory_repne_prefix()) {
+    StringAppendF(&raw_encoding_spec, "%02X ", kRepNePrefixByte);
+  }
+  if (prefixes.has_mandatory_repe_prefix()) {
+    StringAppendF(&raw_encoding_spec, "%02X ", kRepPrefixByte);
+  }
+  if (prefixes.has_mandatory_address_size_override_prefix()) {
+    StringAppendF(&raw_encoding_spec, "%02X ", kAddressSizeOverrideByte);
+  }
+  if (prefixes.has_mandatory_operand_size_override_prefix()) {
+    StringAppendF(&raw_encoding_spec, "%02X ", kOperandSizeOverrideByte);
+  }
+
+  return raw_encoding_spec;
+}
+
+std::string GenerateVexPrefixEncodingSpec(
+    const VexPrefixEncodingSpecification& vex_prefix, uint32_t* opcode) {
+  std::string raw_encoding_spec;
+
+  switch (vex_prefix.prefix_type()) {
+    case VEX_PREFIX:
+      raw_encoding_spec.append("VEX");
+      break;
+    case EVEX_PREFIX:
+      raw_encoding_spec.append("EVEX");
+      break;
+    default:
+      LOG(FATAL) << "Unreachable";
+  }
+
+  switch (vex_prefix.vector_size()) {
+    case VEX_VECTOR_SIZE_IS_IGNORED:
+      raw_encoding_spec.append(".LIG");
+      break;
+    case VEX_VECTOR_SIZE_BIT_IS_ZERO:
+      raw_encoding_spec.append(".L0");
+      break;
+    case VEX_VECTOR_SIZE_BIT_IS_ONE:
+      raw_encoding_spec.append(".L1");
+      break;
+    case VEX_VECTOR_SIZE_128_BIT:
+      raw_encoding_spec.append(".128");
+      break;
+    case VEX_VECTOR_SIZE_256_BIT:
+      raw_encoding_spec.append(".256");
+      break;
+    case VEX_VECTOR_SIZE_512_BIT:
+      raw_encoding_spec.append(".512");
+      break;
+    default:
+      LOG(FATAL) << "invalid vector_size value";
+  }
+
+  switch (vex_prefix.mandatory_prefix()) {
+    case VexEncoding::MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE:
+      raw_encoding_spec.append(".66");
+      break;
+    case VexEncoding::MANDATORY_PREFIX_REPNE:
+      raw_encoding_spec.append(".F2");
+      break;
+    case VexEncoding::MANDATORY_PREFIX_REPE:
+      raw_encoding_spec.append(".F3");
+      break;
+    case VexEncoding::NO_MANDATORY_PREFIX:
+      break;
+    default:
+      LOG(FATAL) << "invalid mandatory_prefix value";
+  }
+
+  // These bytes appear in the opcode as well. We strip them here so we
+  // don't write them into the raw encoding spec later.
+  switch (vex_prefix.map_select()) {
+    case VexEncoding::MAP_SELECT_0F:
+      raw_encoding_spec.append(".0F");
+      CHECK_EQ(0x0F, *opcode >> 8);
+      *opcode &= 0xFF;
+      break;
+    case VexEncoding::MAP_SELECT_0F38:
+      raw_encoding_spec.append(".0F38");
+      CHECK_EQ(0x0F38, *opcode >> 8);
+      *opcode &= 0xFF;
+      break;
+    case VexEncoding::MAP_SELECT_0F3A:
+      raw_encoding_spec.append(".0F3A");
+      CHECK_EQ(0x0F3A, *opcode >> 8);
+      *opcode &= 0xFF;
+      break;
+    default:
+      LOG(FATAL) << "invalid map_select value";
+  }
+
+  switch (vex_prefix.vex_w_usage()) {
+    case VexPrefixEncodingSpecification::VEX_W_IS_ZERO:
+      raw_encoding_spec.append(".W0");
+      break;
+    case VexPrefixEncodingSpecification::VEX_W_IS_ONE:
+      raw_encoding_spec.append(".W1");
+      break;
+    case VexPrefixEncodingSpecification::VEX_W_IS_IGNORED:
+      raw_encoding_spec.append(".WIG");
+      break;
+    default:
+      LOG(FATAL) << "invalid vex_w_usage value";
+  }
+
+  raw_encoding_spec.push_back(' ');
+  return raw_encoding_spec;
+}
+
 }  // namespace
 
 StatusOr<EncodingSpecification> ParseEncodingSpecification(
     const std::string& specification) {
   EncodingSpecificationParser parser;
   return parser.ParseFromString(specification);
+}
+
+std::string GenerateEncodingSpec(const InstructionFormat& instruction,
+                                 const EncodingSpecification& encoding_spec) {
+  std::string raw_encoding_spec;
+
+  uint32_t opcode = encoding_spec.opcode();
+
+  switch (encoding_spec.prefix_case()) {
+    case EncodingSpecification::PREFIX_NOT_SET:
+      break;
+    case EncodingSpecification::kLegacyPrefixes: {
+      raw_encoding_spec =
+          GenerateLegacyPrefixEncodingSpec(encoding_spec.legacy_prefixes());
+      break;
+    }
+    case EncodingSpecification::kVexPrefix: {
+      // Pass in the opcode so it can strip any leading opcode bytes that are
+      // implied by map_select bits in the prefix.
+      raw_encoding_spec =
+          GenerateVexPrefixEncodingSpec(encoding_spec.vex_prefix(), &opcode);
+      break;
+    }
+  }
+
+  // Opcodes should be a maximum of 3 bytes long.
+  CHECK_EQ(0, opcode >> 24);
+
+  // Default to length 1, for when opcode = 0.
+  int opcode_length = 1;
+  for (int n = 2; n >= 0; n--) {
+    uint8_t b = (opcode >> (n * 8)) & 0xFF;
+    if (b != 0) {
+      opcode_length = n + 1;
+      break;
+    }
+  }
+
+  for (int n = opcode_length - 1; n >= 0; n--) {
+    uint8_t b = (opcode >> (n * 8)) & 0xFF;
+    if (!raw_encoding_spec.empty() && raw_encoding_spec.back() != ' ') {
+      raw_encoding_spec.push_back(' ');
+    }
+    StringAppendF(&raw_encoding_spec, "%02X", b);
+  }
+
+  switch (encoding_spec.operand_in_opcode()) {
+    case EncodingSpecification::NO_OPERAND_IN_OPCODE:
+      break;
+    case EncodingSpecification::GENERAL_PURPOSE_REGISTER_IN_OPCODE: {
+      const auto operand_in_opcode = absl::c_find_if(
+          instruction.operands(), [](const InstructionOperand& operand) {
+            return operand.encoding() == InstructionOperand::OPCODE_ENCODING;
+          });
+      CHECK(operand_in_opcode != instruction.operands().end());
+
+      const int width = operand_in_opcode->data_type().bit_width();
+      switch (width) {
+        case 8:
+          raw_encoding_spec.append(" +rb");
+          break;
+        case 16:
+          raw_encoding_spec.append(" +rw");
+          break;
+        case 32:
+          raw_encoding_spec.append(" +rd");
+          break;
+        case 64:
+          raw_encoding_spec.append(" +ro");
+          break;
+        default:
+          LOG(FATAL) << "Unknown width: " << width;
+      }
+      break;
+    }
+    case EncodingSpecification::FP_STACK_REGISTER_IN_OPCODE:
+      raw_encoding_spec.append(" +i");
+      break;
+    default:
+      LOG(FATAL) << "invalid operand_in_opcode value";
+  }
+
+  if (encoding_spec.modrm_usage() ==
+      EncodingSpecification::OPCODE_EXTENSION_IN_MODRM) {
+    absl::StrAppend(&raw_encoding_spec, " /",
+                    encoding_spec.modrm_opcode_extension());
+  } else if (encoding_spec.modrm_usage() == EncodingSpecification::FULL_MODRM) {
+    raw_encoding_spec.append(" /r");
+  }
+
+  for (int imm_size : encoding_spec.immediate_value_bytes()) {
+    static const auto* const kImmediateValues =
+        new std::unordered_map<int, const char*>{
+            {1, " ib"}, {2, " iw"}, {4, " id"}, {8, " io"}};
+    raw_encoding_spec.append(FindOrDie(*kImmediateValues, imm_size));
+  }
+
+  return raw_encoding_spec;
 }
 
 InstructionOperandEncodingMultiset GetAvailableEncodings(
