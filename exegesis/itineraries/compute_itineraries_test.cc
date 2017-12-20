@@ -65,12 +65,12 @@ TEST(ComputeItinerariesTest, ADC) {
       )");
   // Always compute itineraries for the host CPU.
   const std::string& host_cpu_model_id = HostCpuInfoOrDie().cpu_model_id();
+  const std::string& host_cpu_microarchitecture =
+      GetMicroarchitectureIdForCpuModelOrDie(host_cpu_model_id);
   InstructionSetItinerariesProto itineraries;
-  const auto* const microarchitecture =
-      MicroArchitecture::FromCpuModelId(host_cpu_model_id);
-  CHECK(microarchitecture != nullptr)
-      << "Unknown CPU model '" << host_cpu_model_id << "'";
-  itineraries.set_microarchitecture_id(microarchitecture->proto().id());
+  const auto& microarchitecture =
+      MicroArchitecture::FromIdOrDie(host_cpu_microarchitecture);
+  itineraries.set_microarchitecture_id(microarchitecture.proto().id());
   itineraries.add_itineraries();
 
   const Status status = ComputeItineraries(instruction_set, &itineraries);

@@ -21,11 +21,11 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
-void CheckCPU(const char* cpu_model_id, int num_port_masks,
+void CheckCPU(const char* uarch_id, int num_port_masks,
               const std::string& load_store_address_generation_ports,
               const std::string& store_address_generation_ports,
               const std::string& store_data_ports) {
-  const auto& uarch = MicroArchitecture::FromCpuModelIdOrDie(cpu_model_id);
+  const auto& uarch = MicroArchitecture::FromIdOrDie(uarch_id);
   EXPECT_EQ(uarch.port_masks().size(), num_port_masks);
   const PortMask* mask = uarch.load_store_address_generation();
   ASSERT_NE(mask, nullptr);
@@ -42,32 +42,27 @@ void CheckCPU(const char* cpu_model_id, int num_port_masks,
   EXPECT_FALSE(uarch.IsProtectedMode(15));
 }
 
-TEST(CpuModelTest, SkylakeParses) {
-  CheckCPU(kExampleSkylakeCpuModelId, 12, "P23", "P237", "P4");
-}
+TEST(CpuModelTest, ParseMicroarchitectures) {
+  // Skylake
+  CheckCPU("skl", 12, "P23", "P237", "P4");
 
-TEST(CpuModelTest, BroadwellParses) {
-  CheckCPU(kExampleBroadwellCpuModelId, 12, "P23", "P237", "P4");
-}
+  // Broadwell
+  CheckCPU("bdw", 12, "P23", "P237", "P4");
 
-TEST(CpuModelTest, HaswellParses) {
-  CheckCPU(kExampleHaswellCpuModelId, 12, "P23", "P237", "P4");
-}
+  // Haswell
+  CheckCPU("hsw", 12, "P23", "P237", "P4");
 
-TEST(CpuModelTest, IvyBridgeParses) {
-  CheckCPU(kExampleIvyBridgeCpuModelId, 6, "P23", "P23", "P4");
-}
+  // IvyBridge
+  CheckCPU("ivb", 6, "P23", "P23", "P4");
 
-TEST(CpuModelTest, SandyBridgeParses) {
-  CheckCPU(kExampleSandyBridgeCpuModelId, 6, "P23", "P23", "P4");
-}
+  // SandyBridge
+  CheckCPU("snb", 6, "P23", "P23", "P4");
 
-TEST(CpuModelTest, WestmereParses) {
-  CheckCPU(kExampleWestmereCpuModelId, 7, "P2", "P3", "P4");
-}
+  // Westmere
+  CheckCPU("wsm", 7, "P2", "P3", "P4");
 
-TEST(CpuModelTest, NehalemParses) {
-  CheckCPU(kExampleNehalemCpuModelId, 7, "P2", "P3", "P4");
+  // Nehalem
+  CheckCPU("nhm", 7, "P2", "P3", "P4");
 }
 
 }  // namespace

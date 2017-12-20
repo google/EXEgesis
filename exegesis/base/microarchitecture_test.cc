@@ -44,14 +44,12 @@ TEST(MicroArchitectureDataTest, Works) {
         }
       )"));
 
-  const auto microarchitecture =
-      MicroArchitectureData::ForCpuModelId(architecture_proto, "intel:06_3F");
-
-  ASSERT_TRUE(microarchitecture.ok());
-  ASSERT_EQ(
-      microarchitecture.ValueOrDie().instruction_set().instructions_size(), 1);
-  ASSERT_EQ(microarchitecture.ValueOrDie().itineraries().microarchitecture_id(),
-            "hsw");
+  const auto statusor_microarchitecture =
+      MicroArchitectureData::ForMicroarchitectureId(architecture_proto, "hsw");
+  ASSERT_TRUE(statusor_microarchitecture.ok());
+  const auto& microarchitecture = statusor_microarchitecture.ValueOrDie();
+  EXPECT_EQ(microarchitecture.instruction_set().instructions_size(), 1);
+  EXPECT_EQ(microarchitecture.itineraries().microarchitecture_id(), "hsw");
 }
 
 }  // namespace

@@ -22,7 +22,7 @@
 #include "gflags/gflags.h"
 
 DECLARE_string(exegesis_architecture);
-DECLARE_string(exegesis_cpu_model);
+DECLARE_string(exegesis_microarchitecture);
 
 namespace exegesis {
 

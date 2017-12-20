@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "exegesis/base/port_mask.h"
@@ -29,6 +30,10 @@
 
 namespace exegesis {
 
+// Returns the microarchitecture id for a cpu nodel id.
+const std::string& GetMicroarchitectureIdForCpuModelOrDie(
+    const std::string& cpu_model_id);
+
 // Represents a MicroArchitectureProto in memory. See the proto documentation
 // for details.
 class MicroArchitecture {
@@ -36,8 +41,6 @@ class MicroArchitecture {
   // Returns nullptr if unknown.
   static const MicroArchitecture* FromId(
       const std::string& microarchitecture_id);
-  static const MicroArchitecture* FromCpuModelId(
-      const std::string& cpu_model_id);
   // Dies if unknown.
   static const MicroArchitecture& FromIdOrDie(
       const std::string& microarchitecture_id);
@@ -100,11 +103,11 @@ using ::exegesis::util::StatusOr;
 
 class MicroArchitectureData {
  public:
-  // Given an architecture and a CPU model id, retrieves the data for the given
-  // model id.
-  static StatusOr<MicroArchitectureData> ForCpuModelId(
+  // Creates a MicroArchitectureData pack from an ArchitectureProto and a
+  // microarchitecture_id.
+  static StatusOr<MicroArchitectureData> ForMicroarchitectureId(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
-      const std::string& cpu_model_id);
+      const std::string& microarchitecture_id);
 
   // StatusOr<T> requires T to be default-constructible.
   // TODO(courbet): Remove when StatusOr is fixed.
@@ -130,6 +133,10 @@ class MicroArchitectureData {
   }
 
  private:
+  static StatusOr<MicroArchitectureData> Create(
+      std::shared_ptr<const ArchitectureProto> architecture_proto,
+      const MicroArchitecture* microarchitecture);
+
   // Keep a reference to the underlying data (instruction_set and itineraries
   // point into architecture_proto).
   // The following fields are never nullptr.

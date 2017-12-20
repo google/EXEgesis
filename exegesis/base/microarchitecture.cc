@@ -70,6 +70,13 @@ bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
 
 namespace {
 
+std::unordered_map<std::string, std::string>*
+MicroarchitectureIdByCpuModelId() {
+  static auto* const result =
+      new std::unordered_map<std::string, std::string>();
+  return result;
+}
+
 std::unordered_map<std::string, std::unique_ptr<const MicroArchitecture>>*
 MicroArchitecturesById() {
   static auto* const result =
@@ -78,33 +85,30 @@ MicroArchitecturesById() {
   return result;
 }
 
-std::unordered_map<std::string, const MicroArchitecture*>*
-MicroArchitecturesByCpuModelId() {
-  static auto* const result =
-      new std::unordered_map<std::string, const MicroArchitecture*>();
-  return result;
-}
-
 }  // namespace
+
+const std::string& GetMicroarchitectureIdForCpuModelOrDie(
+    const std::string& cpu_model_id) {
+  return FindOrDie(*MicroarchitectureIdByCpuModelId(), cpu_model_id);
+}
 
 namespace internal {
 
 void RegisterMicroArchitectures::RegisterFromProto(
     const MicroArchitecturesProto& microarchitectures) {
   auto* const microarchitectures_by_id = MicroArchitecturesById();
-  auto* const microarchitectures_by_cpu_model_id =
-      MicroArchitecturesByCpuModelId();
+  auto* const microarchitecture_id_by_cpumodel_id =
+      MicroarchitectureIdByCpuModelId();
   for (const MicroArchitectureProto& microarchitecture_proto :
        microarchitectures.microarchitectures()) {
-    auto microarchitecture =
-        absl::make_unique<MicroArchitecture>(microarchitecture_proto);
-    for (const std::string& model_id : microarchitecture_proto.model_ids()) {
-      InsertOrDie(microarchitectures_by_cpu_model_id, model_id,
-                  microarchitecture.get());
-    }
     const std::string& microarchitecture_id = microarchitecture_proto.id();
+    for (const std::string& model_id : microarchitecture_proto.model_ids()) {
+      InsertOrDie(microarchitecture_id_by_cpumodel_id, model_id,
+                  microarchitecture_id);
+    }
     const auto insert_result = microarchitectures_by_id->emplace(
-        microarchitecture_id, std::move(microarchitecture));
+        microarchitecture_id,
+        absl::make_unique<MicroArchitecture>(microarchitecture_proto));
     if (!insert_result.second) {
       LOG(FATAL) << "Duplicate micro-architecture: " << microarchitecture_id;
     }
@@ -125,30 +129,22 @@ const MicroArchitecture& MicroArchitecture::FromIdOrDie(
   return *CHECK_NOTNULL(FromId(microarchitecture_id));
 }
 
-const MicroArchitecture* MicroArchitecture::FromCpuModelId(
-    const std::string& cpu_model_id) {
-  const auto* const result =
-      FindPtrOrNull(*MicroArchitecturesByCpuModelId(), cpu_model_id);
-  if (result == nullptr) {
-    LOG(WARNING) << "Unknown CPU model '" << cpu_model_id << "'";
-  }
-  return result;
-}
-
-const MicroArchitecture& MicroArchitecture::FromCpuModelIdOrDie(
-    const std::string& cpu_model_id) {
-  return *CHECK_NOTNULL(FromCpuModelId(cpu_model_id));
-}
-
-StatusOr<MicroArchitectureData> MicroArchitectureData::ForCpuModelId(
+StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroarchitectureId(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
-    const std::string& cpu_model_id) {
-  const auto* const microarchitecture =
-      MicroArchitecture::FromCpuModelId(cpu_model_id);
+    const std::string& microarchitecture_id) {
+  const auto* microarchitecture =
+      MicroArchitecture::FromId(microarchitecture_id);
   if (microarchitecture == nullptr) {
     return util::InvalidArgumentError(
-        absl::StrCat("Unknown CPU model '", cpu_model_id, "'"));
+        absl::StrCat("Unknown microarchitecture '", microarchitecture_id, "'"));
   }
+  return Create(std::move(architecture_proto), microarchitecture);
+}
+
+StatusOr<MicroArchitectureData> MicroArchitectureData::Create(
+    std::shared_ptr<const ArchitectureProto> architecture_proto,
+    const MicroArchitecture* microarchitecture) {
+  CHECK(microarchitecture);
   for (const InstructionSetItinerariesProto& itineraries :
        architecture_proto->per_microarchitecture_itineraries()) {
     if (microarchitecture->proto().id() == itineraries.microarchitecture_id()) {

@@ -25,15 +25,6 @@
 
 namespace exegesis {
 namespace x86 {
-
-const char* const kExampleSkylakeCpuModelId = "intel:06_4E";
-const char* const kExampleBroadwellCpuModelId = "intel:06_3D";
-const char* const kExampleHaswellCpuModelId = "intel:06_3C";
-const char* const kExampleIvyBridgeCpuModelId = "intel:06_3A";
-const char* const kExampleSandyBridgeCpuModelId = "intel:06_2A";
-const char* const kExampleWestmereCpuModelId = "intel:06_25";
-const char* const kExampleNehalemCpuModelId = "intel:06_1A";
-
 namespace {
 
 // This is derived from Figure 2-1 "CPU Core Pipeline Functionality of the

@@ -26,8 +26,9 @@ DEFINE_string(exegesis_architecture, "",
               "If this is not one of the known sources, we'll try to interpret "
               "this as a file.");
 
-DEFINE_string(exegesis_cpu_model, "intel:06_3F",
-              "The id of the CPU model for which the code is optimized.");
+DEFINE_string(
+    exegesis_microarchitecture, "hsw",
+    "The id of the microarchitecture for which the code is optimized.");
 
 namespace exegesis {
 
@@ -49,9 +50,9 @@ InstructionSetProto GetInstructionSetFromCommandLineFlagsOrDie() {
 
 MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
   CheckArchitectureFlag();
-  return MicroArchitectureData::ForCpuModelId(
+  return MicroArchitectureData::ForMicroarchitectureId(
              GetArchitectureProtoOrDie(FLAGS_exegesis_architecture),
-             FLAGS_exegesis_cpu_model)
+             FLAGS_exegesis_microarchitecture)
       .ValueOrDie();
 }
 
