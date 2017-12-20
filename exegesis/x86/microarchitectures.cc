@@ -301,6 +301,9 @@ constexpr const char kHaswellMicroarchitecture[] = R"(
       uops_events: "uops_retired:all"
     }
 
+    num_instructions_parsed_per_cycle: 6
+    num_bytes_parsed_per_cycle: 16
+    parsed_instruction_queue_capacity: 20
     num_simple_instructions_decoded_per_cycle: 3
     num_complex_instructions_decoded_per_cycle: 1
     reorder_buffer_size_in_uops: 192

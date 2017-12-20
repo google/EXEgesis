@@ -97,6 +97,13 @@ message MicroArchitectureProto {
   // The number of execution ports.
   int32 num_execution_ports = 23;
 
+  // The number of instructions parsed per cycle.
+  int32 num_instructions_parsed_per_cycle = 38;
+  // The number of bytes parsed per cycle.
+  int32 num_bytes_parsed_per_cycle = 39;
+  // The capacity of the parsed instruction queue.
+  int32 parsed_instruction_queue_capacity = 40;
+
   // The maximum number of simple instructions decoded per cycle.
   int32 num_simple_instructions_decoded_per_cycle = 24;
 
