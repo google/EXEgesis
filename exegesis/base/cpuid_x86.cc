@@ -360,7 +360,7 @@ StatusOr<CpuIdDump> CpuIdDump::FromString(const std::string& source) {
   CpuIdDump dump;
   X86CpuIdDumpProto* const dump_proto =
       dump.dump_proto_.mutable_x86_cpuid_dump();
-  const std::vector<std::string> lines = absl::StrSplit(source, "\n");
+  const std::vector<std::string> lines = absl::StrSplit(source, '\n');
   for (const std::string& line : lines) {
     uint32_t leaf = 0;
     uint32_t eax = 0;

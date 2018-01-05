@@ -415,7 +415,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       // is one of the valid feature values.
       const std::string cleaned = FixFeature(text);
       std::string* feature_name = instruction->mutable_feature_name();
-      for (const absl::string_view piece : absl::StrSplit(cleaned, " ")) {
+      for (const absl::string_view piece : absl::StrSplit(cleaned, ' ')) {
         if (!feature_name->empty()) feature_name->append(" ");
         const bool is_logic_operator = piece == "&&" || piece == "||";
         if (is_logic_operator || ContainsKey(GetValidFeatureSet(), piece)) {
@@ -543,7 +543,7 @@ void ParseOperandEncodingTableRow(const OperandEncodingTableType table_type,
   // The cell can specify several cross references (e.g. "HVM, QVM, OVM")
   // We instantiate as many operand encoding as cross references.
   const std::vector<std::string> cross_references =
-      absl::StrSplit(row.blocks(0).text(), ",", absl::SkipEmpty());
+      absl::StrSplit(row.blocks(0).text(), ',', absl::SkipEmpty());
   for (std::string cross_reference : cross_references) {
     absl::StripAsciiWhitespace(&cross_reference);
     if (RE2::FullMatch(cross_reference, R"([A-Z][-A-Z0-9]*)")) {
