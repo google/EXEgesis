@@ -90,8 +90,8 @@ void Disassembler::Init() {
   llvm::MCTargetOptions options;
   asm_backend_ = hide_encoding_
                      ? nullptr
-                     : target_->createMCAsmBackend(
-                           *register_info_, triple_name_, cpu_type_, options);
+                     : target_->createMCAsmBackend(*sub_target_info_,
+                                                   *register_info_, options);
 
   intel_instruction_printer_.reset(target_->createMCInstPrinter(
       triple_, 1, *asm_info_, *instruction_info_, *register_info_));

@@ -118,11 +118,11 @@ git_repository(
 
 # NOTE(ondrasej): As of December 2017, downloading the code as a zip takes less
 # than 30 seconds, while cloning the repository takes several minutes.
-llvm_commit = "e18338969d0ed13427863fb23fa4a5c8e8df0b14"
+llvm_commit = "0f0caba04ff8e48f15b35dbca80af4266a8c5184"
 new_http_archive(
     name = "llvm_git",
     url = "https://codeload.github.com/llvm-mirror/llvm/zip/" + llvm_commit,
-    sha256 = "bc851e53464e758ea47f5ae987162df62403e3f069995774b641bd04eff4599b",
+    sha256 = "94c619ebb7995dee29c93b63506b78e1ee8ffbcb9e15f58e0f78af481f8455bb",
     type = "zip",
     build_file = "llvm.BUILD",
     strip_prefix = "llvm-" + llvm_commit,
