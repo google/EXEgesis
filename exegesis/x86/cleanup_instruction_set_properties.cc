@@ -76,6 +76,10 @@ const std::unordered_map<std::string, int>& GetProtectionModesByMnemonic() {
           {"LMSW", 0},
           {"LTR", 0},
           {"MWAIT", 0},
+          {"RDFSBASE", 0},
+          {"RDFSBASE", 0},
+          {"WRFSBASE", 0},
+          {"WRGSBASE", 0},
           // The instruction is not marked as priviledged in its doc, but SWAPGR
           // later states that "The IA32_KERNEL_GS_BASE MSR itself is only
           // accessible using RDMSR/WRMSR instructions. Those instructions are
