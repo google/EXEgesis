@@ -244,6 +244,35 @@ cc_test(
     ],
 )
 
+# A special type for Opcodes.
+cc_library(
+    name = "opcode",
+    srcs = ["opcode.cc"],
+    hdrs = ["opcode.h"],
+    deps = [
+        "//base",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "opcode_test",
+    size = "small",
+    srcs = ["opcode_test.cc"],
+    deps = [
+        ":opcode",
+        "//base",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
 # An efficient representation of the execution unit port mask.
 cc_library(
     name = "port_mask",
