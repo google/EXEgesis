@@ -18,7 +18,7 @@ http_archive(
 git_repository(
     name = "com_googlesource_code_re2",
     remote = "https://github.com/google/re2.git",
-    tag = "2017-12-01",
+    commit = "5b58cbb734d9d23d1745f1ac14f8af274b3ea74b",
 )
 
 # ===== protobuf =====
