@@ -178,13 +178,20 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveSpecialCaseInstructions, 0);
 
 Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set) {
+  const std::unordered_set<std::string> kUndefinedInstructions = {
+      // In the July 2017 and earlier versions of the SDM, UD0 was defined as
+      // 0F FF (without a ModR/M byte); starting with the October 2017 version,
+      // it is listed as 0F FF /r (with a ModR/M byte). According to the manual,
+      // some older CPUs decode the instruction without the ModR/M byte, while
+      // the recent ones decode it with a ModR/M byte. This can make a
+      // difference when the instruction is on a page boundary.
+      "0F FF", "0F FF /r", "0F B9 /r", "0F 0B"};
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto is_undefined_instruction =
-      [](const InstructionProto& instruction) {
-        constexpr const char* const kRemovedInstructions[] = {"UD0", "UD1"};
-        return c_linear_search(kRemovedInstructions,
-                               instruction.vendor_syntax().mnemonic());
+      [&kUndefinedInstructions](const InstructionProto& instruction) {
+        return ContainsKey(kUndefinedInstructions,
+                           instruction.raw_encoding_specification());
       };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      is_undefined_instruction),
