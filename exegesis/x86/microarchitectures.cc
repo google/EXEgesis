@@ -32,7 +32,7 @@ namespace {
 // of the Skylake Microarchitecture" of the June 2016 edition of the Intel
 // Optimization Reference Manual, Order Number 248966-033.
 // http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-optimization-manual.pdf
-constexpr const char kSkylakeMicroarchitecture[] = R"(
+constexpr const char kSkylakeMicroArchitecture[] = R"(
     ports {
       comments: "Integer ALU"
       comments: "Integer Shift"
@@ -183,7 +183,7 @@ constexpr const char kSkylakeXeonModels[] = R"(
     )";
 
 // The Haswell CPU microarchitecture.
-constexpr const char kHaswellMicroarchitecture[] = R"(
+constexpr const char kHaswellMicroArchitecture[] = R"(
     ports {
       comments: "Integer ALU & Shift"
       comments: "FMA, 256-bit FP Multiply"
@@ -317,7 +317,7 @@ constexpr const char kBroadwellModels[] = R"(
     model_ids: 'intel:06_56'
     )";
 
-constexpr const char kSandyBridgeMicroarchitecture[] = R"(
+constexpr const char kSandyBridgeMicroArchitecture[] = R"(
     ports {
       comments: "Integer ALU"
       comments: "Shift"
@@ -408,7 +408,7 @@ constexpr const char kSandyBridgeModels[] = R"(
     model_ids: 'intel:06_2D'
     )";
 
-constexpr const char kNehalemMicroarchitecture[] = R"(
+constexpr const char kNehalemMicroArchitecture[] = R"(
     ports {
       comments: "Integer ALU"
       comments: "Shift"
@@ -521,14 +521,14 @@ constexpr const char kCoreModels[] = R"(
 const MicroArchitecturesProto& GetMicroArchitecturesProto() {
   static const MicroArchitecturesProto* const microarchitectures = []() {
     const std::vector<std::string> sources = {
-        absl::StrCat(kSkylakeConsumerModels, kSkylakeMicroarchitecture),
-        absl::StrCat(kSkylakeXeonModels, kSkylakeMicroarchitecture),
-        absl::StrCat(kHaswellModels, kHaswellMicroarchitecture),
-        absl::StrCat(kBroadwellModels, kHaswellMicroarchitecture),
-        absl::StrCat(kIvyBridgeModels, kSandyBridgeMicroarchitecture),
-        absl::StrCat(kSandyBridgeModels, kSandyBridgeMicroarchitecture),
-        absl::StrCat(kWestmireModels, kNehalemMicroarchitecture),
-        absl::StrCat(kNehalemModels, kNehalemMicroarchitecture),
+        absl::StrCat(kSkylakeConsumerModels, kSkylakeMicroArchitecture),
+        absl::StrCat(kSkylakeXeonModels, kSkylakeMicroArchitecture),
+        absl::StrCat(kHaswellModels, kHaswellMicroArchitecture),
+        absl::StrCat(kBroadwellModels, kHaswellMicroArchitecture),
+        absl::StrCat(kIvyBridgeModels, kSandyBridgeMicroArchitecture),
+        absl::StrCat(kSandyBridgeModels, kSandyBridgeMicroArchitecture),
+        absl::StrCat(kWestmireModels, kNehalemMicroArchitecture),
+        absl::StrCat(kNehalemModels, kNehalemMicroArchitecture),
         // NOTE(bdb): As of 2017-03-01 we do not need the itineraries of the
         // Core and Enhanced Core architectures.
         kEnhancedCoreModels, kCoreModels};

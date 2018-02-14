@@ -26,6 +26,9 @@
 
 namespace exegesis {
 
+using ::exegesis::util::NotFoundError;
+using ::exegesis::util::StatusOr;
+
 MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
     : proto_(proto),
       port_masks_(proto_.port_masks().begin(), proto_.port_masks().end()) {}
@@ -71,7 +74,7 @@ bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
 namespace {
 
 std::unordered_map<std::string, std::string>*
-MicroarchitectureIdByCpuModelId() {
+MicroArchitectureIdByCpuModelId() {
   static auto* const result =
       new std::unordered_map<std::string, std::string>();
   return result;
@@ -87,9 +90,20 @@ MicroArchitecturesById() {
 
 }  // namespace
 
-const std::string& GetMicroarchitectureIdForCpuModelOrDie(
+StatusOr<std::string> GetMicroArchitectureForCpuModelId(
     const std::string& cpu_model_id) {
-  return FindOrDie(*MicroarchitectureIdByCpuModelId(), cpu_model_id);
+  const std::string* const microarchitecture_id =
+      FindOrNull(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
+  if (microarchitecture_id == nullptr) {
+    return NotFoundError(
+        absl::StrCat("The CPU model ID was not found: ", cpu_model_id));
+  }
+  return *microarchitecture_id;
+}
+
+const std::string& GetMicroArchitectureIdForCpuModelOrDie(
+    const std::string& cpu_model_id) {
+  return FindOrDie(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
 }
 
 namespace internal {
@@ -98,7 +112,7 @@ void RegisterMicroArchitectures::RegisterFromProto(
     const MicroArchitecturesProto& microarchitectures) {
   auto* const microarchitectures_by_id = MicroArchitecturesById();
   auto* const microarchitecture_id_by_cpumodel_id =
-      MicroarchitectureIdByCpuModelId();
+      MicroArchitectureIdByCpuModelId();
   for (const MicroArchitectureProto& microarchitecture_proto :
        microarchitectures.microarchitectures()) {
     const std::string& microarchitecture_id = microarchitecture_proto.id();
@@ -129,7 +143,7 @@ const MicroArchitecture& MicroArchitecture::FromIdOrDie(
   return *CHECK_NOTNULL(FromId(microarchitecture_id));
 }
 
-StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroarchitectureId(
+StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroArchitectureId(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
     const std::string& microarchitecture_id) {
   const auto* microarchitecture =
@@ -138,10 +152,10 @@ StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroarchitectureId(
     return util::InvalidArgumentError(
         absl::StrCat("Unknown microarchitecture '", microarchitecture_id, "'"));
   }
-  return Create(std::move(architecture_proto), microarchitecture);
+  return ForMicroArchitecture(std::move(architecture_proto), microarchitecture);
 }
 
-StatusOr<MicroArchitectureData> MicroArchitectureData::Create(
+StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroArchitecture(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
     const MicroArchitecture* microarchitecture) {
   CHECK(microarchitecture);

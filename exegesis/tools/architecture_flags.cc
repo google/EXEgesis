@@ -45,7 +45,7 @@ GetArchitectureFromCommandLineFlagsOrDie() {
 
 MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
   CheckArchitectureFlag();
-  return MicroArchitectureData::ForMicroarchitectureId(
+  return MicroArchitectureData::ForMicroArchitectureId(
              GetArchitectureProtoOrDie(FLAGS_exegesis_architecture),
              FLAGS_exegesis_microarchitecture)
       .ValueOrDie();

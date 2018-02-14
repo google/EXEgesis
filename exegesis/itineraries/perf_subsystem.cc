@@ -74,7 +74,7 @@ std::vector<std::string> PerfResult::Keys() const {
 
 PerfSubsystem::PerfSubsystem()
     : microarchitecture_(
-          MicroArchitecture::FromIdOrDie(GetMicroarchitectureIdForCpuModelOrDie(
+          MicroArchitecture::FromIdOrDie(GetMicroArchitectureIdForCpuModelOrDie(
               HostCpuInfoOrDie().cpu_model_id()))) {
   counter_fds_.reserve(kMaxNumCounters);
   event_names_.reserve(kMaxNumCounters);

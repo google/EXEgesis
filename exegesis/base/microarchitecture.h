@@ -30,8 +30,13 @@
 
 namespace exegesis {
 
-// Returns the microarchitecture id for a cpu nodel id.
-const std::string& GetMicroarchitectureIdForCpuModelOrDie(
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
+
+// Returns the microarchitecture id for a CPU model id.
+StatusOr<std::string> GetMicroArchitectureForCpuModelId(
+    const std::string& cpu_model_id);
+const std::string& GetMicroArchitectureIdForCpuModelOrDie(
     const std::string& cpu_model_id);
 
 // Represents a MicroArchitectureProto in memory. See the proto documentation
@@ -98,27 +103,29 @@ class RegisterMicroArchitectures {
 };
 
 }  // namespace internal
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 class MicroArchitectureData {
  public:
   // Creates a MicroArchitectureData pack from an ArchitectureProto and a
   // microarchitecture_id.
-  static StatusOr<MicroArchitectureData> ForMicroarchitectureId(
+  static StatusOr<MicroArchitectureData> ForMicroArchitectureId(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
       const std::string& microarchitecture_id);
+
+  // TODO(ondrasej): Remove this method when the microarchitecture data is
+  // merged with the ArchitectureProto.
+  static StatusOr<MicroArchitectureData> ForMicroArchitecture(
+      std::shared_ptr<const ArchitectureProto> architecture_proto,
+      const MicroArchitecture* microarchitecture);
 
   // StatusOr<T> requires T to be default-constructible.
   // TODO(courbet): Remove when StatusOr is fixed.
   MicroArchitectureData()
       : microarchitecture_(nullptr), itineraries_(nullptr) {}
 
-  // For tests.
-  MicroArchitectureData(
-      std::shared_ptr<const ArchitectureProto> architecture_proto,
-      const MicroArchitecture* microarchitecture,
-      const InstructionSetItinerariesProto* itineraries);
+  std::shared_ptr<const ArchitectureProto> architecture() const {
+    return architecture_proto_;
+  }
 
   const InstructionSetProto& instruction_set() const {
     return architecture_proto_->instruction_set();
@@ -133,9 +140,10 @@ class MicroArchitectureData {
   }
 
  private:
-  static StatusOr<MicroArchitectureData> Create(
+  MicroArchitectureData(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
-      const MicroArchitecture* microarchitecture);
+      const MicroArchitecture* microarchitecture,
+      const InstructionSetItinerariesProto* itineraries);
 
   // Keep a reference to the underlying data (instruction_set and itineraries
   // point into architecture_proto).

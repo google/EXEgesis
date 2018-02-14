@@ -45,7 +45,7 @@ TEST(MicroArchitectureDataTest, Works) {
       )"));
 
   const auto statusor_microarchitecture =
-      MicroArchitectureData::ForMicroarchitectureId(architecture_proto, "hsw");
+      MicroArchitectureData::ForMicroArchitectureId(architecture_proto, "hsw");
   ASSERT_TRUE(statusor_microarchitecture.ok());
   const auto& microarchitecture = statusor_microarchitecture.ValueOrDie();
   EXPECT_EQ(microarchitecture.instruction_set().instructions_size(), 1);

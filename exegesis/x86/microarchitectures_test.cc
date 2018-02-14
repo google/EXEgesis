@@ -42,7 +42,7 @@ void CheckCPU(const char* uarch_id, int num_port_masks,
   EXPECT_FALSE(uarch.IsProtectedMode(15));
 }
 
-TEST(CpuModelTest, ParseMicroarchitectures) {
+TEST(CpuModelTest, ParseMicroArchitectures) {
   // Skylake
   CheckCPU("skl", 12, "P23", "P237", "P4");
 

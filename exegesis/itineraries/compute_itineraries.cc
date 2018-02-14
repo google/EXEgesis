@@ -672,7 +672,7 @@ Status ComputeItineraries(const InstructionSetProto& instruction_set,
   LOG(INFO) << "Host CPU info: " << host_cpu_info.DebugString();
   const std::string& host_cpu_model_id = host_cpu_info.cpu_model_id();
   const std::string& host_microarchitecture_id =
-      GetMicroarchitectureIdForCpuModelOrDie(host_cpu_model_id);
+      GetMicroArchitectureIdForCpuModelOrDie(host_cpu_model_id);
 
   // Check that we know the details (port masks, ...) of the CPU model.
   const MicroArchitecture* const microarchitecture =
