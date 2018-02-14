@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This program helps creating patches for a protobuf version of a pdf document
-// created with the pdf2proto tool.
+// This program transfers patches from one version of a PDF document to another.
+// The tool creates two files containing a list of patches: one for patches that
+// were successfully applied to the new file and one for patches that could not
+// be applied.
+//
 // Usage:
-// bazel run -c opt \
-// exegesis/tools:proto_patch_helper -- \
-// --exegesis_proto_input_file=/path/to/sdm.pdf.pb \
-// --exegesis_match_expression='SAL/SAR/SHL/SHR' \
-// --exegesis_page_numbers=662
+//  bazel run -c opt \
+//    exegesis/tools:proto_patch_migrate -- \
+//    exegesis_from_proto_file=/path/to/sdm.pdf.pb \
+//    exegesis_to_proto_file=/path/to/newer_sdm.pdf.pb \
+//    exegesis_output_file_base=/tmp/newer_sdm_patches.pb.txt
 
 #include <algorithm>
 #include <string>
@@ -39,9 +42,15 @@
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_string(exegesis_from_proto_file, "", "");
-DEFINE_string(exegesis_to_proto_file, "", "");
-DEFINE_string(exegesis_output_file_base, "", "");
+DEFINE_string(exegesis_from_proto_file, "",
+              "The path to the original PDF data in the format produced by "
+              "//exegesis/tools:pdf2proto.");
+DEFINE_string(exegesis_to_proto_file,
+              "The path to the modified PDF data in the format produced by "
+              "//exegesis/tools:pdf2proto.",
+              "");
+DEFINE_string(exegesis_output_file_base,
+              "The base path for the files produced by the tool.", "");
 DEFINE_string(
     exegesis_patches_directory, "exegesis/x86/pdf/sdm_patches/",
     "A folder containing a set of patches to apply to original documents");
