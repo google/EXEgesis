@@ -384,6 +384,15 @@ pages {
   }
 }
 pages {
+  page_number: 1609
+  patches {
+    row: 2
+    col: 3
+    expected: "CPUID \nFeature \nFlag"
+    remove_cell: true
+  }
+}
+pages {
   page_number: 1727
   patches {
     row: 6

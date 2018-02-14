@@ -254,15 +254,6 @@ pages {
   }
 }
 pages {
-  page_number: 1243
-  patches {
-    row: 3
-    col: 1
-    expected: "A"
-    replacement: "RM"
-  }
-}
-pages {
   page_number: 1256
   patches {
     row: 6
@@ -339,6 +330,15 @@ pages {
   }
 }
 pages {
+  page_number: 1613
+  patches {
+    row: 2
+    col: 3
+    expected: "CPUID \nFeature \nFlag"
+    remove_cell: true
+  }
+}
+pages {
   page_number: 1731
   patches {
     row: 3
@@ -359,14 +359,6 @@ pages {
     col: 1
     expected: "ib"
     remove_cell: true
-  }
-}
-pages {
-  page_number: 1805
-  patches {
-    row: 8
-    expected: "A"
-    replacement: "RM"
   }
 }
 pages {
