@@ -65,6 +65,7 @@ cc_library(
         "//exegesis/proto/pdf:pdf_document_cc_proto",
         "//exegesis/util:proto_util",
         "//util/gtl:map_util",
+        "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",

@@ -61,6 +61,7 @@ const char* const kValidOperandTypes[] = {
     "r16/m16",
     "r32/m16",
     "r64/m16",
+    "r16/r32/m16",
     // Any general-purpose register.
     "reg",
     // Any general-purpose register/memory.

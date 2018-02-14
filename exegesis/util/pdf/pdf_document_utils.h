@@ -24,6 +24,12 @@
 namespace exegesis {
 namespace pdf {
 
+// Returns the corresponding cell in the page or nullptr.
+// row and col indices can be negative to indicate reverse order.
+// e.g. row = -1 means 'last row of the page'.
+// e.g. col = -1 means 'last column of the row'.
+const PdfTextBlock* GetCellOrNull(const PdfPage& page, int row, int col);
+
 // Returns the text for the corresponding cell in the page or empty string.
 // row and col indices can be negative to indicate reverse order.
 // e.g. row = -1 means 'last row of the page'.
@@ -33,11 +39,6 @@ const std::string& GetCellTextOrEmpty(const PdfPage& page, int row, int col);
 // Mutable version of the above function.
 // Returns nullptr if cell does not exist.
 std::string* GetMutableCellTextOrNull(PdfPage* page, int row, int col);
-
-// Returns the text for the corresponding cell in the row or empty string.
-// col index can be negative to indicate reverse order.
-// e.g. col = -1 means 'last column of row'.
-const std::string& GetCellTextOrEmpty(const PdfTextTableRow& row, int col);
 
 // Mutable version of the above function.
 // Returns nullptr if cell does not exist.

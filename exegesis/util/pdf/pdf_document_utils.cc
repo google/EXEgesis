@@ -290,18 +290,20 @@ void SetPatches(const std::map<size_t, std::vector<PdfPagePatch>>& page_patches,
 
 }  // namespace
 
-const std::string& GetCellTextOrEmpty(const PdfPage& page, int row, int col) {
-  static const std::string kEmpty;
+const PdfTextBlock* GetCellOrNull(const PdfPage& page, int row, int col) {
   const int row_index = GetIndex(page.rows_size(), row);
-  if (row_index < 0) return kEmpty;
-  return GetCellTextOrEmpty(page.rows(row_index), col);
+  if (row_index < 0) return nullptr;
+  const PdfTextTableRow& row_data = page.rows(row_index);
+  const int col_index = GetIndex(row_data.blocks_size(), col);
+  if (col_index < 0) return nullptr;
+  return &row_data.blocks(col_index);
 }
 
-const std::string& GetCellTextOrEmpty(const PdfTextTableRow& row, int col) {
+const std::string& GetCellTextOrEmpty(const PdfPage& page, int row, int col) {
+  const PdfTextBlock* const block = GetCellOrNull(page, row, col);
   static const std::string kEmpty;
-  const int col_index = GetIndex(row.blocks_size(), col);
-  if (col_index < 0) return kEmpty;
-  return row.blocks(col_index).text();
+  if (block == nullptr) return kEmpty;
+  return block->text();
 }
 
 std::string* GetMutableCellTextOrNull(PdfPage* page, int row, int col) {

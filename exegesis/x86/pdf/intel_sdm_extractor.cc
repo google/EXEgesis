@@ -122,10 +122,19 @@ const std::string& GetFooterSectionName(const PdfPage& page) {
 // If 'page' is the first page of an instruction, returns a unique identifier
 // for this instruction. Otherwise return empty string.
 std::string GetInstructionGroupId(const PdfPage& page) {
+  static constexpr float kMaxGroupNameVerticalPosition = 500.0f;
   if (!absl::StartsWith(GetCellTextOrEmpty(page, 0, 0), kInstructionSetRef))
     return {};
-  const std::string maybe_instruction =
-      Normalize(GetCellTextOrEmpty(page, 1, 0));
+  // We require that the name of the instruction group is in the top part of the
+  // page. This prevents the parser from recognizing pages with too few elements
+  // on them as instruction sections. This was the case for example with the
+  // December 2017 version of the SDM on page 581 of the combined volumes PDF.
+  const PdfTextBlock* const name_cell = GetCellOrNull(page, 1, 0);
+  if (name_cell == nullptr ||
+      name_cell->bounding_box().top() > kMaxGroupNameVerticalPosition) {
+    return {};
+  }
+  const std::string maybe_instruction = Normalize(name_cell->text());
   const std::string& footer_section_name = GetFooterSectionName(page);
   if (maybe_instruction == Normalize(footer_section_name)) {
     return footer_section_name;
@@ -207,14 +216,16 @@ const std::map<SubSection::Type, const RE2*>& GetSubSectionMatchers() {
   return *kSubSection;
 }
 
-const std::map<InstructionTable::Column, const RE2*>&
+const std::vector<std::pair<InstructionTable::Column, const RE2*>>&
 GetInstructionColumnMatchers() {
   static const auto* kInstructionColumns =
-      new std::map<InstructionTable::Column, const RE2*>{
+      new std::vector<std::pair<InstructionTable::Column, const RE2*>>{
           {InstructionTable::IT_OPCODE, new RE2(R"(Opcode\*{0,3})")},
           {InstructionTable::IT_OPCODE_INSTRUCTION,
-           new RE2(R"(Opcode\*?/?\n?Instruction)")},
+           new RE2(R"(Opcode ?\*?/? ?\n?Instruction)")},
           {InstructionTable::IT_INSTRUCTION, new RE2(R"(Instruction)")},
+          {InstructionTable::IT_MODE_SUPPORT_64_32BIT,
+           new RE2(R"(32/64 ?\nbit Mode ?\nSupport)")},
           {InstructionTable::IT_MODE_SUPPORT_64_32BIT,
            new RE2(R"(64/3\n?2\n?[- ]?\n?bit \n?Mode( \n?Support)?)")},
           {InstructionTable::IT_MODE_SUPPORT_64BIT,
@@ -244,15 +255,15 @@ GetInstructionModeMatchers() {
 
 const std::set<absl::string_view>& GetValidFeatureSet() {
   static const auto* kValidFeatures = new std::set<absl::string_view>{
-      "3DNOW",      "ADX",      "AES",        "AVX",      "AVX2",
-      "AVX512BW",   "AVX512CD", "AVX512DQ",   "AVX512ER", "AVX512F",
-      "AVX512IFMA", "AVX512PF", "AVX512VBMI", "AVX512VL", "BMI1",
-      "BMI2",       "CLMUL",    "CLWB",       "F16C",     "FMA",
-      "FPU",        "FSGSBASE", "HLE",        "INVPCID",  "LZCNT",
-      "MMX",        "MPX",      "OSPKE",      "PRFCHW",   "RDPID",
-      "RDRAND",     "RDSEED",   "RTM",        "SHA",      "SMAP",
-      "SSE",        "SSE2",     "SSE3",       "SSE4_1",   "SSE4_2",
-      "SSSE3",      "XSAVEOPT"};
+      "3DNOW",       "ADX",      "AES",         "AVX",      "AVX2",
+      "AVX512BW",    "AVX512CD", "AVX512DQ",    "AVX512ER", "AVX512F",
+      "AVX512_IFMA", "AVX512PF", "AVX512_VBMI", "AVX512VL", "BMI1",
+      "BMI2",        "CLMUL",    "CLWB",        "F16C",     "FMA",
+      "FPU",         "FSGSBASE", "HLE",         "INVPCID",  "LZCNT",
+      "MMX",         "MPX",      "OSPKE",       "PRFCHW",   "RDPID",
+      "RDRAND",      "RDSEED",   "RTM",         "SHA",      "SMAP",
+      "SSE",         "SSE2",     "SSE3",        "SSE4_1",   "SSE4_2",
+      "SSSE3",       "XSAVE",    "XSAVEC",      "XSS",      "XSAVEOPT"};
   return *kValidFeatures;
 }
 
@@ -272,7 +283,7 @@ const OperandEncodingMatchers& GetOperandEncodingSpecMatchers() {
       {OperandEncoding::OE_MOD_REG, new RE2(R"(ModRM:reg\s+\(([rR, wW]+)\))")},
       {OperandEncoding::OE_MOD_RM,
        new RE2(
-           R"(ModRM:r/?m\s+\(([rR, wW]+)(?:ModRM:\[[0-9]+:[0-9]+\] must (?:not )?be [01]+b)?\))")},
+           R"(ModRM:r/?m\s*\(([rR, wW]+)(?:ModRM:\[[0-9]+:[0-9]+\] must (?:not )?be [01]+b)?\))")},
       {OperandEncoding::OE_VEX,
        new RE2(R"(VEX\.(?:[1v]{4})(?:\s+\(([rR, wW]+)\))?)")},
       {OperandEncoding::OE_EVEX_V,
@@ -316,8 +327,8 @@ std::string FixFeature(std::string feature) {
   absl::StripAsciiWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
   const char kAvxRegex[] =
-      "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512IFMA|AVX512PF|"
-      "AVX512VBMI|AVX512VL)+";
+      "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_IFMA|AVX512PF|"
+      "AVX512_VBMI|AVX512VL)+";
   if (RE2::FullMatch(feature, kAvxRegex)) {
     StringPiece remainder(feature);
     std::string piece;
@@ -467,7 +478,7 @@ void ParseInstructionTable(const SubSection& sub_section,
       if (absl::StartsWith(first_cell, "NOTE")) {
         break;
       }
-      // Checking if this line is a repeated header row,
+      // Checking if this line is a repeated header row.
       const auto first_cell_type =
           ParseWithDefault(GetInstructionColumnMatchers(), first_cell,
                            InstructionTable::IT_UNKNOWN);
@@ -888,6 +899,10 @@ SdmDocument ConvertPdfDocumentToSdmDocument(
               << pages.front()->number() << "-" << pages.back()->number();
     section.set_id(group_id);
     ProcessSubSections(ExtractSubSectionRows(pages), &section);
+    if (section.instruction_table().instructions_size() == 0) {
+      LOG(WARNING) << "Empty instruction table, skipping the section";
+      continue;
+    }
     section.Swap(sdm_document.add_instruction_sections());
   }
   return sdm_document;
