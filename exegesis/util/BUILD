@@ -87,6 +87,23 @@ cc_test(
     ],
 )
 
+# A type for indices with strong type checks.
+cc_library(
+    name = "index_type",
+    hdrs = ["index_type.h"],
+)
+
+cc_test(
+    name = "index_type_test",
+    size = "small",
+    srcs = ["index_type_test.cc"],
+    deps = [
+        ":index_type",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 # Helper functions for working with instruction syntax.
 cc_library(
     name = "instruction_syntax",
