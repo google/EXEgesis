@@ -116,6 +116,10 @@ class PerfSubsystem {
 
   // Adds an event to be measured by the current object. Returns the index of
   // the newly added event.
+  // Note: To enable instruction counting on machines running Debian, execute
+  // the following commands to modify the permissions.
+  //   sudo echo "1" > /proc/sys/kernel/perf_event_paranoid
+  //   sudo echo "0" > /proc/sys/kernel/kptr_restrict
   int AddEvent(const std::string& event_name);
 
   // Starts collecting data, i.e. hardware counters will be updated from here.
