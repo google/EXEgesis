@@ -17,6 +17,8 @@
 #ifndef EXEGESIS_TOOLS_ARCHITECTURE_FLAGS_H_
 #define EXEGESIS_TOOLS_ARCHITECTURE_FLAGS_H_
 
+#include <memory>
+
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "gflags/gflags.h"
@@ -30,13 +32,8 @@ namespace exegesis {
 // command-line flag --exegesis_architecture.
 // Terminates the process if the specification of the architecture is not valid,
 // or the architecture can't be read from the source.
-ArchitectureProto GetArchitectureFromCommandLineFlagsOrDie();
-
-// Returns the instruction set for the architecture specified in the
-// command-line flag --exegesis_architecture.
-// Terminates the process if the specification of the architecture is not valid,
-// or the architecture can't be read from the source.
-InstructionSetProto GetInstructionSetFromCommandLineFlagsOrDie();
+std::shared_ptr<const ArchitectureProto>
+GetArchitectureFromCommandLineFlagsOrDie();
 
 // Returns the instruction set and itineraries for the microarchitecture
 // specified in the command-line flag --exegesis_cpu_model.

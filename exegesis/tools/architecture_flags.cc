@@ -37,15 +37,10 @@ void CheckArchitectureFlag() {
       << "Please provide an architecture (e.g. 'pbtxt:/path/to/file.pb.txt')";
 }
 
-ArchitectureProto GetArchitectureFromCommandLineFlagsOrDie() {
+std::shared_ptr<const ArchitectureProto>
+GetArchitectureFromCommandLineFlagsOrDie() {
   CheckArchitectureFlag();
-  return *GetArchitectureProtoOrDie(FLAGS_exegesis_architecture);
-}
-
-InstructionSetProto GetInstructionSetFromCommandLineFlagsOrDie() {
-  CheckArchitectureFlag();
-  return GetArchitectureProtoOrDie(FLAGS_exegesis_architecture)
-      ->instruction_set();
+  return GetArchitectureProtoOrDie(FLAGS_exegesis_architecture);
 }
 
 MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
