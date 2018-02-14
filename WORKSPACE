@@ -133,7 +133,7 @@ new_http_archive(
 http_file(
     name = "intel_sdm_pdf",
     url = "https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf",
-    sha256 = "398fe124b6082b0e370f0e3127c6c285a4bcc920c95fa249ee8aa76de43bb475",
+    sha256 = "3edaf91e17c64f9f3bdaabd5c743e60656b80edc19fe4a2560bf25d6725f39fb",
 )
 
 # ==============================================================================
