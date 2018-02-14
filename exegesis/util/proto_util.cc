@@ -14,35 +14,62 @@
 
 #include "exegesis/util/proto_util.h"
 
+#include "absl/strings/str_cat.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/io/zero_copy_stream_impl.h"
 #include "src/google/protobuf/text_format.h"
+#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 
-void ReadTextProtoOrDie(const std::string& filename,
-                        google::protobuf::Message* message) {
-  CHECK(!filename.empty());
-  FILE* const input_file = fopen(filename.c_str(), "rb");
-  CHECK(input_file) << "Could not open '" << filename << "'";
-  {
-    google::protobuf::io::FileInputStream input_stream(fileno(input_file));
-    CHECK(google::protobuf::TextFormat::Parse(&input_stream, message))
-        << "Could not parse text format protobuf from file '" << filename
-        << "'";
+using ::exegesis::util::FailedPreconditionError;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::OkStatus;
+using ::exegesis::util::Status;
+
+struct FileCloser {
+  void operator()(FILE* file) {
+    if (file != nullptr) fclose(file);
   }
-  fclose(input_file);
+};
+
+Status ReadTextProto(const std::string& filename,
+                     google::protobuf::Message* message) {
+  if (filename.empty()) {
+    return InvalidArgumentError("filename must not be empty");
+  }
+  std::unique_ptr<FILE, FileCloser> input_file(fopen(filename.c_str(), "rb"));
+  if (input_file == nullptr) {
+    // TODO(ondrasej): Implement a proper translation from Unix errno codes to
+    // ::util::Status codes.
+    return FailedPreconditionError(
+        absl::StrCat("Could not open '", filename, "'"));
+  }
+  google::protobuf::io::FileInputStream input_stream(fileno(input_file.get()));
+  if (!google::protobuf::TextFormat::Parse(&input_stream, message)) {
+    return FailedPreconditionError(absl::StrCat(
+        "Could not parse text format protobuf from file '", filename, "'"));
+  }
+  return OkStatus();
 }
 
-void ReadBinaryProtoOrDie(const std::string& filename,
-                          google::protobuf::Message* message) {
-  CHECK(!filename.empty());
-  FILE* const input_file = fopen(filename.c_str(), "rb");
-  CHECK(input_file) << "Could not open '" << filename << "'";
-  CHECK(message->ParseFromFileDescriptor(fileno(input_file)))
-      << "Could not parse binary format protobuf from file '" << filename
-      << "'";
-  fclose(input_file);
+Status ReadBinaryProto(const std::string& filename,
+                       google::protobuf::Message* message) {
+  if (filename.empty()) {
+    return InvalidArgumentError("filename must not be empty");
+  }
+  std::unique_ptr<FILE, FileCloser> input_file(fopen(filename.c_str(), "rb"));
+  if (input_file == nullptr) {
+    // TODO(ondrasej): Implement a proper translation from Unix errno codes to
+    // ::util::Status codes.
+    return FailedPreconditionError(
+        absl::StrCat("Could not open '", filename, "'"));
+  }
+  if (!message->ParseFromFileDescriptor(fileno(input_file.get()))) {
+    return FailedPreconditionError(absl::StrCat(
+        "Could not parse binary format protobuf from file '", filename, "'"));
+  }
+  return OkStatus();
 }
 
 void ParseProtoFromStringOrDie(const std::string& text,

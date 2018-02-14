@@ -24,11 +24,14 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
+#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::StatusIs;
+using ::exegesis::util::error::FAILED_PRECONDITION;
 
 TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   constexpr char kExpected[] = R"(
@@ -41,6 +44,12 @@ TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   const InstructionProto read_proto =
       ReadTextProtoOrDie<InstructionProto>(filename);
   EXPECT_THAT(read_proto, EqualsProto(kExpected));
+}
+
+TEST(ProtoUtilTest, ReadTextProtoFromFileThatDoesNotExist) {
+  constexpr char kFileName[] = "/invalid_dir/invalid_file.pb.txt";
+  EXPECT_THAT(ReadTextProto<InstructionProto>(kFileName),
+              StatusIs(FAILED_PRECONDITION));
 }
 
 TEST(ProtoUtilTest, ParseProtoFromStringOrDie) {

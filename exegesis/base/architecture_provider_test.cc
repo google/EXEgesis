@@ -19,11 +19,18 @@
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "util/task/status.h"
+#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::StatusIs;
+using ::exegesis::util::StatusOr;
+using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::exegesis::util::error::NOT_FOUND;
+using ::testing::HasSubstr;
 
 constexpr const char kTestArchitectureProto[] = R"(
   name: "some_arch"
@@ -55,10 +62,10 @@ class TestProvider : public ArchitectureProtoProvider {
   ~TestProvider() override {}
 
  private:
-  std::shared_ptr<const ArchitectureProto> GetProtoOrDie() const override {
+  StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto() const override {
     const auto result = std::make_shared<ArchitectureProto>();
     result->set_name("an_id");
-    return result;
+    return std::shared_ptr<const ArchitectureProto>(result);
   }
 };
 // The provider name has colons to check that splitting works as expected.
@@ -71,13 +78,18 @@ TEST(ArchitectureProtoProviderTest, TestRegistration) {
 }
 
 TEST(ArchitectureProtoProviderDeathTest, UnknownSource) {
-  ASSERT_DEATH(GetArchitectureProtoOrDie("unknown_source"), "unknown_source");
+  constexpr char kUri[] = "unknown_source";
+  EXPECT_THAT(GetArchitectureProto(kUri),
+              StatusIs(INVALID_ARGUMENT, HasSubstr(kUri)));
+  ASSERT_DEATH(GetArchitectureProtoOrDie(kUri), kUri);
 }
 
 TEST(ArchitectureProtoProviderDeathTest, UnknownProvider) {
-  ASSERT_DEATH(GetArchitectureProtoOrDie(
-                   absl::StrCat(kRegisteredSource, ":does_not_exist")),
-               "test:provider");
+  constexpr char kSource[] = ":does_not_exist";
+  const std::string uri = absl::StrCat(kRegisteredSource, kSource);
+  EXPECT_THAT(GetArchitectureProto(uri),
+              StatusIs(NOT_FOUND, HasSubstr("test:provider")));
+  ASSERT_DEATH(GetArchitectureProtoOrDie(uri), "test:provider");
 }
 
 TEST(ArchitectureProtoProviderTest, TestRegisteredProviders) {

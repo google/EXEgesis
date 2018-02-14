@@ -25,6 +25,7 @@
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
+#include "util/task/status.h"
 
 namespace exegesis {
 namespace pdf {
@@ -364,7 +365,7 @@ PdfDocumentsChanges LoadConfigurations(const std::string& directory) {
     while ((ent = readdir(dir)) != nullptr) {
       const std::string full_path = absl::StrCat(directory, "/", ent->d_name);
       LOG(INFO) << "Reading configuration file " << full_path;
-      ReadTextProtoOrDie(full_path, patch_sets.add_documents());
+      CHECK_OK(ReadTextProto(full_path, patch_sets.add_documents()));
     }
     closedir(dir);
   }

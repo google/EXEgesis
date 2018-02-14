@@ -24,8 +24,11 @@
 
 #include "absl/memory/memory.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "util/task/statusor.h"
 
 namespace exegesis {
+
+using ::exegesis::util::StatusOr;
 
 constexpr const char kPbTxtSource[] = "pbtxt";
 constexpr const char kPbSource[] = "pb";
@@ -42,8 +45,13 @@ constexpr const char kRegisteredSource[] = "registered";
 //     format. Example: 'pb:/path/to/binary_proto.pb'
 //   - 'registered': <id> corresponds the name of a provider that was registered
 //     using REGISTER_ARCHITECTURE_PROTO_PROVIDER.
-// Dies with a useful error message if the provider is not found or if it
-// returns an error. On success the result is guaranteed to be non-null.
+// Returns an error status if the provider is not found or if it returns an
+// error. On success the result is guaranteed to be non-null.
+StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
+    const std::string& uri);
+
+// A version of GetArchitectureProto() that dies with a useful error message if
+// the provider is not found or if it returns an error.
 std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
     const std::string& uri);
 
@@ -56,9 +64,10 @@ class ArchitectureProtoProvider {
   virtual ~ArchitectureProtoProvider();
 
   // This is a shared_ptr because some providers are going to hold singletons
-  // while some others will reliquish ownership (and the proto itself is huge).
-  // Dies on error and never returns nullptr.
-  virtual std::shared_ptr<const ArchitectureProto> GetProtoOrDie() const = 0;
+  // while some others will relinquish ownership (and the proto itself is huge).
+  // Returns an error on failure; never returns nullptr on success.
+  virtual StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto()
+      const = 0;
 
  protected:
   ArchitectureProtoProvider() = default;

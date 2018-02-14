@@ -27,6 +27,7 @@
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
+#include "util/task/status.h"
 
 DEFINE_string(exegesis_pdf_input_file, "",
               "filename or filename:start-end e.g. "
@@ -55,7 +56,7 @@ void Main() {
 
   PdfDocumentsChanges patch_sets;
   if (!FLAGS_exegesis_pdf_patch_sets_file.empty()) {
-    ReadTextProtoOrDie(FLAGS_exegesis_pdf_patch_sets_file, &patch_sets);
+    CHECK_OK(ReadTextProto(FLAGS_exegesis_pdf_patch_sets_file, &patch_sets));
   }
 
   const auto pdf_request =

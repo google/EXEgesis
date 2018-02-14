@@ -18,36 +18,53 @@
 #include <string>
 
 #include "src/google/protobuf/message.h"
+#include "util/task/status.h"
+#include "util/task/statusor.h"
 
 namespace exegesis {
 
-// Reads a proto in text format from a file.
-void ReadTextProtoOrDie(const std::string& filename,
-                        google::protobuf::Message* message);
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
 
-// Typed version of the above.
+// Reads a proto in text format from a file.
+Status ReadTextProto(const std::string& filename,
+                     ::google::protobuf::Message* message);
+
+// Typed versions of the above.
 template <typename Proto>
-Proto ReadTextProtoOrDie(const std::string& filename) {
+StatusOr<Proto> ReadTextProto(const std::string& filename) {
   Proto proto;
-  ReadTextProtoOrDie(filename, &proto);
+  const Status read_status = ReadTextProto(filename, &proto);
+  if (!read_status.ok()) return read_status;
   return proto;
 }
 
-// Reads a proto in binary format from a file.
-void ReadBinaryProtoOrDie(const std::string& filename,
-                          google::protobuf::Message* message);
+template <typename Proto>
+Proto ReadTextProtoOrDie(const std::string& filename) {
+  return ReadTextProto<Proto>(filename).ValueOrDie();
+}
 
-// Typed version of the above.
+// Reads a proto in binary format from a file.
+Status ReadBinaryProto(const std::string& filename,
+                       ::google::protobuf::Message* message);
+
+// Typed versions of the above.
+template <typename Proto>
+StatusOr<Proto> ReadBinaryProto(const std::string& filename) {
+  Proto proto;
+  const Status read_status = ReadBinaryProto(filename, &proto);
+  if (!read_status.ok()) return read_status;
+  return proto;
+}
+
 template <typename Proto>
 Proto ReadBinaryProtoOrDie(const std::string& filename) {
-  Proto proto;
-  ReadBinaryProtoOrDie(filename, &proto);
-  return proto;
+  return ReadBinaryProto<Proto>(filename).ValueOrDie();
 }
 
 // Reads a proto in text format from a string.
 void ParseProtoFromStringOrDie(const std::string& text,
-                               google::protobuf::Message* message);
+                               ::google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>

@@ -22,10 +22,17 @@
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
+#include "util/task/canonical_errors.h"
+#include "util/task/status.h"
 
 namespace exegesis {
-
 namespace {
+
+using ::exegesis::util::InternalError;
+using ::exegesis::util::InvalidArgumentError;
+using ::exegesis::util::NotFoundError;
+using ::exegesis::util::Status;
+using ::exegesis::util::StatusOr;
 
 // Returns the registered providers.
 std::unordered_map<std::string,
@@ -37,17 +44,19 @@ GetProviders() {
 }
 
 // Architecture provider for proto files.
-template <void (*Read)(const std::string&, google::protobuf::Message* message)>
-std::shared_ptr<const ArchitectureProto> GetArchitectureProtoFromFileOrDie(
+template <Status (*Read)(const std::string&,
+                         google::protobuf::Message* message)>
+StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProtoFromFile(
     const std::string& id) {
   auto result = std::make_shared<ArchitectureProto>();
-  Read(id, result.get());
-  return result;
+  const Status read_status = Read(id, result.get());
+  if (!read_status.ok()) return read_status;
+  return std::shared_ptr<const ArchitectureProto>(result);
 }
 
 }  // namespace
 
-std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
+StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
     const std::string& uri) {
   const auto sep = uri.find(':');
   // If sep is npos, source is the whole thing, and id is empty.
@@ -56,22 +65,35 @@ std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
   // to explain the issue.
   const std::string id = sep == std::string::npos ? "" : uri.substr(sep + 1);
   if (source == kPbTxtSource) {
-    return GetArchitectureProtoFromFileOrDie<ReadTextProtoOrDie>(id);
+    return GetArchitectureProtoFromFile<ReadTextProto>(id);
   } else if (source == kPbSource) {
-    return GetArchitectureProtoFromFileOrDie<ReadBinaryProtoOrDie>(id);
+    return GetArchitectureProtoFromFile<ReadBinaryProto>(id);
   } else if (source == kRegisteredSource) {
     const auto* provider = FindOrNull(*GetProviders(), id);
-    CHECK(provider) << "No ArchitectureProtoProvider registered for id '" << id
-                    << "'. Known ids are:\n"
-                    << absl::StrJoin(GetRegisteredArchitectureIds(), "\n");
-    auto proto = (*provider)->GetProtoOrDie();
-    CHECK(proto) << "broken contract: GetProtoOrDie() != nullptr";
-    return proto;
+    if (provider == nullptr) {
+      return NotFoundError(
+          absl::StrCat("No ArchitectureProtoProvider registered for id '", id,
+                       "'. Known ids are:\n",
+                       absl::StrJoin(GetRegisteredArchitectureIds(), "\n")));
+    }
+    const auto proto_or_status = (*provider)->GetProto();
+    if (proto_or_status.ok() && proto_or_status.ValueOrDie() == nullptr) {
+      return InternalError("broken contract: GetProtoOrDie() != nullptr");
+    }
+    return proto_or_status;
   }
-  LOG(FATAL) << "Unknown source '" << source
-             << "'. If you meant to read from a text file, use " << kPbTxtSource
-             << ":/path/to/file";
-  return nullptr;
+  return InvalidArgumentError(
+      absl::StrCat("Unknown source '", source,
+                   "'. If you meant to read from a text file, use ",
+                   kPbTxtSource, ":/path/to/file"));
+}
+
+std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
+    const std::string& uri) {
+  const StatusOr<std::shared_ptr<const ArchitectureProto>>
+      architecture_or_status = GetArchitectureProto(uri);
+  CHECK_OK(architecture_or_status.status());
+  return architecture_or_status.ValueOrDie();
 }
 
 std::vector<std::string> GetRegisteredArchitectureIds() {

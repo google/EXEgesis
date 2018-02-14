@@ -128,6 +128,8 @@ cc_library(
     hdrs = ["proto_util.h"],
     deps = [
         "//base",
+        "//util/task:status",
+        "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
@@ -145,6 +147,7 @@ cc_test(
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
         "//file/base:path",
+        "//util/task:status",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",
