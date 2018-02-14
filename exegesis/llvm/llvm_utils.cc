@@ -92,9 +92,6 @@ void EnsureLLVMWasInitialized() {
 }
 
 StatusOr<const llvm::Target*> GetLLVMTarget() {
-  const std::string triple_name = FLAGS_exegesis_llvm_triple.empty()
-                                      ? llvm::sys::getDefaultTargetTriple()
-                                      : std::string(FLAGS_exegesis_llvm_triple);
   llvm::Triple triple(GetNormalizedLLVMTripleName());
 
   std::string error_message;
