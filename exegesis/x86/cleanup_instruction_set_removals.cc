@@ -222,7 +222,7 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
         StringPiece specification = instruction.raw_encoding_specification();
         if (!RE2::Consume(&specification, *rex_prefix_parser)) return false;
         const std::vector<InstructionProto>* const other_instructions =
-            FindOrNull(instructions_by_encoding, specification.as_string());
+            FindOrNull(instructions_by_encoding, std::string(specification));
         // We remove the instruction only if there is a version without the REX
         // prefix that is equivalent in terms of vendor_syntax. If there is not,
         // we return an error status, and keep the instruction to allow

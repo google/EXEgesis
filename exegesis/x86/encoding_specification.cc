@@ -293,7 +293,7 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
                     &vex_operand_directionality, &vex_l_usage_str,
                     &mandatory_prefix_str, RE2::Hex(&opcode_map), &vex_w_str)) {
     return InvalidArgumentError(absl::StrCat(
-        "Could not parse the VEX prefix: '", specification->ToString(), "'"));
+        "Could not parse the VEX prefix: '", std::string(*specification), "'"));
   }
 
   // Parse the fields of the VEX prefix specification.
@@ -487,7 +487,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
   return specification.empty() ? OkStatus()
                                : InvalidArgumentError(absl::StrCat(
                                      "The specification was not fully parsed: ",
-                                     specification.ToString()));
+                                     std::string(specification)));
 }
 
 std::string GenerateLegacyPrefixEncodingSpec(

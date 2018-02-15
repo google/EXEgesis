@@ -36,7 +36,7 @@ StatusOr<std::vector<uint8_t>> ParseHexString(const std::string& hex_string) {
   }
   if (!hex_stringpiece.empty()) {
     return util::InvalidArgumentError(
-        absl::StrCat("Could not parse: ", hex_stringpiece.ToString()));
+        absl::StrCat("Could not parse: ", std::string(hex_stringpiece)));
   }
   return bytes;
 }
