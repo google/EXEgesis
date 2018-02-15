@@ -116,9 +116,10 @@ at https://developer.arm.com/products/architecture/a-profile/exploration-tools
 and extract its content locally on your machine. This tool supports at least the
 following versions:
 
-* [A64_v82A_ISA_xml_00bet3.1](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v82A_ISA_xml_00bet3.1.tar.gz)
-* [A64_v83A_ISA_xml_00bet4](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v83A_ISA_xml_00bet4.tar.gz)
+* [A64_v83A_ISA_xml_00bet6](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v83A_ISA_xml_00bet6.tar.gz)
 * [A64_v83A_ISA_xml_00bet5](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v83A_ISA_xml_00bet5.tar.gz)
+* [A64_v83A_ISA_xml_00bet4](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v83A_ISA_xml_00bet4.tar.gz)
+* [A64_v82A_ISA_xml_00bet3.1](https://developer.arm.com/-/media/developer/products/architecture/armv8-a-architecture/A64_v82A_ISA_xml_00bet3.1.tar.gz)
 
 You can find more information on the ARM v8-A XML architecture specification on
 https://alastairreid.github.io/alastairreid.github.io/ARM-v8a-xml-release/
