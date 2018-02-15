@@ -264,6 +264,50 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructionsWithRexPrefix,
                                    1005);
 
+namespace {
+
+bool InstructionIsMovFromSRegWithOperand(absl::string_view operand_name,
+                                         const InstructionProto& instruction) {
+  static constexpr char kMovFromSreg[] = "REX.W + 8C /r";
+  if (instruction.raw_encoding_specification() != kMovFromSreg) return false;
+  const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+  if (vendor_syntax.operands_size() != 2) return false;
+  return vendor_syntax.operands(0).name() == operand_name;
+}
+
+}  // namespace
+
+Status RemoveDuplicateMovFromSReg(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  static constexpr char k32BitOperand[] = "r16/r32/m16";
+  static constexpr char k64BitOperand[] = "r64/m16";
+  RepeatedPtrField<InstructionProto>* const instructions =
+      instruction_set->mutable_instructions();
+
+  // The two versions of the instruction differ by the first operand:
+  // r16/r32/m16 is the "legacy" version with a 16/32-bit register, r64/m16 is
+  // the "64-bit" version with a 64-bit register. We remove the former, but we
+  // also check that the latter that we keep is present too.
+  const bool has_64_bit_version = std::any_of(
+      instructions->begin(), instructions->end(),
+      [](const InstructionProto& instruction) {
+        return InstructionIsMovFromSRegWithOperand(k64BitOperand, instruction);
+      });
+  const auto new_instructions_end = std::remove_if(
+      instructions->begin(), instructions->end(),
+      [](const InstructionProto& instruction) {
+        return InstructionIsMovFromSRegWithOperand(k32BitOperand, instruction);
+      });
+  const bool removed_32_bit_version =
+      new_instructions_end != instructions->end();
+  instructions->erase(new_instructions_end, instructions->end());
+  return (removed_32_bit_version && !has_64_bit_version)
+             ? InvalidArgumentError(
+                   "The 64-bit version of REX.W + 8C /r was not found")
+             : OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateMovFromSReg, 0);
+
 Status RemoveX87InstructionsWithGeneralVersions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);

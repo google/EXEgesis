@@ -75,6 +75,11 @@ Status RemoveUndefinedInstructions(InstructionSetProto* instruction_set);
 Status RemoveDuplicateInstructionsWithRexPrefix(
     InstructionSetProto* instruction_set);
 
+// As of the October 2017 version of the SDM, there are two entries for the
+// instruction REX.W + 8C /r (MOV from segment register to register/memory).
+// Since we're aiming at the 64-bit mode, we remove the 16/32/64-bit version.
+Status RemoveDuplicateMovFromSReg(InstructionSetProto* instruction_set);
+
 // Some of the instructions like "FXCH" has multiple variants that cover each
 // other, for example encoding for "FXCH st(0), st(i)" is "D9 C8+i" which swaps
 // contents of ST(0) with ST(i), but there is also one version with "D9 C9",

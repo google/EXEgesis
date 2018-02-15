@@ -26,6 +26,7 @@ namespace {
 
 using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::testing::HasSubstr;
 
 TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
   constexpr char kInstructionSetProto[] = R"(
@@ -659,7 +660,112 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
   }
 }
 
-TEST(RemoveX87InstructionsWithGeneralVersions, SomeInstructions) {
+TEST(RemoveDuplicateMovFromSRegTest, Remove) {
+  constexpr char kInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "imm8"
+          }
+        }
+        raw_encoding_specification: "REX + 80 /2 ib"
+        instruction_group_index: 4
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r64/m16"
+          }
+          operands {
+            name: "Sreg"
+            register_class: SPECIAL_REGISTER_SEGMENT
+          }
+        }
+        raw_encoding_specification: "REX.W + 8C /r"
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r16/r32/m16"
+          }
+          operands {
+            name: "Sreg"
+            register_class: SPECIAL_REGISTER_SEGMENT
+          }
+        }
+        raw_encoding_specification: "REX.W + 8C /r"
+      })";
+  constexpr char kExpectedInstructionSetProto[] = R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "imm8"
+          }
+        }
+        raw_encoding_specification: "REX + 80 /2 ib"
+        instruction_group_index: 4
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r64/m16"
+          }
+          operands {
+            name: "Sreg"
+            register_class: SPECIAL_REGISTER_SEGMENT
+          }
+        }
+        raw_encoding_specification: "REX.W + 8C /r"
+      })";
+  TestTransform(RemoveDuplicateMovFromSReg, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(RemoveDuplicateMovFromSRegTest, FailsWhenNotDuplicate) {
+  InstructionSetProto instruction_set =
+      ParseProtoFromStringOrDie<InstructionSetProto>(R"(
+      instructions {
+        vendor_syntax {
+          mnemonic: "ADC"
+          operands {
+            name: "m8"
+          }
+          operands {
+            name: "imm8"
+          }
+        }
+        raw_encoding_specification: "REX + 80 /2 ib"
+        instruction_group_index: 4
+      }
+      instructions {
+        vendor_syntax {
+          mnemonic: "MOV"
+          operands {
+            name: "r16/r32/m16"
+          }
+          operands {
+            name: "Sreg"
+            register_class: SPECIAL_REGISTER_SEGMENT
+          }
+        }
+        raw_encoding_specification: "REX.W + 8C /r"
+      })");
+  EXPECT_THAT(RemoveDuplicateMovFromSReg(&instruction_set),
+              StatusIs(INVALID_ARGUMENT, HasSubstr("was not found")));
+}
+
+TEST(RemoveX87InstructionsWithGeneralVersionsTest, SomeInstructions) {
   constexpr char kInstructionSetProto[] = R"(
       instructions {
         raw_encoding_specification: "D8 D0+i"
