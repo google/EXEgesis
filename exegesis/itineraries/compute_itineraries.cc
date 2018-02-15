@@ -236,12 +236,9 @@ class ComputeItinerariesHelper {
     // write to memory. RSI is increased by rsi_step at every iteration, and
     // each instruction can read up to max_bytes_touched_per_instruction.
     int GetBufferSize() const {
-      return outer_iterations * inner_iterations * rsi_step +
-             max_bytes_touched_per_instruction;
+      return inner_iterations * rsi_step + max_bytes_touched_per_instruction;
     }
 
-    // Number of times the loop body is executed.
-    int outer_iterations = 1024;
     // Number of times an instruction is repeated in the loop body.
     int inner_iterations = 1024;
     // The number of bytes to increase RSI by after each instruction block. We
@@ -485,8 +482,8 @@ StatusOr<PortMaskCount> ComputeItinerariesHelper::ComputeUpdateCodeMicroOps()
     const {
   PerfResult result;
   CHECK_OK(EvaluateAssemblyString(
-      llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.outer_iterations,
-      parameters_.inner_iterations, init_code_, prefix_code_,
+      llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.inner_iterations,
+      init_code_, prefix_code_,
       /*measured_code=*/"", update_code_,
       /*suffix_code=*/"", cleanup_code_, constraints_, &result));
   const ObservationVector observation = CreateObservationVector(result);
@@ -587,8 +584,8 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
 
   PerfResult result;
   CHECK_OK(EvaluateAssemblyString(
-      llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.outer_iterations,
-      parameters_.inner_iterations, init_code_, prefix_code_, measured_code,
+      llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.inner_iterations,
+      init_code_, prefix_code_, measured_code,
       touches_memory ? update_code_ : "", /*suffix_code=*/"", cleanup_code_,
       constraints_, &result));
 

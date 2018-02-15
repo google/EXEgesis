@@ -46,11 +46,11 @@ constexpr const PerfSubsystem::EventCategory kPerfEventCategories[] = {
 
 Status EvaluateAssemblyString(
     llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
-    const int num_outer_iterations, const int num_inner_iterations,
-    const std::string& init_code, const std::string& prefix_code,
-    const std::string& measured_code, const std::string& update_code,
-    const std::string& suffix_code, const std::string& cleanup_code,
-    const std::string& constraints, PerfResult* result) {
+    const int num_inner_iterations, const std::string& init_code,
+    const std::string& prefix_code, const std::string& measured_code,
+    const std::string& update_code, const std::string& suffix_code,
+    const std::string& cleanup_code, const std::string& constraints,
+    PerfResult* result) {
   JitCompiler jit(mcpu);
   const std::string code =
       absl::StrCat(prefix_code, "\n",
@@ -60,8 +60,8 @@ Status EvaluateAssemblyString(
   // NOTE(bdb): constraints are the same for 'code', 'init_code' and
   // 'cleanup_code'.
   const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(
-      num_outer_iterations, init_code, constraints, code, constraints,
-      cleanup_code, constraints, dialect);
+      1, init_code, constraints, code, constraints, cleanup_code, constraints,
+      dialect);
   if (!inline_asm_function.ok()) {
     return util::UnknownError(absl::StrCat(
         "Could not compile the measured code:",
@@ -85,8 +85,7 @@ Status EvaluateAssemblyString(
     inline_asm_function.ValueOrDie().CallOrDie();
     result->Accumulate(perf_subsystem.StopAndReadCounters());
   }
-  result->SetScaleFactor(static_cast<uint64_t>(num_outer_iterations) *
-                         num_inner_iterations);
+  result->SetScaleFactor(num_inner_iterations);
   return OkStatus();
 }
 

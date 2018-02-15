@@ -28,7 +28,6 @@ namespace {
 
 using ::testing::HasSubstr;
 
-const int kOuterIter = 1000;
 const int kInnerIter = 1024;
 
 constexpr const char kGenericMcpu[] = "generic";
@@ -37,7 +36,7 @@ void TestEvaluateAssemblyString(const std::string& measured_code,
                                 const std::string& constraints) {
   PerfResult result;
   ASSERT_OK(EvaluateAssemblyString(llvm::InlineAsm::AD_ATT, kGenericMcpu,
-                                   kOuterIter, kInnerIter,
+                                   kInnerIter,
                                    /*init_code=*/"",
                                    /*prefix_code=*/"", measured_code,
                                    /*update_code=*/"",
@@ -88,7 +87,7 @@ TEST(JitPerfEvaluatorTest, AddsdrmIntel) {
   double memory[10];
   PerfResult result;
   ASSERT_OK(EvaluateAssemblyString(
-      llvm::InlineAsm::AD_Intel, kGenericMcpu, kOuterIter, kInnerIter,
+      llvm::InlineAsm::AD_Intel, kGenericMcpu, kInnerIter,
       /*init_code=*/StringPrintf("movabs r11,%p", &memory),
       /*prefix_code=*/"",
       /*measured_code=*/"addsd xmm0,qword ptr [r11]",
@@ -106,7 +105,7 @@ TEST(JitPerfEvaluatorTest, Mov64mi32ATT) {
   int64_t memory;
   PerfResult result;
   ASSERT_OK(EvaluateAssemblyString(
-      llvm::InlineAsm::AD_ATT, kGenericMcpu, kOuterIter, kInnerIter,
+      llvm::InlineAsm::AD_ATT, kGenericMcpu, kInnerIter,
       /*init_code=*/"",
       /*prefix_code=*/StringPrintf("movabsq $$%p,%%r11", &memory),
       /*measured_code=*/"movq $$64,(%r11)",

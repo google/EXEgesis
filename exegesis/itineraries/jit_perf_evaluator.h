@@ -29,32 +29,28 @@ using ::exegesis::util::Status;
 // Run Perf on an assembly code string that is to be assembled using the
 // LLVM JIT assembler.
 // 'dialect' is either llvm::InlineAsm::AD_ATT, or llvm::InlineAsm::INTEL.
-// 'measured_code' is duplicated 'num_inner_iterations' times, and the
-// measurement is made over 'num_outer_iterations' of the resulting duplication
-// of the code. Thus, 'measured_code' is executed (num_outer_iterations *
-// num_inner_iterations) times.
+// 'measured_code' is repeated 'num_inner_iterations' using .rept/.endr assembly
+// directives.
 // The results are returned in 'result'.
 // The different parameters are used to generate code that will look like:
 //     init_code              ; save registers, for example.
-//     loop num_outer_iterations:
 //     prefix_code            ; set registers, for example.
 // .rept num_inner_iterations
 //     measured_code          ; the code that we want to measure.
 //     update_code            ; update code (e.g. pointer increment).
 // .end
 //     suffix_code
-//     endloop
 //     cleanup_code           ; restore registers, for example.
 //
 // 'constraints' contains the constraints on the assembly line, in a way similar
 // to the inline assembly syntax of gcc or LLVM.
 Status EvaluateAssemblyString(
     llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
-    int num_outer_iterations, int num_inner_iterations,
-    const std::string& init_code, const std::string& prefix_code,
-    const std::string& measured_code, const std::string& update_code,
-    const std::string& suffix_code, const std::string& cleanup_code,
-    const std::string& constraints, PerfResult* result);
+    int num_inner_iterations, const std::string& init_code,
+    const std::string& prefix_code, const std::string& measured_code,
+    const std::string& update_code, const std::string& suffix_code,
+    const std::string& cleanup_code, const std::string& constraints,
+    PerfResult* result);
 
 // Executes the given code, measuring the CPU state before and after execution
 // of 'code'. 'prefix_code' is run before measurements, and cleanup_code
