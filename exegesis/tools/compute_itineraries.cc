@@ -15,17 +15,24 @@
 // A tool to compute itineraries for an instruction set.
 
 #include <functional>
+#include <unordered_set>
 #include <utility>
 
 #include "gflags/gflags.h"
 
+#include "absl/strings/str_split.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/itineraries/compute_itineraries.h"
 #include "exegesis/tools/architecture_flags.h"
 #include "exegesis/util/proto_util.h"
 #include "exegesis/util/system.h"
 #include "glog/logging.h"
+#include "net/proto2/util/public/repeated_field_util.h"
+#include "util/gtl/map_util.h"
 
+DEFINE_string(exegesis_only_llvm_mnemonics, "",
+              "If provided, only compute the itineraries for these "
+              "instructions (comma-separated list).");
 DEFINE_string(exegesis_output_itineraries, "",
               "File where to store the computed itineraries in Proto format.");
 DEFINE_int32(exegesis_pin_to_core, 0,
@@ -40,10 +47,24 @@ void Main() {
   const auto microarchitecture_data =
       GetMicroArchitectureDataFromCommandLineFlags();
 
+  InstructionSetProto instruction_set =
+      microarchitecture_data.instruction_set();
   InstructionSetItinerariesProto itineraries =
       microarchitecture_data.itineraries();
-  LOG(ERROR) << itineraries::ComputeItineraries(
-      microarchitecture_data.instruction_set(), &itineraries);
+
+  if (!FLAGS_exegesis_only_llvm_mnemonics.empty()) {
+    const std::unordered_set<std::string> mnemonics = absl::StrSplit(
+        FLAGS_exegesis_only_llvm_mnemonics, ',', absl::SkipWhitespace());
+    RemoveIf(instruction_set.mutable_instructions(),
+             [&mnemonics](const InstructionProto* instruction) {
+               return !ContainsKey(mnemonics, instruction->llvm_mnemonic());
+             });
+    RemoveIf(itineraries.mutable_itineraries(),
+             [&mnemonics](const ItineraryProto* itinerary) {
+               return !ContainsKey(mnemonics, itinerary->llvm_mnemonic());
+             });
+  }
+  LOG(ERROR) << itineraries::ComputeItineraries(instruction_set, &itineraries);
 
   WriteTextProtoOrDie(FLAGS_exegesis_output_itineraries, itineraries);
 }

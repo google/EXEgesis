@@ -16,8 +16,11 @@ cc_binary(
         "//exegesis/itineraries:compute_itineraries",
         "//exegesis/util:proto_util",
         "//exegesis/util:system",
+        "//net/proto2/util/public:repeated_field_util",
+        "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
     ],
 )
