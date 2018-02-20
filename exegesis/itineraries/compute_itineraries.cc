@@ -532,18 +532,18 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
   const std::string& mnemonic = vendor_syntax.mnemonic();
   if (!instruction.feature_name().empty() &&
       !cpu_info_.SupportsFeature(instruction.feature_name())) {
-    LOG(INFO) << "Ignoring instruction " << mnemonic
+    LOG(INFO) << "Ignoring instruction " << instruction.llvm_mnemonic()
               << " with unsupported feature " << instruction.feature_name();
     return OkStatus();
   }
   // TODO(courbet): read this from cpuinfo.
   if (!instruction.available_in_64_bit()) {
-    LOG(INFO) << "Ignoring instruction " << mnemonic
+    LOG(INFO) << "Ignoring instruction " << instruction.llvm_mnemonic()
               << " (!available_in_64_bit)";
     return OkStatus();
   }
   if (microarchitecture_.IsProtectedMode(instruction.protection_mode())) {
-    LOG(INFO) << "Ignoring instruction " << mnemonic
+    LOG(INFO) << "Ignoring instruction " << instruction.llvm_mnemonic()
               << " requiring lower protection mode";
     return OkStatus();
   }
