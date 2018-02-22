@@ -240,7 +240,7 @@ class ComputeItinerariesHelper {
     }
 
     // Number of times an instruction is repeated in the loop body.
-    int inner_iterations = 1024;
+    int inner_iterations = 10000;
     // The number of bytes to increase RSI by after each instruction block. We
     // chose 16 as the increment as some vector instructions need to be aligned
     // that way.

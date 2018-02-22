@@ -68,17 +68,6 @@ Status EvaluateAssemblyString(
         ToStringView(inline_asm_function.status().error_message())));
   }
 
-  // Because of the decode window size, a large instruction is likely going to
-  // take at least 1 cycle on average.
-  // Make sure that the repeated instruction fits in the cache to avoid noise
-  // from cache misses.
-  constexpr int kL1CodeCacheSize = 1 << 15;
-  if (inline_asm_function.ValueOrDie().size >= kL1CodeCacheSize) {
-    return util::UnknownError(
-        absl::StrCat("Cannot fit ", num_inner_iterations,
-                     " repetitions of the measured code in the L1 cache"));
-  }
-
   PerfSubsystem perf_subsystem;
   for (const auto& events : kPerfEventCategories) {
     perf_subsystem.StartCollectingEvents(events);
