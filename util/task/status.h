@@ -30,6 +30,7 @@ using ::google::protobuf::util::error::FAILED_PRECONDITION;
 using ::google::protobuf::util::error::INTERNAL;
 using ::google::protobuf::util::error::INVALID_ARGUMENT;
 using ::google::protobuf::util::error::NOT_FOUND;
+using ::google::protobuf::util::error::OK;
 using ::google::protobuf::util::error::UNIMPLEMENTED;
 using ::google::protobuf::util::error::UNKNOWN;
 

@@ -27,6 +27,7 @@ using ::google::protobuf::FindOrNull;
 using ::google::protobuf::FindPtrOrNull;
 using ::google::protobuf::FindWithDefault;
 using ::google::protobuf::InsertIfNotPresent;
+using ::google::protobuf::InsertKeysFromMap;
 using ::google::protobuf::InsertOrDie;
 using ::google::protobuf::InsertOrDieNoPrint;
 
