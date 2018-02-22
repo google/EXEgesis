@@ -25,6 +25,7 @@
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "base/stringprintf.h"
@@ -53,7 +54,7 @@ using ::re2::StringPiece;
 
 bool ConsumePrefix(StringPiece* sp, StringPiece prefix) {
   DCHECK(sp != nullptr);
-  if (!sp->starts_with(prefix)) return false;
+  if (!absl::StartsWith(*sp, prefix)) return false;
   sp->remove_prefix(prefix.length());
   return true;
 }
@@ -172,7 +173,7 @@ StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
   // but it's inconsistent across the SDM. For now we simply drop the prefix and
   // ignore it.
   RE2::Consume(&specification, "NP ");
-  if (specification.starts_with("VEX.") || specification.starts_with("EVEX")) {
+  if (StartsWith(specification, "VEX.") || StartsWith(specification, "EVEX")) {
     RETURN_IF_ERROR(ParseVexOrEvexPrefix(&specification));
   } else {
     RETURN_IF_ERROR(ParseLegacyPrefixes(&specification));

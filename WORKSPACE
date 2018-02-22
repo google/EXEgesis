@@ -3,7 +3,7 @@
 git_repository(
     name = "com_google_absl",
     remote = "https://github.com/abseil/abseil-cpp.git",
-    commit = "6cf9c731027f4d8aebe3c60df8e64317e6870870",
+    commit = "c742b72354a84958b6a061755249822eeef87d06",
 )
 
 # CCTZ (Time-zone framework).
@@ -18,7 +18,7 @@ http_archive(
 git_repository(
     name = "com_googlesource_code_re2",
     remote = "https://github.com/google/re2.git",
-    commit = "5b58cbb734d9d23d1745f1ac14f8af274b3ea74b",
+    tag = "c4f65071cc07eb34d264b25f7b9bbb679c4d5a5a",
 )
 
 # ===== protobuf =====
