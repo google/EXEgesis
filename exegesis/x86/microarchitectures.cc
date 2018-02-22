@@ -151,18 +151,14 @@ constexpr const char kSkylakeMicroArchitecture[] = R"(
     store_data_port_mask_index: 10
     perf_events {
       # TODO(bdb): Only consider user-time measurements with the :u modifier.
-      # NOTE(bdb): The events "uops_dispatched_port" (see
-      # https://download.01.org/perfmon/SKL/Skylake_core_V24.json) are
-      # incorrectly named "uops_dispatched" in libpfm.
-      # TODO(bdb): Correct this when libpfm is corrected.
-      computation_events: "uops_dispatched:port_0"
-      computation_events: "uops_dispatched:port_1"
-      computation_events: "uops_dispatched:port_5"
-      computation_events: "uops_dispatched:port_6"
-      memory_events: "uops_dispatched:port_2"
-      memory_events: "uops_dispatched:port_3"
-      memory_events: "uops_dispatched:port_4"
-      memory_events: "uops_dispatched:port_7"
+      computation_events: "uops_dispatched_port:port_0"
+      computation_events: "uops_dispatched_port:port_1"
+      computation_events: "uops_dispatched_port:port_5"
+      computation_events: "uops_dispatched_port:port_6"
+      memory_events: "uops_dispatched_port:port_2"
+      memory_events: "uops_dispatched_port:port_3"
+      memory_events: "uops_dispatched_port:port_4"
+      memory_events: "uops_dispatched_port:port_7"
       cycle_events: "cycles"
       cycle_events: "instructions"
       cycle_events: "ild_stall.lcp"
