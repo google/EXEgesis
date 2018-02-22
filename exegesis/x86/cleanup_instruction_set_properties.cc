@@ -77,7 +77,7 @@ const std::unordered_map<std::string, int>& GetProtectionModesByMnemonic() {
           {"LTR", 0},
           {"MWAIT", 0},
           {"RDFSBASE", 0},
-          {"RDFSBASE", 0},
+          {"RDGSBASE", 0},
           {"WRFSBASE", 0},
           {"WRGSBASE", 0},
           // The instruction is not marked as priviledged in its doc, but SWAPGR
