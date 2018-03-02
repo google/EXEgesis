@@ -677,6 +677,7 @@ cc_library(
     ]) + [
         "include/llvm-c/Object.h",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":bit_reader",
         ":ir",
