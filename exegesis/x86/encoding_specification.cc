@@ -28,6 +28,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "base/stringprintf.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
@@ -47,18 +48,6 @@ using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
 
-// RE2 and protobuf have two slightly different implementations of StringPiece.
-// In this file, we use RE2::Consume heavily, so we explicitly switch to the RE2
-// implementation.
-using ::re2::StringPiece;
-
-bool ConsumePrefix(StringPiece* sp, StringPiece prefix) {
-  DCHECK(sp != nullptr);
-  if (!absl::StartsWith(*sp, prefix)) return false;
-  sp->remove_prefix(prefix.length());
-  return true;
-}
-
 // The parser for the instruction encoding specification language used in the
 // Intel manuals.
 class EncodingSpecificationParser {
@@ -73,7 +62,8 @@ class EncodingSpecificationParser {
       delete;
 
   // Parses the instruction data from string.
-  StatusOr<EncodingSpecification> ParseFromString(StringPiece specification);
+  StatusOr<EncodingSpecification> ParseFromString(
+      absl::string_view specification);
 
  private:
   // Resets the instruction to the initial state.
@@ -84,14 +74,14 @@ class EncodingSpecificationParser {
   // prefixes. Upon success, both methods advance 'specification' to the first
   // non-prefix byte. If the methods return a failure, the state of
   // 'specification' is undefined.
-  Status ParseLegacyPrefixes(StringPiece* specification);
-  Status ParseVexOrEvexPrefix(StringPiece* specification);
+  Status ParseLegacyPrefixes(absl::string_view* specification);
+  Status ParseVexOrEvexPrefix(absl::string_view* specification);
 
   // Parses the opcode of the instruction and its suffixes. Returns OK if the
   // opcode and the suffixes were parsed correctly, and if the specification
   // did not contain any additional data.
   // Expects that all prefixes were already consumed.
-  Status ParseOpcodeAndSuffixes(StringPiece specification);
+  Status ParseOpcodeAndSuffixes(absl::string_view specification);
 
   // The current state of the parser.
   EncodingSpecification specification_;
@@ -146,13 +136,6 @@ const std::pair<uint32_t, VexEncoding::MapSelect> kMapSelectTokens[] = {
     {0x0f3a, VexEncoding::MAP_SELECT_0F3A},
     {0x0f38, VexEncoding::MAP_SELECT_0F38}};
 
-inline void ConsumeWhitespace(StringPiece* specification) {
-  DCHECK(specification != nullptr);
-  while (ConsumePrefix(specification, " ") ||
-         ConsumePrefix(specification, "+")) {
-  }
-}
-
 EncodingSpecificationParser::EncodingSpecificationParser()
     : vex_operand_usage_tokens_(std::begin(kVexOperandUsageTokens),
                                 std::end(kVexOperandUsageTokens)),
@@ -166,7 +149,7 @@ EncodingSpecificationParser::EncodingSpecificationParser()
                          std::end(kMapSelectTokens)) {}
 
 StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
-    StringPiece specification) {
+    absl::string_view specification) {
   specification_.Clear();
   // TODO(b/37203350): In 2017/03, Intel started adding NP to the encoding
   // specifications of instructions that do not accept any additional prefixes,
@@ -183,7 +166,7 @@ StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
 }
 
 Status EncodingSpecificationParser::ParseLegacyPrefixes(
-    StringPiece* specification) {
+    absl::string_view* specification) {
   CHECK(specification != nullptr);
   // A regexp for parsing the legacy prefixes. For more details on the format,
   // see Intel 64 and IA-32 Architectures Software Developer's Manual, Volume 2:
@@ -261,7 +244,7 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
 }
 
 Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
-    StringPiece* specification) {
+    absl::string_view* specification) {
   CHECK(specification != nullptr);
   // A regexp for parsing the VEX prefix specification. For more details on the
   // format see Intel 64 and IA-32 Architectures Software Developer's Manual,
@@ -293,8 +276,8 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   if (!RE2::Consume(specification, *vex_prefix_parser, &prefix_type_str,
                     &vex_operand_directionality, &vex_l_usage_str,
                     &mandatory_prefix_str, RE2::Hex(&opcode_map), &vex_w_str)) {
-    return InvalidArgumentError(absl::StrCat(
-        "Could not parse the VEX prefix: '", std::string(*specification), "'"));
+    return InvalidArgumentError(
+        absl::StrCat("Could not parse the VEX prefix: '", *specification, "'"));
   }
 
   // Parse the fields of the VEX prefix specification.
@@ -328,7 +311,7 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
 }
 
 Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
-    StringPiece specification) {
+    absl::string_view specification) {
   VLOG(1) << "Parsing opcode and suffixes: " << specification;
   // We've already dealt with all possible prefixes. The rest are either
   // 1. a sequence of bytes (separated by space) of the opcode, in uppercase
@@ -484,7 +467,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
     specification_.set_modrm_usage(EncodingSpecification::FULL_MODRM);
   }
 
-  ConsumeWhitespace(&specification);
+  specification = absl::StripAsciiWhitespace(specification);
   return specification.empty() ? OkStatus()
                                : InvalidArgumentError(absl::StrCat(
                                      "The specification was not fully parsed: ",

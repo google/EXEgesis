@@ -30,6 +30,7 @@
 #include "gflags/gflags.h"
 
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
@@ -62,9 +63,7 @@ bool ShouldProcessPage(const std::unordered_set<size_t>& allowed_pages,
 std::unordered_set<size_t> ParsePageNumbers() {
   std::unordered_set<size_t> pages;
   int page_number = 0;
-  ::re2::
-
-      StringPiece input(FLAGS_exegesis_page_numbers);
+  absl::string_view input(FLAGS_exegesis_page_numbers);
   while (RE2::Consume(&input, "(\\d+),?", &page_number)) {
     pages.insert(page_number);
   }

@@ -27,10 +27,7 @@
 namespace exegesis {
 namespace x86 {
 namespace pdf {
-
 namespace {
-
-using re2::StringPiece;
 
 // The list of operand names from the Intel encoding specification that are
 // accepted by the converter.
@@ -297,7 +294,7 @@ bool ParseVendorSyntax(std::string content,
   content.erase(std::remove(content.begin(), content.end(), '*'),
                 content.end());
   instruction_format->Clear();
-  StringPiece input(content);
+  absl::string_view input(content);
 
   if (!RE2::Consume(&input, *kMnemonicRegexp,
                     instruction_format->mutable_mnemonic())) {

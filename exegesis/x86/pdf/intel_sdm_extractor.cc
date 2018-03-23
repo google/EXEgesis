@@ -46,8 +46,6 @@ using exegesis::pdf::PdfPage;
 using exegesis::pdf::PdfTextBlock;
 using exegesis::pdf::PdfTextTableRow;
 
-using re2::StringPiece;
-
 // The top/bottom page margin, in pixels.
 constexpr const float kPageMargin = 50.0f;
 
@@ -330,9 +328,9 @@ std::string FixFeature(std::string feature) {
       "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_IFMA|AVX512PF|"
       "AVX512_VBMI|AVX512VL)+";
   if (RE2::FullMatch(feature, kAvxRegex)) {
-    StringPiece remainder(feature);
-    std::string piece;
-    std::vector<std::string> pieces;
+    absl::string_view remainder(feature);
+    absl::string_view piece;
+    std::vector<absl::string_view> pieces;
     while (RE2::Consume(&remainder, kAvxRegex, &piece)) {
       pieces.push_back(piece);
     }
@@ -383,7 +381,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       std::string mnemonic;
       if (RE2::PartialMatch(text, *kInstructionRegexp, &mnemonic)) {
         const size_t index_of_mnemonic = text.find(mnemonic);
-        CHECK_NE(index_of_mnemonic, StringPiece::npos);
+        CHECK_NE(index_of_mnemonic, absl::string_view::npos);
         const std::string opcode_text = text.substr(0, index_of_mnemonic);
         const std::string instruction_text = text.substr(index_of_mnemonic);
         ParseVendorSyntax(instruction_text,
@@ -553,13 +551,13 @@ void ParseOperandEncodingTableRow(const OperandEncodingTableType table_type,
   }
   // The cell can specify several cross references (e.g. "HVM, QVM, OVM")
   // We instantiate as many operand encoding as cross references.
-  const std::vector<std::string> cross_references =
+  const std::vector<absl::string_view> cross_references =
       absl::StrSplit(row.blocks(0).text(), ',', absl::SkipEmpty());
-  for (std::string cross_reference : cross_references) {
-    absl::StripAsciiWhitespace(&cross_reference);
+  for (absl::string_view cross_reference : cross_references) {
+    cross_reference = absl::StripAsciiWhitespace(cross_reference);
     if (RE2::FullMatch(cross_reference, R"([A-Z][-A-Z0-9]*)")) {
       auto* const crossref = table->add_operand_encoding_crossrefs();
-      crossref->set_crossreference_name(cross_reference);
+      crossref->set_crossreference_name(std::string(cross_reference));
       for (const auto& encoding : operand_encodings) {
         *crossref->add_operand_encodings() = encoding;
       }

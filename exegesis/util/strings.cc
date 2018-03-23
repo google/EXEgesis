@@ -23,20 +23,17 @@ namespace exegesis {
 
 using ::exegesis::util::StatusOr;
 
-StatusOr<std::vector<uint8_t>> ParseHexString(const std::string& hex_string) {
-  ::re2::
-
-      StringPiece hex_stringpiece(hex_string);
+StatusOr<std::vector<uint8_t>> ParseHexString(absl::string_view hex_string) {
   std::vector<uint8_t> bytes;
   uint32_t encoded_byte;
   const RE2 byte_parser("(?:0x)?([0-9a-fA-F]{1,2}) *,? *");
-  while (!hex_stringpiece.empty() &&
-         RE2::Consume(&hex_stringpiece, byte_parser, RE2::Hex(&encoded_byte))) {
+  while (!hex_string.empty() &&
+         RE2::Consume(&hex_string, byte_parser, RE2::Hex(&encoded_byte))) {
     bytes.push_back(static_cast<uint8_t>(encoded_byte));
   }
-  if (!hex_stringpiece.empty()) {
+  if (!hex_string.empty()) {
     return util::InvalidArgumentError(
-        absl::StrCat("Could not parse: ", hex_stringpiece));
+        absl::StrCat("Could not parse: ", hex_string));
   }
   return bytes;
 }

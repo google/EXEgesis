@@ -41,7 +41,7 @@ git_repository(
 git_repository(
     name = "com_google_googletest",
     remote = "https://github.com/google/googletest.git",
-    commit = "c3f65335b79f47b05629e79a54685d899bc53b93",
+    commit = "dccc2d67547a5a3a97e4f211f39df931c6fbd5d5",
 )
 
 # ===== benchmark =====
@@ -118,11 +118,11 @@ git_repository(
 
 # NOTE(ondrasej): As of December 2017, downloading the code as a zip takes less
 # than 30 seconds, while cloning the repository takes several minutes.
-llvm_commit = "0f0caba04ff8e48f15b35dbca80af4266a8c5184"
+llvm_commit = "dbb224560c427c1d2f1eb8d7ffab7a61f873033e"
 new_http_archive(
     name = "llvm_git",
     url = "https://codeload.github.com/llvm-mirror/llvm/zip/" + llvm_commit,
-    sha256 = "94c619ebb7995dee29c93b63506b78e1ee8ffbcb9e15f58e0f78af481f8455bb",
+    sha256 = "965cc8bea09465dd5815a9169698508789e401a5f558fef5a8a0384e41f0495f",
     type = "zip",
     build_file = "llvm.BUILD",
     strip_prefix = "llvm-" + llvm_commit,

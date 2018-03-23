@@ -179,8 +179,8 @@ genrule(
 
 genrule(
     name = "generate_datatypes_h",
-    srcs = ["include/llvm/Support/DataTypes.h.cmake"],
-    outs = ["include/llvm/Support/DataTypes.h"],
+    srcs = ["include/llvm-c/DataTypes.h.cmake"],
+    outs = ["include/llvm-c/DataTypes.h"],
     cmd = ("sed -e 's/#cmakedefine /#define /g'" +
            "    -e 's/$${HAVE_INTTYPES_H}/1/'" +
            "    -e 's/$${HAVE_STDINT_H}/1/'" +
@@ -308,6 +308,7 @@ cc_library(
         "include/llvm/Analysis/*.def",
     ]) + [
         "include/llvm/Transforms/Utils/Local.h",
+        "include/llvm/Transforms/Utils/LoopUtils.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -379,7 +380,7 @@ cc_library(
 
 cc_library(
     name = "demangle",
-    srcs = glob(["lib/Demangle/*.cpp"]) + ["include/llvm/Support/Compiler.h"],
+    srcs = glob(["lib/Demangle/*.cpp"]) + ["include/llvm/Demangle/Compiler.h"],
     hdrs = ["include/llvm/Demangle/Demangle.h"],
     visibility = ["//visibility:public"],
     deps = [":config"],
@@ -733,6 +734,7 @@ cc_library(
         "include/llvm-c/*.h",
         ]) + [
         "include/llvm/CodeGen/MachineValueType.h",
+        "include/llvm-c/DataTypes.h",
         "include/llvm/Support/DataTypes.h",
         "include/llvm/Support/VCSRevision.h",
     ],
@@ -804,6 +806,22 @@ cc_library(
         ":config",
         ":ir",
         ":support",
+    ],
+)
+
+cc_library(
+    name = "aggressiveinstcombine_transforms",
+    srcs = glob([
+        "lib/Transforms/AggressiveInstCombine/*.cpp",
+        "lib/Transforms/AggressiveInstCombine/*.h",
+    ]),
+    hdrs = [
+        "include/llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h",
+    ],
+    deps = [
+        ":analysis",
+        ":support",
+        ":transform_utils",
     ],
 )
 
@@ -930,6 +948,7 @@ cc_library(
         ":analysis",
         ":config",
         ":instcombine_transforms",
+        ":aggressiveinstcombine_transforms",
         ":ir",
         ":profiledata",
         ":support",

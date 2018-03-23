@@ -209,13 +209,13 @@ TEST(DisassemblerTest, FpComparisonInstructions) {
 TEST(DisassemblerTest, LoadSegmentLimitInstruction) {
   Disassembler disasm("");
   EXPECT_EQ(
-      "00000000; 440F030C25FF7F0000; lsl r9d, dword ptr [0x7fff]; lsll 0x7fff, "
+      "00000000; 440F030C25FF7F0000; lsl r9d, word ptr [0x7fff]; lsll 0x7fff, "
       "%r9d; LSL32rm",
       disasm.DisassembleHexString("440F030C25FF7F0000"));
-  EXPECT_EQ("00000000; 4D0F03C9; lsl r9, r9; lslq %r9, %r9; LSL64rr",
+  EXPECT_EQ("00000000; 4D0F03C9; lsl r9, r9d; lslq %r9d, %r9; LSL64rr",
             disasm.DisassembleHexString("4D0F03C9"));
   EXPECT_EQ(
-      "00000000; 4C0F030C25FF7F0000; lsl r9, qword ptr [0x7fff];"
+      "00000000; 4C0F030C25FF7F0000; lsl r9, word ptr [0x7fff];"
       " lslq 0x7fff, %r9; LSL64rm",
       disasm.DisassembleHexString("4C0F030C25FF7F0000"));
 }

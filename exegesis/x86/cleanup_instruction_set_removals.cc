@@ -36,11 +36,6 @@
 namespace exegesis {
 namespace x86 {
 
-// RE2 and protobuf have two slightly different implementations of StringPiece.
-// In this file, we use RE2::Consume heavily, so we explicitly switch to the RE2
-// implementation.
-using ::re2::StringPiece;
-
 using ::absl::c_linear_search;
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::OkStatus;
@@ -219,7 +214,8 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
       [&](const InstructionProto& instruction) {
         static constexpr char kRexPrefixRegex[] = R"(REX *\+ *)";
         static const LazyRE2 rex_prefix_parser = {kRexPrefixRegex};
-        StringPiece specification = instruction.raw_encoding_specification();
+        absl::string_view specification =
+            instruction.raw_encoding_specification();
         if (!RE2::Consume(&specification, *rex_prefix_parser)) return false;
         const std::vector<InstructionProto>* const other_instructions =
             FindOrNull(instructions_by_encoding, std::string(specification));

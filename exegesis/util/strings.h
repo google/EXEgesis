@@ -36,7 +36,7 @@ using ::exegesis::util::StatusOr;
 // Example input formats:
 // * 0x0,0x1,0x2,0x3
 // * 00 AB 01 BC
-StatusOr<std::vector<uint8_t>> ParseHexString(const std::string& hex_string);
+StatusOr<std::vector<uint8_t>> ParseHexString(absl::string_view hex_string);
 
 // Converts the given block of binary data to a human-readable string format.
 // This function produces a sequence of two-letter hexadecimal codes separated

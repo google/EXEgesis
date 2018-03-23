@@ -29,11 +29,6 @@
 namespace exegesis {
 namespace {
 
-// RE2 and protobuf have two slightly different implementations of StringPiece.
-// In this file, we use RE2::Consume, so we explicitly switch to the RE2
-// implementation.
-using ::re2::StringPiece;
-
 template <typename PrefixCollection>
 bool ContainsPrefix(const std::string& str, const PrefixCollection& prefixes) {
   for (const auto& prefix : prefixes) {
@@ -63,8 +58,8 @@ std::vector<std::string> SeparateOperandsWithCommas(const std::string& s) {
   return result;
 }
 
-InstructionOperand ParseOperand(StringPiece source) {
-  StringPiece original_source = source;
+InstructionOperand ParseOperand(absl::string_view source) {
+  absl::string_view original_source = source;
   static const LazyRE2 kOperandNameRegexp = {R"( *([^{}]*[^{} ]) *)"};
   static const LazyRE2 kTagRegexp = {R"( *\{([^}]+)\} *)"};
   InstructionOperand operand;
