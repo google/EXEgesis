@@ -18,8 +18,10 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "llvm/MC/MCInstPrinter.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
+#include "llvm_sim/x86/constants.h"
 
 namespace exegesis {
 namespace simulator {
@@ -46,9 +48,10 @@ const uint8_t kTestCodeBytes[] = {
 };
 
 TEST_F(FauconUtilTest, GetIACAMarkedCode) {
-  const std::string FileName = getenv("TEST_SRCDIR") +
-                               "/__main__/llvm_sim/"
-                               "x86/testdata/testbinary";
+  constexpr char kTestBinaryPath[] =
+      "/__main__/llvm_sim/x86/testdata/testbinary";
+  const std::string FileName =
+      std::string(getenv("TEST_SRCDIR")) + kTestBinaryPath;
   EXPECT_THAT(GetIACAMarkedCode(FileName),
               testing::ElementsAreArray(kTestCodeBytes));
 }
@@ -60,13 +63,12 @@ TEST_F(FauconUtilTest, ParseMCInsts) {
 }
 
 TEST_F(FauconUtilTest, ParseAsmCodeFromFile) {
-  const std::string FileName = getenv("TEST_SRCDIR") +
-                               "/__main__/llvm_sim/"
-                               "x86/testdata/test1.s";
+  std::string FileName = getenv("TEST_SRCDIR");
+  FileName += "/__main__/llvm_sim/x86/testdata/test1.s";
   const auto Context = GlobalContext::Create("x86_64", "haswell");
   const auto Instructions =
       ParseAsmCodeFromFile(*Context, FileName, llvm::InlineAsm::AD_Intel);
-  EXPECT_EQ(Instructions.size(), 6);
+  EXPECT_EQ(Instructions.size(), 7);
 }
 
 TEST(TextTableTest, NoHeader) {
@@ -122,6 +124,84 @@ TEST(TextTableTest, TrailingValues) {
             "---------\n"
             "| a | b | d\tef\n"
             "---------\n");
+}
+
+class TestMCInstPrinter : public llvm::MCInstPrinter {
+ public:
+  TestMCInstPrinter(const GlobalContext &Context)
+      : llvm::MCInstPrinter(*Context.AsmInfo, *Context.InstrInfo,
+                            *Context.RegisterInfo) {}
+
+  void printInst(const llvm::MCInst *MI, llvm::raw_ostream &OS,
+                 llvm::StringRef Annot,
+                 const llvm::MCSubtargetInfo &STI) override {
+    OS << "inst" << MI->getOpcode();
+  }
+
+  void printRegName(llvm::raw_ostream &OS, unsigned RegNo) const {
+    OS << "reg" << RegNo;
+  }
+};
+
+TEST_F(FauconUtilTest, PrintTrace) {
+  std::vector<BufferDescription> BufferDescriptions(
+      {BufferDescription("A", IntelBufferIds::kAllocated),
+       BufferDescription("B", IntelBufferIds::kIssuePort),
+       BufferDescription("C"),
+       BufferDescription("D", IntelBufferIds::kWriteback),
+       BufferDescription("E", IntelBufferIds::kRetired)});
+  SimulationLog Log(BufferDescriptions);
+  Log.NumCycles = 21;
+  Log.Iterations.push_back({/*EndCycle=*/18});
+  SimulationLog::Line Line;
+
+  Line.Cycle = 3;
+  Line.BufferIndex = 0;
+  Line.MsgTag = UopId::kTagName;
+  Line.Msg = UopId::Format({{0, 0}, 0});
+  Log.Lines.push_back(Line);
+
+  Line.Cycle = 5;
+  Line.BufferIndex = 1;
+  Line.MsgTag = UopId::kTagName;
+  Line.Msg = UopId::Format({{0, 0}, 0});
+  Log.Lines.push_back(Line);
+
+  Line.Cycle = 7;
+  Line.BufferIndex = 2;
+  Line.MsgTag = UopId::kTagName;
+  Line.Msg = UopId::Format({{0, 0}, 0});
+  Log.Lines.push_back(Line);
+
+  Line.Cycle = 9;
+  Line.BufferIndex = 3;
+  Line.MsgTag = UopId::kTagName;
+  Line.Msg = UopId::Format({{0, 0}, 0});
+  Log.Lines.push_back(Line);
+
+  Line.Cycle = 11;
+  Line.BufferIndex = 4;
+  Line.MsgTag = UopId::kTagName;
+  Line.Msg = UopId::Format({{0, 0}, 0});
+  Log.Lines.push_back(Line);
+
+  const auto Context = GlobalContext::Create("x86_64", "haswell");
+  const auto Instructions =
+      ParseMCInsts(*Context, {0x01, 0xC8} /* add eax, ecx */);
+  const BlockContext BlockContext(Instructions, true);
+
+  std::string Out;
+  llvm::raw_string_ostream OS{Out};
+  TestMCInstPrinter AsmPrinter(*Context);
+  PrintTrace(*Context, BlockContext, Log, AsmPrinter, OS);
+  OS.flush();
+  // clang-format off
+  EXPECT_EQ(Out,
+            "|it|in|Disassembly                                       :012345678901234567890\n"  // NOLINT
+            "| 0| 0|inst193                                           :          |         |\n"  // NOLINT
+            "|  |  |      uop 0                                       :   A-deeew-R        |\n"  // NOLINT
+           );
+  // clang-format on
 }
 }  // namespace
 }  // namespace simulator

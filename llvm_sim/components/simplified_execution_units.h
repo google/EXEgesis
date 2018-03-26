@@ -46,6 +46,7 @@ class SimplifiedExecutionUnits : public Component {
 
   ~SimplifiedExecutionUnits() override {}
 
+  void Init() { Elements_.clear(); }
   void Tick(const BlockContext* BlockContext) final;
 
  private:

@@ -26,6 +26,7 @@
 #include "llvm/MC/MCInst.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm_sim/framework/context.h"
+#include "llvm_sim/framework/log.h"
 
 namespace exegesis {
 namespace simulator {
@@ -46,6 +47,11 @@ std::vector<uint8_t> GetIACAMarkedCode(const std::string& FileName);
 // Parse `CodeBytes` into MCInsts.
 std::vector<llvm::MCInst> ParseMCInsts(const GlobalContext& Context,
                                        llvm::ArrayRef<uint8_t> CodeBytes);
+
+// Prints a IACA-style execution trace.
+void PrintTrace(const GlobalContext& Context, const BlockContext& BlockContext,
+                const SimulationLog& Log, llvm::MCInstPrinter& AsmPrinter,
+                llvm::raw_ostream& OS);
 
 // A class to represent a table and render it out to an llvm::raw_ostream.
 class TextTable {

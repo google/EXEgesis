@@ -20,12 +20,14 @@
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCDisassembler/MCDisassembler.h"
 #include "llvm/MC/MCInst.h"
+#include "llvm/MC/MCInstPrinter.h"
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCParser/MCAsmParser.h"
 #include "llvm/MC/MCParser/MCTargetAsmParser.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/Object/ObjectFile.h"
 #include "llvm/Support/SourceMgr.h"
+#include "llvm_sim/x86/constants.h"
 
 namespace exegesis {
 namespace simulator {
@@ -44,7 +46,7 @@ std::vector<uint8_t> GetIACAMarkedCode(const std::string& FileName) {
   // Open binary and search for marker.
   auto BinaryOrErr = llvm::object::createBinary(FileName);
   if (!BinaryOrErr) {
-    std::cerr << "could not open binary\n";
+    std::cerr << "could not open binary: " << FileName << "\n";
     return {};
   }
   const auto* const Obj =
@@ -239,5 +241,219 @@ void TextTable::RenderRow(const int Row, const std::vector<int>& Widths,
   OS << "\n";
 }
 
+namespace {
+
+// Represents a trace matrix (4th trace column), indexed by (Iteration, BBIndex,
+// UopIndex).
+struct TraceMatrix {
+  explicit TraceMatrix(const GlobalContext& Context,
+                       const BlockContext& BlockContext,
+                       const SimulationLog& Log)
+      : EmptyRow_(Log.NumCycles, ' ') {
+    for (const auto& Line : Log.Lines) {
+      switch (Log.BufferDescriptions[Line.BufferIndex].Id) {
+        case IntelBufferIds::kAllocated:
+          TryAssignState(Log, Line, 'A');
+          break;
+        case IntelBufferIds::kIssuePort:
+          TryAssignState(Log, Line, 'd');
+          break;
+        case IntelBufferIds::kWriteback:
+          TryAssignState(Log, Line, 'w');
+          break;
+        case IntelBufferIds::kRetired:
+          TryAssignState(Log, Line, 'R');
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  const std::vector<char>& GetRow(unsigned Iteration, unsigned BBIndex,
+                                  unsigned UopIndex) const {
+    UopId::Type Uop = {{Iteration, BBIndex}, UopIndex};
+    const auto It = UopToTrace_.find(Uop);
+    return It == UopToTrace_.end() ? EmptyRow_ : It->second;
+  }
+
+ private:
+  void TryAssignState(const SimulationLog& Log, const SimulationLog::Line& Line,
+                      const char State) {
+    if (Line.MsgTag != UopId::kTagName) {
+      return;
+    }
+    UopId::Type Uop;
+    llvm::StringRef Msg = Line.Msg;
+    if (UopId::Consume(Msg, Uop)) {
+      return;
+    }
+    if (Uop.InstrIndex.Iteration >= Log.GetNumCompleteIterations()) {
+      // Ignore any incomplete iteration.
+      return;
+    }
+    auto& MatrixRow = UopToTrace_[Uop];
+    if (MatrixRow.empty()) {
+      // This is the first time we hit this row, create it.
+      MatrixRow = EmptyRow_;
+    }
+    MatrixRow[Line.Cycle] = State;
+  }
+
+  struct UopIdLess {
+    bool operator()(const UopId::Type& Uop1, const UopId::Type& Uop2) const {
+      return std::tie(Uop1.InstrIndex.Iteration, Uop1.InstrIndex.BBIndex,
+                      Uop1.UopIndex) < std::tie(Uop2.InstrIndex.Iteration,
+                                                Uop2.InstrIndex.BBIndex,
+                                                Uop2.UopIndex);
+    }
+  };
+  std::map<UopId::Type, std::vector<char>, UopIdLess> UopToTrace_;
+  const std::vector<char> EmptyRow_;
+};
+
+struct TraceColumnWidths {
+  explicit TraceColumnWidths(const BlockContext& BlockContext,
+                             const SimulationLog& Log)
+      : ItColWidth(std::max(
+            2.0, std::ceil(std::log10(Log.GetNumCompleteIterations())))),
+        InColWidth(
+            std::max(2.0, std::ceil(std::log10(
+                              BlockContext.GetNumBasicBlockInstructions())))) {}
+
+  // Iteration column width.
+  const unsigned ItColWidth;
+  // Instruction column width.
+  const unsigned InColWidth;
+  // Disassembly column width.
+  const unsigned DisassemblyColWidth = 50;
+};
+
+// Writes the first three columns of a line, justified according to
+// `ColumnWidths`.
+void WriteLineBegin(const TraceColumnWidths& ColumnWidths,
+                    const llvm::StringRef ItColumn,
+                    const llvm::StringRef InColumn,
+                    const llvm::StringRef DisassmeblyColumn,
+                    llvm::raw_ostream& OS) {
+  OS << '|' << llvm::right_justify(ItColumn, ColumnWidths.ItColWidth) << '|'
+     << llvm::right_justify(InColumn, ColumnWidths.InColWidth) << '|'
+     << llvm::left_justify(DisassmeblyColumn, ColumnWidths.DisassemblyColWidth);
+  OS << ':';
+}
+
+// The header looks like:
+//   `|it  |in  |Disassembly    :012345678901234567890123`
+void WriteTraceHeader(const SimulationLog& Log,
+                      const TraceColumnWidths& ColumnWidths,
+                      llvm::raw_ostream& OS) {
+  WriteLineBegin(ColumnWidths, "it", "in", "Disassembly", OS);
+  for (unsigned Cycle = 0; Cycle < Log.NumCycles; ++Cycle) {
+    OS << (Cycle % 10);
+  }
+  OS << '\n';
+}
+
+// A raw_ostream that expands tabs.
+class expandtabs_raw_ostream : public llvm::raw_ostream {
+ public:
+  explicit expandtabs_raw_ostream(llvm::raw_ostream& OS, unsigned TabWidth)
+      : llvm::raw_ostream(/*Unbuffered=*/true),
+        OS_(&OS),
+        Tabs_(TabWidth, ' ') {}
+
+  virtual ~expandtabs_raw_ostream() {}
+
+ private:
+  void write_impl(const char* Ptr, size_t Size) final {
+    for (size_t I = 0; I < Size; ++I) {
+      if (Ptr[I] == '\t') {
+        OS_->write(Tabs_.data(), Tabs_.size());
+      } else {
+        OS_->write(Ptr + I, 1);
+      }
+    }
+  }
+
+  uint64_t current_pos() const final { return OS_->tell(); }
+
+  llvm::raw_ostream* const OS_;
+  const std::string Tabs_;
+};
+
+void WriteTraceLine(const GlobalContext& Context,
+                    const BlockContext& BlockContext, const SimulationLog& Log,
+                    llvm::MCInstPrinter& AsmPrinter, const TraceMatrix& Matrix,
+                    const size_t Iter, const size_t BBIndex,
+                    const TraceColumnWidths& ColumnWidths,
+                    llvm::formatted_raw_ostream& OS) {
+  // Get the instruction disassembly and expand tabs.
+  std::string Disassembly;
+  {
+    llvm::raw_string_ostream SOS(Disassembly);
+    expandtabs_raw_ostream ETOS(SOS, 4);
+    AsmPrinter.printInst(&BlockContext.GetInstruction(BBIndex), ETOS, "",
+                         *Context.SubtargetInfo);
+  }
+
+  // First write the iteration, index and disassembly.
+  WriteLineBegin(ColumnWidths, llvm::itostr(Iter), llvm::itostr(BBIndex),
+                 Disassembly, OS);
+  OS << "          ";
+  for (unsigned Cycle = 10; Cycle < Log.NumCycles; ++Cycle) {
+    OS << ((Cycle % 10) == 0 ? '|' : ' ');
+  }
+  OS << "\n";
+
+  // Then each uop.
+  const size_t NumUops =
+      Context
+          .GetInstructionDecomposition(
+              BlockContext.GetInstruction(BBIndex).getOpcode())
+          .Uops.size();
+  for (size_t UopIndex = 0; UopIndex < NumUops; ++UopIndex) {
+    WriteLineBegin(
+        ColumnWidths, "", "",
+        llvm::Twine("      uop ").concat(llvm::Twine(UopIndex)).str(), OS);
+    const auto MatrixRow = Matrix.GetRow(Iter, BBIndex, UopIndex);
+    char PrevState = ' ';
+    for (unsigned Cycle = 0; Cycle < Log.NumCycles; ++Cycle) {
+      char State = MatrixRow[Cycle];
+      if (State == ' ') {
+        // Fill in the blanks.
+        if (PrevState != ' ' && PrevState != '|' && PrevState != 'R') {
+          // Fill with '-' except when executing, where we fill with 'e'.
+          State = (PrevState == 'e' || PrevState == 'd') ? 'e' : '-';
+        } else if (Cycle > 0 && (Cycle % 10) == 0) {
+          State = '|';
+        }
+      }
+      OS << State;
+      PrevState = State;
+    }
+    OS << "\n";
+  }
+}
+}  // namespace
+
+void PrintTrace(const GlobalContext& Context, const BlockContext& BlockContext,
+                const SimulationLog& Log, llvm::MCInstPrinter& AsmPrinter,
+                llvm::raw_ostream& OS) {
+  const TraceMatrix Matrix(Context, BlockContext, Log);
+
+  llvm::formatted_raw_ostream FOS(OS);
+
+  const TraceColumnWidths ColumnWidths(BlockContext, Log);
+
+  WriteTraceHeader(Log, ColumnWidths, FOS);
+
+  for (size_t Iter = 0; Iter < Log.GetNumCompleteIterations(); ++Iter) {
+    for (size_t BBIndex = 0;
+         BBIndex < BlockContext.GetNumBasicBlockInstructions(); ++BBIndex) {
+      WriteTraceLine(Context, BlockContext, Log, AsmPrinter, Matrix, Iter,
+                     BBIndex, ColumnWidths, FOS);
+    }
+  }
+}
 }  // namespace simulator
 }  // namespace exegesis

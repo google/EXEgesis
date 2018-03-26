@@ -35,6 +35,7 @@ class DispatchPort : public LinkBuffer<ElemTag> {
   ~DispatchPort() override {}
 
   void Init(Logger* Log) override {
+    LinkBuffer<ElemTag>::Init(Log);
     // Tell the port pressure analysis that we generate pressure information.
     Log->Log("PortPressure", "init");
   }

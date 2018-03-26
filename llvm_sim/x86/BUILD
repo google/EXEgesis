@@ -10,10 +10,16 @@ package(
 )
 
 cc_library(
+    name = "constants",
+    hdrs = ["constants.h"],
+)
+
+cc_library(
     name = "haswell",
     srcs = ["haswell.cc"],
     hdrs = ["haswell.h"],
     deps = [
+        ":constants",
         "//llvm_sim/components:buffer",
         "//llvm_sim/components:decoder",
         "//llvm_sim/components:dispatch_port",
@@ -64,7 +70,10 @@ cc_library(
     srcs = ["faucon_lib.cc"],
     hdrs = ["faucon_lib.h"],
     deps = [
+        ":constants",
+        "//llvm_sim/framework:component",
         "//llvm_sim/framework:context",
+        "//llvm_sim/framework:log",
         "@llvm_git//:machine_code",
         "@llvm_git//:machine_code_disassembler",
         "@llvm_git//:object",
@@ -80,6 +89,7 @@ cc_test(
         "//llvm_sim/x86/testdata:testbinary",
     ],
     deps = [
+        ":constants",
         ":faucon_lib",
         "@com_google_googletest//:gtest_main",
         "@llvm_git//:support",
@@ -94,10 +104,12 @@ cc_binary(
     name = "faucon",
     srcs = ["faucon.cc"],
     deps = [
+        ":constants",
         ":faucon_lib",
         ":haswell",
         "//llvm_sim/analysis:inverse_throughput",
         "//llvm_sim/analysis:port_pressure",
+        "@llvm_git//:machine_code",
         "@llvm_git//:support",
         "@llvm_git//:x86_target",  # buildcleaner: keep
         "@llvm_git//:x86_target_asm_parser",  # buildcleaner: keep

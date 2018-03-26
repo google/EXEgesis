@@ -120,8 +120,8 @@ TEST(SimulatorTest, Iterations) {
 
   // A gmock action that pushes the given instruction to the simulator's sink.
   const auto SetInstructionDone = [&Simulator](size_t Iter, size_t BBIndex) {
-    return testing::WithoutArgs([&Simulator, Iter, BBIndex]() {
-      CHECK(Simulator.GetInstructionSink()->Push({BBIndex, Iter}));
+    return testing::InvokeWithoutArgs([&Simulator, Iter, BBIndex]() {
+      EXPECT_TRUE(Simulator.GetInstructionSink()->Push({BBIndex, Iter}));
     });
   };
   testing::Sequence Seq;

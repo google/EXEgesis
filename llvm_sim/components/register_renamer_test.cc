@@ -16,13 +16,13 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "lib/Target/X86/X86InstrInfo.h"
 #include "llvm/MC/MCInstBuilder.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm_sim/components/common.h"
 #include "llvm_sim/components/testing.h"
 #include "llvm_sim/framework/context.h"
-#include "third_party/llvm/llvm/lib/Target/X86/X86InstrInfo.h"
 
 namespace exegesis {
 namespace simulator {
@@ -118,13 +118,10 @@ TEST_F(RegisterRenamerTest, TracksRegisters) {
   ASSERT_THAT(Tracker->GetNameDeps(CH), UnorderedElementsAre(5));
   ASSERT_THAT(Tracker->GetNameDeps(EAX), UnorderedElementsAre());
 
-  // TODO(courbet): This is unexpected. Writing to CX should not set the upper
-  // bits of ECX and RCX.
   Tracker->SetName(CX, 6);
   // expected {5,6}
-  ASSERT_THAT(Tracker->GetNameDeps(RCX), UnorderedElementsAre(6));
-  // expected {5,6}
-  ASSERT_THAT(Tracker->GetNameDeps(ECX), UnorderedElementsAre(6));
+  ASSERT_THAT(Tracker->GetNameDeps(RCX), UnorderedElementsAre(5, 6));
+  ASSERT_THAT(Tracker->GetNameDeps(ECX), UnorderedElementsAre(5, 6));
   // ok
   ASSERT_THAT(Tracker->GetNameDeps(CX), UnorderedElementsAre(6));
   ASSERT_THAT(Tracker->GetNameDeps(CL), UnorderedElementsAre(6));

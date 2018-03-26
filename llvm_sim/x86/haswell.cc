@@ -25,6 +25,7 @@
 #include "llvm_sim/components/reorder_buffer.h"
 #include "llvm_sim/components/retirer.h"
 #include "llvm_sim/components/simplified_execution_units.h"
+#include "llvm_sim/x86/constants.h"
 
 namespace exegesis {
 namespace simulator {
@@ -61,13 +62,7 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
       Ports.push_back(
           llvm::make_unique<DispatchPort<ROBUopId>>(ProcResDesc->NumUnits));
       PortSinks.push_back(Ports.back().get());
-#if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
       PortNames.push_back(ProcResDesc->Name);
-#else
-      // TODO(courbet): Better port naming in release mode.
-      PortNames.push_back(
-          llvm::Twine("ProcResIdx ").concat(llvm::Twine(ProcResIdx)).str());
-#endif
     }
   }
   // Links.
@@ -122,19 +117,30 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
       RetiredUopsLink.get(), Simulator->GetInstructionSink()));
 
   // Add Buffers ---------------------------------------------------------------
-  Simulator->AddBuffer(std::move(FetchedInstructionsLink), {"FetchBuffer"});
-  Simulator->AddBuffer(std::move(InstructionQueue), {"Pre-Decode Buffer"});
+  Simulator->AddBuffer(std::move(FetchedInstructionsLink),
+                       BufferDescription("FetchBuffer"));
+  Simulator->AddBuffer(std::move(InstructionQueue),
+                       BufferDescription("Pre-Decode Buffer"));
   Simulator->AddBuffer(std::move(InstructionDecodeQueue),
-                       {"Instruction Decode Queue"});
+                       BufferDescription("Instruction Decode Queue"));
   for (int I = 0; I < Ports.size(); ++I) {
-    Simulator->AddBuffer(std::move(Ports[I]), {PortNames[I]});
+    Simulator->AddBuffer(
+        std::move(Ports[I]),
+        BufferDescription(PortNames[I], IntelBufferIds::kIssuePort));
   }
-  Simulator->AddBuffer(std::move(RenamerToROBLink), {"Renamed Uops"});
-  Simulator->AddBuffer(std::move(UopsToRetireLink), {"Ready to Retire Uops"});
-  Simulator->AddBuffer(std::move(ExecutedWritebackLink), {"ROB Writeback"});
-  Simulator->AddBuffer(std::move(ExecDepsTracker), {"Outputs Available"});
-  Simulator->AddBuffer(std::move(RetiredUopsLink), {"Retired Uops"});
-
+  Simulator->AddBuffer(
+      std::move(RenamerToROBLink),
+      BufferDescription("Renamed Uops", IntelBufferIds::kAllocated));
+  Simulator->AddBuffer(std::move(UopsToRetireLink),
+                       BufferDescription("Ready to Retire Uops"));
+  Simulator->AddBuffer(
+      std::move(ExecutedWritebackLink),
+      BufferDescription("ROB Writeback", IntelBufferIds::kWriteback));
+  Simulator->AddBuffer(std::move(ExecDepsTracker),
+                       BufferDescription("Outputs Available"));
+  Simulator->AddBuffer(
+      std::move(RetiredUopsLink),
+      BufferDescription("Retired Uops", IntelBufferIds::kRetired));
   return Simulator;
 }
 

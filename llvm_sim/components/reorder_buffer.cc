@@ -140,6 +140,7 @@ ReorderBuffer::~ReorderBuffer() {}
 void ReorderBuffer::Init() {
   Entries_.Reset();
   IssuePolicy_->Reset();
+  InFlightRegisterDefs_.clear();
 }
 
 void ReorderBuffer::Tick(const BlockContext* BlockContext) {

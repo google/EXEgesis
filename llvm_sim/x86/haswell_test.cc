@@ -20,6 +20,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "lib/Target/X86/X86InstrInfo.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/TargetSchedule.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
@@ -35,7 +36,6 @@
 #include "llvm_sim/framework/log_levels.h"
 #include "llvm_sim/x86/faucon_lib.h"
 #include "llvm_sim/x86/haswell.h"
-#include "third_party/llvm/llvm/lib/Target/X86/X86InstrInfo.h"
 
 namespace exegesis {
 namespace simulator {
@@ -57,13 +57,13 @@ void HaswellTest::RunTestCase(const std::string& TestCase) {
   const auto Context = GlobalContext::Create("x86_64", "haswell");
   const auto Simulator = CreateHaswellSimulator(*Context);
 
-  const std::string FileName = getenv("TEST_SRCDIR") +
+  const std::string FileName = std::string(getenv("TEST_SRCDIR")) +
                                "/__main__/llvm_sim/"
                                "x86/testdata/" +
                                TestCase;
   const auto Instructions =
       ParseAsmCodeFromFile(*Context, FileName, llvm::InlineAsm::AD_Intel);
-  CHECK(!Instructions.empty());
+  ASSERT_TRUE(!Instructions.empty());
 
   const BlockContext BlockContext(Instructions, true);
   const auto Log = Simulator->Run(BlockContext, /*MaxNumIterations=*/100,

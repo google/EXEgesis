@@ -23,6 +23,7 @@
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInstPrinter.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm_sim/analysis/inverse_throughput.h"
@@ -30,8 +31,12 @@
 #include "llvm_sim/x86/faucon_lib.h"
 #include "llvm_sim/x86/haswell.h"
 
+static llvm::cl::opt<std::string> LogFile(
+    "log", llvm::cl::desc("Write simulation log to file"),
+    llvm::cl::value_desc("log_file"), llvm::cl::init(""), llvm::cl::NotHidden);
+
 static llvm::cl::opt<std::string> TraceFile(
-    "trace", llvm::cl::desc("Write simulation log to file"),
+    "trace", llvm::cl::desc("Write simulation trace to file"),
     llvm::cl::value_desc("trace_file"), llvm::cl::init(""),
     llvm::cl::NotHidden);
 
@@ -63,7 +68,8 @@ namespace {
 
 void PrintPortPressures(const GlobalContext& Context,
                         const BlockContext& BlockContext,
-                        const SimulationLog& Log) {
+                        const SimulationLog& Log,
+                        llvm::MCInstPrinter& AsmPrinter) {
   // Compute port pressures.
   const auto PortPressures = ComputePortPressure(BlockContext, Log);
 
@@ -91,13 +97,6 @@ void PrintPortPressures(const GlobalContext& Context,
   std::cout << "\n";
 
   std::cout << "* - some instruction uops do not use a resource\n";
-
-  // Create asm printer.
-  const std::unique_ptr<llvm::MCInstPrinter> AsmPrinter(
-      Context.Target->createMCInstPrinter(Context.Triple, /*Intel*/ 1,
-                                          *Context.AsmInfo, *Context.InstrInfo,
-                                          *Context.RegisterInfo));
-  AsmPrinter->setPrintImmHex(true);
 
   // Display port pressure per instruction.
   {
@@ -142,8 +141,8 @@ void PrintPortPressures(const GlobalContext& Context,
       }
       std::string InstrString;
       llvm::raw_string_ostream OS(InstrString);
-      AsmPrinter->printInst(&BlockContext.GetInstruction(InstrIdx), OS, "",
-                            *Context.SubtargetInfo);
+      AsmPrinter.printInst(&BlockContext.GetInstruction(InstrIdx), OS, "",
+                           *Context.SubtargetInfo);
       OS.flush();
       Table.SetTrailingValue(CurTableRow, InstrString);
     }
@@ -181,10 +180,30 @@ int Simulate() {
   std::cout << "ran " << Log->Iterations.size() << " iterations in "
             << Log->NumCycles << " cycles\n";
 
+  // Optionally write log to file.
+  if (!LogFile.empty()) {
+    std::ofstream OFS(LogFile);
+    OFS << Log->DebugString();
+  }
+
+  constexpr const unsigned kIntelSyntax = 1;
+  const std::unique_ptr<llvm::MCInstPrinter> AsmPrinter(
+      Context->Target->createMCInstPrinter(
+          Context->Triple, kIntelSyntax, *Context->AsmInfo, *Context->InstrInfo,
+          *Context->RegisterInfo));
+  AsmPrinter->setPrintImmHex(true);
+
   // Optionally write trace to file.
   if (!TraceFile.empty()) {
-    std::ofstream Ofs(TraceFile);
-    Ofs << Log->DebugString();
+    std::error_code ErrorCode;
+    llvm::raw_fd_ostream OFS(
+        TraceFile, ErrorCode,
+        llvm::sys::fs::OpenFlags::F_Text | llvm::sys::fs::OpenFlags::F_RW);
+    if (ErrorCode) {
+      std::cerr << "Cannot write trace file: " << ErrorCode << "\n";
+    } else {
+      PrintTrace(*Context, BlockContext, *Log, *AsmPrinter, OFS);
+    }
   }
 
   if (Log->Iterations.empty()) {
@@ -196,7 +215,7 @@ int Simulate() {
             << " iterations): [" << InvThrougput.Min << "-" << InvThrougput.Max
             << "] cycles per iteration\n";
 
-  PrintPortPressures(*Context, BlockContext, *Log);
+  PrintPortPressures(*Context, BlockContext, *Log, *AsmPrinter);
 
   return 0;
 }

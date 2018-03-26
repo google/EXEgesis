@@ -25,8 +25,13 @@ namespace simulator {
 
 // The description of a buffer.
 struct BufferDescription {
+  explicit BufferDescription(std::string Name = {}, int Id = 0)
+      : DisplayName(std::move(Name)), Id(Id) {}
+
   // A display name for the buffer. Not necessary unique.
   std::string DisplayName;
+  // An optional buffer id used for target-specific analysis.
+  int Id;
 };
 
 // This is the simulation log that contains state transitions and data for

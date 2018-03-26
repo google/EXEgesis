@@ -47,7 +47,7 @@ class TestMCCodeEmitter : public llvm::MCCodeEmitter {
         OS << "a";
         return;
       default:
-        LOG(FATAL) << "unknown opcode " << Inst.getOpcode();
+        FAIL() << "unknown opcode " << Inst.getOpcode();
         return;
     }
   }

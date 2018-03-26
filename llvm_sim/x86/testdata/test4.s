@@ -1,4 +1,5 @@
 # This is a gemm kernel.
+outerLoop2:
 pmovzxbw xmm1, [r9] # [rhs_ptr]
 
 pmovzxbw xmm0, [r8 + 0x00] # [lhs_ptr + 0x00]

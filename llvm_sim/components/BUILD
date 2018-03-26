@@ -307,6 +307,6 @@ cc_library(
         ":common",
         ":reorder_buffer",
         "//llvm_sim/framework:component",
-        "//testing/base/public:gunit_for_library",
+        "@com_google_googletest//:gtest",
     ],
 )
