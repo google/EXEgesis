@@ -175,12 +175,6 @@ class DecompositionSolver {
 
   bool is_order_unique() const { return is_order_unique_; }
 
-  // Returns the MIP to solve as a ModelProto.
-  operations_research::MPModelProto GetModelProto() const;
-
-  // Returns the MIP to solve in LP format.
-  std::string GetModelLPString() const;
-
  private:
   // Fills in the results (port_masks_list_, port_loads_, error_values_) at the
   // end of Run().

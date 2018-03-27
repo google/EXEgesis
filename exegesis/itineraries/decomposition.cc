@@ -69,18 +69,6 @@ DecompositionSolver::DecompositionSolver(
       solver_(new MPSolver("DecompositionLPForInstruction",
                            MPSolver::GLPK_MIXED_INTEGER_PROGRAMMING)) {}
 
-MPModelProto DecompositionSolver::GetModelProto() const {
-  MPModelProto model;
-  solver_->ExportModelToProto(&model);
-  return model;
-}
-
-std::string DecompositionSolver::GetModelLPString() const {
-  std::string lp_string;
-  solver_->ExportModelAsLpFormat(/*obfuscated=*/false, &lp_string);
-  return lp_string;
-}
-
 Status DecompositionSolver::Run(const ObservationVector& observations) {
   std::unordered_map<std::string, double> key_val;
   for (const auto& observation : observations.observations()) {
