@@ -17,6 +17,19 @@ cc_proto_library(
     deps = [":cpuid_proto"],
 )
 
+# Protocol buffers that contain structured data of the binary encoding of an
+# instruction and a library for easier manipulation of these data.
+proto_library(
+    name = "decoded_instruction_proto",
+    srcs = ["decoded_instruction.proto"],
+    deps = ["//exegesis/proto/x86:instruction_encoding_proto"],
+)
+
+cc_proto_library(
+    name = "decoded_instruction_cc_proto",
+    deps = [":decoded_instruction_proto"],
+)
+
 # Protocol buffer library with the definitions of enums and constants for the
 # x86-64 binary encoding.
 proto_library(

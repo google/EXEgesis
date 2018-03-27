@@ -1,0 +1,268 @@
+// Copyright 2018 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// This file contains definitions of data structures for representing the binary
+// encoding of x86-64 instructions in a structured form. The main message for an
+// encoded instruction is EncodedInstruction; all other messages from this file
+// are used as direct or indirect fields of this message.
+//
+// For more details on the binary format of the x86 and x86-64 instructions see
+// http://wiki.osdev.org/X86-64_Instruction_Encoding or the Intel 64 and IA-32
+// Architectures Software Developer's Manual.
+
+syntax = "proto3";
+
+import "exegesis/proto/x86/instruction_encoding.proto";
+
+package exegesis.x86;
+
+// Contains the bits and fields from the VEX prefix of the instruction.
+message VexPrefix {
+  // The mandatory "legacy" prefix specified in the VEX prefix.
+  VexEncoding.MandatoryPrefix mandatory_prefix = 1;
+
+  // The values of the operand field extensions. The fields are named after the
+  // REX prefix bits which they replace. Note that they are actually negations
+  // of the values that would appear in the REX prefix.
+  bool not_b = 2;
+  bool not_r = 3;
+  bool not_x = 4;
+
+  // The value of the VEX.W bit; this is an equivalent of the rex.w bit from the
+  // REX prefix and it specifies that the instruction is the "wide" (64-bit)
+  // version.
+  bool w = 5;
+
+  // The inverted register operand field from the VEX prefix. Note that the
+  // instruction encoding uses only four bits for the register, Accordingly,
+  // only the lowest four bits of this field can be used; all other bits must
+  // be set to zero.
+  uint32 inverted_register_operand = 6;
+
+  // The value of the map select field from the VEX prefix. Note that the
+  // instruction encoding uses only five bits for the map selector. Accordingly,
+  // only the lowest five bits of this field can be used; all other bits must be
+  // set to zero.
+  VexEncoding.MapSelect map_select = 7;
+
+  // When false, the instruction uses 128-bit vector length; otherwise, it uses
+  // 256-bit vector length. Note that some instructions do not use this field at
+  // all; in such case, the value is set to the default false.
+  bool use_256_bit_vector_length = 8;
+
+  // When the instruction uses the VEX suffix; this is typically a register
+  // index in the upper five bits and an instruction-specific value in the
+  // remaining bits.
+  uint32 vex_suffix_value = 9;
+}
+
+// Contains the bits and fields from the EVEX prefix of the instruction. Note
+// that the structure of the proto reflects rather the logical structure of the
+// EVEX prefix than the physical structure, and values that are scattered across
+// non-contiguous bit positions are represented as a single field of the proto.
+message EvexPrefix {
+  // The mandatory "legacy" prefix specified in the EVEX prefix bits EVEX.pp.
+  VexEncoding.MandatoryPrefix mandatory_prefix = 1;
+
+  // The value of the map select field from the EVEX prefix.
+  VexEncoding.MapSelect map_select = 2;
+
+  // The inverted register operand field from the EVEX prefix bits EVEX.vvvv and
+  // EVEX.V'. Note that the instruction encoding uses only five bits for the
+  // register. Accordingly, only the lowest five bits of this field can be used;
+  // all other bits must be set to zero.
+  uint32 inverted_register_operand = 3;
+
+  // The values of the operand field extensions. The fields are named after the
+  // REX prefix bits which they replace, and they are referred to as EVEX.[RXB]
+  // in the Intel SDM. Similar to the VEX prefix, the bits used in the encoding
+  // are negation of the actual bits used for encoding the operands.
+  // Note that in order to support all 32 registers of the AVX-512 instruction
+  // set, the semantics of these bits change from the REX and VEX prefixes:
+  // * There are two bits EVEX.R and EVEX.R' instead of the single bit VEX.R in
+  //   the VEX prefix. To simplify the data structure, EvexPrefix.r() contains
+  //   the values of both bits. They are the two lowest bits of the value,
+  //   EVEX.R being the lower bit; all other bits of the value must be set to 0.
+  // * The interpretation of EVEX.X depends on the presence of the SIB byte in
+  //   the encoded instruction. If it is present, EVEX.X is an extension bit
+  //   added to SIB.x; otherwise, it is used as an additional extension bit for
+  //   modrm.rm, along with EVEX.B.
+  bool not_b = 4;
+  uint32 not_r = 5;
+  bool not_x = 6;
+
+  // The value of the EVEX.W bit; this is an equivalent of the rex.w bit from
+  // the REX prefix and it specifies that the instruction is the "wide" (64-bit)
+  // version.
+  bool w = 8;
+
+  // The zeroing/merging bit of the instruction. When false, the instruction
+  // will preserve the elements of the vector where the corresponding mask bit
+  // is zero; otherwise, it will zero these bits. Note that some instructions
+  // may either ignore this field, or force it to a certain value.
+  bool z = 9;
+
+  // The value of the EVEX.b bit of the instruction. Depending on the class of
+  // the instruction, this bit:
+  // 1. controls broadcasting of a single element across the destination vector
+  //    register (load+op semantic where one of the operands is from memory),
+  // 2. redirects vector_length_or_rounding as override of the MXCSR.RC bits
+  //    (instructions with rounding semantic),
+  // 3. enables suppress all exceptions (floating point instructions without
+  //    rounding semantic),
+  // 4. must be set to zero in all other cases.
+  // Note that EVEX.B and EVEX.b are two different fields; the former is an
+  // opcode extension bit inherited from the VEX prefix.
+  bool broadcast_or_control = 10;
+
+  // Specifies the vector length or the rounding control for the instruction.
+  // Note that the instruction encoding uses only two bits for the flags; all
+  // other bits must be set to zero. The actual interpretation of the field
+  // depends on the concrete instruction.
+  uint32 vector_length_or_rounding = 11;
+
+  // Specifies the register that contains the mask used by the instruction. Note
+  // that only three bits of the field are used; all other bits of the field
+  // must be set to zero.
+  uint32 opmask_register = 12;
+}
+
+// Contains the bits from the REX prefix.
+message RexPrefix {
+  // Set to true if the REX.B bit (SIB.base extension) of the REX prefix was
+  // set.
+  bool b = 1;
+  // Set to true if the REX.R bit (register operand extension) of the REX prefix
+  // was set.
+  bool r = 2;
+  // Set to true if the REX.W bit (64-bit operand size override) of the REX
+  // prefix was set.
+  bool w = 3;
+  // Set to true if the REX.R bit (SIB.index extension) of the REX prefix was
+  // set.
+  bool x = 4;
+}
+
+// Contains information about the legacy prefixes of the instruction.
+message LegacyPrefixes {
+  // The REX prefix of the instruction.
+  RexPrefix rex = 1;
+
+  // The state of the lock or rep prefix.
+  LegacyEncoding.LockOrRepPrefix lock_or_rep = 2;
+
+  // The state of the segment override prefix.
+  LegacyEncoding.SegmentOverridePrefix segment_override = 3;
+
+  // The state of the operand size override prefix.
+  LegacyEncoding.OperandSizeOverridePrefix operand_size_override = 4;
+
+  // The state of the address size override prefix.
+  LegacyEncoding.AddressSizeOverridePrefix address_size_override = 5;
+}
+
+// Contains the values from the ModR/M byte of the instruction.
+message ModRm {
+  // Possible values of the addressing modes of the rm operand. Note that the
+  // values assigned to the constants correspond directly to the values used in
+  // the binary encoding.
+  enum AddressingMode {
+    // Indirect indexing with a base register and an optional index.
+    INDIRECT = 0;
+    // Indirect indexing with a base register, an optional index and 8-bit
+    // displacement.
+    INDIRECT_WITH_8_BIT_DISPLACEMENT = 1;
+    // Indirect indexing with a base register, an optional index and 32-bit
+    // displacement.
+    INDIRECT_WITH_32_BIT_DISPLACEMENT = 2;
+    // Direct indexing (the operand is a register).
+    DIRECT = 3;
+  }
+
+  // The addressing mode used in the ModR/M byte. This field is called
+  // 'modrm.mod' on the OSDev wiki.
+  AddressingMode addressing_mode = 1;
+
+  // The register operand of the ModR/M byte. This field is called 'modrm.reg'
+  // on the OSDev wiki.
+  uint32 register_operand = 2;
+
+  // The register/memory operand of the ModR/M byte. This field is called
+  // 'modrm.rm' on the OSDev wiki.
+  uint32 rm_operand = 3;
+
+  // The displacement added to the address specified in the ModR/M and SIB
+  // bytes. Contains 0 if the instruction uses an addressing mode without
+  // displacement. Note that the displacement is not encoded in the ModR/M byte,
+  // but rather as additional bytes stored after the ModR/M and SIB bytes.
+  int64 address_displacement = 6;
+}
+
+// Contains the values from the ModR/M byte of the instruction.
+message Sib {
+  // The scaling factor of the SIB byte. Note that the value of this field is a
+  // base-2 logarithm of the scaling factor (same as in the instruction
+  // encoding).
+  uint32 scale = 1;
+
+  // The index of the indexing register as stored in the SIB byte. Note that
+  // this value does not include the potential additional bit from the REX, VEX
+  // and XOP prefixes. The binary encoding uses only three bits for the register
+  // index. Accordingly, only the lowest three bits of this field can be used;
+  // all other bits must be set to zero.
+  uint32 index = 2;
+
+  // The index of the base register as stored in the SIB byte. Note that this
+  // value does not include the potential additional bit from the REX, VEX and
+  // XOP prefixes. The binary encoding uses only three bits for the register
+  // index. Accordingly, only the lowest three bits of this field can be used;
+  // all other bits must be set to zero.
+  uint32 base = 3;
+}
+
+// Contains the binary encoding of a single x86-64 instruction in a structured
+// form. The fields and substructures correspond directly to the logical
+// structure of the x86-64 binary encoding.
+message DecodedInstruction {
+  // Note that the VEX prefix and the legacy prefixes are mutually exclusive. If
+  // an instruction has the VEX prefix, it can't use any of the legacy prefixes
+  // and vice versa.
+  oneof prefix {
+    // The information from the legacy prefixes of the instruction.
+    LegacyPrefixes legacy_prefixes = 1;
+
+    // The information from the VEX prefix of the instruction.
+    VexPrefix vex_prefix = 2;
+
+    // The information from the EVEX prefix of the instruction.
+    EvexPrefix evex_prefix = 3;
+  }
+
+  // The opcode of the instruction.
+  uint32 opcode = 4;
+
+  // The information from the ModR/M byte of the instruction.
+  ModRm modrm = 5;
+
+  // The information from the SIB byte of the instruction.
+  Sib sib = 6;
+
+  // The immediate value(s) stored after the instruction. The number and the
+  // interpretation of the bytes depends on the instruction.
+  repeated bytes immediate_value = 7;
+
+  // The code offset stored after the instruction. The number and the
+  // interpretation of the bytes depends on the instruction.
+  bytes code_offset = 8;
+}
