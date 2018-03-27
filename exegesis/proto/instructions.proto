@@ -380,7 +380,7 @@ message InstructionSetSourceInfo {
 }
 
 message InstructionSetProto {
-  // There might be several sources. For example historically the intel SDM was
+  // There might be several sources. For example historically the Intel SDM was
   // distributed as two files with instructions A-M in Volume 2A and
   // instructions N-Z in volume 2B. When merging instruction sets, make sure
   // that there are no duplicate instructions.
