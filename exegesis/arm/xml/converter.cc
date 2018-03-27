@@ -44,6 +44,13 @@ InstructionFormat ConvertAsmTemplate(const std::string& mnemonic,
   return format;
 }
 
+std::string FirstSetOrEmpty(const std::vector<std::string>& strings) {
+  for (const auto& s : strings) {
+    if (!s.empty()) return s;
+  }
+  return "";
+}
+
 }  // namespace
 
 ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
@@ -67,8 +74,10 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
   }
 
   for (const auto& xml_instruction : xml_database.instructions()) {
-    const std::string& mnemonic = xml_instruction.docvars().mnemonic();
-    const std::string& alias = xml_instruction.docvars().alias_mnemonic();
+    // ARM documentation suggests that it's always preferable to use the alias.
+    const std::string instruction_mnemonic =
+        FirstSetOrEmpty({xml_instruction.docvars().alias_mnemonic(),
+                         xml_instruction.docvars().mnemonic()});
 
     // TODO(npaglieri): Decide whether to use the <aliasto> tag to merge groups.
     const int group_index = FindOrDie(known_groups, xml_instruction.xml_id());
@@ -86,8 +95,13 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
         instruction->set_description(absl::StrJoin(
             {xml_instruction.brief_description(), instruction_class.name()},
             " | "));
-        *instruction->mutable_vendor_syntax() = ConvertAsmTemplate(
-            !alias.empty() ? alias : mnemonic, encoding.asm_template());
+        // Use any encoding-specific mnemonic (preferring aliases as above when
+        // present), otherwise default to the one defined at instruction level.
+        const std::string encoding_mnemonic = FirstSetOrEmpty(
+            {encoding.docvars().alias_mnemonic(), encoding.docvars().mnemonic(),
+             instruction_mnemonic});
+        *instruction->mutable_vendor_syntax() =
+            ConvertAsmTemplate(encoding_mnemonic, encoding.asm_template());
         // Unfortunately (or not?) ARM is unlikely to provide more features.
         switch (encoding.docvars().feature()) {
           case dv::Feature::CRC:

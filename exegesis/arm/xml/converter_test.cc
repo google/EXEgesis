@@ -162,7 +162,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           encodings {
             name: "I2_class_1_encoding_1"
             docvars {
-              mnemonic: "I2"
+              mnemonic: "I22"
               isa: A64
               feature: CRC
             }
@@ -269,7 +269,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         instructions {
           description: "Second instruction | Class One"
           vendor_syntax {
-            mnemonic: "I1"
+            mnemonic: "I22"
           }
           feature_name: "crc"
           available_in_64_bit: true
@@ -291,6 +291,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         instructions {
           description: "Third instruction | Class One"
           vendor_syntax {
+            mnemonic: "I3"
           }
           available_in_64_bit: false
           fixed_size_encoding_specification {
