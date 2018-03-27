@@ -23,6 +23,7 @@ namespace testing {
 namespace {
 
 using ::exegesis::testing::proto::IgnoringFields;
+using ::exegesis::testing::proto::Partially;
 using ::testing::Not;
 using ::testing::Pointwise;
 using ::testing::StringMatchResultListener;
@@ -83,6 +84,16 @@ TEST(IgnoringFieldsTest, IgnoresFields) {
            "exegesis.testing.SubProto.field_a"},
           EqualsProto(
               "integer_field: 2 message_field { field_a: 2 field_b: 2 }")));
+}
+
+TEST(EqualsProtoPartiallyTest, Partially) {
+  TestProto actual_proto;
+  actual_proto.set_integer_field(1);
+  actual_proto.set_string_field("blabla");
+  EXPECT_THAT(actual_proto, Partially(EqualsProto("string_field: 'blabla'")));
+
+  EXPECT_THAT(actual_proto,
+              Not(Partially(EqualsProto("string_field: 'foobar'"))));
 }
 
 TEST(EqualsProtoTupleMatcherTest, Pointwise) {

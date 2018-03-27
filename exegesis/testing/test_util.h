@@ -88,6 +88,7 @@ template <typename ProtoType>
 bool MatchProto(const ProtoType& actual_proto,
                 const std::string& expected_proto_str,
                 const std::vector<std::string>& ignored_fields,
+                ::google::protobuf::util::MessageDifferencer::Scope scope,
                 ::testing::MatchResultListener* listener) {
   using ::google::protobuf::TextFormat;
   using ::google::protobuf::util::MessageDifferencer;
@@ -100,6 +101,7 @@ bool MatchProto(const ProtoType& actual_proto,
   MessageDifferencer differencer;
   std::string differences;
   differencer.ReportDifferencesToString(&differences);
+  differencer.set_scope(scope);
   AddIgnoredFieldsToDifferencer(expected_proto.descriptor(), ignored_fields,
                                 &differencer);
   if (!differencer.Compare(expected_proto, actual_proto)) {
@@ -123,7 +125,7 @@ class EqualsProtoMatcher {
   bool MatchAndExplain(const ProtoType& actual_proto,
                        ::testing::MatchResultListener* listener) const {
     return internal::MatchProto(actual_proto, expected_proto_str_,
-                                ignored_fields_, listener);
+                                ignored_fields_, scope_, listener);
   }
 
   void DescribeTo(std::ostream* os) const {
@@ -139,8 +141,14 @@ class EqualsProtoMatcher {
     ignored_fields_.insert(ignored_fields_.end(), begin, end);
   }
 
+  void SetComparePartially() {
+    scope_ = ::google::protobuf::util::MessageDifferencer::PARTIAL;
+  }
+
  private:
   const std::string expected_proto_str_;
+  ::google::protobuf::util::MessageDifferencer::Scope scope_ =
+      ::google::protobuf::util::MessageDifferencer::FULL;
   std::vector<std::string> ignored_fields_;
 };
 
@@ -171,6 +179,12 @@ InnerProtoMatcher IgnoringFields(
   return matcher;
 }
 
+template <typename InnerProtoMatcher>
+InnerProtoMatcher Partially(InnerProtoMatcher matcher) {
+  matcher.mutable_impl().SetComparePartially();
+  return matcher;
+}
+
 }  // namespace proto
 
 // A gMock matcher that takes a tuple containing a proto and a string containing
@@ -185,7 +199,9 @@ class EqualsProtoTupleMatcher {
                        ::testing::MatchResultListener* listener) const {
     using ::testing::get;
     // TODO(ondrasej): Add support for ignored fields when needed.
-    return internal::MatchProto(get<0>(args), get<1>(args), {}, listener);
+    return internal::MatchProto(
+        get<0>(args), get<1>(args), {},
+        ::google::protobuf::util::MessageDifferencer::FULL, listener);
   }
 
   void DescribeTo(std::ostream* os) const { *os << "are equal"; }
