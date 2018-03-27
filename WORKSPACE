@@ -3,7 +3,7 @@
 git_repository(
     name = "com_google_absl",
     remote = "https://github.com/abseil/abseil-cpp.git",
-    commit = "c742b72354a84958b6a061755249822eeef87d06",
+    commit = "4e2e6c5c0071e6430056a8ef0a6c8a1fe584d8ff",
 )
 
 # CCTZ (Time-zone framework).
