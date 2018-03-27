@@ -402,7 +402,7 @@ cc_test(
     ],
 )
 
-# Utilities to represent to CPU state.
+# Utilities to represent the CPU state.
 cc_library(
     name = "cpu_state",
     srcs = ["cpu_state.cc"],
@@ -477,11 +477,234 @@ cc_test(
     ],
 )
 
+# An instruction encoder that generates x86-64 binary code.
+cc_library(
+    name = "instruction_encoder",
+    srcs = ["instruction_encoder.cc"],
+    hdrs = ["instruction_encoder.h"],
+    deps = [
+        ":instruction_encoding",
+        "//base",
+        "//exegesis/proto/x86:decoded_instruction_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/util:bits",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "instruction_encoder_test",
+    size = "small",
+    srcs = ["instruction_encoder_test.cc"],
+    deps = [
+        ":architecture",
+        ":instruction_encoder",
+        ":instruction_encoding_test_utils",
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/types:span",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+# A parser for the x86-64 instruction binary encoding.
+cc_library(
+    name = "instruction_parser",
+    srcs = ["instruction_parser.cc"],
+    hdrs = ["instruction_parser.h"],
+    deps = [
+        ":architecture",
+        ":instruction_encoding",
+        "//base",
+        "//exegesis/base:opcode",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/proto/x86:instruction_encoding_cc_proto",
+        "//exegesis/util:bits",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "instruction_parser_test",
+    size = "small",
+    srcs = ["instruction_parser_test.cc"],
+    deps = [
+        ":instruction_encoder",
+        ":instruction_parser",
+        "//base",
+        "//exegesis/base:cleanup_instruction_set",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:decoded_instruction_cc_proto",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:strings",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
 # A library that contains constants relating to the encoding of x86
 # instructions.
 cc_library(
     name = "instruction_encoding_constants",
     hdrs = ["instruction_encoding_constants.h"],
+)
+
+# A library of helper functions for working with the x86-64 instruction encoding
+# and the DecodedInstruction structure.
+cc_library(
+    name = "instruction_encoding",
+    srcs = ["instruction_encoding.cc"],
+    hdrs = ["instruction_encoding.h"],
+    deps = [
+        ":encoding_specification",
+        ":instruction_encoding_constants",
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:decoded_instruction_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/proto/x86:instruction_encoding_cc_proto",
+        "//exegesis/util:bits",
+        "//exegesis/util:category_util",
+        "//exegesis/util:index_type",
+        "//util/gtl:map_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "instruction_encoding_test",
+    size = "small",
+    srcs = ["instruction_encoding_test.cc"],
+    deps = [
+        ":encoding_specification",
+        ":instruction_encoding",
+        ":instruction_encoding_test_utils",
+        "//base",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/testing:test_util",
+        "//exegesis/util:proto_util",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+# A library of helper functions for testing the instruction encoding code.
+cc_library(
+    name = "instruction_encoding_test_utils",
+    testonly = 1,
+    srcs = ["instruction_encoding_test_utils.cc"],
+    hdrs = ["instruction_encoding_test_utils.h"],
+    deps = [
+        ":encoding_specification",
+        ":instruction_encoder",
+        "//exegesis/llvm:assembler_disassembler",
+        "//exegesis/proto/x86:decoded_instruction_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/util:instruction_syntax",
+        "//exegesis/util:strings",
+        "//util/task:status",
+        "//util/task:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "instruction_encoding_test_utils_test",
+    size = "small",
+    srcs = ["instruction_encoding_test_utils_test.cc"],
+    deps = [
+        ":instruction_encoding_test_utils",
+        "//exegesis/proto/x86:decoded_instruction_cc_proto",
+        "//exegesis/util:proto_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# A wrapper class around the x86-64 architecture proto.
+cc_library(
+    name = "architecture",
+    srcs = ["architecture.cc"],
+    hdrs = ["architecture.h"],
+    deps = [
+        ":instruction_encoding",
+        "//base",
+        "//exegesis/base:architecture",
+        "//exegesis/base:opcode",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:decoded_instruction_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//util/gtl:map_util",
+        "//util/task:statusor",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "architecture_test",
+    size = "small",
+    srcs = ["architecture_test.cc"],
+    deps = [
+        ":architecture",
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:proto_util",
+        "//util/gtl:map_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
 )
 
 # A library that contains information about the x86-64 microarchitectures.
