@@ -6,6 +6,41 @@ package(default_visibility = ["//visibility:public"])
 licenses(["notice"])  # Apache 2.0
 
 cc_library(
+    name = "architecture",
+    srcs = ["architecture.cc"],
+    hdrs = ["architecture.h"],
+    deps = [
+        "//base",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:index_type",
+        "//util/gtl:map_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_test(
+    name = "architecture_test",
+    size = "small",
+    srcs = ["architecture_test.cc"],
+    deps = [
+        ":architecture",
+        "//base",
+        "//exegesis/testing:test_util",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+)
+
+cc_library(
     name = "architecture_provider",
     srcs = ["architecture_provider.cc"],
     hdrs = ["architecture_provider.h"],
@@ -14,6 +49,8 @@ cc_library(
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/util:proto_util",
         "//util/gtl:map_util",
+        "//util/task:status",
+        "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/memory",
@@ -31,6 +68,8 @@ cc_test(
         "//base",
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
+        "//util/task:status",
+        "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
