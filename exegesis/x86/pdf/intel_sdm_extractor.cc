@@ -253,15 +253,18 @@ GetInstructionModeMatchers() {
 
 const std::set<absl::string_view>& GetValidFeatureSet() {
   static const auto* kValidFeatures = new std::set<absl::string_view>{
-      "3DNOW",       "ADX",      "AES",         "AVX",      "AVX2",
-      "AVX512BW",    "AVX512CD", "AVX512DQ",    "AVX512ER", "AVX512F",
-      "AVX512_IFMA", "AVX512PF", "AVX512_VBMI", "AVX512VL", "BMI1",
-      "BMI2",        "CLMUL",    "CLWB",        "F16C",     "FMA",
-      "FPU",         "FSGSBASE", "HLE",         "INVPCID",  "LZCNT",
-      "MMX",         "MPX",      "OSPKE",       "PRFCHW",   "RDPID",
-      "RDRAND",      "RDSEED",   "RTM",         "SHA",      "SMAP",
-      "SSE",         "SSE2",     "SSE3",        "SSE4_1",   "SSE4_2",
-      "SSSE3",       "XSAVE",    "XSAVEC",      "XSS",      "XSAVEOPT"};
+      "3DNOW",       "ADX",      "AES",           "AVX",
+      "AVX2",        "AVX512BW", "AVX512CD",      "AVX512DQ",
+      "AVX512ER",    "AVX512F",  "AVX512_4FMAPS", "AVX512_4VNNIW",
+      "AVX512_IFMA", "AVX512PF", "AVX512_VBMI",   "AVX512VL",
+      "BMI1",        "BMI2",     "CLMUL",         "CLWB",
+      "F16C",        "FMA",      "FPU",           "FSGSBASE",
+      "HLE",         "INVPCID",  "LZCNT",         "MMX",
+      "MPX",         "OSPKE",    "PRFCHW",        "RDPID",
+      "RDRAND",      "RDSEED",   "RTM",           "SHA",
+      "SMAP",        "SSE",      "SSE2",          "SSE3",
+      "SSE4_1",      "SSE4_2",   "SSSE3",         "XSAVE",
+      "XSAVEC",      "XSS",      "XSAVEOPT"};
   return *kValidFeatures;
 }
 
@@ -531,7 +534,7 @@ OperandEncodingTableType GetOperandEncodingTableHeaderType(
     if (text == "TupleType") {
       has_tuple_type_column = true;
     }
-    if (!RE2::FullMatch(text, R"(Op/En|Operand[1234]|TupleType)")) {
+    if (!RE2::FullMatch(text, R"(Op/En|Operand[1234]|Tuple(Type)?)")) {
       return OET_INVALID;
     }
   }

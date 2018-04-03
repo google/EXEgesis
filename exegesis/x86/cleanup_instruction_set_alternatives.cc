@@ -273,8 +273,8 @@ const std::unordered_set<std::string> GetUnmodifiedOperandNames() {
            // Registers.
            "bnd", "bnd1", "bnd2", "bnd3", "k1", "k2", "k3", "mm", "mm1", "mm2",
            "r8", "r16", "r32", "r32a", "r32b", "r64", "r64a", "r64b", "ST(i)",
-           "Sreg", "xmm", "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "ymm1",
-           "ymm2", "ymm4", "zmm1", "zmm2",
+           "Sreg", "xmm", "xmm0", "xmm1", "xmm2", "xmm2+3", "xmm3", "xmm4",
+           "ymm1", "ymm2", "ymm2+3", "ymm4", "zmm1", "zmm2", "zmm2+3",
 
            // Pseudo-operands: they have an empty operand name, but a non-empty
            // list of tags.

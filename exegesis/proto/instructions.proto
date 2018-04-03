@@ -49,6 +49,12 @@ message InstructionOperand {
         // index is encoded in the instruction.
         DIRECT_ADDRESSING = 0x21;
 
+          // The operand uses block addressing. This is used in the block
+          // AVX-512 FMA instructions; the register set is divided into blocks
+          // of four registers (0-3, 4-7, ...), and the register used as operand
+          // picks the whole block.
+          BLOCK_DIRECT_ADDRESSING = 0x212;
+
         // The operand uses indirect addressing. The operand is the memory
         // location addressed by zero or more registers.
         INDIRECT_ADDRESSING = 0x22;

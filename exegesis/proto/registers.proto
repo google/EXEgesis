@@ -88,6 +88,11 @@ message RegisterProto {
       MMX_STACK_REGISTER = 0x15;
 
       MASK_REGISTER = 0x16;
+
+      REGISTER_BLOCK = 0x17;
+        REGISTER_BLOCK_128_BIT = 0x171;
+        REGISTER_BLOCK_256_BIT = 0x172;
+        REGISTER_BLOCK_512_BIT = 0x173;
   }
   // clang-format on
 

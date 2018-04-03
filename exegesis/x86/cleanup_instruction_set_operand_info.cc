@@ -437,6 +437,7 @@ const std::pair<const char*, InstructionOperand::AddressingMode>
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"xmm3/m128/m64bcst",
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
+        {"xmm2+3", InstructionOperand::BLOCK_DIRECT_ADDRESSING},
         {"ymm/m8", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"ymm/m16", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"ymm/m32", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
@@ -471,6 +472,7 @@ const std::pair<const char*, InstructionOperand::AddressingMode>
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"ymm2/m256/m64bcst",
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
+        {"ymm2+3", InstructionOperand::BLOCK_DIRECT_ADDRESSING},
         {"ymm3/m8", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"ymm3/m16",
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
@@ -520,6 +522,7 @@ const std::pair<const char*, InstructionOperand::AddressingMode>
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"zmm2/m512/m64bcst",
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
+        {"zmm2+3", InstructionOperand::BLOCK_DIRECT_ADDRESSING},
         {"zmm3/m8", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"zmm3/m16",
          InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
@@ -797,16 +800,22 @@ constexpr const std::pair<const char*, RegisterProto::RegisterClass>
         {"xmm3", RegisterProto::VECTOR_REGISTER_128_BIT},
         {"xmm4", RegisterProto::VECTOR_REGISTER_128_BIT},
 
+        {"xmm2+3", RegisterProto::REGISTER_BLOCK_128_BIT},
+
         {"ymm", RegisterProto::VECTOR_REGISTER_256_BIT},
         {"ymm1", RegisterProto::VECTOR_REGISTER_256_BIT},
         {"ymm2", RegisterProto::VECTOR_REGISTER_256_BIT},
         {"ymm3", RegisterProto::VECTOR_REGISTER_256_BIT},
         {"ymm4", RegisterProto::VECTOR_REGISTER_256_BIT},
 
+        {"ymm2+3", RegisterProto::REGISTER_BLOCK_256_BIT},
+
         {"zmm", RegisterProto::VECTOR_REGISTER_512_BIT},
         {"zmm1", RegisterProto::VECTOR_REGISTER_512_BIT},
         {"zmm2", RegisterProto::VECTOR_REGISTER_512_BIT},
         {"zmm3", RegisterProto::VECTOR_REGISTER_512_BIT},
+
+        {"zmm2+3", RegisterProto::REGISTER_BLOCK_512_BIT},
 
         {"k", RegisterProto::MASK_REGISTER},
         {"k1", RegisterProto::MASK_REGISTER},

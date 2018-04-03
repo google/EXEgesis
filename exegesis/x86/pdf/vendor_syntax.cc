@@ -187,6 +187,8 @@ const char* const kValidOperandTypes[] = {
     "xmm2/m128/m64bcst",
     "xmm3/m128/m32bcst",
     "xmm3/m128/m64bcst",
+    // XMM registers addressed through the block scheme.
+    "xmm2+3",
     // YMM registers.
     "ymm0",
     "ymm1",
@@ -202,6 +204,8 @@ const char* const kValidOperandTypes[] = {
     "ymm2/m256/m64bcst",
     "ymm3/m256/m32bcst",
     "ymm3/m256/m64bcst",
+    // YMM registers addressed through the block scheme.
+    "ymm2+3",
     // ZMM registers.
     "zmm0",
     "zmm1",
@@ -218,6 +222,8 @@ const char* const kValidOperandTypes[] = {
     "zmm2/m512/m64bcst",
     "zmm3/m512/m32bcst",
     "zmm3/m512/m64bcst",
+    // ZMM registers addressed through the block scheme.
+    "zmm2+3",
     // AVX vector addresses.
     "vm32x",
     "vm32y",
