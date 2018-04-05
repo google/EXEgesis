@@ -30,251 +30,105 @@ using ::exegesis::testing::EqualsProto;
 using ::google::protobuf::TextFormat;
 
 TEST(ConverterTest, ConvertToArchitectureProto) {
-  static constexpr char kXmlDatabase[] = R"(
-      base_index {
-        files {
-          filename: "instruction_1.xml"
-          heading: "I1"
-          xml_id: "id_i_1"
-          description: "First instruction group."
-        }
-        files {
-          filename: "instruction_2.xml"
-          heading: "I2"
-          xml_id: "id_i_2"
-          description: "Second instruction group."
-        }
-      }
-      fp_simd_index {
-        files {
-          filename: "instruction_3.xml"
-          heading: "I3"
-          xml_id: "id_i_3"
-          description: "Third instruction group."
-        }
-      }
-      instructions {
+  static constexpr char kXmlDatabase[] = R"proto(
+    base_index {
+      files {
+        filename: "instruction_1.xml"
+        heading: "I1"
         xml_id: "id_i_1"
-        heading: "I1 Title"
-        brief_description: "First instruction"
-        authored_description: "This is the first description"
-        docvars {
-          mnemonic: "I1"
-          isa: A64
-        }
-        classes {
-          id: "class_1"
-          name: "Class One"
+        description: "First instruction group."
+      }
+      files {
+        filename: "instruction_2.xml"
+        heading: "I2"
+        xml_id: "id_i_2"
+        description: "Second instruction group."
+      }
+    }
+    fp_simd_index {
+      files {
+        filename: "instruction_3.xml"
+        heading: "I3"
+        xml_id: "id_i_3"
+        description: "Third instruction group."
+      }
+    }
+    instructions {
+      xml_id: "id_i_1"
+      heading: "I1 Title"
+      brief_description: "First instruction"
+      authored_description: "This is the first description"
+      docvars { mnemonic: "I1" isa: A64 }
+      classes {
+        id: "class_1"
+        name: "Class One"
+        docvars { mnemonic: "I1" instr_class: GENERAL isa: A64 }
+        encodings {
+          name: "I1_class_1_encoding_1"
           docvars {
             mnemonic: "I1"
+            cond_setting: S
             instr_class: GENERAL
             isa: A64
           }
-          encodings {
-            name: "I1_class_1_encoding_1"
-            docvars {
-              mnemonic: "I1"
-              cond_setting: S
-              instr_class: GENERAL
-              isa: A64
-            }
-            instruction_layout {
-              form_name: "ps1a"
-              bit_ranges {
-                name: "msb"
-                msb: 31
-                lsb: 31
-                pattern {
-                  bits: CONSTANT_ZERO
-                }
-              }
-            }
-            asm_template {
-              pieces {
-                text: "I1 "
-              }
-              pieces {
-                symbol {
-                  id: "range"
-                  label: "<range>"
-                  hint: "range desc"
-                }
-              }
-              pieces {
-                text: ", 0"
-              }
-            }
-          }
-          encodings {
-            name: "I1_class_1_encoding_2"
-            docvars {
-              mnemonic: "I1"
-              cond_setting: NO_S
-              instr_class: GENERAL
-              isa: A64
-            }
-            instruction_layout {
-              form_name: "ps1b"
-              bit_ranges {
-                name: "msb"
-                msb: 31
-                lsb: 31
-                pattern {
-                  bits: CONSTANT_ONE
-                }
-              }
-            }
-            asm_template {
-              pieces {
-                text: "I1 "
-              }
-              pieces {
-                symbol {
-                  id: "range"
-                  label: "<range>"
-                  hint: "range desc"
-                }
-              }
-              pieces {
-                text: ", 1"
-              }
-            }
-          }
-        }
-      }
-      instructions {
-        xml_id: "id_i_2"
-        heading: "I2 Title"
-        brief_description: "Second instruction"
-        authored_description: "This is the second description"
-        docvars {
-          mnemonic: "I2"
-          alias_mnemonic: "I1"
-          isa: A64
-        }
-        classes {
-          id: "class_1"
-          name: "Class One"
-          docvars {
-            mnemonic: "I2"
-            isa: A64
-          }
-          encodings {
-            name: "I2_class_1_encoding_1"
-            docvars {
-              mnemonic: "I22"
-              isa: A64
-              feature: CRC
-            }
-            instruction_layout {
-              form_name: "ps2"
-              bit_ranges {
-                msb: 31
-                lsb: 29
-                not_pattern {
-                  bits: CONSTANT_ONE
-                  bits: CONSTANT_ZERO
-                  bits: VARIABLE
-                }
-              }
-            }
-            asm_template {
-              pieces {
-                text: "I2 "
-              }
-            }
-          }
-        }
-      }
-      instructions {
-        xml_id: "id_i_3"
-        heading: "I3 Title"
-        brief_description: "Third instruction"
-        authored_description: "This is the third description"
-        docvars {
-          cond_setting: S
-          isa: A32
-        }
-        classes {
-          id: "class_1"
-          name: "Class One"
-          docvars {
-            mnemonic: "I3"
-            cond_setting: S
-            isa: A32
-          }
-          encodings {
-            name: "I3_class_1_encoding_1"
-            docvars {
-              mnemonic: "I3"
-              cond_setting: S
-              isa: A32
-            }
-          }
-        }
-      })";
-  XmlDatabase xml_database;
-  ASSERT_TRUE(TextFormat::ParseFromString(kXmlDatabase, &xml_database));
-
-  static constexpr char kExpectedArchitecture[] = R"(
-      name: 'ARMv8'
-      instruction_set {
-        source_infos {
-          source_name: "ARM XML Database"
-        }
-        instructions {
-          description: "First instruction | Class One"
-          vendor_syntax {
-            mnemonic: "I1"
-            operands {
-              name: "<range>"
-            }
-          }
-          available_in_64_bit: true
-          encoding_scheme: "ps1a"
-          fixed_size_encoding_specification {
+          instruction_layout {
             form_name: "ps1a"
             bit_ranges {
               name: "msb"
               msb: 31
               lsb: 31
-              pattern {
-                bits: CONSTANT_ZERO
-              }
+              pattern { bits: CONSTANT_ZERO }
             }
+          }
+          asm_template {
+            pieces { text: "I1 " }
+            pieces {
+              symbol { id: "range" label: "<range>" hint: "range desc" }
+            }
+            pieces { text: ", 0" }
           }
         }
-        instructions {
-          description: "First instruction | Class One"
-          vendor_syntax {
+        encodings {
+          name: "I1_class_1_encoding_2"
+          docvars {
             mnemonic: "I1"
-            operands {
-              name: "<range>"
-            }
+            cond_setting: NO_S
+            instr_class: GENERAL
+            isa: A64
           }
-          available_in_64_bit: true
-          encoding_scheme: "ps1b"
-          fixed_size_encoding_specification {
+          instruction_layout {
             form_name: "ps1b"
             bit_ranges {
               name: "msb"
               msb: 31
               lsb: 31
-              pattern {
-                bits: CONSTANT_ONE
-              }
+              pattern { bits: CONSTANT_ONE }
             }
           }
-        }
-        instructions {
-          description: "Second instruction | Class One"
-          vendor_syntax {
-            mnemonic: "I22"
+          asm_template {
+            pieces { text: "I1 " }
+            pieces {
+              symbol { id: "range" label: "<range>" hint: "range desc" }
+            }
+            pieces { text: ", 1" }
           }
-          feature_name: "crc"
-          available_in_64_bit: true
-          encoding_scheme: "ps2"
-          fixed_size_encoding_specification {
+        }
+      }
+    }
+    instructions {
+      xml_id: "id_i_2"
+      heading: "I2 Title"
+      brief_description: "Second instruction"
+      authored_description: "This is the second description"
+      docvars { mnemonic: "I2" alias_mnemonic: "I1" isa: A64 }
+      classes {
+        id: "class_1"
+        name: "Class One"
+        docvars { mnemonic: "I2" isa: A64 }
+        encodings {
+          name: "I2_class_1_encoding_1"
+          docvars { mnemonic: "I22" isa: A64 feature: CRC }
+          instruction_layout {
             form_name: "ps2"
             bit_ranges {
               msb: 31
@@ -286,37 +140,106 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
               }
             }
           }
-          instruction_group_index: 1
+          asm_template { pieces { text: "I2 " } }
         }
-        instructions {
-          description: "Third instruction | Class One"
-          vendor_syntax {
-            mnemonic: "I3"
+      }
+    }
+    instructions {
+      xml_id: "id_i_3"
+      heading: "I3 Title"
+      brief_description: "Third instruction"
+      authored_description: "This is the third description"
+      docvars { cond_setting: S isa: A32 }
+      classes {
+        id: "class_1"
+        name: "Class One"
+        docvars { mnemonic: "I3" cond_setting: S isa: A32 }
+        encodings {
+          name: "I3_class_1_encoding_1"
+          docvars { mnemonic: "I3" cond_setting: S isa: A32 }
+        }
+      }
+    })proto";
+  XmlDatabase xml_database;
+  ASSERT_TRUE(TextFormat::ParseFromString(kXmlDatabase, &xml_database));
+
+  static constexpr char kExpectedArchitecture[] = R"proto(
+    name: 'ARMv8'
+    instruction_set {
+      source_infos { source_name: "ARM XML Database" }
+      instructions {
+        description: "First instruction | Class One"
+        vendor_syntax { mnemonic: "I1" operands { name: "<range>" } }
+        available_in_64_bit: true
+        encoding_scheme: "ps1a"
+        fixed_size_encoding_specification {
+          form_name: "ps1a"
+          bit_ranges {
+            name: "msb"
+            msb: 31
+            lsb: 31
+            pattern { bits: CONSTANT_ZERO }
           }
-          available_in_64_bit: false
-          fixed_size_encoding_specification {
+        }
+      }
+      instructions {
+        description: "First instruction | Class One"
+        vendor_syntax { mnemonic: "I1" operands { name: "<range>" } }
+        available_in_64_bit: true
+        encoding_scheme: "ps1b"
+        fixed_size_encoding_specification {
+          form_name: "ps1b"
+          bit_ranges {
+            name: "msb"
+            msb: 31
+            lsb: 31
+            pattern { bits: CONSTANT_ONE }
           }
-          instruction_group_index: 2
         }
-        instruction_groups {
-          name: "I1"
-          description: "This is the first description"
-          short_description: "First instruction group."
-        }
-        instruction_groups {
-          name: "I2"
-          description: "This is the second description"
-          short_description: "Second instruction group."
-        }
-        instruction_groups {
-          name: "I3"
-          description: "This is the third description"
-          flags_affected {
-            content: "S"
+      }
+      instructions {
+        description: "Second instruction | Class One"
+        vendor_syntax { mnemonic: "I22" }
+        feature_name: "crc"
+        available_in_64_bit: true
+        encoding_scheme: "ps2"
+        fixed_size_encoding_specification {
+          form_name: "ps2"
+          bit_ranges {
+            msb: 31
+            lsb: 29
+            not_pattern {
+              bits: CONSTANT_ONE
+              bits: CONSTANT_ZERO
+              bits: VARIABLE
+            }
           }
-          short_description: "Third instruction group."
         }
-      })";
+        instruction_group_index: 1
+      }
+      instructions {
+        description: "Third instruction | Class One"
+        vendor_syntax { mnemonic: "I3" }
+        available_in_64_bit: false
+        fixed_size_encoding_specification {} instruction_group_index: 2
+      }
+      instruction_groups {
+        name: "I1"
+        description: "This is the first description"
+        short_description: "First instruction group."
+      }
+      instruction_groups {
+        name: "I2"
+        description: "This is the second description"
+        short_description: "Second instruction group."
+      }
+      instruction_groups {
+        name: "I3"
+        description: "This is the third description"
+        flags_affected { content: "S" }
+        short_description: "Third instruction group."
+      }
+    })proto";
   EXPECT_THAT(ConvertToArchitectureProto(xml_database),
               EqualsProto(kExpectedArchitecture));
 }

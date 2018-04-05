@@ -39,20 +39,20 @@ std::string GetFilePath(const std::string& filename) {
 }
 
 TEST(ParserTest, ParseXmlIndex) {
-  static constexpr char kExpectedIndex[] = R"(
-      isa: A64
-      files {
-        filename: "instruction_1.xml"
-        heading: "I1"
-        xml_id: "id_i_1"
-        description: "First instruction."
-      }
-      files {
-        filename: "instruction_2.xml"
-        heading: "I2"
-        xml_id: "id_i_2"
-        description: "Second instruction."
-      })";
+  static constexpr char kExpectedIndex[] = R"proto(
+    isa: A64
+    files {
+      filename: "instruction_1.xml"
+      heading: "I1"
+      xml_id: "id_i_1"
+      description: "First instruction."
+    }
+    files {
+      filename: "instruction_2.xml"
+      heading: "I2"
+      xml_id: "id_i_2"
+      description: "Second instruction."
+    })proto";
   EXPECT_THAT(ParseXmlIndex(GetFilePath("index.xml")),
               IsOkAndHolds(EqualsProto(kExpectedIndex)));
 
@@ -67,23 +67,159 @@ TEST(ParserTest, ParseXmlIndex_Missing) {
 }
 
 TEST(ParserTest, ParseXmlInstruction) {
-  static constexpr char kExpectedInstruction[] = R"(
+  static constexpr char kExpectedInstruction[] = R"proto(
+    xml_id: "id_i_1"
+    heading: "I1 Title"
+    brief_description: "First instruction"
+    authored_description: "This is the first instruction"
+    docvars { mnemonic: "I1" isa: A64 }
+    classes {
+      id: "class_1"
+      name: "Class One"
+      docvars { mnemonic: "I1" instr_class: GENERAL isa: A64 }
+      encodings {
+        name: "First encoding of Class One"
+        docvars { mnemonic: "I1" cond_setting: S instr_class: GENERAL isa: A64 }
+        instruction_layout {
+          form_name: "ps"
+          bit_ranges {
+            name: "msb"
+            msb: 31
+            lsb: 31
+            pattern { bits: CONSTANT_ZERO }
+          }
+          bit_ranges {
+            name: "range"
+            msb: 30
+            lsb: 28
+            pattern { bits: VARIABLE bits: CONSTANT_ONE bits: CONSTANT_ZERO }
+          }
+          bit_ranges {
+            name: "partial-override"
+            msb: 2
+            lsb: 1
+            pattern { bits: CONSTANT_ZERO bits: CONSTANT_ONE }
+          }
+          bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+        }
+        asm_template {
+          pieces { text: "I1 " }
+          pieces { symbol { id: "range" label: "<range>" hint: "range desc" } }
+          pieces { text: ", 0" }
+        }
+      }
+      encodings {
+        name: "Second encoding of Class One"
+        docvars {
+          mnemonic: "I1"
+          cond_setting: NO_S
+          instr_class: GENERAL
+          isa: A64
+        }
+        instruction_layout {
+          form_name: "ps"
+          bit_ranges {
+            name: "msb"
+            msb: 31
+            lsb: 31
+            pattern { bits: CONSTANT_ONE }
+          }
+          bit_ranges {
+            name: "range"
+            msb: 30
+            lsb: 28
+            pattern { bits: VARIABLE bits: CONSTANT_ONE bits: CONSTANT_ZERO }
+          }
+          bit_ranges {
+            name: "partial-override"
+            msb: 2
+            lsb: 1
+            pattern { bits: CONSTANT_ZERO bits: VARIABLE }
+          }
+          bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+        }
+        asm_template {
+          pieces { text: "I1 " }
+          pieces { symbol { id: "range" label: "<range>" hint: "range desc" } }
+          pieces { text: ", 1" }
+        }
+      }
+    })proto";
+  EXPECT_THAT(ParseXmlInstruction(GetFilePath("instruction_1.xml")),
+              IsOkAndHolds(EqualsProto(kExpectedInstruction)));
+}
+
+TEST(ParserTest, ParseXmlInstructionWithConstraints) {
+  static constexpr char kExpectedInstruction[] = R"proto(
+    xml_id: "id_i_2"
+    heading: "I2 Title"
+    brief_description: "Second instruction"
+    authored_description: "This is the second instruction"
+    docvars { mnemonic: "I2" isa: A64 }
+    classes {
+      id: "class_1"
+      name: "Class One"
+      docvars { mnemonic: "I2" isa: A64 }
+      encodings {
+        name: "First encoding of Class One"
+        docvars { mnemonic: "I2" isa: A64 }
+        instruction_layout {
+          form_name: "ps"
+          bit_ranges {
+            msb: 31
+            lsb: 25
+            not_pattern {
+              bits: CONSTANT_ONE
+              bits: CONSTANT_ZERO
+              bits: CONSTANT_ONE
+              bits: CONSTANT_ONE
+              bits: CONSTANT_ZERO
+              bits: VARIABLE
+              bits: VARIABLE
+            }
+          }
+          bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+        }
+        asm_template { pieces { text: "I2 " } }
+      }
+    })proto";
+  EXPECT_THAT(ParseXmlInstruction(GetFilePath("instruction_2.xml")),
+              IsOkAndHolds(EqualsProto(kExpectedInstruction)));
+}
+
+TEST(ParserTest, ParseXmlInstruction_Missing) {
+  EXPECT_THAT(ParseXmlInstruction(GetFilePath("missing.xml")),
+              StatusIs(INTERNAL, HasSubstr("XML_ERROR_FILE_NOT_FOUND")));
+}
+
+TEST(ParserTest, ParseXmlDatabase) {
+  static constexpr char kExpectedXmlDatabase[] = R"proto(
+    base_index {
+      isa: A64
+      files {
+        filename: "instruction_1.xml"
+        heading: "I1"
+        xml_id: "id_i_1"
+        description: "First instruction."
+      }
+      files {
+        filename: "instruction_2.xml"
+        heading: "I2"
+        xml_id: "id_i_2"
+        description: "Second instruction."
+      }
+    }
+    fp_simd_index { isa: A64 }
+    instructions {
       xml_id: "id_i_1"
       heading: "I1 Title"
       brief_description: "First instruction"
       authored_description: "This is the first instruction"
-      docvars {
-        mnemonic: "I1"
-        isa: A64
-      }
+      docvars { mnemonic: "I1" isa: A64 }
       classes {
         id: "class_1"
         name: "Class One"
-        docvars {
-          mnemonic: "I1"
-          instr_class: GENERAL
-          isa: A64
-        }
+        docvars { mnemonic: "I1" instr_class: GENERAL isa: A64 }
         encodings {
           name: "First encoding of Class One"
           docvars {
@@ -98,9 +234,7 @@ TEST(ParserTest, ParseXmlInstruction) {
               name: "msb"
               msb: 31
               lsb: 31
-              pattern {
-                bits: CONSTANT_ZERO
-              }
+              pattern { bits: CONSTANT_ZERO }
             }
             bit_ranges {
               name: "range"
@@ -116,32 +250,16 @@ TEST(ParserTest, ParseXmlInstruction) {
               name: "partial-override"
               msb: 2
               lsb: 1
-              pattern {
-                bits: CONSTANT_ZERO
-                bits: CONSTANT_ONE
-              }
+              pattern { bits: CONSTANT_ZERO bits: CONSTANT_ONE }
             }
-            bit_ranges {
-              name: "lsb"
-              pattern {
-                bits: CONSTANT_ZERO
-              }
-            }
+            bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
           }
           asm_template {
+            pieces { text: "I1 " }
             pieces {
-              text: "I1 "
+              symbol { id: "range" label: "<range>" hint: "range desc" }
             }
-            pieces {
-              symbol {
-                id: "range"
-                label: "<range>"
-                hint: "range desc"
-              }
-            }
-            pieces {
-              text: ", 0"
-            }
+            pieces { text: ", 0" }
           }
         }
         encodings {
@@ -158,9 +276,7 @@ TEST(ParserTest, ParseXmlInstruction) {
               name: "msb"
               msb: 31
               lsb: 31
-              pattern {
-                bits: CONSTANT_ONE
-              }
+              pattern { bits: CONSTANT_ONE }
             }
             bit_ranges {
               name: "range"
@@ -176,62 +292,33 @@ TEST(ParserTest, ParseXmlInstruction) {
               name: "partial-override"
               msb: 2
               lsb: 1
-              pattern {
-                bits: CONSTANT_ZERO
-                bits: VARIABLE
-              }
+              pattern { bits: CONSTANT_ZERO bits: VARIABLE }
             }
-            bit_ranges {
-              name: "lsb"
-              pattern {
-                bits: CONSTANT_ZERO
-              }
-            }
+            bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
           }
           asm_template {
+            pieces { text: "I1 " }
             pieces {
-              text: "I1 "
+              symbol { id: "range" label: "<range>" hint: "range desc" }
             }
-            pieces {
-              symbol {
-                id: "range"
-                label: "<range>"
-                hint: "range desc"
-              }
-            }
-            pieces {
-              text: ", 1"
-            }
+            pieces { text: ", 1" }
           }
         }
-      })";
-  EXPECT_THAT(ParseXmlInstruction(GetFilePath("instruction_1.xml")),
-              IsOkAndHolds(EqualsProto(kExpectedInstruction)));
-}
-
-TEST(ParserTest, ParseXmlInstructionWithConstraints) {
-  static constexpr char kExpectedInstruction[] = R"(
+      }
+    }
+    instructions {
       xml_id: "id_i_2"
       heading: "I2 Title"
       brief_description: "Second instruction"
       authored_description: "This is the second instruction"
-      docvars {
-        mnemonic: "I2"
-        isa: A64
-      }
+      docvars { mnemonic: "I2" isa: A64 }
       classes {
         id: "class_1"
         name: "Class One"
-        docvars {
-          mnemonic: "I2"
-          isa: A64
-        }
+        docvars { mnemonic: "I2" isa: A64 }
         encodings {
           name: "First encoding of Class One"
-          docvars {
-            mnemonic: "I2"
-            isa: A64
-          }
+          docvars { mnemonic: "I2" isa: A64 }
           instruction_layout {
             form_name: "ps"
             bit_ranges {
@@ -247,240 +334,12 @@ TEST(ParserTest, ParseXmlInstructionWithConstraints) {
                 bits: VARIABLE
               }
             }
-            bit_ranges {
-              name: "lsb"
-              pattern {
-                bits: CONSTANT_ZERO
-              }
-            }
+            bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
           }
-          asm_template {
-            pieces {
-              text: "I2 "
-            }
-          }
-        }
-      })";
-  EXPECT_THAT(ParseXmlInstruction(GetFilePath("instruction_2.xml")),
-              IsOkAndHolds(EqualsProto(kExpectedInstruction)));
-}
-
-TEST(ParserTest, ParseXmlInstruction_Missing) {
-  EXPECT_THAT(ParseXmlInstruction(GetFilePath("missing.xml")),
-              StatusIs(INTERNAL, HasSubstr("XML_ERROR_FILE_NOT_FOUND")));
-}
-
-TEST(ParserTest, ParseXmlDatabase) {
-  static constexpr char kExpectedXmlDatabase[] = R"(
-      base_index {
-        isa: A64
-        files {
-          filename: "instruction_1.xml"
-          heading: "I1"
-          xml_id: "id_i_1"
-          description: "First instruction."
-        }
-        files {
-          filename: "instruction_2.xml"
-          heading: "I2"
-          xml_id: "id_i_2"
-          description: "Second instruction."
+          asm_template { pieces { text: "I2 " } }
         }
       }
-      fp_simd_index {
-        isa: A64
-      }
-      instructions {
-        xml_id: "id_i_1"
-        heading: "I1 Title"
-        brief_description: "First instruction"
-        authored_description: "This is the first instruction"
-        docvars {
-          mnemonic: "I1"
-          isa: A64
-        }
-        classes {
-          id: "class_1"
-          name: "Class One"
-          docvars {
-            mnemonic: "I1"
-            instr_class: GENERAL
-            isa: A64
-          }
-          encodings {
-            name: "First encoding of Class One"
-            docvars {
-              mnemonic: "I1"
-              cond_setting: S
-              instr_class: GENERAL
-              isa: A64
-            }
-            instruction_layout {
-              form_name: "ps"
-              bit_ranges {
-                name: "msb"
-                msb: 31
-                lsb: 31
-                pattern {
-                  bits: CONSTANT_ZERO
-                }
-              }
-              bit_ranges {
-                name: "range"
-                msb: 30
-                lsb: 28
-                pattern {
-                  bits: VARIABLE
-                  bits: CONSTANT_ONE
-                  bits: CONSTANT_ZERO
-                }
-              }
-              bit_ranges {
-                name: "partial-override"
-                msb: 2
-                lsb: 1
-                pattern {
-                  bits: CONSTANT_ZERO
-                  bits: CONSTANT_ONE
-                }
-              }
-              bit_ranges {
-                name: "lsb"
-                pattern {
-                  bits: CONSTANT_ZERO
-                }
-              }
-            }
-            asm_template {
-              pieces {
-                text: "I1 "
-              }
-              pieces {
-                symbol {
-                  id: "range"
-                  label: "<range>"
-                  hint: "range desc"
-                }
-              }
-              pieces {
-                text: ", 0"
-              }
-            }
-          }
-          encodings {
-            name: "Second encoding of Class One"
-            docvars {
-              mnemonic: "I1"
-              cond_setting: NO_S
-              instr_class: GENERAL
-              isa: A64
-            }
-            instruction_layout {
-              form_name: "ps"
-              bit_ranges {
-                name: "msb"
-                msb: 31
-                lsb: 31
-                pattern {
-                  bits: CONSTANT_ONE
-                }
-              }
-              bit_ranges {
-                name: "range"
-                msb: 30
-                lsb: 28
-                pattern {
-                  bits: VARIABLE
-                  bits: CONSTANT_ONE
-                  bits: CONSTANT_ZERO
-                }
-              }
-              bit_ranges {
-                name: "partial-override"
-                msb: 2
-                lsb: 1
-                pattern {
-                  bits: CONSTANT_ZERO
-                  bits: VARIABLE
-                }
-              }
-              bit_ranges {
-                name: "lsb"
-                pattern {
-                  bits: CONSTANT_ZERO
-                }
-              }
-            }
-            asm_template {
-              pieces {
-                text: "I1 "
-              }
-              pieces {
-                symbol {
-                  id: "range"
-                  label: "<range>"
-                  hint: "range desc"
-                }
-              }
-              pieces {
-                text: ", 1"
-              }
-            }
-          }
-        }
-      }
-      instructions {
-        xml_id: "id_i_2"
-        heading: "I2 Title"
-        brief_description: "Second instruction"
-        authored_description: "This is the second instruction"
-        docvars {
-          mnemonic: "I2"
-          isa: A64
-        }
-        classes {
-          id: "class_1"
-          name: "Class One"
-          docvars {
-            mnemonic: "I2"
-            isa: A64
-          }
-          encodings {
-            name: "First encoding of Class One"
-            docvars {
-              mnemonic: "I2"
-              isa: A64
-            }
-            instruction_layout {
-              form_name: "ps"
-              bit_ranges {
-                msb: 31
-                lsb: 25
-                not_pattern {
-                  bits: CONSTANT_ONE
-                  bits: CONSTANT_ZERO
-                  bits: CONSTANT_ONE
-                  bits: CONSTANT_ONE
-                  bits: CONSTANT_ZERO
-                  bits: VARIABLE
-                  bits: VARIABLE
-                }
-              }
-              bit_ranges {
-                name: "lsb"
-                pattern {
-                  bits: CONSTANT_ZERO
-                }
-              }
-            }
-            asm_template {
-              pieces {
-                text: "I2 "
-              }
-            }
-          }
-        }
-      })";
+    })proto";
   EXPECT_THAT(ParseXmlDatabase(GetFilePath("")),
               IsOkAndHolds(EqualsProto(kExpectedXmlDatabase)));
 }
