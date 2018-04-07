@@ -78,7 +78,8 @@ TEST(ParserTest, ParseXmlInstruction) {
       name: "Class One"
       docvars { mnemonic: "I1" instr_class: GENERAL isa: A64 }
       encodings {
-        name: "First encoding of Class One"
+        id: "I1_class_1_enc_1"
+        name: "First encoding of Class One (bit == 0)"
         docvars { mnemonic: "I1" cond_setting: S instr_class: GENERAL isa: A64 }
         instruction_layout {
           form_name: "ps"
@@ -109,6 +110,7 @@ TEST(ParserTest, ParseXmlInstruction) {
         }
       }
       encodings {
+        id: "I1_class_1_enc_2"
         name: "Second encoding of Class One"
         docvars {
           mnemonic: "I1"
@@ -161,6 +163,7 @@ TEST(ParserTest, ParseXmlInstructionWithConstraints) {
       name: "Class One"
       docvars { mnemonic: "I2" isa: A64 }
       encodings {
+        id: "I2_class_1_enc_1"
         name: "First encoding of Class One"
         docvars { mnemonic: "I2" isa: A64 }
         instruction_layout {
@@ -221,7 +224,8 @@ TEST(ParserTest, ParseXmlDatabase) {
         name: "Class One"
         docvars { mnemonic: "I1" instr_class: GENERAL isa: A64 }
         encodings {
-          name: "First encoding of Class One"
+          id: "I1_class_1_enc_1"
+          name: "First encoding of Class One (bit == 0)"
           docvars {
             mnemonic: "I1"
             cond_setting: S
@@ -263,6 +267,7 @@ TEST(ParserTest, ParseXmlDatabase) {
           }
         }
         encodings {
+          id: "I1_class_1_enc_2"
           name: "Second encoding of Class One"
           docvars {
             mnemonic: "I1"
@@ -317,6 +322,7 @@ TEST(ParserTest, ParseXmlDatabase) {
         name: "Class One"
         docvars { mnemonic: "I2" isa: A64 }
         encodings {
+          id: "I2_class_1_enc_1"
           name: "First encoding of Class One"
           docvars { mnemonic: "I2" isa: A64 }
           instruction_layout {

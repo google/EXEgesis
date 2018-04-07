@@ -24,7 +24,7 @@
           <c>0</c>
         </box>
       </regdiagram>
-      <encoding name="First encoding of Class One" label="I2_class_1_enc_1">
+      <encoding name="I2_class_1_enc_1" label="First encoding of Class One">
         <docvars>
           <docvar key="isa" value="A64" />
           <docvar key="mnemonic" value="I2" />

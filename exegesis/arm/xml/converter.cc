@@ -92,9 +92,10 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
         auto* instruction = isp->add_instructions();
         instruction->set_instruction_group_index(group_index);
         // The longer authored_description is used as group description.
-        instruction->set_description(absl::StrJoin(
-            {xml_instruction.brief_description(), instruction_class.name()},
-            " | "));
+        instruction->set_description(
+            absl::StrJoin({xml_instruction.brief_description(),
+                           instruction_class.name(), encoding.name()},
+                          " | "));
         // Use any encoding-specific mnemonic (preferring aliases as above when
         // present), otherwise default to the one defined at instruction level.
         const std::string encoding_mnemonic = FirstSetOrEmpty(

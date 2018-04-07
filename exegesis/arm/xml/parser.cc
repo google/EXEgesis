@@ -379,7 +379,13 @@ StatusOr<RepeatedPtrField<InstructionEncoding>> ParseInstructionEncodings(
 
   for (XMLElement* encoding : FindChildren(iclass, "encoding")) {
     auto* encoding_proto = result.Add();
-    encoding_proto->set_name(ReadAttribute(encoding, "name"));
+    // Unlike <iclass> elements, here the "name" attribute acts more like an id,
+    // and the human-friendly name is instead stored as the "label" attribute.
+    encoding_proto->set_id(ReadAttribute(encoding, "name"));
+    std::string label = ReadAttribute(encoding, "label");
+    const std::string suffix = ReadAttribute(encoding, "bitdiffs");
+    if (!suffix.empty()) absl::StrAppend(&label, " (", suffix, ")");
+    encoding_proto->set_name(label);
 
     const auto docvars = FindChild(encoding, "docvars");
     if (!docvars.ok()) return docvars.status();
@@ -410,6 +416,7 @@ StatusOr<RepeatedPtrField<InstructionClass>> ParseInstructionClasses(
     XMLNode* classes) {
   CHECK(classes != nullptr);
   RepeatedPtrField<InstructionClass> result;
+
   for (XMLElement* iclass : FindChildren(classes, "iclass")) {
     auto* iclass_proto = result.Add();
     iclass_proto->set_id(ReadAttribute(iclass, "id"));

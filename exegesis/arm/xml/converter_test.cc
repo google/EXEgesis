@@ -64,7 +64,8 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         name: "Class One"
         docvars { mnemonic: "I1" instr_class: GENERAL isa: A64 }
         encodings {
-          name: "I1_class_1_encoding_1"
+          id: "I1_class_1_enc_1_id"
+          name: "I1_class_1_enc_1_name"
           docvars {
             mnemonic: "I1"
             cond_setting: S
@@ -89,7 +90,8 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           }
         }
         encodings {
-          name: "I1_class_1_encoding_2"
+          id: "I1_class_1_enc_2_id"
+          name: "I1_class_1_enc_2_name"
           docvars {
             mnemonic: "I1"
             cond_setting: NO_S
@@ -126,7 +128,8 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         name: "Class One"
         docvars { mnemonic: "I2" isa: A64 }
         encodings {
-          name: "I2_class_1_encoding_1"
+          id: "I2_class_1_enc_1_id"
+          name: "I2_class_1_enc_1_name"
           docvars { mnemonic: "I22" isa: A64 feature: CRC }
           instruction_layout {
             form_name: "ps2"
@@ -155,7 +158,8 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         name: "Class One"
         docvars { mnemonic: "I3" cond_setting: S isa: A32 }
         encodings {
-          name: "I3_class_1_encoding_1"
+          id: "I3_class_1_enc_1_id"
+          name: "I3_class_1_enc_1_name"
           docvars { mnemonic: "I3" cond_setting: S isa: A32 }
         }
       }
@@ -168,7 +172,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
     instruction_set {
       source_infos { source_name: "ARM XML Database" }
       instructions {
-        description: "First instruction | Class One"
+        description: "First instruction | Class One | I1_class_1_enc_1_name"
         vendor_syntax { mnemonic: "I1" operands { name: "<range>" } }
         available_in_64_bit: true
         encoding_scheme: "ps1a"
@@ -183,7 +187,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         }
       }
       instructions {
-        description: "First instruction | Class One"
+        description: "First instruction | Class One | I1_class_1_enc_2_name"
         vendor_syntax { mnemonic: "I1" operands { name: "<range>" } }
         available_in_64_bit: true
         encoding_scheme: "ps1b"
@@ -198,7 +202,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         }
       }
       instructions {
-        description: "Second instruction | Class One"
+        description: "Second instruction | Class One | I2_class_1_enc_1_name"
         vendor_syntax { mnemonic: "I22" }
         feature_name: "crc"
         available_in_64_bit: true
@@ -218,7 +222,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         instruction_group_index: 1
       }
       instructions {
-        description: "Third instruction | Class One"
+        description: "Third instruction | Class One | I3_class_1_enc_1_name"
         vendor_syntax { mnemonic: "I3" }
         available_in_64_bit: false
         fixed_size_encoding_specification {} instruction_group_index: 2

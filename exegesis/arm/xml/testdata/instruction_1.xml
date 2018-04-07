@@ -34,7 +34,7 @@
           <c>0</c>
         </box>
       </regdiagram>
-      <encoding name="First encoding of Class One" label="I1_class_1_enc_1">
+      <encoding name="I1_class_1_enc_1" label="First encoding of Class One" bitdiffs="bit == 0">
         <docvars>
           <docvar key="isa" value="A64" />
           <docvar key="mnemonic" value="I1" />
@@ -50,7 +50,7 @@
         </box>
         <asmtemplate><text>I1 </text><a link="range" hover="range desc">&lt;range&gt;</a><text>, 0</text></asmtemplate>
       </encoding>
-      <encoding name="Second encoding of Class One" label="I1_class_1_enc_2">
+      <encoding name="I1_class_1_enc_2" label="Second encoding of Class One" >
         <docvars>
           <docvar key="isa" value="A64" />
           <docvar key="mnemonic" value="I1" />

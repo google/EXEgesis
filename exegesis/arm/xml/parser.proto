@@ -85,6 +85,7 @@ message AsmTemplate {
 
 // An encoding of an instruction.
 message InstructionEncoding {
+  string id = 5;
   string name = 1;
   dv.DocVars docvars = 2;
   FixedSizeInstructionLayout instruction_layout = 3;
