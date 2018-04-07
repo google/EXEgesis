@@ -284,8 +284,7 @@ std::string FixOperandName(const std::string& operand_name) {
 
 // The vendor syntax has always the format [prefix] mnemonic op1, op2[, op3].
 // An operand can optionally be followed by up to two tags (e.g. "{k1}").
-const LazyRE2 kMnemonicRegexp = {
-    R"(\s*((?:REPN?[EZ]?\s+)?[A-Z0-9x]+)\s*)"};
+const LazyRE2 kMnemonicRegexp = {R"(\s*((?:REPN?[EZ]?\s+)?[A-Z0-9x]+)\s*)"};
 const LazyRE2 kOperandRegexp = {
     R"(([^,{]+)(?:{([a-z0-9]+)})?\s*(?:{([a-z0-9]+)})?\s*,?\s*)"};
 

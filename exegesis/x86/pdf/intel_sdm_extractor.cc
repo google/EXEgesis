@@ -300,8 +300,7 @@ const OperandEncodingMatchers& GetOperandEncodingSpecMatchers() {
        new RE2(R"(RDX/EDX is implied 64/32 bits \nsource)")},
       {OperandEncoding::OE_CONSTANT, new RE2(R"([0-9])")},
       {OperandEncoding::OE_SIB,
-       new RE2(
-           R"(SIB\.base\s+\(r\):\s+Address of pointer\nSIB\.index\(r\))")},
+       new RE2(R"(SIB\.base\s+\(r\):\s+Address of pointer\nSIB\.index\(r\))")},
       {OperandEncoding::OE_VSIB,
        new RE2(R"(BaseReg \(R\): VSIB:base,\nVectorReg\(R\): VSIB:index)")},
   }};
