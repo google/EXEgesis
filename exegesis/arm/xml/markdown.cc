@@ -15,6 +15,7 @@
 #include "exegesis/arm/xml/markdown.h"
 
 #include <algorithm>
+#include <stack>
 #include <string>
 #include <unordered_map>
 
@@ -31,6 +32,7 @@ namespace xml {
 namespace {
 
 using ::exegesis::xml::ReadAttribute;
+using ::exegesis::xml::ReadIntAttributeOrDefault;
 using ::tinyxml2::XMLAttribute;
 using ::tinyxml2::XMLElement;
 using ::tinyxml2::XMLText;
@@ -38,20 +40,27 @@ using ::tinyxml2::XMLVisitor;
 
 enum class TagType {
   UNKNOWN,
+  ARCHVARIANT,
   BLOCKQUOTE,
   CODE,
+  ENTRY,
   IMAGE,
   LINK,
   LIST,
   LISTITEM,
   PARAGRAPH,
+  ROW,
+  TABLE,
+  THEAD,
 };
 
 // Returns the canonical type of a given tag.
 TagType GetType(const XMLElement& element) {
   static const auto* const kTagTypes =
       new std::unordered_map<std::string, TagType>({
+          {"arch_variant", TagType::ARCHVARIANT},
           {"arm-defined-word", TagType::CODE},
+          {"entry", TagType::ENTRY},
           {"hexnumber", TagType::CODE},
           {"image", TagType::IMAGE},
           {"instruction", TagType::CODE},
@@ -59,7 +68,10 @@ TagType GetType(const XMLElement& element) {
           {"listitem", TagType::LISTITEM},
           {"note", TagType::BLOCKQUOTE},
           {"para", TagType::PARAGRAPH},
+          {"row", TagType::ROW},
           {"syntax", TagType::CODE},
+          {"tgroup", TagType::TABLE},
+          {"thead", TagType::THEAD},
           {"value", TagType::CODE},
           {"xref", TagType::LINK},
       });
@@ -72,11 +84,17 @@ class TinyMarkdownParser : public XMLVisitor {
   bool VisitEnter(const XMLElement& element,
                   const XMLAttribute* first_attribute) override {
     switch (GetType(element)) {
+      case TagType::ARCHVARIANT:
+        absl::StrAppend(&md_, ReadAttribute(&element, "feature"));
+        break;
       case TagType::BLOCKQUOTE:
         absl::StrAppend(&md_, "\n\n> ");
         break;
       case TagType::CODE:
         absl::StrAppend(&md_, "`");
+        break;
+      case TagType::ENTRY:
+        absl::StrAppend(&md_, " ");
         break;
       case TagType::IMAGE:
         absl::StrAppend(&md_, "![", ReadAttribute(&element, "label"), "]");
@@ -91,6 +109,13 @@ class TinyMarkdownParser : public XMLVisitor {
       case TagType::LISTITEM:
         absl::StrAppend(&md_, "+ ");
         break;
+      case TagType::ROW:
+        absl::StrAppend(&md_, "| ");
+        break;
+      case TagType::TABLE:
+        cols_.push(ReadIntAttributeOrDefault(&element, "cols", 1));
+        absl::StrAppend(&md_, "\n");
+        break;
       default:
         break;
     }
@@ -102,15 +127,29 @@ class TinyMarkdownParser : public XMLVisitor {
       case TagType::CODE:
         absl::StrAppend(&md_, "`");
         break;
+      case TagType::ENTRY:
+        absl::StrAppend(&md_, " |");
+        break;
       case TagType::LINK:
         absl::StrAppend(&md_, "](", ReadAttribute(&element, "linkend"), ")");
         break;
       case TagType::LIST:
       case TagType::LISTITEM:
+      case TagType::ROW:
         absl::StrAppend(&md_, "\n");
         break;
       case TagType::PARAGRAPH:
         absl::StrAppend(&md_, "\n\n");
+        break;
+      case TagType::TABLE:
+        if (!cols_.empty()) cols_.pop();
+        absl::StrAppend(&md_, "\n");
+        break;
+      case TagType::THEAD:
+        for (int col = 0; col < (cols_.empty() ? 1 : cols_.top()); ++col) {
+          absl::StrAppend(&md_, "| --- ");
+        }
+        absl::StrAppend(&md_, "|\n");
         break;
       default:
         break;
@@ -129,6 +168,7 @@ class TinyMarkdownParser : public XMLVisitor {
   const std::string& markdown() { return md_; }
 
  private:
+  std::stack<int> cols_;  // Keeps track of table column sizes on traversal.
   std::string md_;
 };
 

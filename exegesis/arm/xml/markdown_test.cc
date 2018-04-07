@@ -54,6 +54,26 @@ TEST(MarkdownTest, ExportToMarkdown) {
         </list>
         <image file="http://file" label="img" ignored="stuff"></image>
         <note><para>a note with a <xref linkend="x">link</xref></para></note>
+        <table><tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Header</entry>
+              <entry>&lt;H&gt;</entry>
+              </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>A</entry>
+              <entry><syntax>0</syntax></entry>
+            </row>
+            <row>
+              <entry><value>table</value></entry>
+              <entry>
+                <arch_variants><arch_variant feature="arm_id"/></arch_variants>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup></table>
         <para>Yet another paragraph</para>
       </root>
       )",
@@ -71,6 +91,11 @@ TEST(MarkdownTest, ExportToMarkdown) {
             "![img](http://file)\n"
             "\n"
             "> a note with a [link](x)\n"
+            "\n"
+            "| Header | <H> |\n"
+            "| --- | --- |\n"
+            "| A | `0` |\n"
+            "| `table` | arm_id |\n"
             "\n"
             "Yet another paragraph");
 }
