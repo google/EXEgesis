@@ -31,6 +31,10 @@ message InstructionOperand {
   // The name of the operand, as listed by the vendor.
   string name = 4;
 
+  // Human-readable description of the operand, as provided by the vendor,
+  // in Markdown format.
+  string description = 9;
+
   // Defines the possible addressing modes of an operand.
   // clang-format off
   enum AddressingMode {
