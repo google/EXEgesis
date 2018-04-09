@@ -50,6 +50,7 @@ TEST(MarkdownTest, ExportToMarkdown) {
           <listitem>
             Random <arm-defined-word>stuff</arm-defined-word>
             set to <value>42</value> or <hexnumber>0x2A</hexnumber>
+            or <binarynumber>101010</binarynumber>
           </listitem>
         </list>
         <image file="http://file" label="img" ignored="stuff"></image>
@@ -74,7 +75,7 @@ TEST(MarkdownTest, ExportToMarkdown) {
             </row>
           </tbody>
         </tgroup></table>
-        <para>Yet another paragraph</para>
+        <para>Yet <param>another</param> paragraph</para>
       </root>
       )",
            &doc);
@@ -86,7 +87,7 @@ TEST(MarkdownTest, ExportToMarkdown) {
             "Another para with [label](target)\n"
             "\n"
             "+ `NOP` semantics and syntax: `NOP;` .\n"
-            "+ Random `stuff` set to `42` or `0x2A`\n"
+            "+ Random `stuff` set to `42` or `0x2A` or `101010`\n"
             "\n"
             "![img](http://file)\n"
             "\n"
@@ -97,7 +98,7 @@ TEST(MarkdownTest, ExportToMarkdown) {
             "| A | `0` |\n"
             "| `table` | arm_id |\n"
             "\n"
-            "Yet another paragraph");
+            "Yet `another` paragraph");
 }
 
 }  // namespace

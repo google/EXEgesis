@@ -60,6 +60,7 @@ TagType GetType(const XMLElement& element) {
       new std::unordered_map<std::string, TagType>({
           {"arch_variant", TagType::ARCHVARIANT},
           {"arm-defined-word", TagType::CODE},
+          {"binarynumber", TagType::CODE},
           {"entry", TagType::ENTRY},
           {"hexnumber", TagType::CODE},
           {"image", TagType::IMAGE},
@@ -68,6 +69,7 @@ TagType GetType(const XMLElement& element) {
           {"listitem", TagType::LISTITEM},
           {"note", TagType::BLOCKQUOTE},
           {"para", TagType::PARAGRAPH},
+          {"param", TagType::CODE},
           {"row", TagType::ROW},
           {"syntax", TagType::CODE},
           {"tgroup", TagType::TABLE},
