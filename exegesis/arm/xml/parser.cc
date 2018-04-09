@@ -21,6 +21,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "exegesis/arm/xml/docvars.h"
@@ -34,6 +35,7 @@
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "tinyxml2.h"
+#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/statusor.h"
 
@@ -356,9 +358,10 @@ StatusOr<AsmTemplate> ParseAsmTemplate(XMLNode* asmtemplate) {
     } else if (tag == "a") {
       auto* piece = result.add_pieces();
       auto* symbol = piece->mutable_symbol();
-      symbol->set_label(ReadSimpleText(element));
       symbol->set_id(ReadAttribute(element, "link"));
-      symbol->set_hint(ReadAttribute(element, "hover"));
+      symbol->set_label(ReadSimpleText(element));
+      symbol->set_description(ReadAttribute(element, "hover"));
+      // field & explanation will get populated later by ParseExplanations().
     }
   }
   if (result.pieces().empty()) return NotFoundError("Empty ASM template");
@@ -435,6 +438,83 @@ StatusOr<RepeatedPtrField<InstructionClass>> ParseInstructionClasses(
   return result;
 }
 
+// Symbol labels may appear {enclosed} in asm templates to denote optionality.
+// This methods returns their canonical representation to allow comparing them.
+absl::string_view GetCanonicalLabel(absl::string_view label) {
+  return absl::StartsWith(label, "{") && absl::EndsWith(label, "}")
+             ? label.substr(1, label.size() - 2)
+             : label;
+}
+
+// Parses operand definitions from the given <explanations> XML node.
+Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
+  CHECK(explanations != nullptr);
+  CHECK(instruction != nullptr);
+
+  for (XMLElement* const expl : FindChildren(explanations, "explanation")) {
+    // Explanations may target only a subset of extracted instruction encodings.
+    const std::unordered_set<std::string> affected_encodings = absl::StrSplit(
+        ReadAttribute(expl, "enclist"), ", ", absl::SkipWhitespace());
+
+    // Symbols' links & labels allow linking back to asm templates.
+    const auto symbol = FindChild(expl, "symbol");
+    if (!symbol.ok()) return symbol.status();
+    const std::string id = ReadAttribute(symbol.ValueOrDie(), "link");
+    const std::string label = ReadSimpleText(symbol.ValueOrDie());
+
+    // Two (exclusive) types of explanations may be encountered: short <account>
+    // descriptions and longer <definition> blocks featuring value tables.
+    XMLElement* const account = expl->FirstChildElement("account");
+    XMLElement* const definition = expl->FirstChildElement("definition");
+    if (!account && !definition) {
+      return NotFoundError(
+          absl::StrCat("Explanation missing:\n", DebugString(expl)));
+    } else if (account && definition) {
+      return InvalidArgumentError(
+          absl::StrCat("<account> and <definition> are mutually exclusive:\n",
+                       DebugString(expl)));
+    }
+    XMLElement* const container = account != nullptr ? account : definition;
+
+    // Spec may contain multiple fields and even subfields, e.g: "op1:CRm<0>".
+    const std::string encoded_in = ReadAttribute(container, "encodedin");
+
+    // Parse HTML explanation blocks into Markdown.
+    bool intro = true;
+    std::string explanation;
+    for (const auto* const block : FindChildren(container, nullptr /* all */)) {
+      if (!intro) absl::StrAppend(&explanation, "\n\n");
+      absl::StrAppend(&explanation, ExportToMarkdown(block));
+      // Contrary to <account> explanations <definition> blocks never explicitly
+      // mention the `encoded_in` reference in their <intro> thus we append it.
+      if (intro && definition) {
+        absl::StrAppend(&explanation, " encoded in `", encoded_in, "`");
+      }
+      intro = false;
+    }
+
+    // Apply reconstructed explanations to their related asm template operands.
+    for (auto& instruction_class : *instruction->mutable_classes()) {
+      for (auto& encoding : *instruction_class.mutable_encodings()) {
+        if (!ContainsKey(affected_encodings, encoding.id())) continue;
+        for (auto& piece : *encoding.mutable_asm_template()->mutable_pieces()) {
+          if (!piece.has_symbol()) continue;
+          auto* const symbol = piece.mutable_symbol();
+          if (symbol->id() != id) continue;
+          if (GetCanonicalLabel(symbol->label()) != GetCanonicalLabel(label)) {
+            return FailedPreconditionError(absl::StrCat(
+                "Expected label '", symbol->label(), "', found '", label,
+                "' for symbol '", id, "' in\n:", DebugString(expl)));
+          }
+          symbol->set_encoded_in(encoded_in);
+          symbol->set_explanation(explanation);
+        }
+      }
+    }
+  }
+  return OkStatus();
+}
+
 }  // namespace
 
 StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename) {
@@ -494,14 +574,20 @@ StatusOr<XmlInstruction> ParseXmlInstruction(const std::string& filename) {
 
   const auto desc = FindChild(root.ValueOrDie(), "desc");
   if (!desc.ok()) return desc.status();
-  const Status status = ParseDescriptions(desc.ValueOrDie(), &instruction);
-  if (!status.ok()) return status;
+  const Status desc_status = ParseDescriptions(desc.ValueOrDie(), &instruction);
+  if (!desc_status.ok()) return desc_status;
 
   const auto classes = FindChild(root.ValueOrDie(), "classes");
   if (!classes.ok()) return classes.status();
   const auto classes_proto = ParseInstructionClasses(classes.ValueOrDie());
   if (!classes_proto.ok()) return classes_proto.status();
   *instruction.mutable_classes() = classes_proto.ValueOrDie();
+
+  auto* const expl = root.ValueOrDie()->FirstChildElement("explanations");
+  if (expl != nullptr) {  // Explanations are optional.
+    const Status expl_status = ParseExplanations(expl, &instruction);
+    if (!expl_status.ok()) return expl_status;
+  }
 
   return instruction;
 }

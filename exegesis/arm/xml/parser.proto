@@ -72,8 +72,15 @@ message AsmTemplate {
   message Piece {
     message Symbol {
       string id = 1;
+      // Label of the symbol to display in ASM templates.
       string label = 2;
-      string hint = 3;
+      // Corresponding field(s) in the instruction encoding. This may contain
+      // multiple serialized fields or even subfields, e.g: "op1:CRm<0>:op2".
+      string encoded_in = 3;
+      // Short human-readable description of the symbol.
+      string description = 4;
+      // Long human-readable explanation of the symbol, in Markdown format.
+      string explanation = 5;
     }
     oneof content {
       string text = 1;

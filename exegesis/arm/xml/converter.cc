@@ -39,7 +39,11 @@ InstructionFormat ConvertAsmTemplate(const std::string& mnemonic,
     if (symbol.id().empty()) continue;
     auto* operand = format.add_operands();
     operand->set_name(symbol.label());
-    // TODO(npaglieri): Link back to the encoding's instruction_layout fields.
+    operand->set_description(symbol.explanation());
+    // TODO(npaglieri): Infer data type (Register / Immediate / ...)
+    // TODO(npaglieri): Infer usage (Read / Write / ReadWrite)
+    // TODO(b/77737137): Preserve important non-pure-operand information, e.g.
+    //                   extra characters in "CAS <Ws>, <Wt>, [<Xn|SP>{,#0}]".
   }
   return format;
 }

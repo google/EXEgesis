@@ -48,7 +48,13 @@
           <c></c>
           <c>1</c>
         </box>
-        <asmtemplate><text>I1 </text><a link="range" hover="range desc">&lt;range&gt;</a><text>, 0</text></asmtemplate>
+        <asmtemplate>
+          <text>I1 </text>
+          <a link="range" hover="range short description 1">&lt;range&gt;</a>
+          <text>, </text>
+          <a link="bit" hover="bit short description">&lt;bit&gt;</a>
+          <text>, 0</text>
+        </asmtemplate>
       </encoding>
       <encoding name="I1_class_1_enc_2" label="Second encoding of Class One" >
         <docvars>
@@ -63,8 +69,51 @@
         <box hibit="2" name="partial-override" width="2">
           <c colspan="2"></c>
         </box>
-        <asmtemplate><text>I1 </text><a link="range" hover="range desc">&lt;range&gt;</a><text>, 1</text></asmtemplate>
+        <asmtemplate>
+          <text>I1 </text>
+          <a link="range" hover="range short description 2">&lt;range&gt;</a>
+          <text>, </text>
+          <a link="bit" hover="bit short description">&lt;bit&gt;</a>
+          <text>, 1</text>
+        </asmtemplate>
       </encoding>
     </iclass>
   </classes>
+  <explanations>
+    <explanation enclist="I1_class_1_enc_1">
+      <symbol link="range">&lt;range&gt;</symbol>
+      <definition encodedin="range">
+        <intro>Definition introduction, </intro>
+        <table class="valuetable">
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>range</entry>
+                <entry>Meaning</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>010</entry>
+                <entry>A</entry>
+              </row>
+              <row>
+                <entry>110</entry>
+                <entry>B</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+        <after>More comments</after>
+      </definition>
+    </explanation>
+    <explanation enclist="I1_class_1_enc_1, I1_class_1_enc_2">
+      <symbol link="bit">&lt;bit&gt;</symbol>
+      <account encodedin="msb">
+        <intro>
+          <para>Is a 1-bit value, encoded in the `msb` field.</para>
+        </intro>
+      </account>
+    </explanation>
+  </explanations>
 </instructionsection>

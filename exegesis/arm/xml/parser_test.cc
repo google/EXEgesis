@@ -105,7 +105,30 @@ TEST(ParserTest, ParseXmlInstruction) {
         }
         asm_template {
           pieces { text: "I1 " }
-          pieces { symbol { id: "range" label: "<range>" hint: "range desc" } }
+          pieces {
+            symbol {
+              id: "range"
+              label: "<range>"
+              encoded_in: "range"
+              description: "range short description 1"
+              explanation: "Definition introduction, encoded in `range`\n\n"
+                           "| range | Meaning |\n"
+                           "| --- | --- |\n"
+                           "| 010 | A |\n"
+                           "| 110 | B |\n\n"
+                           "More comments"
+            }
+          }
+          pieces { text: ", " }
+          pieces {
+            symbol {
+              id: "bit"
+              label: "<bit>"
+              encoded_in: "msb"
+              description: "bit short description"
+              explanation: "Is a 1-bit value, encoded in the `msb` field."
+            }
+          }
           pieces { text: ", 0" }
         }
       }
@@ -142,7 +165,23 @@ TEST(ParserTest, ParseXmlInstruction) {
         }
         asm_template {
           pieces { text: "I1 " }
-          pieces { symbol { id: "range" label: "<range>" hint: "range desc" } }
+          pieces {
+            symbol {
+              id: "range"
+              label: "<range>"
+              description: "range short description 2"
+            }
+          }
+          pieces { text: ", " }
+          pieces {
+            symbol {
+              id: "bit"
+              label: "<bit>"
+              encoded_in: "msb"
+              description: "bit short description"
+              explanation: "Is a 1-bit value, encoded in the `msb` field."
+            }
+          }
           pieces { text: ", 1" }
         }
       }
@@ -261,7 +300,28 @@ TEST(ParserTest, ParseXmlDatabase) {
           asm_template {
             pieces { text: "I1 " }
             pieces {
-              symbol { id: "range" label: "<range>" hint: "range desc" }
+              symbol {
+                id: "range"
+                label: "<range>"
+                encoded_in: "range"
+                description: "range short description 1"
+                explanation: "Definition introduction, encoded in `range`\n\n"
+                             "| range | Meaning |\n"
+                             "| --- | --- |\n"
+                             "| 010 | A |\n"
+                             "| 110 | B |\n\n"
+                             "More comments"
+              }
+            }
+            pieces { text: ", " }
+            pieces {
+              symbol {
+                id: "bit"
+                label: "<bit>"
+                encoded_in: "msb"
+                description: "bit short description"
+                explanation: "Is a 1-bit value, encoded in the `msb` field."
+              }
             }
             pieces { text: ", 0" }
           }
@@ -304,7 +364,21 @@ TEST(ParserTest, ParseXmlDatabase) {
           asm_template {
             pieces { text: "I1 " }
             pieces {
-              symbol { id: "range" label: "<range>" hint: "range desc" }
+              symbol {
+                id: "range"
+                label: "<range>"
+                description: "range short description 2"
+              }
+            }
+            pieces { text: ", " }
+            pieces {
+              symbol {
+                id: "bit"
+                label: "<bit>"
+                encoded_in: "msb"
+                description: "bit short description"
+                explanation: "Is a 1-bit value, encoded in the `msb` field."
+              }
             }
             pieces { text: ", 1" }
           }
