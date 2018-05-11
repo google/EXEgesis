@@ -54,6 +54,10 @@ static llvm::cl::opt<int> MaxCycles("max_cycles",
                                     llvm::cl::init(100000),
                                     llvm::cl::NotHidden);
 
+static llvm::cl::opt<bool> IsLoopBody(
+    "loop_body", llvm::cl::desc("Whether the code is in a loop body"),
+    llvm::cl::init(true), llvm::cl::NotHidden);
+
 enum class InputFileTypeE { Bin, AsmIntel, AsmATT };
 static llvm::cl::opt<InputFileTypeE> InputFileType(
     "input_type", llvm::cl::desc("input file type"),
@@ -173,7 +177,7 @@ int Simulate() {
       break;
   }
   std::cout << "analyzing " << Instructions.size() << " instructions\n";
-  const BlockContext BlockContext(Instructions, true);
+  const BlockContext BlockContext(Instructions, IsLoopBody);
 
   const auto Log = Simulator->Run(BlockContext, MaxIters, MaxCycles);
 
