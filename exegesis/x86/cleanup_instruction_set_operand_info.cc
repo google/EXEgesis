@@ -578,6 +578,7 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
     {"imm16", 16},
     {"imm32", 32},
     {"imm64", 64},
+    {"k1", 64},
     {"k2/m8", 8},
     {"k2/m16", 16},
     {"k2/m32", 32},
