@@ -12,34 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Utility for finding connected components in an undirected graph.
-// A set of nodes and edges between the nodes form an undirected graph.
-// If two nodes can be reached from one another, then they are in the
-// same connected component.
+// Finds the connected components in an undirected graph:
+// https://en.wikipedia.org/wiki/Connected_component_(graph_theory)
 //
-// To use this:
-//   ConnectedComponentsFinder<MyNodeType> cc;
-//   cc.AddNode(node1);
-//   cc.AddNode(node2);
-//   cc.AddEdge(node1, node2);
-// ... repeating, adding nodes and edges as needed.  Adding an edge
-// will automatically also add the two nodes at its ends, if they
-// haven't already been added.
-//   vector<set<MyNodeType> > components;
-//   cc.FindConnectedComponents(&components);
-// Each entry in components now contains all the nodes in a single
-// connected component.
+// If you have a fixed graph where the node are dense integers, use
+// GetConnectedComponents(): it's very fast and uses little memory.
 //
-// If you want to, you can continue adding nodes and edges after calling
-// FindConnectedComponents, then call it again later.
-//
-// If your node type isn't STL-friendly, then you can use pointers to
-// it instead:
-//   ConnectedComponentsFinder<MySTLUnfriendlyNodeType*> cc;
-//   cc.AddNode(&node1);
-// ... and so on...
-// Of course, in this usage, the connected components finder retains
-// these pointers through its lifetime (though it doesn't dereference them).
+// If you have a more dynamic scenario where you want to incrementally
+// add nodes or edges and query the connectivity between them, use the
+// [Dense]ConnectedComponentsFinder class, which uses the union-find algorithm
+// aka disjoint sets: https://en.wikipedia.org/wiki/Disjoint-set_data_structure.
 
 #ifndef UTIL_GRAPH_CONNECTED_COMPONENTS_H_
 #define UTIL_GRAPH_CONNECTED_COMPONENTS_H_
@@ -55,6 +37,25 @@
 #include "absl/memory/memory.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
+
+// Finds the connected components of the graph, using BFS internally.
+// Works on any *undirected* graph class whose nodes are dense integers and that
+// supports the [] operator for adjacency lists: graph[x] must be an integer
+// container listing the nodes that are adjacent to node #x.
+// Example: std::vector<std::vector<int>>.
+//
+// "Undirected" means that for all y in graph[x], x is in graph[y].
+//
+// Returns the mapping from node to component index. The component indices are
+// deterministic: Component #0 will be the one that has node #0, component #1
+// the one that has the lowest-index node that isn't in component #0, and so on.
+//
+// Example on the following 6-node graph: 5--3--0--1  2--4
+// vector<vector<int>> graph = {{1, 3}, {0}, {4}, {0, 5}, {2}, {3}};
+// GetConnectedComponents(graph);  // returns [0, 0, 1, 0, 1, 0].
+template <class UndirectedGraph>
+std::vector<int> GetConnectedComponents(int num_nodes,
+                                        const UndirectedGraph& graph);
 
 // A connected components finder that only works on dense ints.
 class DenseConnectedComponentsFinder {
@@ -85,14 +86,7 @@ class DenseConnectedComponentsFinder {
   // Non-const because it does path compression internally.
   int FindRoot(int node);
 
-  // Returns a vector of size GetNumberOfNodes() with the "component id" each
-  // node. Two nodes are in the same component iff their component id is equal,
-  // and components are numbered 0 to (GetNumberOfComponents() - 1).
-  // The order is deterministic: for two nodes b and c, b < c =>
-  //     component_id(b) <= component_id(c)
-  //   or
-  //     there exists a < b, component_id(a) = component_id(c)
-  // Non-const because it does path compression internally.
+  // Returns the same as GetConnectedComponents().
   std::vector<int> GetComponentIds();
 
  private:
@@ -146,6 +140,29 @@ struct ConnectedComponentsTypeHelper {
 
 }  // namespace internal
 
+// Usage:
+//   ConnectedComponentsFinder<MyNodeType> cc;
+//   cc.AddNode(node1);
+//   cc.AddNode(node2);
+//   cc.AddEdge(node1, node2);
+// ... repeating, adding nodes and edges as needed.  Adding an edge
+// will automatically also add the two nodes at its ends, if they
+// haven't already been added.
+//   vector<set<MyNodeType> > components;
+//   cc.FindConnectedComponents(&components);
+// Each entry in components now contains all the nodes in a single
+// connected component.
+//
+// If you want to, you can continue adding nodes and edges after calling
+// FindConnectedComponents, then call it again later.
+//
+// If your node type isn't STL-friendly, then you can use pointers to
+// it instead:
+//   ConnectedComponentsFinder<MySTLUnfriendlyNodeType*> cc;
+//   cc.AddNode(&node1);
+// ... and so on...
+// Of course, in this usage, the connected components finder retains
+// these pointers through its lifetime (though it doesn't dereference them).
 template <typename T, typename CompareOrHashT = std::less<T>>
 class ConnectedComponentsFinder {
  public:
@@ -170,15 +187,15 @@ class ConnectedComponentsFinder {
   // Returns true iff both nodes are in the same connected component.
   // Returns false if either node has not been already added with AddNode.
   bool Connected(T node1, T node2) {
-    return delegate_.Connected(FindWithDefault(index_, node1, -1),
-                               FindWithDefault(index_, node2, -1));
+    return delegate_.Connected(exegesis::FindWithDefault(index_, node1, -1),
+                               exegesis::FindWithDefault(index_, node2, -1));
   }
 
   // Finds the connected component containing a node, and returns the
   // total number of nodes in that component.  Returns zero iff the
   // node has not been already added with AddNode.
   int GetSize(T node) {
-    return delegate_.GetSize(FindWithDefault(index_, node, -1));
+    return delegate_.GetSize(exegesis::FindWithDefault(index_, node, -1));
   }
 
   // Finds all the connected components and assigns them to components.
@@ -239,5 +256,32 @@ class ConnectedComponentsFinder {
   typename internal::ConnectedComponentsTypeHelper<T, CompareOrHashT>::Map
       index_;
 };
+
+// =============================================================================
+// Implementations of the method templates
+// =============================================================================
+template <class UndirectedGraph>
+std::vector<int> GetConnectedComponents(int num_nodes,
+                                        const UndirectedGraph& graph) {
+  std::vector<int> component_of_node(num_nodes, -1);
+  std::vector<int> bfs_queue;
+  int num_components = 0;
+  for (int src = 0; src < num_nodes; ++src) {
+    if (component_of_node[src] >= 0) continue;
+    bfs_queue.push_back(src);
+    component_of_node[src] = num_components;
+    for (int num_visited = 0; num_visited < bfs_queue.size(); ++num_visited) {
+      const int node = bfs_queue[num_visited];
+      for (const int neighbor : graph[node]) {
+        if (component_of_node[neighbor] >= 0) continue;
+        component_of_node[neighbor] = num_components;
+        bfs_queue.push_back(neighbor);
+      }
+    }
+    ++num_components;
+    bfs_queue.clear();
+  }
+  return component_of_node;
+}
 
 #endif  // UTIL_GRAPH_CONNECTED_COMPONENTS_H_
