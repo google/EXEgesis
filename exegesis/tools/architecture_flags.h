@@ -28,6 +28,11 @@ DECLARE_string(exegesis_microarchitecture);
 
 namespace exegesis {
 
+// Checks the flag --exegesis_list_architectures. If it is set, prints the list
+// of registered architectures to STDOUT and terminates the process with exit
+// code 0. Otherwise, does nothing.
+void ListRegisteredArchitecturesAndExitIfRequested();
+
 // Returns the architecture proto for the architecture specified in the
 // command-line flag --exegesis_architecture.
 // Terminates the process if the specification of the architecture is not valid,

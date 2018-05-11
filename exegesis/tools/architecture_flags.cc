@@ -14,11 +14,15 @@
 
 #include "exegesis/tools/architecture_flags.h"
 
+#include <cstdlib>
+
 #include "exegesis/base/architecture_provider.h"
 #include "exegesis/base/microarchitecture.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
+DEFINE_bool(exegesis_list_architectures, false,
+            "Print the list of registered architectures.");
 DEFINE_string(exegesis_architecture, "",
               "The name of the architecture for which the code is optimized."
               "If 'intel', then the raw parsed output (stright out of SDM) is"
@@ -31,6 +35,18 @@ DEFINE_string(
     "The id of the microarchitecture for which the code is optimized.");
 
 namespace exegesis {
+
+void ListRegisteredArchitecturesAndExitIfRequested() {
+  if (FLAGS_exegesis_list_architectures) {
+    const std::vector<std::string> registered_architectures =
+        GetRegisteredArchitectureIds();
+    printf("Registered architectures:\n");
+    for (const std::string& architecture_id : registered_architectures) {
+      printf("  %s\n", architecture_id.c_str());
+    }
+    exit(0);
+  }
+}
 
 void CheckArchitectureFlag() {
   CHECK(!FLAGS_exegesis_architecture.empty())
