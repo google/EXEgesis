@@ -4,14 +4,12 @@
 llvm_host_triple = "x86_64"
 llvm_native_arch = "X86"
 
-
 # These three are the space-separated list of targets we support. When adding a
 # target here, you also need to add the list of generated files to
 # llvm_target_list below.
-llvm_targets="X86"
-llvm_target_asm_parsers="X86"
-llvm_target_disassemblers="X86"
-
+llvm_targets = "X86"
+llvm_target_asm_parsers = "X86"
+llvm_target_disassemblers = "X86"
 
 # Genrules.
 
@@ -35,18 +33,18 @@ genrule(
 #define LLVM_VERSION_PATCH 0
 #define LLVM_VERSION_STRING "CPU-instructions"
 """ +
-"#define LLVM_HOST_TRIPLE \"" + llvm_host_triple+ "\"\n" +
-"#define LLVM_DEFAULT_TARGET_TRIPLE \"" + llvm_host_triple + "\"\n" +
-"#define LLVM_NATIVE_ARCH " + llvm_native_arch + "\n" +
-"#define LLVM_NATIVE_TARGET LLVMInitialize" + llvm_native_arch + "Target\n" +
-"#define LLVM_NATIVE_TARGETINFO LLVMInitialize" + llvm_native_arch + "TargetInfo\n" +
-"#define LLVM_NATIVE_TARGETMC LLVMInitialize" +llvm_native_arch + "TargetMC\n" +
-"#define LLVM_NATIVE_ASMPRINTER LLVMInitialize" + llvm_native_arch + "AsmPrinter\n" +
-"#define LLVM_NATIVE_ASMPARSER LLVMInitialize" + llvm_native_arch + "AsmParser\n" +
-"#define LLVM_NATIVE_MCASMINFO LLVMInitialize" + llvm_native_arch + "MCAsmInfo\n" +
-"#define LLVM_NATIVE_MCCODEGENINFO LLVMInitialize" + llvm_native_arch + "MCCodeGenInfo\n" +
-"#endif\n" +
-"EOF"),
+           "#define LLVM_HOST_TRIPLE \"" + llvm_host_triple + "\"\n" +
+           "#define LLVM_DEFAULT_TARGET_TRIPLE \"" + llvm_host_triple + "\"\n" +
+           "#define LLVM_NATIVE_ARCH " + llvm_native_arch + "\n" +
+           "#define LLVM_NATIVE_TARGET LLVMInitialize" + llvm_native_arch + "Target\n" +
+           "#define LLVM_NATIVE_TARGETINFO LLVMInitialize" + llvm_native_arch + "TargetInfo\n" +
+           "#define LLVM_NATIVE_TARGETMC LLVMInitialize" + llvm_native_arch + "TargetMC\n" +
+           "#define LLVM_NATIVE_ASMPRINTER LLVMInitialize" + llvm_native_arch + "AsmPrinter\n" +
+           "#define LLVM_NATIVE_ASMPARSER LLVMInitialize" + llvm_native_arch + "AsmParser\n" +
+           "#define LLVM_NATIVE_MCASMINFO LLVMInitialize" + llvm_native_arch + "MCAsmInfo\n" +
+           "#define LLVM_NATIVE_MCCODEGENINFO LLVMInitialize" + llvm_native_arch + "MCCodeGenInfo\n" +
+           "#endif\n" +
+           "EOF"),
 )
 
 genrule(
@@ -177,19 +175,6 @@ genrule(
     message = "Generating target definitions",
 )
 
-genrule(
-    name = "generate_datatypes_h",
-    srcs = ["include/llvm-c/DataTypes.h.cmake"],
-    outs = ["include/llvm-c/DataTypes.h"],
-    cmd = ("sed -e 's/#cmakedefine /#define /g'" +
-           "    -e 's/$${HAVE_INTTYPES_H}/1/'" +
-           "    -e 's/$${HAVE_STDINT_H}/1/'" +
-           "    -e 's/$${HAVE_UINT64_T}/1/'" +
-           "    -e 's/$${HAVE_U_INT64_T}/0/'" +
-           "  $< > $@"),
-)
-
-
 # Libraries.
 
 cc_library(
@@ -215,8 +200,9 @@ cc_library(
         "lib/CodeGen/AsmPrinter/*.h",
     ]),
     hdrs = [
-        "include/llvm/CodeGen/AsmPrinter.h"] +
-        glob(["lib/CodeGen/AsmPrinter/*.def"]),
+               "include/llvm/CodeGen/AsmPrinter.h",
+           ] +
+           glob(["lib/CodeGen/AsmPrinter/*.def"]),
     deps = [
         ":analysis",
         ":codegen",
@@ -302,12 +288,12 @@ cc_library(
         "lib/Analysis/*.h",
     ]) + [
         "include/llvm-c/Analysis.h",
+        "include/llvm/Analysis/Utils/Local.h",
     ],
     hdrs = glob([
         "include/llvm/Analysis/*.h",
         "include/llvm/Analysis/*.def",
     ]) + [
-        "include/llvm/Transforms/Utils/Local.h",
         "include/llvm/Transforms/Utils/LoopUtils.h",
     ],
     visibility = ["//visibility:public"],
@@ -339,6 +325,7 @@ cc_library(
             "include/llvm/CodeGen/*.h",
             "include/llvm/CodeGen/*.def",
             "include/llvm/CodeGen/**/*.h",
+            "include/llvm/CodeGen/**/*.inc",
         ],
         exclude = [
             "include/llvm/CodeGen/AsmPrinter.h",
@@ -422,7 +409,6 @@ cc_library(
         "include/llvm/ExecutionEngine/JITEventListener.h",
         "include/llvm/ExecutionEngine/JITSymbol.h",
         "include/llvm/ExecutionEngine/ObjectCache.h",
-        "include/llvm/ExecutionEngine/ObjectMemoryBuffer.h",
         "include/llvm/ExecutionEngine/RTDyldMemoryManager.h",
         "include/llvm/ExecutionEngine/RuntimeDyld.h",
         "include/llvm/ExecutionEngine/RuntimeDyldChecker.h",
@@ -468,9 +454,9 @@ cc_library(
         "include/llvm/CodeGen/*.h",
         "include/llvm/MC/*.h",
         "lib/Target/X86/Disassembler/X86DisassemblerDecoderCommon.h",
-        ]),
-    hdrs=[
-        "include/llvm/CodeGen/TargetOpcodes.def",
+    ]),
+    hdrs = [
+        "include/llvm/Support/TargetOpcodes.def",
     ],
     linkopts = ["-ldl"],
     deps = [
@@ -493,7 +479,7 @@ cc_binary(
 
 gentbl(
     name = "intrinsics_gen",
-    tbl_outs = [("-gen-intrinsic", "include/llvm/IR/Intrinsics.gen")],
+    tbl_outs = [("-gen-intrinsic", "include/llvm/IR/Intrinsics.inc")],
     tblgen = ":llvm-tblgen",
     td_file = "include/llvm/IR/Intrinsics.td",
     td_srcs = glob([
@@ -504,7 +490,7 @@ gentbl(
 
 gentbl(
     name = "attributes_gen",
-    tbl_outs = [("-gen-attrs", "include/llvm/IR/Attributes.gen")],
+    tbl_outs = [("-gen-attrs", "include/llvm/IR/Attributes.inc")],
     tblgen = ":llvm-tblgen",
     td_file = "include/llvm/IR/Attributes.td",
     td_srcs = ["include/llvm/IR/Attributes.td"],
@@ -547,12 +533,12 @@ cc_library(
     srcs = glob([
         "lib/IR/*.cpp",
         "lib/IR/*.h",
+        "include/llvm/IR/*.inc",
         "include/llvm/Analysis/*.h",
     ]) + [
         "include/llvm/Bitcode/BitcodeReader.h",
         "include/llvm/Bitcode/BitCodes.h",
         "include/llvm/CodeGen/ValueTypes.h",
-        "include/llvm/CodeGen/MachineValueType.h",
         "include/llvm-c/Core.h",
     ],
     hdrs = glob(
@@ -622,8 +608,11 @@ cc_library(
         "lib/MC/MCAnalysis/*.cpp",
         "lib/MC/MCAnalysis/*.h",
     ]),
-    hdrs = glob(["include/llvm/MC/*.h",
-    "include/llvm/MC/*.def"]),
+    hdrs = glob([
+        "include/llvm/MC/*.h",
+        "include/llvm/MC/*.def",
+        "include/llvm/MC/*.inc",
+    ]),
     visibility = ["//visibility:public"],
     deps = [
         ":binary_format",
@@ -732,9 +721,7 @@ cc_library(
         "lib/Support/Unix/*.h",
         "lib/Support/Unix/*.inc",
         "include/llvm-c/*.h",
-        ]) + [
-        "include/llvm/CodeGen/MachineValueType.h",
-        "include/llvm-c/DataTypes.h",
+    ]) + [
         "include/llvm/Support/DataTypes.h",
         "include/llvm/Support/VCSRevision.h",
     ],
@@ -778,7 +765,6 @@ cc_library(
     ],
 )
 
-
 # Transforms.
 
 cc_library(
@@ -798,6 +784,7 @@ cc_library(
         "lib/Transforms/Utils/*.cpp",
         "lib/Transforms/Utils/*.h",
         "include/llvm/CodeGen/Passes.h",
+        "include/llvm-c/Transforms/Utils.h",
     ]),
     hdrs = glob(["include/llvm/Transforms/Utils/*.h"]),
     deps = [
@@ -850,6 +837,7 @@ cc_library(
         "lib/Transforms/InstCombine/*.cpp",
         "lib/Transforms/InstCombine/*.h",
         "include/llvm/Transforms/InstCombine/*.h",
+        "include/llvm-c/Transforms/InstCombine.h",
     ]),
     deps = [
         ":analysis",
@@ -866,11 +854,8 @@ cc_library(
     srcs = glob([
         "lib/Transforms/Instrumentation/*.cpp",
         "lib/Transforms/Instrumentation/*.h",
+        "include/llvm/Transforms/Instrumentation/*.h",
     ]),
-    hdrs = [
-        "include/llvm/Transforms/Instrumentation/BoundsChecking.h",
-        "include/llvm/Transforms/Instrumentation.h",
-    ],
     deps = [
         ":analysis",
         ":config",
@@ -963,7 +948,7 @@ cc_library(
     srcs = glob([
         "lib/Transforms/Vectorize/*.cpp",
         "lib/Transforms/Vectorize/*.h",
-        "include/llvm/Transforms/Vectorize/*.h"
+        "include/llvm/Transforms/Vectorize/*.h",
     ]) + [
         "include/llvm-c/Transforms/Vectorize.h",
         "include/llvm/Transforms/Scalar/LoopPassManager.h",
@@ -981,7 +966,6 @@ cc_library(
         ":support",
     ],
 )
-
 
 # Targets.
 
@@ -1053,7 +1037,7 @@ llvm_target_list = [
     [cc_library(
         name = target["lower_name"] + "_asm_printer",
         srcs = glob(
-            ["lib/Target/" + target["name"] + "/InstPrinter/*.cpp"]
+            ["lib/Target/" + target["name"] + "/InstPrinter/*.cpp"],
         ) + [
             "lib/Target/X86/MCTargetDesc/X86BaseInfo.h",
         ],
@@ -1093,10 +1077,10 @@ llvm_target_list = [
             "lib/Target/" + target["name"] + "/*.h",
         ]),
         hdrs = glob(["lib/Target/" + target["name"] + "/" + target["short_name"] + "*.inc"]) +
-        [
-            "lib/Target/" + target["name"] + "/" + target["short_name"] + ".h",
-            "lib/Target/" + target["name"] + "/" + target["short_name"] + "GenRegisterBankInfo.def",
-        ],
+               [
+                   "lib/Target/" + target["name"] + "/" + target["short_name"] + ".h",
+                   "lib/Target/" + target["name"] + "/" + target["short_name"] + "GenRegisterBankInfo.def",
+               ],
         copts = ["-Ilib/Target/" + target["name"]],
         visibility = ["//visibility:public"],
         deps = [

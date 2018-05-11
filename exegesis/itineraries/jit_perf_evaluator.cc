@@ -88,7 +88,7 @@ Status DebugCPUStateChange(
   constexpr const char kGetStateCodeTemplate[] = R"(
     push rax
     movabs rax,%p
-    fxsave64 opaque ptr [rax]
+    fxsave64 [rax]
     pop rax
   )";
 

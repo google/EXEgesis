@@ -585,7 +585,7 @@ TEST_F(EncodeInstructionTest, OpcodeAndModRm) {
         rm_operand: 5
       })";
   constexpr uint8_t kExpectedEncoding[] = {0x87, 0xd5};
-  constexpr char kExpectedDisassembly[] = "XCHG EBP, EDX";
+  constexpr char kExpectedDisassembly[] = "XCHG EDX, EBP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
                          kExpectedDisassembly);
 }
@@ -739,7 +739,7 @@ TEST_F(EncodeInstructionTest, OperandSizeOverrideOpcodeAndModRm) {
         rm_operand: 5
       })";
   constexpr uint8_t kExpectedEncoding[] = {0x66, 0x87, 0xd5};
-  constexpr char kExpectedDisassembly[] = "XCHG BP, DX";
+  constexpr char kExpectedDisassembly[] = "XCHG DX, BP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
                          kExpectedDisassembly);
 }
@@ -758,7 +758,7 @@ TEST_F(EncodeInstructionTest, RexWOpcodeAndModRm) {
         rm_operand: 5
       })";
   constexpr uint8_t kExpectedEncoding[] = {0x48, 0x87, 0xd5};
-  constexpr char kExpectedDisassembly[] = "XCHG RBP, RDX";
+  constexpr char kExpectedDisassembly[] = "XCHG RDX, RBP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
                          kExpectedDisassembly);
 }
@@ -777,7 +777,7 @@ TEST_F(EncodeInstructionTest, RexROpcodeAndModRm) {
         rm_operand: 5
       })";
   constexpr uint8_t kExpectedEncoding[] = {0x44, 0x87, 0xd5};
-  constexpr char kExpectedDisassembly[] = "XCHG EBP, R10D";
+  constexpr char kExpectedDisassembly[] = "XCHG R10D, EBP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
                          kExpectedDisassembly);
 }
@@ -797,7 +797,7 @@ TEST_F(EncodeInstructionTest, RexRWOpcodeAndModRm) {
         rm_operand: 5
       })";
   constexpr uint8_t kExpectedEncoding[] = {0x4c, 0x87, 0xd5};
-  constexpr char kExpectedDisassembly[] = "XCHG RBP, R10";
+  constexpr char kExpectedDisassembly[] = "XCHG R10, RBP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
                          kExpectedDisassembly);
 }

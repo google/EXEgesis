@@ -65,10 +65,10 @@ TEST(DisassemblerTest, Bcd80BitInstructions) {
   // values, whereas the encoding is for 80-bit BCD values.
   // TODO(bdb): file a bug against LLVM.
   EXPECT_EQ(
-      "00000000; DF2425FF7F0000; fbld xword ptr [0x7fff]; fbld 0x7fff; FBLDm",
+      "00000000; DF2425FF7F0000; fbld tbyte ptr [0x7fff]; fbld 0x7fff; FBLDm",
       disasm.DisassembleHexString("DF2425FF7F0000"));
   EXPECT_EQ(
-      "00000000; DF3425FF7F0000; fbstp xword ptr [0x7fff]; fbstp 0x7fff; "
+      "00000000; DF3425FF7F0000; fbstp tbyte ptr [0x7fff]; fbstp 0x7fff; "
       "FBSTPm",
       disasm.DisassembleHexString("DF3425FF7F0000"));
 }

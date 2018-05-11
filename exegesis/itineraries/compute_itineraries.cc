@@ -408,7 +408,7 @@ std::string ComputeItinerariesHelper::MakeInitCode(
   return StringPrintf(
       R"(
         movabs rax,%p
-        fxsave64 opaque ptr [rax]
+        fxsave64 [rax]
       )",
       fx_state_buffer);
 }
@@ -455,7 +455,7 @@ std::string ComputeItinerariesHelper::MakeCleanupCode(
       R"(
         # Restore FPU/MMX/SSE state.
         movabs rax,%p
-        fxrstor64 opaque ptr [rax]
+        fxrstor64 [rax]
       )",
       fx_state_buffer);
 }
