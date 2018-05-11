@@ -15,13 +15,13 @@
 #ifndef UTIL_GTL_MAP_UTIL_H_
 #define UTIL_GTL_MAP_UTIL_H_
 
+#include "glog/logging.h"
 #include "src/google/protobuf/stubs/map_util.h"
 
 namespace exegesis {
 
 using ::google::protobuf::ContainsKey;
 using ::google::protobuf::FindCopy;
-using ::google::protobuf::FindOrDie;
 using ::google::protobuf::FindOrDieNoPrint;
 using ::google::protobuf::FindOrNull;
 using ::google::protobuf::FindPtrOrNull;
@@ -30,6 +30,15 @@ using ::google::protobuf::InsertIfNotPresent;
 using ::google::protobuf::InsertKeysFromMap;
 using ::google::protobuf::InsertOrDie;
 using ::google::protobuf::InsertOrDieNoPrint;
+
+template <typename Collection,
+          typename Key = typename Collection::value_type::first_type,
+          typename Value = typename Collection::value_type::second_type>
+const Value& FindOrDie(const Collection& collection, const Key& key) {
+  const auto it = collection.find(key);
+  CHECK(it != collection.end()) << "Map key not found: " << key;
+  return it->second;
+}
 
 }  // namespace exegesis
 
