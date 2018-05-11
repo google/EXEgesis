@@ -22,7 +22,7 @@
 //    exegesis/tools:proto_patch_migrate -- \
 //    exegesis_from_proto_file=/path/to/sdm.pdf.pb \
 //    exegesis_to_proto_file=/path/to/newer_sdm.pdf.pb \
-//    exegesis_output_file_base=/tmp/newer_sdm_patches.pb.txt
+//    exegesis_output_file_base=/tmp/newer_sdm_patches
 
 #include <algorithm>
 #include <string>
