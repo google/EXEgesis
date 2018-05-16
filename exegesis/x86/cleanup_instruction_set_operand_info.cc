@@ -31,6 +31,7 @@
 #include "exegesis/util/status_util.h"
 #include "exegesis/x86/encoding_specification.h"
 #include "glog/logging.h"
+#include "re2/re2.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
@@ -386,12 +387,12 @@ const std::pair<const char*, InstructionOperand::AddressingMode>
         {"Sreg", InstructionOperand::DIRECT_ADDRESSING},
         {"ST(0)", InstructionOperand::DIRECT_ADDRESSING},
         {"ST(i)", InstructionOperand::DIRECT_ADDRESSING},
-        {"vm32x", InstructionOperand::INDIRECT_ADDRESSING},
-        {"vm32y", InstructionOperand::INDIRECT_ADDRESSING},
-        {"vm32z", InstructionOperand::INDIRECT_ADDRESSING},
-        {"vm64x", InstructionOperand::INDIRECT_ADDRESSING},
-        {"vm64y", InstructionOperand::INDIRECT_ADDRESSING},
-        {"vm64z", InstructionOperand::INDIRECT_ADDRESSING},
+        {"vm32x", InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB},
+        {"vm32y", InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB},
+        {"vm32z", InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB},
+        {"vm64x", InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB},
+        {"vm64y", InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB},
+        {"vm64z", InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB},
         {"xmm/m8", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"xmm/m16", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
         {"xmm/m32", InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS},
@@ -579,6 +580,8 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
     {"imm32", 32},
     {"imm64", 64},
     {"k1", 64},
+    {"k2", 64},
+    {"k3", 64},
     {"k2/m8", 8},
     {"k2/m16", 16},
     {"k2/m32", 32},
@@ -1216,6 +1219,11 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
         } else {
           operand->set_usage(InstructionOperand::USAGE_READ);
         }
+      } else if (operand->encoding() == InstructionOperand::IMPLICIT_ENCODING &&
+                 operand->addressing_mode() ==
+                     InstructionOperand::NO_ADDRESSING) {
+        // The operand is an implicit immediate value.
+        operand->set_usage(InstructionOperand::USAGE_READ);
       }
       // TODO(courbet): Add usage information for X87.
     }
@@ -1223,6 +1231,26 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsage, 8000);
+
+Status AddMissingOperandUsageToVblendInstructions(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  static const LazyRE2 kVblendRegexp = {"VP?BLENDV?P?[DSB]"};
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    InstructionFormat* const vendor_syntax =
+        instruction.mutable_vendor_syntax();
+    if (!RE2::FullMatch(vendor_syntax->mnemonic(), *kVblendRegexp)) continue;
+    InstructionOperand& last_operand =
+        *vendor_syntax->mutable_operands()->rbegin();
+    if (last_operand.usage() == InstructionOperand::USAGE_UNKNOWN) {
+      last_operand.set_usage(InstructionOperand::USAGE_READ);
+    }
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsageToVblendInstructions,
+                                   8000);
 
 }  // namespace x86
 }  // namespace exegesis

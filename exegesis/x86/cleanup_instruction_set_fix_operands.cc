@@ -186,6 +186,7 @@ Status FixOperandsOfLddqu(InstructionSetProto* instruction_set) {
   }
   return OkStatus();
 }
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLddqu, 2000);
 
 Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
   // Note that we're matching only the versions with operands. These versions

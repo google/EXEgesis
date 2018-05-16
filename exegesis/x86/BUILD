@@ -125,6 +125,7 @@ cc_library(
     srcs = ["cleanup_instruction_set_checks.cc"],
     hdrs = ["cleanup_instruction_set_checks.h"],
     deps = [
+        ":instruction_set_utils",
         "//base",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
@@ -285,6 +286,7 @@ cc_library(
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
+        "@com_googlesource_code_re2//:re2",
     ],
     alwayslink = 1,
 )
@@ -705,6 +707,14 @@ cc_test(
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
     ],
+)
+
+# A library with helper functions for working with the instruction set.
+cc_library(
+    name = "instruction_set_utils",
+    srcs = ["instruction_set_utils.cc"],
+    hdrs = ["instruction_set_utils.h"],
+    deps = [],
 )
 
 # A library that contains information about the x86-64 microarchitectures.

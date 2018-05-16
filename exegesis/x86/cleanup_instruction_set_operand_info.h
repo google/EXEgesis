@@ -41,6 +41,12 @@ Status AddOperandInfo(InstructionSetProto* instruction_set);
 // registers (e.g. in ADD AL, imm8) are usually missing usage in the SDM.
 Status AddMissingOperandUsage(InstructionSetProto* instruction_set);
 
+// Adds USAGE_READ to the last operadn of VBLEND instructions. As of May 2018,
+// the operand usage is missing for the last operand across multiple versions of
+// the instruction.
+Status AddMissingOperandUsageToVblendInstructions(
+    InstructionSetProto* instruction_set);
+
 // Adds RegisterClass to every operand in vendor_syntax.
 Status AddRegisterClassToOperands(InstructionSetProto* instruction_set);
 

@@ -34,98 +34,74 @@ using ::testing::Matcher;
 using ::testing::StartsWith;
 
 TEST(CheckOpcodeFormatTest, ValidOpcodes) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: "ADC"
-          operands {
-            name: "AL"
-          }
-          operands {
-            name: "imm8"
-          }
-        }
-        raw_encoding_specification: "14 ib"
-        x86_encoding_specification {
-          opcode: 0x14
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 1
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "AL" }
+        operands { name: "imm8" }
+      }
+      raw_encoding_specification: "14 ib"
+      x86_encoding_specification {
+        opcode: 0x14
+        legacy_prefixes {} immediate_value_bytes: 1
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
+      }
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+      x86_encoding_specification {
+        opcode: 997562
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
-        x86_encoding_specification {
-          opcode: 997562
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ZERO
-          }
-        }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PMOVSXBW'
+        operands { name: 'xmm1' }
+        operands { name: 'xmm2' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PMOVSXBW'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'xmm2'
-          }
-        }
-        raw_encoding_specification: '66 0F 38 20 /r'
-        x86_encoding_specification {
-          opcode: 997408
-          modrm_usage: FULL_MODRM
-          legacy_prefixes {
-            has_mandatory_operand_size_override_prefix: true
-          }
-        }
+      raw_encoding_specification: '66 0F 38 20 /r'
+      x86_encoding_specification {
+        opcode: 997408
+        modrm_usage: FULL_MODRM
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "KSHIFTLB"
-          operands {
-            name: "k1"
-          }
-          operands {
-            name: "k2"
-          }
-          operands {
-            name: "imm8"
-          }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "KSHIFTLB"
+        operands { name: "k1" }
+        operands { name: "k2" }
+        operands { name: "imm8" }
+      }
+      raw_encoding_specification: "VEX.L0.66.0F3A.W0 32 /r ib"
+      x86_encoding_specification {
+        opcode: 0x0f3a32
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F3A
+          vex_w_usage: VEX_W_IS_ZERO
         }
-        raw_encoding_specification: "VEX.L0.66.0F3A.W0 32 /r ib"
-        x86_encoding_specification {
-          opcode: 0x0f3a32
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F3A
-            vex_w_usage: VEX_W_IS_ZERO
-          }
-          immediate_value_bytes: 1
-        }
-      })";
+        immediate_value_bytes: 1
+      }
+    })proto";
   InstructionSetProto instruction_set =
       ParseProtoFromStringOrDie<InstructionSetProto>(kInstructionSetProto);
   EXPECT_OK(CheckOpcodeFormat(&instruction_set));
@@ -137,34 +113,23 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
     const char* instruction_set;
     const char* expected_error_message;
   } kTestCases[] =  //
-      {{R"(instructions {
-             vendor_syntax {
-               mnemonic: 'FSUB'
-               operands {
-                 name: 'ST(i)'
-               }
-             }
-             raw_encoding_specification: 'D8 E0+i'
-             x86_encoding_specification {
-               opcode: 55520
-               operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
-               legacy_prefixes {
-               }
-             }
-           })",
-        "Invalid opcode upper bytes: d800"},
-       {R"(instructions {
-             vendor_syntax {
-               mnemonic: "XTEST"
-             }
-             raw_encoding_specification: "NP 0F 01 D6"
-             x86_encoding_specification {
-               opcode: 983510
-               legacy_prefixes {
-               }
-             }
-           })",
-        "Invalid opcode upper bytes: f0100"}};
+      {{R"proto(instructions {
+                  vendor_syntax { mnemonic: 'FSUB' operands { name: 'ST(i)' } }
+                  raw_encoding_specification: 'D8 E0+i'
+                  x86_encoding_specification {
+                    opcode: 55520
+                    operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+                    legacy_prefixes {}
+                  }
+                })proto", "Invalid opcode upper bytes: d800"},
+       {R"proto(instructions {
+                  vendor_syntax { mnemonic: "XTEST" }
+                  raw_encoding_specification: "NP 0F 01 D6"
+                  x86_encoding_specification {
+                    opcode: 983510
+                    legacy_prefixes {}
+                  }
+                })proto", "Invalid opcode upper bytes: f0100"}};
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(
@@ -181,153 +146,196 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
     Matcher<Status> expected_status;
   } kTestCases[] = {
       {// A valid instruction.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "ADC"
-              operands {
-                addressing_mode: INDIRECT_ADDRESSING
-                encoding: MODRM_RM_ENCODING
-                value_size_bits: 64
-                name: "m64"
-                usage: USAGE_READ_WRITE
-              }
-              operands {
-                addressing_mode: DIRECT_ADDRESSING
-                encoding: MODRM_REG_ENCODING
-                value_size_bits: 64
-                name: "r64"
-                usage: USAGE_READ
-                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
-              }
-            }
-          })",
-       IsOk()},
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "ADC"
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 64
+                     name: "m64"
+                     usage: USAGE_READ_WRITE
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_REG_ENCODING
+                     value_size_bits: 64
+                     name: "r64"
+                     usage: USAGE_READ
+                     register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+                   }
+                 }
+               })proto", IsOk()},
       {// LOAD_EFFECTIVE_ADDRESS operands do not require value_size_bits.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "INVLPG"
-              operands {
-                addressing_mode: LOAD_EFFECTIVE_ADDRESS
-                encoding: MODRM_RM_ENCODING
-                name: "m"
-                usage: USAGE_READ
-              }
-            }
-          })",
-       IsOk()},
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "INVLPG"
+                   operands {
+                     addressing_mode: LOAD_EFFECTIVE_ADDRESS
+                     encoding: MODRM_RM_ENCODING
+                     name: "m"
+                     usage: USAGE_READ
+                   }
+                 }
+               })proto", IsOk()},
+      {// Pseudo-operands do not trigger warnings about an empty name or missing
+       // value size bits.
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "VCMPPD"
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_REG_ENCODING
+                     name: "k1"
+                     tags { name: "k2" }
+                     usage: USAGE_WRITE
+                     register_class: MASK_REGISTER
+                     value_size_bits: 64
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: VEX_V_ENCODING
+                     value_size_bits: 512
+                     name: "zmm2"
+                     usage: USAGE_READ
+                     register_class: VECTOR_REGISTER_512_BIT
+                   }
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 512
+                     name: "m512"
+                     usage: USAGE_READ
+                   }
+                   operands {
+                     addressing_mode: NO_ADDRESSING
+                     encoding: X86_STATIC_PROPERTY_ENCODING
+                     tags { name: "sae" }
+                     usage: USAGE_READ
+                   }
+                   operands {
+                     addressing_mode: NO_ADDRESSING
+                     encoding: IMMEDIATE_VALUE_ENCODING
+                     value_size_bits: 8
+                     name: "imm8"
+                     usage: USAGE_READ
+                   }
+                 }
+                 raw_encoding_specification: "EVEX.NDS.512.66.0F.W1 C2 /r ib"
+               })proto", IsOk()},
       {// Missing operand encoding.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "ADC"
-              operands {
-                addressing_mode: INDIRECT_ADDRESSING
-                encoding: MODRM_RM_ENCODING
-                value_size_bits: 64
-                name: "m64"
-                usage: USAGE_READ_WRITE
-              }
-              operands {
-                addressing_mode: DIRECT_ADDRESSING
-                value_size_bits: 64
-                name: "r64"
-                usage: USAGE_READ
-                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
-              }
-            }
-          })",
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "ADC"
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 64
+                     name: "m64"
+                     usage: USAGE_READ_WRITE
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     value_size_bits: 64
+                     name: "r64"
+                     usage: USAGE_READ
+                     register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+                   }
+                 }
+               })proto",
        StatusIs(INVALID_ARGUMENT,
                 StartsWith("Operand encoding in InstructionProto.vendor_syntax "
                            "is not set"))},
       {// Missing operand addressing mode.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "ADC"
-              operands {
-                encoding: MODRM_RM_ENCODING
-                value_size_bits: 64
-                name: "m64"
-                usage: USAGE_READ_WRITE
-              }
-              operands {
-                addressing_mode: DIRECT_ADDRESSING
-                encoding: MODRM_REG_ENCODING
-                value_size_bits: 64
-                name: "r64"
-                usage: USAGE_READ
-                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
-              }
-            }
-          })",
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "ADC"
+                   operands {
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 64
+                     name: "m64"
+                     usage: USAGE_READ_WRITE
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_REG_ENCODING
+                     value_size_bits: 64
+                     name: "r64"
+                     usage: USAGE_READ
+                     register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+                   }
+                 }
+               })proto",
        StatusIs(INVALID_ARGUMENT,
                 StartsWith("Addressing mode in InstructionProto.vendor_syntax "
                            "is not set"))},
       {// Missing operand name + no tags.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "ADC"
-              operands {
-                addressing_mode: INDIRECT_ADDRESSING
-                encoding: MODRM_RM_ENCODING
-                value_size_bits: 64
-                usage: USAGE_READ_WRITE
-              }
-              operands {
-                addressing_mode: DIRECT_ADDRESSING
-                encoding: MODRM_REG_ENCODING
-                value_size_bits: 64
-                name: "r64"
-                usage: USAGE_READ
-                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
-              }
-            }
-          })",
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "ADC"
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 64
+                     usage: USAGE_READ_WRITE
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_REG_ENCODING
+                     value_size_bits: 64
+                     name: "r64"
+                     usage: USAGE_READ
+                     register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+                   }
+                 }
+               })proto",
        StatusIs(INVALID_ARGUMENT,
                 StartsWith("Operand name or tags in "
                            "InstructionProto.vendor_syntax are not valid"))},
       {// Missing register class.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "ADC"
-              operands {
-                addressing_mode: INDIRECT_ADDRESSING
-                encoding: MODRM_RM_ENCODING
-                value_size_bits: 64
-                name: "m64"
-                usage: USAGE_READ_WRITE
-              }
-              operands {
-                addressing_mode: DIRECT_ADDRESSING
-                encoding: MODRM_REG_ENCODING
-                value_size_bits: 64
-                name: "r64"
-                usage: USAGE_READ
-              }
-            }
-          })",
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "ADC"
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 64
+                     name: "m64"
+                     usage: USAGE_READ_WRITE
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_REG_ENCODING
+                     value_size_bits: 64
+                     name: "r64"
+                     usage: USAGE_READ
+                   }
+                 }
+               })proto",
        StatusIs(
            INVALID_ARGUMENT,
            StartsWith(
                "Register class in InstructionProto.vendor_syntax is not set"))},
       {// Missing usage.
-       R"(instructions {
-            vendor_syntax {
-              mnemonic: "ADC"
-              operands {
-                addressing_mode: INDIRECT_ADDRESSING
-                encoding: MODRM_RM_ENCODING
-                value_size_bits: 64
-                name: "m64"
-                usage: USAGE_READ_WRITE
-              }
-              operands {
-                addressing_mode: DIRECT_ADDRESSING
-                encoding: MODRM_REG_ENCODING
-                value_size_bits: 64
-                name: "r64"
-                register_class: GENERAL_PURPOSE_REGISTER_64_BIT
-              }
-            }
-          })",
+       R"proto(instructions {
+                 vendor_syntax {
+                   mnemonic: "ADC"
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                     value_size_bits: 64
+                     name: "m64"
+                     usage: USAGE_READ_WRITE
+                   }
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_REG_ENCODING
+                     value_size_bits: 64
+                     name: "r64"
+                     register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+                   }
+                 }
+               })proto",
        StatusIs(
            INVALID_ARGUMENT,
            StartsWith(
@@ -346,104 +354,90 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
     const char* instruction_set;
     const char* expected_error_message;
   } kTestCases[] = {
-      {R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
+      {R"proto(instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification {
+                   opcode: 0xD8
+                   modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                   modrm_opcode_extension: 0x4
+                 }
                }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x4
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
+               instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification { opcode: 0xD8E1 }
+               })proto", "Opcode is ambigious: d8e1"},
+      {R"proto(instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification {
+                   opcode: 0xD8
+                   modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                   modrm_opcode_extension: 0x4
+                 }
                }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8E1
-             }
-           })",
-       "Opcode is ambigious: d8e1"},
-      {R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: INDIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
+               instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: INDIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification { opcode: 0xD861 }
+               })proto", "Opcode is ambigious: d861"},
+      {R"proto(instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification {
+                   opcode: 0xD9
+                   modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                   modrm_opcode_extension: 0x2
+                 }
                }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x4
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: INDIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
+               instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification { opcode: 0xD9D4 }
+               })proto", "Opcode is ambigious: d9d4"},
+      {R"proto(instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: OPCODE_ENCODING
+                   }
+                 }
+                 x86_encoding_specification { opcode: 0xD9 }
                }
-             }
-             x86_encoding_specification {
-               opcode: 0xD861
-             }
-           })",
-       "Opcode is ambigious: d861"},
-      {R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD9
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x2
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD9D4
-             }
-           })",
-       "Opcode is ambigious: d9d4"},
-      {R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: OPCODE_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD9
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD964
-             }
-           })",
-       "Opcode is ambigious: d964"},
+               instructions {
+                 vendor_syntax {
+                   operands {
+                     addressing_mode: DIRECT_ADDRESSING
+                     encoding: MODRM_RM_ENCODING
+                   }
+                 }
+                 x86_encoding_specification { opcode: 0xD964 }
+               })proto", "Opcode is ambigious: d964"},
   };
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =
@@ -458,126 +452,116 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
 TEST(CheckSpecialCaseInstructions, NotCoveredInstructions) {
   static constexpr const char* kTestCases[] =  //
       {
-          R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x4
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8F1
-             }
-           })",
-          R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD9
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x2
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD9E4
-             }
-           })",
-          R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: INDIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x5
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: INDIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD861
-             }
-           })",
-          R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: INDIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD8
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x5
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: INDIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD361
-             }
-           })",
-          R"(instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD9
-               modrm_usage: OPCODE_EXTENSION_IN_MODRM
-               modrm_opcode_extension: 0x2
-             }
-           }
-           instructions {
-             vendor_syntax {
-               operands {
-                 addressing_mode: DIRECT_ADDRESSING
-                 encoding: MODRM_RM_ENCODING
-               }
-             }
-             x86_encoding_specification {
-               opcode: 0xD964
-             }
-           })",
+          R"proto(instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification {
+                      opcode: 0xD8
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 0x4
+                    }
+                  }
+                  instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification { opcode: 0xD8F1 }
+                  })proto",
+          R"proto(instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification {
+                      opcode: 0xD9
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 0x2
+                    }
+                  }
+                  instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification { opcode: 0xD9E4 }
+                  })proto",
+          R"proto(instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: INDIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification {
+                      opcode: 0xD8
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 0x5
+                    }
+                  }
+                  instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: INDIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification { opcode: 0xD861 }
+                  })proto",
+          R"proto(instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: INDIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification {
+                      opcode: 0xD8
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 0x5
+                    }
+                  }
+                  instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: INDIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification { opcode: 0xD361 }
+                  })proto",
+          R"proto(instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification {
+                      opcode: 0xD9
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 0x2
+                    }
+                  }
+                  instructions {
+                    vendor_syntax {
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    x86_encoding_specification { opcode: 0xD964 }
+                  })proto",
       };
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =

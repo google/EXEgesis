@@ -86,7 +86,7 @@ Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set);
 // This transform turns the second operand into xmm2/m64 for all occurences of
 // this instruction; Removing the duplicate entries is left to
 // RemoveDuplicateInstructions.
-// Note that the the transform must run before AddOperandInfo and
+// Note that the transform must run before AddOperandInfo and
 // RemoveDuplicateInstructions.
 Status FixOperandsOfVMovq(InstructionSetProto* instruction_set);
 

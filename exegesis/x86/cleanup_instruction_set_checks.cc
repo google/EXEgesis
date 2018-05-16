@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <unordered_set>
 
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -25,6 +26,7 @@
 #include "exegesis/util/bits.h"
 #include "exegesis/util/category_util.h"
 #include "exegesis/util/status_util.h"
+#include "exegesis/x86/instruction_set_utils.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
@@ -181,6 +183,21 @@ bool OperandNameAndTagsAreValid(const InstructionOperand& operand) {
   return true;
 }
 
+// Returns true if the instruction is one of the XSAVE or XRSTOR instructions.
+// The instructions are identified by their mnemonics.
+bool IsXsaveOrXrstor(const InstructionProto& instruction) {
+  const std::string& mnemonic = instruction.vendor_syntax().mnemonic();
+  return absl::StartsWith(mnemonic, "XSAVE") ||
+         absl::StartsWith(mnemonic, "XRSTOR");
+}
+
+// Returns true if the instruction is an x87 FPU instruction. The FPU
+// instructions are identified by their mnemonics.
+bool IsX87FpuInstruction(const InstructionProto& instruction) {
+  return ContainsKey(GetX87FpuInstructionMnemonics(),
+                     instruction.vendor_syntax().mnemonic());
+}
+
 Status CheckOperands(const InstructionProto& instruction,
                      absl::string_view format_name,
                      const InstructionFormat& format) {
@@ -191,48 +208,98 @@ Status CheckOperands(const InstructionProto& instruction,
                                            format_name, " are not valid"),
                               instruction, &status);
     }
-    if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
-      LogErrorAndUpdateStatus(
-          absl::StrCat("Operand encoding in ", format_name, " is not set"),
-          instruction, &status);
-    }
-    // NOTE(ondrasej): After running AddAlternatives on the instruction set, all
-    // operands should have a more specific addressing mode, e.g.
-    // DIRECT_ADDRESSING or INDIRECT_ADDRESSING. Finding ANY_ADDRESSING_MODE
-    // means that we're missing some rewriting rules in AddAlternatives.
-    if (operand.addressing_mode() == InstructionOperand::ANY_ADDRESSING_MODE) {
-      LogErrorAndUpdateStatus(
-          absl::StrCat("Addressing mode in ", format_name, " is not set"),
-          instruction, &status);
-    }
-    if (InCategory(operand.addressing_mode(),
-                   InstructionOperand::DIRECT_ADDRESSING)) {
-      // Register class is important only for direct addressing. In indirect
-      // addressing, x86-64 always uses a combination of general purpose
-      // registers and immediate values for the address.
-      if (operand.register_class() == RegisterProto::INVALID_REGISTER_CLASS) {
+    const bool is_pseudo_operand = operand.name().empty();
+    if (is_pseudo_operand) {
+      if (operand.encoding() !=
+          InstructionOperand::X86_STATIC_PROPERTY_ENCODING) {
         LogErrorAndUpdateStatus(
-            absl::StrCat("Register class in ", format_name, " is not set"),
+            absl::StrCat("Encoding of a pseudo-operand in ", format_name,
+                         " is not X86_STATIC_PROPERTY_ENCODING"),
             instruction, &status);
       }
-    }
-    if (!InCategory(operand.addressing_mode(),
-                    InstructionOperand::LOAD_EFFECTIVE_ADDRESS)) {
-      // Value size is undefined for operands where the instruction uses only
-      // the address, but not the value at that address.
-      if (operand.value_size_bits() == 0) {
+      if (operand.addressing_mode() != InstructionOperand::NO_ADDRESSING) {
         LogErrorAndUpdateStatus(
-            absl::StrCat("Value size bits in ", format_name, " is not set"),
+            absl::StrCat("Addressing mode of a pseudo-operand in ", format_name,
+                         " is not NO_ADDRESSING"),
             instruction, &status);
       }
+      if (operand.usage() != InstructionOperand::USAGE_READ) {
+        LogErrorAndUpdateStatus(absl::StrCat("Usage of a pseudo-operand in ",
+                                             format_name, " is not USAGE_READ"),
+                                instruction, &status);
+      }
+    } else {
+      if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
+        LogErrorAndUpdateStatus(
+            absl::StrCat("Operand encoding in ", format_name, " is not set"),
+            instruction, &status);
+      }
+      // NOTE(ondrasej): After running AddAlternatives on the instruction set,
+      // all operands should have a more specific addressing mode, e.g.
+      // DIRECT_ADDRESSING or INDIRECT_ADDRESSING. Finding ANY_ADDRESSING_MODE
+      // means that we're missing some rewriting rules in AddAlternatives.
+      if (operand.addressing_mode() ==
+          InstructionOperand::ANY_ADDRESSING_MODE) {
+        LogErrorAndUpdateStatus(
+            absl::StrCat("Addressing mode in ", format_name, " is not set"),
+            instruction, &status);
+      }
+      if (InCategory(operand.addressing_mode(),
+                     InstructionOperand::DIRECT_ADDRESSING)) {
+        // NOTE(ondrasej): Register class is defined only for direct addressing.
+        if (operand.register_class() == RegisterProto::INVALID_REGISTER_CLASS) {
+          LogErrorAndUpdateStatus(
+              absl::StrCat("Register class in ", format_name, " is not set"),
+              instruction, &status);
+        }
+      }
+      // In certain cases, the value size in bits is not well defined.
+      const bool value_size_is_undefined =
+          // Operands with LOAD_EFFECTIVE_ADDRESS addressing only compute the
+          // address, but do not access the value at that address.
+          InCategory(operand.addressing_mode(),
+                     InstructionOperand::LOAD_EFFECTIVE_ADDRESS) ||
+          // Operands with NO_ADDRESSIND and IMPLICIT_ENCODING are implicit
+          // immediate values. Instructions using them are usually special cases
+          // of a more generic instruction, where the corresponding value comes
+          // from a "true" operand. However, the assembler still requires that
+          // the value of the operand is entered.
+          (InCategory(operand.addressing_mode(),
+                      InstructionOperand::NO_ADDRESSING) &&
+           InCategory(operand.encoding(),
+                      InstructionOperand::IMPLICIT_ENCODING)) ||
+          // The VSIB addressing mode is used by the scatter/gather
+          // instructions. In principle, these instructions access memory in
+          // different locations based on the values of the indices and,
+          // optionally, a mask.
+          InCategory(operand.addressing_mode(),
+                     InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB) ||
+          // The size of the operands of the XSAVE*/XRSTOR* instructions depends
+          // on the bitmask passed to the instruction.
+          IsXsaveOrXrstor(instruction);
+      if (!value_size_is_undefined) {
+        if (operand.value_size_bits() == 0) {
+          LogErrorAndUpdateStatus(
+              absl::StrCat("Value size bits in ", format_name, " is not set"),
+              instruction, &status);
+        }
+      }
+      if (!IsX87FpuInstruction(instruction)) {
+        // We skip this check for floating point stack registers, because they
+        // are not specified in the SDM (as of May 2018). Moreover, the actual
+        // read/write semantics are not well defined, because many of the
+        // instructions implicitly modify _all_ registers on the stack by
+        // pushing or popping values.
+        if (operand.usage() == InstructionOperand::USAGE_UNKNOWN) {
+          LogErrorAndUpdateStatus(
+              absl::StrCat("Operand usage in ", format_name, " is not set"),
+              instruction, &status);
+        }
+      }
     }
-    if (operand.usage() == InstructionOperand::USAGE_UNKNOWN) {
-      LogErrorAndUpdateStatus(
-          absl::StrCat("Operand usage in ", format_name, " is not set"),
-          instruction, &status);
-    }
-    // TODO(ondrasej): As of 2017-11-02, we're not filling the data_type field
-    // when importing data from the Intel SDM.
+    // TODO(ondrasej): As of 2017-11-02, we're not filling the data_type
+    // field when importing data from the Intel SDM. Do the same checks for
+    // these instructions when we start supporting them.
   }
   return status;
 }
@@ -252,9 +319,7 @@ Status CheckOperandInfo(InstructionSetProto* instruction_set) {
   }
   return status;
 }
-// TODO(ondrasej): As of 2017-11-02, this check fails on the full instruction
-// set data. Enable it in the default pipeline when all errors are fixed.
-// REGISTER_INSTRUCTION_SET_TRANSFORM(CheckOperandInfo, 10000);
+REGISTER_INSTRUCTION_SET_TRANSFORM(CheckOperandInfo, 10000);
 
 Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
