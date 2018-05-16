@@ -322,7 +322,7 @@ message InstructionProto {
 
   // The minimum  protected mode. The exact meaning depends on the
   // architecture (e.g. x86-64 has 4 levels [0-3] and ARM has 8). The default is
-  // to assume the least priviledged mode.
+  // to assume the least privileged mode.
   int32 protection_mode = 29;
 
   // The encoding specification of the instruction, as provided by the designer
