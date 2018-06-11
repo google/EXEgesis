@@ -200,9 +200,10 @@ int Simulate() {
   // Optionally write trace to file.
   if (!TraceFile.empty()) {
     std::error_code ErrorCode;
-    llvm::raw_fd_ostream OFS(
-        TraceFile, ErrorCode,
-        llvm::sys::fs::OpenFlags::F_Text | llvm::sys::fs::OpenFlags::F_RW);
+    llvm::raw_fd_ostream OFS(TraceFile, ErrorCode,
+                             llvm::sys::fs::CD_CreateAlways,
+                             llvm::sys::fs::FA_Read | llvm::sys::fs::FA_Write,
+                             llvm::sys::fs::OpenFlags::OF_Text);
     if (ErrorCode) {
       std::cerr << "Cannot write trace file: " << ErrorCode << "\n";
     } else {

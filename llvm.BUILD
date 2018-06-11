@@ -367,7 +367,7 @@ cc_library(
 
 cc_library(
     name = "demangle",
-    srcs = glob(["lib/Demangle/*.cpp"]) + ["include/llvm/Demangle/Compiler.h"],
+    srcs = glob(["lib/Demangle/*.cpp"]),
     hdrs = ["include/llvm/Demangle/Demangle.h"],
     visibility = ["//visibility:public"],
     deps = [":config"],
