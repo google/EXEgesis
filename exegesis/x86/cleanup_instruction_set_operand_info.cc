@@ -688,6 +688,7 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
     {"xmm3/m32", 32},
     {"xmm3/m64", 64},
     {"xmm3/m128", 128},
+    {"xmm2+3", 512},
     {"ymm/m8", 8},
     {"ymm/m16", 16},
     {"ymm/m32", 32},
@@ -706,6 +707,7 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
     {"ymm2/m64", 64},
     {"ymm2/m128", 128},
     {"ymm2/m256", 256},
+    {"ymm2+3", 1024},
     {"ymm3/m8", 8},
     {"ymm3/m16", 16},
     {"ymm3/m32", 32},
@@ -733,6 +735,7 @@ const std::pair<const char*, uint32_t> kOperandValueSizeBitsMap[] = {
     {"zmm3/m128", 128},
     {"zmm3/m256", 256},
     {"zmm3/m512", 512},
+    {"zmm2+3", 2048},
 };
 
 constexpr const std::pair<const char*, RegisterProto::RegisterClass>
