@@ -26,11 +26,13 @@ namespace exegesis {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
 using ::exegesis::util::StatusOr;
 using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::exegesis::util::error::NOT_FOUND;
 using ::testing::HasSubstr;
+using ::testing::Pointee;
 
 constexpr const char kTestArchitectureProto[] = R"(
   name: "some_arch"
@@ -95,6 +97,22 @@ TEST(ArchitectureProtoProviderDeathTest, UnknownProvider) {
 TEST(ArchitectureProtoProviderTest, TestRegisteredProviders) {
   EXPECT_THAT(GetRegisteredArchitectureIds(),
               ::testing::ElementsAre("test:provider:with:colon"));
+}
+
+TEST(StringArchitectureProtoProviderTest, TestProvider) {
+  StringArchitectureProtoProvider<kTestArchitectureProto> provider;
+  const StatusOr<std::shared_ptr<const ArchitectureProto>> architecture =
+      provider.GetProto();
+  EXPECT_THAT(architecture,
+              IsOkAndHolds(Pointee(EqualsProto(kTestArchitectureProto))));
+}
+
+constexpr const char kInvalidArchitectureProto[] = "foo? bar!";
+
+TEST(StringArchitectureProtoProviderDeathTest, TestInvalidProto) {
+  EXPECT_DEATH(
+      { StringArchitectureProtoProvider<kInvalidArchitectureProto> provider; },
+      "");
 }
 
 }  // namespace

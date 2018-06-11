@@ -21,9 +21,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "absl/memory/memory.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "glog/logging.h"
+#include "src/google/protobuf/text_format.h"
 #include "util/task/statusor.h"
 
 namespace exegesis {
@@ -71,6 +74,27 @@ class ArchitectureProtoProvider {
 
  protected:
   ArchitectureProtoProvider() = default;
+};
+
+// An architecture proto provider that parses the architecture proto from a
+// string. The string passed to the provider must contain an ArchitectureProto
+// in the text format.
+template <const char* architecture_text_proto>
+class StringArchitectureProtoProvider : public ArchitectureProtoProvider {
+ public:
+  StringArchitectureProtoProvider() {
+    auto architecture_proto = std::make_shared<ArchitectureProto>();
+    CHECK(google::protobuf::TextFormat::ParseFromString(
+        architecture_text_proto, architecture_proto.get()));
+    architecture_proto_ = std::move(architecture_proto);
+  }
+
+  StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto() const override {
+    return architecture_proto_;
+  }
+
+ private:
+  std::shared_ptr<const ArchitectureProto> architecture_proto_;
 };
 
 // Registers an ArchitectureProtoProvider for the called 'provider_name'.
