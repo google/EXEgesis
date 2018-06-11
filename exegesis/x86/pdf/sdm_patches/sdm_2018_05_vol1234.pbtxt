@@ -80,6 +80,51 @@ pages {
   }
 }
 pages {
+  page_number: 963
+  patches {
+    row: 4
+    col: 1
+    expected: "FNSTCW*"
+    replacement: "FNSTCW m2byte"
+  }
+  patches {
+    row: 4
+    col: 2
+    expected: " m2byte"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 965
+  patches {
+    row: 4
+    col: 1
+    expected: "FNSTENV*"
+    replacement: "FNSTENV m14/28byte"
+  }
+  patches {
+    row: 4
+    col: 2
+    expected: " m14/28byte"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 967
+  patches {
+    row: 5
+    col: 1
+    expected: "FNSTSW*"
+    replacement: "FNSTSW m2byte"
+  }
+  patches {
+    row: 5
+    col: 2
+    expected: " m2byte"
+    remove_cell: true
+  }
+}
+pages {
   page_number: 1021
   patches {
     row: 11

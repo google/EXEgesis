@@ -515,7 +515,11 @@ void ParseInstructionTable(const SubSection& sub_section,
   }
   // Parse instructions
   for (const auto& row : rows) {
-    if (row.blocks_size() != columns.size()) break;  // end of the table
+    // NOTE(ondrasej): In some cases, a footnote marker at the end of the line
+    // gets parsed as a separate column. Checking simply for a difference in the
+    // number of blocks would stop the parsing here, discarding that instruction
+    // and all instructions below it.
+    if (row.blocks_size() < columns.size()) break;  // end of the table
     auto* instruction = table->add_instructions();
     int i = 0;
     for (const auto& block : row.blocks()) {
@@ -530,7 +534,7 @@ OperandEncodingTableType GetOperandEncodingTableHeaderType(
   for (const auto& block : row.blocks()) {
     std::string text = block.text();
     RemoveSpaceAndLF(&text);
-    if (text == "TupleType") {
+    if (text == "TupleType" || text == "Tuple") {
       has_tuple_type_column = true;
     }
     if (!RE2::FullMatch(text, R"(Op/En|Operand[1234]|Tuple(Type)?)")) {
