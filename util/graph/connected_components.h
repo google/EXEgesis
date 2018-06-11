@@ -38,6 +38,7 @@
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 
+namespace util {
 // Finds the connected components of the graph, using BFS internally.
 // Works on any *undirected* graph class whose nodes are dense integers and that
 // supports the [] operator for adjacency lists: graph[x] must be an integer
@@ -56,6 +57,10 @@
 template <class UndirectedGraph>
 std::vector<int> GetConnectedComponents(int num_nodes,
                                         const UndirectedGraph& graph);
+}  // namespace util
+
+// NOTE(user): The rest of the functions below should also be in namespace
+// util, but for historical reasons it hasn't been done yet.
 
 // A connected components finder that only works on dense ints.
 class DenseConnectedComponentsFinder {
@@ -260,6 +265,7 @@ class ConnectedComponentsFinder {
 // =============================================================================
 // Implementations of the method templates
 // =============================================================================
+namespace util {
 template <class UndirectedGraph>
 std::vector<int> GetConnectedComponents(int num_nodes,
                                         const UndirectedGraph& graph) {
@@ -283,5 +289,6 @@ std::vector<int> GetConnectedComponents(int num_nodes,
   }
   return component_of_node;
 }
+}  // namespace util
 
 #endif  // UTIL_GRAPH_CONNECTED_COMPONENTS_H_
