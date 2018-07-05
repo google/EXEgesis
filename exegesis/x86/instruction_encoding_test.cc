@@ -2455,7 +2455,7 @@ TEST_F(SetOperandToMemoryBaseSibTest, LegacyInstruction) {
                     modrm { addressing_mode: INDIRECT register_operand: 2
                             rm_operand: 4 }
                     sib { base: 7 index: 4 })",
-                 "ADC DWORD PTR [RDI], EDX");
+                 "ADC DWORD PTR [RDI + RIZ], EDX");
   // Tests that it is possible to encode ADC DWORD PTR [RSP], EAX. This
   // instruction is not encodable with just the ModR/M byte, because the
   // register index of RSP is used as an escape value.
@@ -2484,7 +2484,7 @@ TEST_F(SetOperandToMemoryBaseSibTest, VexInstruction) {
                       map_select: MAP_SELECT_0F3A not_b: true not_x: true }
          modrm { addressing_mode: INDIRECT rm_operand: 4 }
          sib { base: 6 index: 4 })",
-      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI], XMM0");
+      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI + RIZ], XMM0");
   TestSetOperand(
       kVexInstructionFormat, kVexInstructionEncodingSpecification,
       R"(vex_prefix { mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
@@ -2494,7 +2494,7 @@ TEST_F(SetOperandToMemoryBaseSibTest, VexInstruction) {
                       map_select: MAP_SELECT_0F3A not_x: true }
          modrm { addressing_mode: INDIRECT rm_operand: 4 }
          sib { base: 6 index: 4 })",
-      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R14], XMM0");
+      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R14 + RIZ], XMM0");
 }
 
 TEST_F(SetOperandToMemoryBaseSibTest, InvalidOperand) {

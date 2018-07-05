@@ -198,7 +198,7 @@ TEST_F(FauconUtilTest, PrintTrace) {
   // clang-format off
   EXPECT_EQ(Out,
             "|it|in|Disassembly                                       :012345678901234567890\n"  // NOLINT
-            "| 0| 0|inst256                                           :          |         |\n"  // NOLINT
+            "| 0| 0|inst257                                           :          |         |\n"  // NOLINT
             "|  |  |      uop 0                                       :   A-deeew-R        |\n"  // NOLINT
            );
   // clang-format on
