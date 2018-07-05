@@ -148,7 +148,8 @@ class MCInstStreamer : public llvm::MCStreamer {
                             unsigned value_size,
                             unsigned max_bytes_to_emit) override {}
   void EmitZerofill(llvm::MCSection* section, llvm::MCSymbol* symbol,
-                    uint64_t size, unsigned byte_alignment) override {}
+                    uint64_t size, unsigned byte_alignment,
+                    llvm::SMLoc Loc) override {}
 
   std::vector<llvm::MCInst>* const Result_;
 };

@@ -165,14 +165,14 @@ http_archive(
 new_http_archive(
     name = "llvm_git",
     build_file = "llvm.BUILD",
-    sha256 = "ec51c2b57133f0742053051aa670b695f099b2146d7dc304290d65a0ef74ebfb",
-    strip_prefix = "llvm-34d605cb1680fc2b51d39aa168568b181ff8910a",
+    sha256 = "7b3d193923b927c4a13bfbb333a745691ed91016356fa87aa6acc83a4a25b237",
+    strip_prefix = "llvm-2dfeba53c3dee5dad9ae60afdc8a038b4153d12f",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/34d605cb1680fc2b51d39aa168568b181ff8910a.tar.gz",
-        "https://github.com/llvm-mirror/llvm/archive/34d605cb1680fc2b51d39aa168568b181ff8910a.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/2dfeba53c3dee5dad9ae60afdc8a038b4153d12f.tar.gz",
+        "https://github.com/llvm-mirror/llvm/archive/2dfeba53c3dee5dad9ae60afdc8a038b4153d12f.tar.gz",
     ],
 )
 

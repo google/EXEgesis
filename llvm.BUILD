@@ -478,8 +478,19 @@ cc_binary(
 )
 
 gentbl(
-    name = "intrinsics_gen",
-    tbl_outs = [("-gen-intrinsic", "include/llvm/IR/Intrinsics.inc")],
+    name = "intrinsic_enums_gen",
+    tbl_outs = [("-gen-intrinsic-enums", "include/llvm/IR/IntrinsicEnums.inc")],
+    tblgen = ":llvm-tblgen",
+    td_file = "include/llvm/IR/Intrinsics.td",
+    td_srcs = glob([
+        "include/llvm/CodeGen/*.td",
+        "include/llvm/IR/Intrinsics*.td",
+    ]),
+)
+
+gentbl(
+    name = "intrinsics_impl_gen",
+    tbl_outs = [("-gen-intrinsic-impl", "include/llvm/IR/IntrinsicImpl.inc")],
     tblgen = ":llvm-tblgen",
     td_file = "include/llvm/IR/Intrinsics.td",
     td_srcs = glob([
@@ -563,7 +574,8 @@ cc_library(
         ":attributes_gen",
         ":binary_format",
         ":config",
-        ":intrinsics_gen",
+        ":intrinsic_enums_gen",
+        ":intrinsics_impl_gen",
         ":support",
     ],
 )
@@ -842,11 +854,26 @@ cc_library(
     deps = [
         ":analysis",
         ":config",
+        ":instcombine_transforms_gen",
         ":ir",
         ":support",
         ":transform_base",
         ":transform_utils",
     ],
+)
+
+gentbl(
+    name = "instcombine_transforms_gen",
+    tbl_outs = [(
+        "-gen-searchable-tables",
+        "lib/Transforms/InstCombine/InstCombineTables.inc",
+    )],
+    tblgen = ":llvm-tblgen",
+    td_file = "lib/Transforms/InstCombine/InstCombineTables.td",
+    td_srcs = glob([
+        "include/llvm/CodeGen/*.td",
+        "include/llvm/IR/Intrinsics*.td",
+    ]) + ["include/llvm/TableGen/SearchableTable.td"],
 )
 
 cc_library(
