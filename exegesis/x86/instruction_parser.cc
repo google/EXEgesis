@@ -116,22 +116,22 @@ void InstructionParser::Reset() {
   specification_ = nullptr;
 }
 
-StatusOr<DecodedInstruction> InstructionParser::ParseBinaryEncoding(
+StatusOr<DecodedInstruction> InstructionParser::ConsumeBinaryEncoding(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   Reset();
 
-  RETURN_IF_ERROR(ParsePrefixes(encoded_instruction));
-  RETURN_IF_ERROR(ParseOpcode(encoded_instruction));
-  RETURN_IF_ERROR(ParseModRmAndSIBIfNeeded(encoded_instruction));
-  RETURN_IF_ERROR(ParseImmediateValuesIfNeeded(encoded_instruction));
-  RETURN_IF_ERROR(ParseCodeOffsetIfNeeded(encoded_instruction));
-  RETURN_IF_ERROR(ParseVexSuffixIfNeeded(encoded_instruction));
+  RETURN_IF_ERROR(ConsumePrefixes(encoded_instruction));
+  RETURN_IF_ERROR(ConsumeOpcode(encoded_instruction));
+  RETURN_IF_ERROR(ConsumeModRmAndSIBIfNeeded(encoded_instruction));
+  RETURN_IF_ERROR(ConsumeImmediateValuesIfNeeded(encoded_instruction));
+  RETURN_IF_ERROR(ConsumeCodeOffsetIfNeeded(encoded_instruction));
+  RETURN_IF_ERROR(ConsumeVexSuffixIfNeeded(encoded_instruction));
 
   return instruction_;
 }
 
-Status InstructionParser::ParsePrefixes(
+Status InstructionParser::ConsumePrefixes(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
 
@@ -146,11 +146,11 @@ Status InstructionParser::ParsePrefixes(
       // scheme is as close to the VEX scheme as technically possible without
       // risking that the AMD codes overlap with future Intel codes.)
       IsVexPrefixByte(encoded_instruction->front())) {
-    return ParseVexPrefix(encoded_instruction);
+    return ConsumeVexPrefix(encoded_instruction);
   }
   if (!encoded_instruction->empty() &&
       IsEvexPrefixByte(encoded_instruction->front())) {
-    return ParseEvexPrefix(encoded_instruction);
+    return ConsumeEvexPrefix(encoded_instruction);
   }
 
   while (!encoded_instruction->empty()) {
@@ -242,7 +242,7 @@ Status InstructionParser::ParseRexPrefix(uint8_t prefix_byte) {
   return OkStatus();
 }
 
-Status InstructionParser::ParseVexPrefix(
+Status InstructionParser::ConsumeVexPrefix(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   if (encoded_instruction->empty()) {
@@ -297,7 +297,7 @@ Status InstructionParser::ParseVexPrefix(
   return OkStatus();
 }
 
-Status InstructionParser::ParseEvexPrefix(
+Status InstructionParser::ConsumeEvexPrefix(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   if (encoded_instruction->size() < 4) {
@@ -341,7 +341,7 @@ Status InstructionParser::ParseEvexPrefix(
   return OkStatus();
 }
 
-Status InstructionParser::ParseOpcode(
+Status InstructionParser::ConsumeOpcode(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   if (encoded_instruction->empty()) {
@@ -460,7 +460,7 @@ const EncodingSpecification* InstructionParser::GetEncodingSpecification(
   return specification;
 }
 
-Status InstructionParser::ParseModRmAndSIBIfNeeded(
+Status InstructionParser::ConsumeModRmAndSIBIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
@@ -573,7 +573,7 @@ Status InstructionParser::ParseModRmAndSIBIfNeeded(
   return OkStatus();
 }
 
-Status InstructionParser::ParseImmediateValuesIfNeeded(
+Status InstructionParser::ConsumeImmediateValuesIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
@@ -591,7 +591,7 @@ Status InstructionParser::ParseImmediateValuesIfNeeded(
   return OkStatus();
 }
 
-Status InstructionParser::ParseCodeOffsetIfNeeded(
+Status InstructionParser::ConsumeCodeOffsetIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
@@ -607,7 +607,7 @@ Status InstructionParser::ParseCodeOffsetIfNeeded(
   return OkStatus();
 }
 
-Status InstructionParser::ParseVexSuffixIfNeeded(
+Status InstructionParser::ConsumeVexSuffixIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);

@@ -27,7 +27,7 @@
 //  absl::Span<const uint8_t> binary_code = ...;
 //  while (!binary_code.empty()) {
 //    StatusOr<DecodedInstruction> instruction_or_status =
-//        parser.ParseBinaryEncoding(&binary_code);
+//        parser.ConsumeBinaryEncoding(&binary_code);
 //    RETURN_IF_ERROR(instruction_or_status.status());
 //
 //    ...
@@ -72,14 +72,14 @@ class InstructionParser {
   // will begin with the first byte of the following instruction. When the
   // method returns failure, the state of 'encoded_instruction' is valid but
   // undefined.
-  StatusOr<DecodedInstruction> ParseBinaryEncoding(
+  StatusOr<DecodedInstruction> ConsumeBinaryEncoding(
       absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses a single instruction from 'encoded_instruction'. Ignores all bytes
   // following the first instruction.
   StatusOr<DecodedInstruction> ParseBinaryEncoding(
       absl::Span<const uint8_t> encoded_instruction) {
-    return ParseBinaryEncoding(&encoded_instruction);
+    return ConsumeBinaryEncoding(&encoded_instruction);
   }
 
  private:
@@ -91,7 +91,7 @@ class InstructionParser {
   // the span as they are parsed. On success, the span is updated so that it
   // starts with the first non-prefix byte of the instruction. When the method
   // fails, the state of the span is undefined.
-  Status ParsePrefixes(absl::Span<const uint8_t>* encoded_instruction);
+  Status ConsumePrefixes(absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses the REX prefix of the instruction.
   Status ParseRexPrefix(uint8_t prefix_byte);
@@ -101,15 +101,15 @@ class InstructionParser {
   // removes the (E)VEX prefix from the span as it is parsed. On success, the
   // span is updated so that it starts with the first non-prefix byte of the
   // instruction. When the method fails, the state of the span is undefined.
-  Status ParseVexPrefix(absl::Span<const uint8_t>* encoded_instruction);
-  Status ParseEvexPrefix(absl::Span<const uint8_t>* encoded_instruction);
+  Status ConsumeVexPrefix(absl::Span<const uint8_t>* encoded_instruction);
+  Status ConsumeEvexPrefix(absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses the opcode of the instruction. Expects that 'encoded_instruction'
   // starts with the first byte of the opcode and it removes the opcode from the
   // span as it is parsed. On success, the span is updated so that it starts
   // with the first byte of the instruction following the opcode. When the
   // method fails, the state of the span is undefined.
-  Status ParseOpcode(absl::Span<const uint8_t>* encoded_instruction);
+  Status ConsumeOpcode(absl::Span<const uint8_t>* encoded_instruction);
 
   // Gets the encoding specification for the given opcode, also handling the
   // case where three least significant bits of the instruction are used to
@@ -126,7 +126,7 @@ class InstructionParser {
   // the instruction following the ModR/M and SIB bytes and any potential
   // displacement values. When the method fails, the state of the span is
   // undefined.
-  Status ParseModRmAndSIBIfNeeded(
+  Status ConsumeModRmAndSIBIfNeeded(
       absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses the immediate value attached to the instruction if there is one.
@@ -135,7 +135,7 @@ class InstructionParser {
   // after the immediate value. On success, the span is updated so that it
   // starts with the first byte following the immediate value parsed by this
   // method. When the method fails, the state of the span is undefined.
-  Status ParseImmediateValuesIfNeeded(
+  Status ConsumeImmediateValuesIfNeeded(
       absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses the code offset attached to the instruction if there is one. Assumes
@@ -144,7 +144,7 @@ class InstructionParser {
   // immediate value. On success, the span is updated so that it starts with
   // the first byte following the code offset parsed by this method. When the
   // method fails, the state of the span is undefined.
-  Status ParseCodeOffsetIfNeeded(
+  Status ConsumeCodeOffsetIfNeeded(
       absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses the value of the VEX suffix attached to the instruction if there is
@@ -153,7 +153,8 @@ class InstructionParser {
   // byte after the immediate value. On success, the span is updated so that it
   // starts with the first byte following the VEX suffix parsed by this method.
   // When the method fails, the state of the span is undefined.
-  Status ParseVexSuffixIfNeeded(absl::Span<const uint8_t>* encoded_instruction);
+  Status ConsumeVexSuffixIfNeeded(
+      absl::Span<const uint8_t>* encoded_instruction);
 
   // Methods for updating the prefixes from the four legacy prefix groups (see
   // http://wiki.osdev.org/X86-64_Instruction_Encoding#Legacy_Prefixes for the

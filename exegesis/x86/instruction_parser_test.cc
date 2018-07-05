@@ -178,7 +178,8 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: '14 ib'
       x86_encoding_specification {
         opcode: 20
-        legacy_prefixes {} immediate_value_bytes: 1
+        legacy_prefixes {}
+        immediate_value_bytes: 1
       }
     }
     instructions {
@@ -195,7 +196,8 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: '15 id'
       x86_encoding_specification {
         opcode: 21
-        legacy_prefixes {} immediate_value_bytes: 4
+        legacy_prefixes {}
+        immediate_value_bytes: 4
       }
     }
     instructions {
@@ -233,21 +235,29 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
     instructions {
       vendor_syntax { mnemonic: 'CWDE' }
       raw_encoding_specification: '98'
-      x86_encoding_specification { opcode: 152 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 152
+        legacy_prefixes {}
+      }
     }
     instructions {
       vendor_syntax { mnemonic: 'ENTER' }
       raw_encoding_specification: 'C8 iw ib'
       x86_encoding_specification {
         opcode: 200
-        legacy_prefixes {} immediate_value_bytes: 2 immediate_value_bytes: 1
+        legacy_prefixes {}
+        immediate_value_bytes: 2
+        immediate_value_bytes: 1
       }
     }
     instructions {
       vendor_syntax { mnemonic: 'INVD' }
       raw_encoding_specification: '0F 08'
       protection_mode: 0
-      x86_encoding_specification { opcode: 3848 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 3848
+        legacy_prefixes {}
+      }
     }
     instructions {
       vendor_syntax { mnemonic: 'MOV' }
@@ -270,7 +280,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
     instructions {
       vendor_syntax { mnemonic: 'NOP' }
       raw_encoding_specification: 'NP 90'
-      x86_encoding_specification { opcode: 144 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 144
+        legacy_prefixes {}
+      }
     }
     instructions {
       vendor_syntax { mnemonic: 'PEXT' }
@@ -419,7 +432,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       }
     }
     instructions {
-      vendor_syntax { mnemonic: "INVLPG" operands { name: "m" } }
+      vendor_syntax {
+        mnemonic: "INVLPG"
+        operands { name: "m" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: "M"
@@ -443,7 +459,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       encoding_scheme: "A"
       raw_encoding_specification: "NP 0F 01 D5"
       protection_mode: -1
-      x86_encoding_specification { opcode: 983509 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 983509
+        legacy_prefixes {}
+      }
       instruction_group_index: 624
     }
     instructions {
@@ -517,7 +536,7 @@ void InstructionParserTest::ParseInstructionAndCheckResult(
   InstructionParser instruction_parser(architecture_.get());
   // Test the instruction parser using the provided test inputs: decode the
   // instruction and check it against the expected encoded instruction proto.
-  EXPECT_THAT(instruction_parser.ParseBinaryEncoding(&binary_encoding),
+  EXPECT_THAT(instruction_parser.ConsumeBinaryEncoding(&binary_encoding),
               IsOkAndHolds(EqualsProto(expected_decoded_instruction)));
   EXPECT_TRUE(binary_encoding.empty())
       << "The parser did not consume the whole input. Remaining bytes: "
@@ -529,7 +548,7 @@ void InstructionParserTest::ParseInstructionAndCheckResult(
   absl::Span<const uint8_t> exegesis_binary_encoding_slice(
       exegesis_binary_encoding);
   EXPECT_THAT(
-      instruction_parser.ParseBinaryEncoding(&exegesis_binary_encoding_slice),
+      instruction_parser.ConsumeBinaryEncoding(&exegesis_binary_encoding_slice),
       IsOkAndHolds(EqualsProto(expected_decoded_instruction)));
   EXPECT_TRUE(exegesis_binary_encoding_slice.empty())
       << "The parser did not consume the whole input. Remaining bytes: "
@@ -1072,35 +1091,27 @@ TEST_F(InstructionParserTest, POPvsXOP) {
 
 TEST_F(InstructionParserTest, X87FpuInstructions) {
   // fadd %st(2), %st(0)
-  ParseInstructionAndCheckResult({0xD8, 0xC2}, "D8 /0",
-                                 R"proto(opcode: 0xD8
-                                         modrm {
-                                           addressing_mode: DIRECT
-                                           rm_operand: 2
-                                         })proto");
+  ParseInstructionAndCheckResult(
+      {0xD8, 0xC2}, "D8 /0",
+      R"proto(opcode: 0xD8
+              modrm { addressing_mode: DIRECT rm_operand: 2 })proto");
   // fadd %st(0), %st(2)
-  ParseInstructionAndCheckResult({0xDC, 0xC2}, "DC /0",
-                                 R"proto(opcode: 0xDC
-                                         modrm {
-                                           addressing_mode: DIRECT
-                                           rm_operand: 2
-                                         })proto");
+  ParseInstructionAndCheckResult(
+      {0xDC, 0xC2}, "DC /0",
+      R"proto(opcode: 0xDC
+              modrm { addressing_mode: DIRECT rm_operand: 2 })proto");
   // faddq (%rsi)
-  ParseInstructionAndCheckResult({0xDC, 0x06}, "DC /0",
-                                 R"proto(opcode: 0xDC
-                                         modrm {
-                                           addressing_mode: INDIRECT
-                                           rm_operand: 6
-                                         })proto");
+  ParseInstructionAndCheckResult(
+      {0xDC, 0x06}, "DC /0",
+      R"proto(opcode: 0xDC
+              modrm { addressing_mode: INDIRECT rm_operand: 6 })proto");
   // fcos
   ParseInstructionAndCheckResult({0xD9, 0xFF}, "D9 FF", "opcode: 0xD9FF");
   // fld %st(1)
-  ParseInstructionAndCheckResult({0xD9, 0xC1}, "D9 /0",
-                                 R"proto(opcode: 0xD9
-                                         modrm {
-                                           addressing_mode: DIRECT
-                                           rm_operand: 1
-                                         })proto");
+  ParseInstructionAndCheckResult(
+      {0xD9, 0xC1}, "D9 /0",
+      R"proto(opcode: 0xD9
+              modrm { addressing_mode: DIRECT rm_operand: 1 })proto");
   // flds 0x7b(%rax)
   constexpr const char* const expected_decoded_instruction =
       R"proto(opcode: 0xD9
