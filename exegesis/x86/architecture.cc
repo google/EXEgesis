@@ -40,9 +40,17 @@ void X86Architecture::BuildIndex() {
     const InstructionProto& instruction_proto = instruction(instruction_index);
     CHECK(instruction_proto.has_x86_encoding_specification())
         << instruction_proto.DebugString();
-    const Opcode opcode(
-        instruction_proto.x86_encoding_specification().opcode());
+    const uint32_t opcode_value =
+        instruction_proto.x86_encoding_specification().opcode();
+    const Opcode opcode(opcode_value);
     instruction_index_by_opcode_[opcode].push_back(instruction_index);
+
+    if (!instruction_proto.x86_encoding_specification().has_vex_prefix()) {
+      for (uint32_t prefix = opcode_value >> 8; prefix != 0;
+           prefix = prefix >> 8) {
+        legacy_opcode_prefixes_.insert(Opcode(prefix));
+      }
+    }
   }
 }
 

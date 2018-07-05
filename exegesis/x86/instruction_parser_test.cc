@@ -1120,6 +1120,24 @@ TEST_F(InstructionParserTest, X87FpuInstructions) {
                                          })proto");
 }
 
+// XEND is one of the instructions that do not follow the regular multi-byte
+// legacy opcode scheme where the only allowed opcode extension bytes are 0F,
+// 0F 38, and 0F 3A. We check that both XEND, and its "general" instruction are
+// recognized correctly.
+TEST_F(InstructionParserTest, ParseXend) {
+  // xend
+  ParseInstructionAndCheckResult({0x0F, 0x01, 0xD5}, "NP 0F 01 D5",
+                                 R"proto(opcode: 0x0F01D5)proto");
+  // invlpg (%rdi)
+  ParseInstructionAndCheckResult({0x0F, 0x01, 0x3F}, "0F 01/7",
+                                 R"proto(opcode: 0x0F01
+                                         modrm {
+                                           addressing_mode: INDIRECT
+                                           register_operand: 7
+                                           rm_operand: 7
+                                         })proto");
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis

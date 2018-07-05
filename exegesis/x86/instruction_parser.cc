@@ -369,40 +369,38 @@ Status InstructionParser::ParseOpcode(
         return InvalidArgumentError(
             absl::StrCat("Invalid vex.map_select value ", map_select));
     }
-  } else if (opcode_value == kExtendedOpcodeByte) {
-    if (encoded_instruction->empty()) {
-      return InvalidArgumentError("Half of the opcode is missing.");
-    }
-    // The first opcode byte we found was the 0x0f prefix. The actual primary
-    // opcode is the second byte.
-    const uint8_t primary_opcode_byte = ConsumeFront(encoded_instruction);
-    opcode_value = (opcode_value << 8) + primary_opcode_byte;
-    if (c_linear_search(kOpcodesWithSecondaryOpcode, primary_opcode_byte)) {
-      if (encoded_instruction->empty()) {
-        return InvalidArgumentError("The last third of the opcode is missing.");
+  } else {
+    // Legacy instructions may be using a multi-byte opcode schema. There are
+    // three basic classes of multi-byte opcodes:
+    // - the "regular" opcodes using 0F, 0F 38, and 0F 3A as opcode extension
+    //   bytes.
+    // - specialization of a more general instruction. In some cases, the last
+    //   byte of the encoding specification in the SDM is a ModR/M byte with
+    //   directly specified values. This is used in the SDM for instructions
+    //   that have a version with implicit operands.
+    // - "irregular" multi-byte opcodes. These are typically system management
+    //   or virtualization instructions that do not take any operands and thus
+    //   do not need the ModR/M byte.
+    // In the parser, we gave up on the systematic approach and simply take the
+    // longest possible sequence of bytes from the stream that is an opcode of
+    // a legacy instruction. This gives natural precedence to the special cases
+    // and irregular instructions over the more general versions.
+    uint32_t extended_opcode = opcode_value;
+    auto current_byte = encoded_instruction->begin();
+    auto opcode_end = encoded_instruction->begin();
+    while (current_byte != encoded_instruction->end() &&
+           architecture_->IsLegacyOpcodePrefix(Opcode(extended_opcode))) {
+      extended_opcode = (extended_opcode << 8) | *current_byte;
+      instruction_.set_opcode(extended_opcode);
+      specification_ = GetEncodingSpecification(extended_opcode, false);
+      ++current_byte;
+      if (specification_ != nullptr) {
+        opcode_value = extended_opcode;
+        opcode_end = current_byte;
       }
-      const uint8_t secondary_opcode_byte = ConsumeFront(encoded_instruction);
-      opcode_value = (opcode_value << 8) + secondary_opcode_byte;
     }
-  } else if (IsFloatingPointOpcode(opcode_value)) {
-    if (encoded_instruction->empty()) {
-      return InvalidArgumentError("Half of the opcode is missing.");
-    }
-    // Some X87 FPU instructions have a two-byte opcode, check if we have a
-    // matching instruction.
-    // - If that is the case, consume the byte. This is safe because we check
-    //   that the opcodes are prefix free when cleaning up the instruction
-    //   database.
-    // - If that's not the case, then second byte is ModR/M. Leave the second
-    //   byte in the stream, so that it can be processed by the ModR/M parser.
-    const uint32_t two_byte_opcode =
-        (opcode_value << 8) | encoded_instruction->front();
-    instruction_.set_opcode(two_byte_opcode);
-    specification_ = GetEncodingSpecification(two_byte_opcode, false);
-    if (specification_ != nullptr) {
-      opcode_value = two_byte_opcode;
-      ConsumeFront(encoded_instruction);
-    }
+    encoded_instruction->remove_prefix(opcode_end -
+                                       encoded_instruction->begin());
   }
   instruction_.set_opcode(opcode_value);
 

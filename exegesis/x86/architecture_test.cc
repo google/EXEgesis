@@ -339,6 +339,16 @@ TEST_F(X86ArchitectureTest, GetOpcodesReturnsAllOpcodes) {
   }
 }
 
+TEST_F(X86ArchitectureTest, IsLegacyOpcodePrefix) {
+  // Check that only the proper prefixes are added for XEND (0F 01 D5).
+  EXPECT_TRUE(architecture_->IsLegacyOpcodePrefix(Opcode(0x0F)));
+  EXPECT_TRUE(architecture_->IsLegacyOpcodePrefix(Opcode(0x0F01)));
+  EXPECT_FALSE(architecture_->IsLegacyOpcodePrefix(Opcode(0x0F01D5)));
+
+  // Check that the prefix of a VEX-encoded instruction is not added.
+  EXPECT_FALSE(architecture_->IsLegacyOpcodePrefix(Opcode(0x0F3A)));
+}
+
 void CheckInstructionIndex(const X86Architecture& architecture,
                            const DecodedInstruction& instruction,
                            const char* expected_raw_encoding_specification,

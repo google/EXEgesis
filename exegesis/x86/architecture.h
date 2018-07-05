@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "exegesis/base/architecture.h"
@@ -25,6 +26,7 @@
 #include "exegesis/proto/x86/decoded_instruction.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "glog/logging.h"
+#include "util/gtl/map_util.h"
 
 namespace exegesis {
 namespace x86 {
@@ -88,6 +90,14 @@ class X86Architecture : public Architecture {
     return instruction(instruction_index);
   }
 
+  // Returns true if 'prefix' is a proper prefix of an opcode of a legacy
+  // instruction. Note that we're using big endian, and the prefixes are
+  // "packed" towards the lower bytes, so the prefixes of 0x0F01D5 are 0x0F01
+  // and 0x0F.
+  bool IsLegacyOpcodePrefix(Opcode prefix) const {
+    return ContainsKey(legacy_opcode_prefixes_, prefix);
+  }
+
  private:
   // Builds the index of instructions. This method CHECK-fails if the data in
   // the architecture proto are invalid.
@@ -106,6 +116,10 @@ class X86Architecture : public Architecture {
   // heap-allocate small vectors.
   std::unordered_map<Opcode, std::vector<InstructionIndex>, Opcode::Hasher>
       instruction_index_by_opcode_;
+
+  // The set of proper prefixes of opcodes of legacy instructions in the
+  // database.
+  std::unordered_set<Opcode, Opcode::Hasher> legacy_opcode_prefixes_;
 };
 
 }  // namespace x86
