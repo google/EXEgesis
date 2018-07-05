@@ -33,44 +33,49 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::testing::Contains;
 
-const char kArchitectureProto[] = R"(
-    instruction_set {
-      instructions {
-        llvm_mnemonic: 'ADD8rm'
-        att_syntax { mnemonic: 'addb' }
-        vendor_syntax { mnemonic: 'ADD' }
-        syntax { mnemonic: 'ADD' }
-        feature_name: ''
-        raw_encoding_specification: '80 /0 ib'
-        encoding_scheme: 'MI'
-        description: 'Add imm8 to r8/m8.' }
-      instructions {
-        llvm_mnemonic: 'MOV8rr'
-        att_syntax { mnemonic: 'movb' }
-        vendor_syntax { mnemonic: 'MOV' }
-        syntax { mnemonic: 'MOV' }
-        feature_name: ''
-        raw_encoding_specification: '88 /r'
-        encoding_scheme: 'MR'
-        description: 'Move r8 to r8/m8. ' }
-      instructions {
-        llvm_mnemonic: 'MOV8rm'
-        att_syntax { mnemonic: 'movb' }
-        vendor_syntax { mnemonic: 'MOV' }
-        syntax { mnemonic: 'MOV' }
-        feature_name: ''
-        raw_encoding_specification: '88 /r'
-        encoding_scheme: 'MR'
-        description: 'Move r8 to r8/m8. ' }
-      instructions {
-        llvm_mnemonic: 'MOV16rr'
-        att_syntax { mnemonic: 'movw' }
-        syntax { mnemonic: 'MOV' }
-        vendor_syntax { mnemonic: 'MOV' }
-        feature_name: ''
-        raw_encoding_specification: '89 /r'
-        encoding_scheme: 'MR'
-        description: 'Move r16 to r16/m16.' }})";
+const char kArchitectureProto[] = R"proto(
+  instruction_set {
+    instructions {
+      llvm_mnemonic: 'ADD8rm'
+      att_syntax { mnemonic: 'addb' }
+      vendor_syntax { mnemonic: 'ADD' }
+      syntax { mnemonic: 'ADD' }
+      feature_name: ''
+      raw_encoding_specification: '80 /0 ib'
+      encoding_scheme: 'MI'
+      description: 'Add imm8 to r8/m8.'
+    }
+    instructions {
+      llvm_mnemonic: 'MOV8rr'
+      att_syntax { mnemonic: 'movb' }
+      vendor_syntax { mnemonic: 'MOV' }
+      syntax { mnemonic: 'MOV' }
+      feature_name: ''
+      raw_encoding_specification: '88 /r'
+      encoding_scheme: 'MR'
+      description: 'Move r8 to r8/m8. '
+    }
+    instructions {
+      llvm_mnemonic: 'MOV8rm'
+      att_syntax { mnemonic: 'movb' }
+      vendor_syntax { mnemonic: 'MOV' }
+      syntax { mnemonic: 'MOV' }
+      feature_name: ''
+      raw_encoding_specification: '88 /r'
+      encoding_scheme: 'MR'
+      description: 'Move r8 to r8/m8. '
+    }
+    instructions {
+      llvm_mnemonic: 'MOV16rr'
+      att_syntax { mnemonic: 'movw' }
+      syntax { mnemonic: 'MOV' }
+      vendor_syntax { mnemonic: 'MOV' }
+      feature_name: ''
+      raw_encoding_specification: '89 /r'
+      encoding_scheme: 'MR'
+      description: 'Move r16 to r16/m16.'
+    }
+  })proto";
 
 bool CompareProtosByLLVMMnemonic(const InstructionProto& left,
                                  const InstructionProto& right) {

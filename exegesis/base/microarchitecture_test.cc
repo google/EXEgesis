@@ -24,25 +24,17 @@ namespace {
 
 TEST(MicroArchitectureDataTest, Works) {
   auto architecture_proto = std::make_shared<const ArchitectureProto>(
-      ParseProtoFromStringOrDie<ArchitectureProto>(R"(
-        instruction_set {
-          instructions {
-            llvm_mnemonic: "F4KE"
-          }
-        }
+      ParseProtoFromStringOrDie<ArchitectureProto>(R"proto(
+        instruction_set { instructions { llvm_mnemonic: "F4KE" } }
         per_microarchitecture_itineraries {
           microarchitecture_id: 'blah'
-          itineraries {
-            llvm_mnemonic: "F4KE"
-          }
+          itineraries { llvm_mnemonic: "F4KE" }
         }
         per_microarchitecture_itineraries {
           microarchitecture_id: 'hsw'
-          itineraries {
-            llvm_mnemonic: "F4KE"
-          }
+          itineraries { llvm_mnemonic: "F4KE" }
         }
-      )"));
+      )proto"));
 
   const auto statusor_microarchitecture =
       MicroArchitectureData::ForMicroArchitectureId(architecture_proto, "hsw");

@@ -45,7 +45,8 @@ TEST(AddOperandInfoTest, AddInfo) {
         operands { name: 'ST(i)' }
       }
       x86_encoding_specification {
-        legacy_prefixes {} modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        legacy_prefixes {}
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
       }
     }
     instructions {
@@ -101,7 +102,8 @@ TEST(AddOperandInfoTest, AddInfo) {
         }
       }
       x86_encoding_specification {
-        legacy_prefixes {} modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        legacy_prefixes {}
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
       }
     }
     instructions {
@@ -157,7 +159,8 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
             operands { name: 'ST(i)' encoding: MODRM_RM_ENCODING }
           }
           x86_encoding_specification {
-            legacy_prefixes {} operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
+            legacy_prefixes {}
+            operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
           }
         })proto"};
   for (const char* const instruction_set_proto : kInstructionSetProtos) {

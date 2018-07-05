@@ -282,7 +282,8 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         description: "Third instruction | Class One | I3_class_1_enc_1_name"
         vendor_syntax { mnemonic: "I3" }
         available_in_64_bit: false
-        fixed_size_encoding_specification {} instruction_group_index: 2
+        fixed_size_encoding_specification {}
+        instruction_group_index: 2
       }
       instruction_groups {
         name: "I1"

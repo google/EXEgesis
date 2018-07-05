@@ -243,7 +243,7 @@ TEST(GeometryTest, SpanCenter) {
   EXPECT_THAT(Span(1.0f, 5.0f).center(), FloatEq(3.0f));
 }
 
-constexpr const auto SpanEq = [](const Span& expected) {
+const auto SpanEq = [](const Span& expected) {
   return AllOf(Field(&Span::min, FloatEq(expected.min)),
                Field(&Span::max, FloatEq(expected.max)));
 };

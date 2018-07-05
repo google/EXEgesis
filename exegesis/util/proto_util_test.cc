@@ -34,8 +34,7 @@ using ::exegesis::testing::StatusIs;
 using ::exegesis::util::error::FAILED_PRECONDITION;
 
 TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
-  constexpr char kExpected[] = R"(
-    llvm_mnemonic: 'ADD32mr')";
+  constexpr char kExpected[] = "llvm_mnemonic: 'ADD32mr'";
   const InstructionProto page =
       ParseProtoFromStringOrDie<InstructionProto>(kExpected);
   const std::string filename =

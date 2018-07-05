@@ -37,6 +37,7 @@ namespace x86 {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
 using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
@@ -68,446 +69,415 @@ class InstructionParserTest : public ::testing::Test {
   std::unique_ptr<X86Architecture> architecture_;
 };
 
-const char* const InstructionParserTest::kArchitectureProto = R"(
-    instruction_set {
-      instructions {
-        vendor_syntax {
-          mnemonic: "FCOS"
-        }
-        raw_encoding_specification: "D9 FF"
-        x86_encoding_specification {
-          opcode: 0xD9FF
+const char* const InstructionParserTest::kArchitectureProto = R"proto(
+  instruction_set {
+    instructions {
+      vendor_syntax { mnemonic: "FCOS" }
+      raw_encoding_specification: "D9 FF"
+      x86_encoding_specification { opcode: 0xD9FF }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "FLD" }
+      raw_encoding_specification: "D9 /0"
+      x86_encoding_specification {
+        opcode: 0xD9
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "FADD" }
+      raw_encoding_specification: "D8 /0"
+      x86_encoding_specification {
+        opcode: 0xD8
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "FSUB" }
+      raw_encoding_specification: "D8 /4"
+      x86_encoding_specification {
+        opcode: 0xD8
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 4
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "FADD" }
+      raw_encoding_specification: "DC /0"
+      x86_encoding_specification {
+        opcode: 0xDC
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "BSWAP"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: OPCODE_ENCODING
+          value_size_bits: 32
+          name: "r32"
+          usage: USAGE_READ_WRITE
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "FLD"
+      raw_encoding_specification: "0F C8+rd"
+      x86_encoding_specification {
+        opcode: 4040
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOV"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: OPCODE_ENCODING
+          value_size_bits: 64
+          name: "r64"
+          usage: USAGE_WRITE
         }
-        raw_encoding_specification: "D9 /0"
-        x86_encoding_specification {
-          opcode: 0xD9
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        operands {
+          addressing_mode: NO_ADDRESSING
+          encoding: IMMEDIATE_VALUE_ENCODING
+          value_size_bits: 64
+          name: "imm64"
+          usage: USAGE_READ
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "FADD"
-        }
-        raw_encoding_specification: "D8 /0"
-        x86_encoding_specification {
-          opcode: 0xD8
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+      available_in_64_bit: true
+      encoding_scheme: "OI"
+      raw_encoding_specification: "REX.W + B8+ rd io"
+      x86_encoding_specification {
+        opcode: 184
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        immediate_value_bytes: 8
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "POP"
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 64
+          name: "m64"
+          usage: USAGE_WRITE
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "FSUB"
-        }
-        raw_encoding_specification: "D8 /4"
-        x86_encoding_specification {
-          opcode: 0xD8
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          modrm_opcode_extension: 4
+      raw_encoding_specification: "8F /0"
+      x86_encoding_specification {
+        opcode: 143
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADC' }
+      raw_encoding_specification: '14 ib'
+      x86_encoding_specification {
+        opcode: 20
+        legacy_prefixes {} immediate_value_bytes: 1
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADC' }
+      raw_encoding_specification: '66 15 iw'
+      x86_encoding_specification {
+        opcode: 21
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        immediate_value_bytes: 2
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADC' }
+      raw_encoding_specification: '15 id'
+      x86_encoding_specification {
+        opcode: 21
+        legacy_prefixes {} immediate_value_bytes: 4
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ANDN' }
+      raw_encoding_specification: 'VEX.NDS.LZ. 0F38.W1 F2 /r'
+      x86_encoding_specification {
+        opcode: 997618
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ONE
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "FADD"
-        }
-        raw_encoding_specification: "DC /0"
-        x86_encoding_specification {
-          opcode: 0xDC
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'CDQE' }
+      raw_encoding_specification: 'REX.W + 98'
+      x86_encoding_specification {
+        opcode: 152
+        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'CRC32' }
+      raw_encoding_specification: 'F2 0F 38 F1 /r'
+      x86_encoding_specification {
+        opcode: 997617
+        modrm_usage: FULL_MODRM
+        legacy_prefixes { has_mandatory_repne_prefix: true }
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'CWDE' }
+      raw_encoding_specification: '98'
+      x86_encoding_specification { opcode: 152 legacy_prefixes {} }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ENTER' }
+      raw_encoding_specification: 'C8 iw ib'
+      x86_encoding_specification {
+        opcode: 200
+        legacy_prefixes {} immediate_value_bytes: 2 immediate_value_bytes: 1
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'INVD' }
+      raw_encoding_specification: '0F 08'
+      protection_mode: 0
+      x86_encoding_specification { opcode: 3848 legacy_prefixes {} }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'MOV' }
+      raw_encoding_specification: '8B /r'
+      x86_encoding_specification {
+        opcode: 139
+        modrm_usage: FULL_MODRM
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'MOVBE' }
+      raw_encoding_specification: '0F 38 F1 /r'
+      x86_encoding_specification {
+        opcode: 997617
+        modrm_usage: FULL_MODRM
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'NOP' }
+      raw_encoding_specification: 'NP 90'
+      x86_encoding_specification { opcode: 144 legacy_prefixes {} }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'PEXT' }
+      raw_encoding_specification: 'VEX.NDS.LZ.F3.0F38.W0 F5 /r'
+      x86_encoding_specification {
+        opcode: 997621
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          mandatory_prefix: MANDATORY_PREFIX_REPE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "BSWAP"
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: OPCODE_ENCODING
-            value_size_bits: 32
-            name: "r32"
-            usage: USAGE_READ_WRITE
-          }
-        }
-        raw_encoding_specification: "0F C8+rd"
-        x86_encoding_specification {
-          opcode: 4040
-          operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-          legacy_prefixes {
-          }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'PEXT' }
+      raw_encoding_specification: 'VEX.NDS.LZ.F3.0F38.W1 F5 /r'
+      x86_encoding_specification {
+        opcode: 997621
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          mandatory_prefix: MANDATORY_PREFIX_REPE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ONE
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "MOV"
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: OPCODE_ENCODING
-            value_size_bits: 64
-            name: "r64"
-            usage: USAGE_WRITE
-          }
-          operands {
-            addressing_mode: NO_ADDRESSING
-            encoding: IMMEDIATE_VALUE_ENCODING
-            value_size_bits: 64
-            name: "imm64"
-            usage: USAGE_READ
-          }
-        }
-        available_in_64_bit: true
-        encoding_scheme: "OI"
-        raw_encoding_specification: "REX.W + B8+ rd io"
-        x86_encoding_specification {
-          opcode: 184
-          operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-          legacy_prefixes {
-            has_mandatory_rex_w_prefix: true
-          }
-          immediate_value_bytes: 8
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'SHRX' }
+      raw_encoding_specification: 'VEX.NDS.LZ.F2.0F38.W1 F7 /r'
+      x86_encoding_specification {
+        opcode: 997623
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          mandatory_prefix: MANDATORY_PREFIX_REPNE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ONE
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "POP"
-          operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 64
-            name: "m64"
-            usage: USAGE_WRITE
-          }
-        }
-        raw_encoding_specification: "8F /0"
-        x86_encoding_specification {
-          opcode: 143
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          legacy_prefixes {
-          }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'VADDPD' }
+      raw_encoding_specification: 'VEX.NDS.128.66.0F.WIG 58 /r'
+      x86_encoding_specification {
+        opcode: 3928
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ADC'
-        }
-        raw_encoding_specification: '14 ib'
-        x86_encoding_specification {
-          opcode: 20
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 1
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ADC'
-        }
-        raw_encoding_specification: '66 15 iw'
-        x86_encoding_specification {
-          opcode: 21
-          legacy_prefixes {
-            has_mandatory_operand_size_override_prefix: true
-          }
-          immediate_value_bytes: 2
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'VADDPD' }
+      raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG 58 /r'
+      x86_encoding_specification {
+        opcode: 3928
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_256_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ADC'
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'VBLENDPD' }
+      raw_encoding_specification: 'VEX.NDS.128.66.0F3A.WIG 0D /r ib'
+      x86_encoding_specification {
+        opcode: 997901
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F3A
         }
-        raw_encoding_specification: '15 id'
-        x86_encoding_specification {
-          opcode: 21
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 4
+        immediate_value_bytes: 1
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'VBLENDVPD' }
+      raw_encoding_specification: 'VEX.NDS.128.66.0F3A.W0 4B /r /is4'
+      x86_encoding_specification {
+        opcode: 997963
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F3A
+          vex_w_usage: VEX_W_IS_ZERO
+          has_vex_operand_suffix: true
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ANDN'
-        }
-        raw_encoding_specification: 'VEX.NDS.LZ. 0F38.W1 F2 /r'
-        x86_encoding_specification {
-          opcode: 997618
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ONE
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'CDQE'
-        }
-        raw_encoding_specification: 'REX.W + 98'
-        x86_encoding_specification {
-          opcode: 152
-          legacy_prefixes {
-            has_mandatory_rex_w_prefix: true
-          }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'VMOVSD' }
+      raw_encoding_specification: 'EVEX.NDS.LIG.F2.0F.W1 10 /r'
+      x86_encoding_specification {
+        opcode: 3856
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: EVEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          mandatory_prefix: MANDATORY_PREFIX_REPNE
+          map_select: MAP_SELECT_0F
+          vex_w_usage: VEX_W_IS_ONE
+          opmask_usage: EVEX_OPMASK_IS_OPTIONAL
+          masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'CRC32'
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'XCHG' }
+      raw_encoding_specification: '66 90+rw'
+      x86_encoding_specification {
+        opcode: 144
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'XCHG' }
+      raw_encoding_specification: '90+rd'
+      x86_encoding_specification {
+        opcode: 144
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "INVLPG" operands { name: "m" } }
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "M"
+      raw_encoding_specification: "0F 01/7"
+      x86_encoding_specification {
+        opcode: 3841
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 7
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      description: "Specifies the end of an RTM code region."
+      llvm_mnemonic: "XEND"
+      vendor_syntax { mnemonic: "XEND" }
+      syntax { mnemonic: "xend" }
+      att_syntax { mnemonic: "xend" }
+      feature_name: "RTM"
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "A"
+      raw_encoding_specification: "NP 0F 01 D5"
+      protection_mode: -1
+      x86_encoding_specification { opcode: 983509 legacy_prefixes {} }
+      instruction_group_index: 624
+    }
+    instructions {
+      description: "Store effective address for m in register r64."
+      llvm_mnemonic: "LEA64r"
+      vendor_syntax {
+        mnemonic: "LEA"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 64
+          name: "r64"
+          usage: USAGE_WRITE
+          register_class: GENERAL_PURPOSE_REGISTER_64_BIT
         }
-        raw_encoding_specification: 'F2 0F 38 F1 /r'
-        x86_encoding_specification {
-          opcode: 997617
-          modrm_usage: FULL_MODRM
-          legacy_prefixes {
-            has_mandatory_repne_prefix: true
-          }
+        operands {
+          addressing_mode: LOAD_EFFECTIVE_ADDRESS
+          encoding: MODRM_RM_ENCODING
+          name: "m"
+          usage: USAGE_READ
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'CWDE'
-        }
-        raw_encoding_specification: '98'
-        x86_encoding_specification {
-          opcode: 152
-          legacy_prefixes {
-          }
-        }
+      available_in_64_bit: true
+      encoding_scheme: "RM"
+      raw_encoding_specification: "REX.W + 8D /r"
+      protection_mode: -1
+      x86_encoding_specification {
+        opcode: 141
+        modrm_usage: FULL_MODRM
+        legacy_prefixes { has_mandatory_rex_w_prefix: true }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ENTER'
-        }
-        raw_encoding_specification: 'C8 iw ib'
-        x86_encoding_specification {
-          opcode: 200
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 2
-          immediate_value_bytes: 1
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'INVD'
-        }
-        raw_encoding_specification: '0F 08'
-        protection_mode: 0
-        x86_encoding_specification {
-          opcode: 3848
-          legacy_prefixes {
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-        }
-        raw_encoding_specification: '8B /r'
-        x86_encoding_specification {
-          opcode: 139
-          modrm_usage: FULL_MODRM
-          legacy_prefixes {
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOVBE'
-        }
-        raw_encoding_specification: '0F 38 F1 /r'
-        x86_encoding_specification {
-          opcode: 997617
-          modrm_usage: FULL_MODRM
-          legacy_prefixes {
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'NOP'
-        }
-        raw_encoding_specification: 'NP 90'
-        x86_encoding_specification {
-          opcode: 144
-          legacy_prefixes {
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PEXT'
-        }
-        raw_encoding_specification: 'VEX.NDS.LZ.F3.0F38.W0 F5 /r'
-        x86_encoding_specification {
-          opcode: 997621
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-            mandatory_prefix: MANDATORY_PREFIX_REPE
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ZERO
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PEXT'
-        }
-        raw_encoding_specification: 'VEX.NDS.LZ.F3.0F38.W1 F5 /r'
-        x86_encoding_specification {
-          opcode: 997621
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-            mandatory_prefix: MANDATORY_PREFIX_REPE
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ONE
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'SHRX'
-        }
-        raw_encoding_specification: 'VEX.NDS.LZ.F2.0F38.W1 F7 /r'
-        x86_encoding_specification {
-          opcode: 997623
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-            mandatory_prefix: MANDATORY_PREFIX_REPNE
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ONE
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VADDPD'
-        }
-        raw_encoding_specification: 'VEX.NDS.128.66.0F.WIG 58 /r'
-        x86_encoding_specification {
-          opcode: 3928
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VADDPD'
-        }
-        raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG 58 /r'
-        x86_encoding_specification {
-          opcode: 3928
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_256_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VBLENDPD'
-        }
-        raw_encoding_specification: 'VEX.NDS.128.66.0F3A.WIG 0D /r ib'
-        x86_encoding_specification {
-          opcode: 997901
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F3A
-          }
-          immediate_value_bytes: 1
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VBLENDVPD'
-        }
-        raw_encoding_specification: 'VEX.NDS.128.66.0F3A.W0 4B /r /is4'
-        x86_encoding_specification {
-          opcode: 997963
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F3A
-            vex_w_usage: VEX_W_IS_ZERO
-            has_vex_operand_suffix: true
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VMOVSD'
-        }
-        raw_encoding_specification: 'EVEX.NDS.LIG.F2.0F.W1 10 /r'
-        x86_encoding_specification {
-          opcode: 3856
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: EVEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            mandatory_prefix: MANDATORY_PREFIX_REPNE
-            map_select: MAP_SELECT_0F
-            vex_w_usage: VEX_W_IS_ONE
-            opmask_usage: EVEX_OPMASK_IS_OPTIONAL
-            masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XCHG'
-        }
-        raw_encoding_specification: '66 90+rw'
-        x86_encoding_specification {
-          opcode: 144
-          operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-          legacy_prefixes {
-            has_mandatory_operand_size_override_prefix: true
-          }
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XCHG'
-        }
-        raw_encoding_specification: '90+rd'
-        x86_encoding_specification {
-          opcode: 144
-          operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-          legacy_prefixes {
-          }
-        }
-      }
-    })";
+      instruction_group_index: 198
+    }
+  })proto";
 
 void InstructionParserTest::ParseInstructionAndCheckResult(
     absl::Span<const uint8_t> binary_encoding,
@@ -515,6 +485,8 @@ void InstructionParserTest::ParseInstructionAndCheckResult(
     const std::string& expected_encoded_instruction_proto) {
   SCOPED_TRACE(absl::StrCat("encoding_specification_str = ",
                             encoding_specification_str));
+  SCOPED_TRACE(absl::StrCat("binary_encoding = ",
+                            ToHumanReadableHexString(binary_encoding)));
   // Check that the test inputs were valid to begin with: use the instruction
   // encoder to encode expected_encoded_instruction_proto with
   // encoding_specification_str, and verify that the binary encoding is the same
@@ -545,28 +517,23 @@ void InstructionParserTest::ParseInstructionAndCheckResult(
   InstructionParser instruction_parser(architecture_.get());
   // Test the instruction parser using the provided test inputs: decode the
   // instruction and check it against the expected encoded instruction proto.
-  const StatusOr<DecodedInstruction> decoded_instruction_or_status =
-      instruction_parser.ParseBinaryEncoding(&binary_encoding);
-  ASSERT_OK(decoded_instruction_or_status.status());
+  EXPECT_THAT(instruction_parser.ParseBinaryEncoding(&binary_encoding),
+              IsOkAndHolds(EqualsProto(expected_decoded_instruction)));
   EXPECT_TRUE(binary_encoding.empty())
       << "The parser did not consume the whole input. Remaining bytes: "
       << ToHumanReadableHexString(binary_encoding);
-  EXPECT_THAT(decoded_instruction_or_status.ValueOrDie(),
-              EqualsProto(expected_decoded_instruction));
 
   // Test the instruction parser using the binary encoding produced by our own
   // instruction encoder. The output of the parser should match exactly the
   // proto we used for encoding the instruction.
   absl::Span<const uint8_t> exegesis_binary_encoding_slice(
       exegesis_binary_encoding);
-  const StatusOr<DecodedInstruction> exegesis_decoded_instruction_or_status =
-      instruction_parser.ParseBinaryEncoding(&exegesis_binary_encoding_slice);
-  ASSERT_OK(exegesis_decoded_instruction_or_status.status());
+  EXPECT_THAT(
+      instruction_parser.ParseBinaryEncoding(&exegesis_binary_encoding_slice),
+      IsOkAndHolds(EqualsProto(expected_decoded_instruction)));
   EXPECT_TRUE(exegesis_binary_encoding_slice.empty())
       << "The parser did not consume the whole input. Remaining bytes: "
       << ToHumanReadableHexString(exegesis_binary_encoding);
-  EXPECT_THAT(exegesis_decoded_instruction_or_status.ValueOrDie(),
-              EqualsProto(expected_decoded_instruction));
 }
 
 void InstructionParserTest::ParseInstructionAndCheckError(
@@ -600,11 +567,9 @@ TEST_F(InstructionParserTest, ParseNopWithRepPrefix) {
 }
 
 TEST_F(InstructionParserTest, ParseNopWithOperandSizeOverride) {
-  ParseInstructionAndCheckResult({0x66, 0x90}, "90+rd", R"(
-      legacy_prefixes {
-        operand_size_override: OPERAND_SIZE_OVERRIDE
-      }
-      opcode: 0x90)");
+  ParseInstructionAndCheckResult({0x66, 0x90}, "90+rd", R"proto(
+    legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+    opcode: 0x90)proto");
 }
 
 TEST_F(InstructionParserTest, RepeatedLockGroupPrefix) {
@@ -613,11 +578,9 @@ TEST_F(InstructionParserTest, RepeatedLockGroupPrefix) {
 }
 
 TEST_F(InstructionParserTest, ParseNopWithCsSegmentOverride) {
-  ParseInstructionAndCheckResult({0x2e, 0x90}, "90+rd", R"(
-      legacy_prefixes {
-        segment_override: CS_OVERRIDE_OR_BRANCH_NOT_TAKEN
-      }
-      opcode: 0x90)");
+  ParseInstructionAndCheckResult({0x2e, 0x90}, "90+rd", R"proto(
+    legacy_prefixes { segment_override: CS_OVERRIDE_OR_BRANCH_NOT_TAKEN }
+    opcode: 0x90)proto");
 }
 
 TEST_F(InstructionParserTest, ParseNopWithSsSegmentOverride) {
@@ -627,12 +590,9 @@ TEST_F(InstructionParserTest, ParseNopWithSsSegmentOverride) {
 }
 
 TEST_F(InstructionParserTest, ParseNopWithLockAndSsSegmentOverride) {
-  constexpr char kExpectedDecodedInstruction[] = R"(
-      legacy_prefixes {
-        segment_override: SS_OVERRIDE
-        lock_or_rep: LOCK_PREFIX
-      }
-      opcode: 0x90)";
+  constexpr char kExpectedDecodedInstruction[] = R"proto(
+    legacy_prefixes { segment_override: SS_OVERRIDE lock_or_rep: LOCK_PREFIX }
+    opcode: 0x90)proto";
   ParseInstructionAndCheckResult({0xf0, 0x36, 0x90}, "90+rd",
                                  kExpectedDecodedInstruction);
   ParseInstructionAndCheckResult({0x36, 0xf0, 0x90}, "90+rd",
@@ -646,13 +606,10 @@ TEST_F(InstructionParserTest, ParseTwoByteOpcode) {
 
 TEST_F(InstructionParserTest, ParseThreeByteOpcode) {
   // CRC32 EAX, AX
-  ParseInstructionAndCheckResult({0x0f, 0x38, 0xf1, 0xc0}, "0F 38 F1 /r", R"(
-      opcode: 0x0f38f1
-      modrm {
-        addressing_mode: DIRECT
-        register_operand: 0
-        rm_operand: 0
-      })");
+  ParseInstructionAndCheckResult({0x0f, 0x38, 0xf1, 0xc0}, "0F 38 F1 /r",
+                                 R"proto(
+    opcode: 0x0f38f1
+    modrm { addressing_mode: DIRECT register_operand: 0 rm_operand: 0 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseRexPrefix) {
@@ -674,31 +631,19 @@ TEST_F(InstructionParserTest, ParseModRmWithBaseOnly) {
   // Note that there are two ways how to encode this instruction this test
   // executes only the first of them. The next is executed by
   // InstructionParserTest.ParseModRmAndSibWithBaseOnly.
-  ParseInstructionAndCheckResult({0x8b, 0x0b}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT
-        rm_operand: 3
-        register_operand: 1
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x0b}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm { addressing_mode: INDIRECT rm_operand: 3 register_operand: 1 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWithBaseOnly) {
   // MOV ECX, DWORD PTR [RBX]
   // This is the alternative (three-byte) way to encode this instruction. A
   // two-byte version would use only the ModR/M byte.
-  ParseInstructionAndCheckResult({0x8b, 0x0c, 0x23}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT
-        rm_operand: 4
-        register_operand: 1
-      }
-      sib {
-        scale: 0
-        index: 4
-        base: 3
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x0c, 0x23}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm { addressing_mode: INDIRECT rm_operand: 4 register_operand: 1 }
+    sib { scale: 0 index: 4 base: 3 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmWith8BitDisplacement) {
@@ -707,31 +652,27 @@ TEST_F(InstructionParserTest, ParseModRmWith8BitDisplacement) {
   // instruction. This test executes only the three-byte version. The four-byte
   // version is executed by
   // InstructionParserTest.ParseModRmAndSibWith8BitDisplacement).
-  ParseInstructionAndCheckResult({0x8b, 0x48, 0x0f}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-        rm_operand: 0
-        register_operand: 1
-        address_displacement: 0xf
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x48, 0x0f}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+      rm_operand: 0
+      register_operand: 1
+      address_displacement: 0xf
+    })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWith8BitDisplacement) {
   // MOV ECX, DWORD PTR [RBX + 0x0F]
-  ParseInstructionAndCheckResult({0x8b, 0x4c, 0x23, 0x0f}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-        rm_operand: 4
-        register_operand: 1
-        address_displacement: 0xf
-      }
-      sib {
-        scale: 0
-        index: 4
-        base: 3
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x4c, 0x23, 0x0f}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+      rm_operand: 4
+      register_operand: 1
+      address_displacement: 0xf
+    }
+    sib { scale: 0 index: 4 base: 3 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmWith32BitDisplacement) {
@@ -739,166 +680,134 @@ TEST_F(InstructionParserTest, ParseModRmWith32BitDisplacement) {
   // Note that since the displacement is a signed integer, 0xFF must be encoded
   // using the 32-bit displacement.
   ParseInstructionAndCheckResult({0x8b, 0x88, 0xff, 0x00, 0x00, 0x00}, "8B /r",
-                                 R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-        rm_operand: 0
-        register_operand: 1
-        address_displacement: 0xff
-      })");
+                                 R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+      rm_operand: 0
+      register_operand: 1
+      address_displacement: 0xff
+    })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmWithNegative8BitDisplacement) {
   // MOV ECX, DWORD PTR [RAX - 45]
-  ParseInstructionAndCheckResult({0x8b, 0x48, 0xd3}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-        rm_operand: 0
-        register_operand: 1
-        address_displacement: -45
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x48, 0xd3}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+      rm_operand: 0
+      register_operand: 1
+      address_displacement: -45
+    })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmWithNegative32BitDisplacement) {
   // MOV ECX, DWORD PTR [RAX - 0x1234567890]
   ParseInstructionAndCheckResult({0x8b, 0x88, 0x88, 0xa9, 0xcb, 0xed}, "8B /r",
-                                 R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-        rm_operand: 0
-        register_operand: 1
-        address_displacement: -0x12345678
-      })");
+                                 R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+      rm_operand: 0
+      register_operand: 1
+      address_displacement: -0x12345678
+    })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSib) {
   // MOV ECX, DWORD PTR [RBX + 2*RDX]
-  ParseInstructionAndCheckResult({0x8b, 0x0c, 0x53}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT
-        rm_operand: 4
-        register_operand: 1
-      }
-      sib {
-        scale: 1
-        base: 3
-        index: 2
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x0c, 0x53}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm { addressing_mode: INDIRECT rm_operand: 4 register_operand: 1 }
+    sib { scale: 1 base: 3 index: 2 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWithIndexAnd8BitDisplacement) {
   // MOV ECX, DWORD PTR [RBX + 2*RDX + 4]
-  ParseInstructionAndCheckResult({0x8b, 0x4c, 0x53, 0x04}, "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-        rm_operand: 4
-        register_operand: 1
-        address_displacement: 4
-      }
-      sib {
-        scale: 1
-        base: 3
-        index: 2
-      })");
+  ParseInstructionAndCheckResult({0x8b, 0x4c, 0x53, 0x04}, "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+      rm_operand: 4
+      register_operand: 1
+      address_displacement: 4
+    }
+    sib { scale: 1 base: 3 index: 2 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWith32BitDisplacement) {
   // MOV ECX, DWORD PTR [RBX + 2*RDX + 1234]
   ParseInstructionAndCheckResult({0x8b, 0x8c, 0x53, 0xd2, 0x04, 0x00, 0x00},
-                                 "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-        rm_operand: 4
-        register_operand: 1
-        address_displacement: 1234
-      }
-      sib {
-        scale: 1
-        base: 3
-        index: 2
-      })");
+                                 "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+      rm_operand: 4
+      register_operand: 1
+      address_displacement: 1234
+    }
+    sib { scale: 1 base: 3 index: 2 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWithNoBaseAnd32BitDisplacement) {
   // MOV ECX, DWORD PTR [2*RDX + 12345]
   ParseInstructionAndCheckResult({0x8b, 0x0c, 0x55, 0x39, 0x30, 0x00, 0x00},
-                                 "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT
-        rm_operand: 4
-        register_operand: 1
-        address_displacement: 12345
-      }
-      sib {
-        scale: 1
-        base: 5
-        index: 2
-      })");
+                                 "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT
+      rm_operand: 4
+      register_operand: 1
+      address_displacement: 12345
+    }
+    sib { scale: 1 base: 5 index: 2 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWith32BitDisplacementOnly) {
   // MOV ECX, DWORD PTR [12345]
   ParseInstructionAndCheckResult({0x8B, 0x0C, 0x25, 0x39, 0x30, 0x00, 0x0},
-                                 "8B /r", R"(
-      opcode: 0x8b
-      modrm {
-        addressing_mode: INDIRECT
-        rm_operand: 4
-        register_operand: 1
-        address_displacement: 12345
-      }
-      sib {
-        scale: 0
-        base: 5
-        index: 4
-      })");
+                                 "8B /r", R"proto(
+    opcode: 0x8b
+    modrm {
+      addressing_mode: INDIRECT
+      rm_operand: 4
+      register_operand: 1
+      address_displacement: 12345
+    }
+    sib { scale: 0 base: 5 index: 4 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseThreeByteVexPrefixWithNonDefaultMapSelect) {
   // ANDN RAX, RBX, RCX
   ParseInstructionAndCheckResult({0xc4, 0xe2, 0xe0, 0xf2, 0xc1},
-                                 "VEX.NDS.LZ. 0F38.W1 F2 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F38
-        inverted_register_operand: 12
-        not_b: true
-        not_r: true
-        not_x: true
-        w: true
-      }
-      opcode: 0x0f38f2
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 1
-        register_operand: 0
-      })");
+                                 "VEX.NDS.LZ. 0F38.W1 F2 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F38
+      inverted_register_operand: 12
+      not_b: true
+      not_r: true
+      not_x: true
+      w: true
+    }
+    opcode: 0x0f38f2
+    modrm { addressing_mode: DIRECT rm_operand: 1 register_operand: 0 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseTwoByteVexPrefix) {
   // VADDPD xmm2, xmm3, xmm4
   ParseInstructionAndCheckResult({0xc5, 0xe1, 0x58, 0xd4},
-                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F
-        inverted_register_operand: 12
-        not_b: true
-        not_r: true
-        not_x: true
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-      }
-      opcode: 0x0f58
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 4
-        register_operand: 2
-      })");
+                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F
+      inverted_register_operand: 12
+      not_b: true
+      not_r: true
+      not_x: true
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+    }
+    opcode: 0x0f58
+    modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 2 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithExtendedRegisters) {
@@ -907,120 +816,96 @@ TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithExtendedRegisters) {
   // encodes the second operand in full. We can have a two-byte prefix here as
   // long as the third operand is xmm0-xmm7.
   ParseInstructionAndCheckResult({0xc5, 0x11, 0x58, 0xe4},
-                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F
-        inverted_register_operand: 2
-        not_b: true
-        not_x: true
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-      }
-      opcode: 0x0f58
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 4
-        register_operand: 4
-      })");
+                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F
+      inverted_register_operand: 2
+      not_b: true
+      not_x: true
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+    }
+    opcode: 0x0f58
+    modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 4 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseVaddpdWithExtendedRegisters) {
   // VADDPD xmm12, xmm13, xmm14
   ParseInstructionAndCheckResult({0xc4, 0x41, 0x11, 0x58, 0xe6},
-                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F
-        inverted_register_operand: 2
-        not_x: true
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-      }
-      opcode: 0x0f58
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 6
-        register_operand: 4
-      })");
+                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F
+      inverted_register_operand: 2
+      not_x: true
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+    }
+    opcode: 0x0f58
+    modrm { addressing_mode: DIRECT rm_operand: 6 register_operand: 4 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseVaddpdWith256Registers) {
   // VADDPD YMM1, YMM5, YMM12
   ParseInstructionAndCheckResult({0xc4, 0xc1, 0x55, 0x58, 0xcc},
-                                 "VEX.NDS.256.66.0F.WIG 58 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F
-        inverted_register_operand: 10
-        not_r: true
-        not_x: true
-        use_256_bit_vector_length: true
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-      }
-      opcode: 0x0f58
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 4
-        register_operand: 1
-      })");
+                                 "VEX.NDS.256.66.0F.WIG 58 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F
+      inverted_register_operand: 10
+      not_r: true
+      not_x: true
+      use_256_bit_vector_length: true
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+    }
+    opcode: 0x0f58
+    modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 1 })proto");
 }
 
 TEST_F(InstructionParserTest, ParsePextWith64BitValues) {
   // PEXT RAX, RBX, RCX
   ParseInstructionAndCheckResult({0xc4, 0xe2, 0xe2, 0xf5, 0xc1},
-                                 "VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F38
-        inverted_register_operand: 12
-        not_b: true
-        not_r: true
-        not_x: true
-        w: true
-        mandatory_prefix: MANDATORY_PREFIX_REPE
-      }
-      opcode: 0x0f38f5
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 1
-        register_operand: 0
-      })");
+                                 "VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F38
+      inverted_register_operand: 12
+      not_b: true
+      not_r: true
+      not_x: true
+      w: true
+      mandatory_prefix: MANDATORY_PREFIX_REPE
+    }
+    opcode: 0x0f38f5
+    modrm { addressing_mode: DIRECT rm_operand: 1 register_operand: 0 })proto");
 }
 
 TEST_F(InstructionParserTest, ParsePextWith32BitValues) {
   // PEXT EAX, EDX, ESI
   ParseInstructionAndCheckResult({0xc4, 0xe2, 0x6a, 0xf5, 0xc6},
-                                 "VEX.NDS.LZ.F3.0F38.W0 F5 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F38
-        inverted_register_operand: 13
-        not_b: true
-        not_r: true
-        not_x: true
-        mandatory_prefix: MANDATORY_PREFIX_REPE
-      }
-      opcode: 0x0f38f5
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 6
-        register_operand: 0
-      })");
+                                 "VEX.NDS.LZ.F3.0F38.W0 F5 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F38
+      inverted_register_operand: 13
+      not_b: true
+      not_r: true
+      not_x: true
+      mandatory_prefix: MANDATORY_PREFIX_REPE
+    }
+    opcode: 0x0f38f5
+    modrm { addressing_mode: DIRECT rm_operand: 6 register_operand: 0 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseShrx) {
   // SHRX RAX, RDX, R14
   ParseInstructionAndCheckResult({0xC4, 0xE2, 0x8B, 0xF7, 0xC2},
-                                 "VEX.NDS.LZ.F2.0F38.W1 F7 /r", R"(
-      vex_prefix {
-        map_select: MAP_SELECT_0F38
-        inverted_register_operand: 1
-        not_b: true
-        not_r: true
-        not_x: true
-        w: true
-        mandatory_prefix: MANDATORY_PREFIX_REPNE
-      }
-      opcode: 0x0f38f7
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 2
-        register_operand: 0
-      })");
+                                 "VEX.NDS.LZ.F2.0F38.W1 F7 /r", R"proto(
+    vex_prefix {
+      map_select: MAP_SELECT_0F38
+      inverted_register_operand: 1
+      not_b: true
+      not_r: true
+      not_x: true
+      w: true
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+    }
+    opcode: 0x0f38f7
+    modrm { addressing_mode: DIRECT rm_operand: 2 register_operand: 0 })proto");
 }
 
 TEST_F(InstructionParserTest, ParseImmediateValues) {
@@ -1028,45 +913,40 @@ TEST_F(InstructionParserTest, ParseImmediateValues) {
   ParseInstructionAndCheckResult({0x14, 0xab}, "14 ib",
                                  "opcode: 0x14 immediate_value: '\\xab'");
   // ADC 0xabcd [to AX]
-  ParseInstructionAndCheckResult({0x66, 0x15, 0xab, 0xcd}, "66 15 iw", R"(
-      legacy_prefixes {
-        operand_size_override: OPERAND_SIZE_OVERRIDE
-      }
-      opcode: 0x15
-      immediate_value: '\xab\xcd')");
+  ParseInstructionAndCheckResult({0x66, 0x15, 0xab, 0xcd}, "66 15 iw", R"proto(
+    legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+    opcode: 0x15
+    immediate_value: '\xab\xcd')proto");
   // ADC 0xabcdef01 [to EAX]
-  ParseInstructionAndCheckResult({0x15, 0xab, 0xcd, 0xef, 0x01}, "15 id", R"(
-      opcode: 0x15
-      immediate_value: '\xab\xcd\xef\x01')");
+  ParseInstructionAndCheckResult({0x15, 0xab, 0xcd, 0xef, 0x01}, "15 id",
+                                 R"proto(
+    opcode: 0x15
+    immediate_value: '\xab\xcd\xef\x01')proto");
 }
 
 TEST_F(InstructionParserTest, ParseImmediateValuesWithVexPrefix) {
   // VBLENDPD xmm1, xmm2, xmm3, 4
   ParseInstructionAndCheckResult({0xc4, 0xe3, 0x69, 0x0d, 0xcb, 0x04},
-                                 "VEX.NDS.128.66.0F3A.WIG 0D /r ib", R"(
-      vex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-        inverted_register_operand: 13
-        not_b: true
-        not_r: true
-        not_x: true
-        map_select: MAP_SELECT_0F3A
-      }
-      opcode: 0x0f3a0d
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 3
-        register_operand: 1
-      }
-      immediate_value: '\x04')");
+                                 "VEX.NDS.128.66.0F3A.WIG 0D /r ib", R"proto(
+    vex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      inverted_register_operand: 13
+      not_b: true
+      not_r: true
+      not_x: true
+      map_select: MAP_SELECT_0F3A
+    }
+    opcode: 0x0f3a0d
+    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 }
+    immediate_value: '\x04')proto");
 }
 
 TEST_F(InstructionParserTest, ParseMultipleImmediateValues) {
   // ENTER 0xabcd, 0xef
-  ParseInstructionAndCheckResult({0xc8, 0xab, 0xcd, 0xef}, "C8 iw ib", R"(
-      opcode: 0xc8
-      immediate_value: '\xab\xcd'
-      immediate_value: '\xef')");
+  ParseInstructionAndCheckResult({0xc8, 0xab, 0xcd, 0xef}, "C8 iw ib", R"proto(
+    opcode: 0xc8
+    immediate_value: '\xab\xcd'
+    immediate_value: '\xef')proto");
 }
 
 TEST_F(InstructionParserTest, MissingOrIncompleteImmediateValue) {
@@ -1081,22 +961,18 @@ TEST_F(InstructionParserTest, MissingOrIncompleteImmediateValue) {
 TEST_F(InstructionParserTest, ParseVexSuffix) {
   // VBLENDVPD xmm1, xmm2, xmm3, xmm4
   ParseInstructionAndCheckResult({0xc4, 0xe3, 0x69, 0x4b, 0xcb, 0x40},
-                                 "VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"(
-      vex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-        inverted_register_operand: 13
-        not_b: true
-        not_r: true
-        not_x: true
-        map_select: MAP_SELECT_0F3A
-        vex_suffix_value: 0x40
-      }
-      opcode: 0x0f3a4b
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 3
-        register_operand: 1
-      })");
+                                 "VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"proto(
+    vex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      inverted_register_operand: 13
+      not_b: true
+      not_r: true
+      not_x: true
+      map_select: MAP_SELECT_0F3A
+      vex_suffix_value: 0x40
+    }
+    opcode: 0x0f3a4b
+    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 })proto");
 }
 
 TEST_F(InstructionParserTest, MissingVexSuffix) {
@@ -1107,44 +983,36 @@ TEST_F(InstructionParserTest, MissingVexSuffix) {
 TEST_F(InstructionParserTest, ParseEvexPrefix) {
   // VMOVSD XMM1 {k4} {z},XMM2,XMM3
   ParseInstructionAndCheckResult({0x62, 0xf1, 0xef, 0x8c, 0x10, 0xcb},
-                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r", R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_REPNE
-        w: true
-        map_select: MAP_SELECT_0F
-        not_r: 3
-        not_b: true
-        not_x: true
-        inverted_register_operand: 29
-        opmask_register: 4
-        z: true
-      }
-      opcode: 0x0f10
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 3
-        register_operand: 1
-      })");
+                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r", R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+      w: true
+      map_select: MAP_SELECT_0F
+      not_r: 3
+      not_b: true
+      not_x: true
+      inverted_register_operand: 29
+      opmask_register: 4
+      z: true
+    }
+    opcode: 0x0f10
+    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 })proto");
   // VMOVSD XMM1 {k1} {z},XMM29,XMM3
   ParseInstructionAndCheckResult({0x62, 0xf1, 0x97, 0x81, 0x10, 0xcb},
-                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r", R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_REPNE
-        w: true
-        map_select: MAP_SELECT_0F
-        not_r: 3
-        not_b: true
-        not_x: true
-        inverted_register_operand: 2
-        opmask_register: 1
-        z: true
-      }
-      opcode: 0x0f10
-      modrm {
-        addressing_mode: DIRECT
-        rm_operand: 3
-        register_operand: 1
-      })");
+                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r", R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+      w: true
+      map_select: MAP_SELECT_0F
+      not_r: 3
+      not_b: true
+      not_x: true
+      inverted_register_operand: 2
+      opmask_register: 1
+      z: true
+    }
+    opcode: 0x0f10
+    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 })proto");
   // The same instruction as above, but one of the reserved bits in the EVEX
   // prefix is set incorrectly.
   ParseInstructionAndCheckError({0x62, 0xf5, 0xef, 0x89, 0x10, 0xcb},
@@ -1155,37 +1023,25 @@ TEST_F(InstructionParserTest, OperandEncodedInOpcode) {
   // movabsq  $0xe998686, %rsi
   ParseInstructionAndCheckResult(
       {0x48, 0xBE, 0x86, 0x86, 0x99, 0x0E, 0x00, 0x00, 0x00, 0x00},
-      "REX.W + B8+ rd io", R"(
-      legacy_prefixes {
-        rex {
-          w: true
-        }
-      }
-      opcode: 190
-      immediate_value: "\206\206\231\016\000\000\000\000"
-      )");
+      "REX.W + B8+ rd io", R"proto(
+        legacy_prefixes { rex { w: true } }
+        opcode: 190
+        immediate_value: "\206\206\231\016\000\000\000\000"
+      )proto");
   // movabsq  $0xe998686, %rax
   ParseInstructionAndCheckResult(
       {0x48, 0xB8, 0x86, 0x86, 0x99, 0x0E, 0x00, 0x00, 0x00, 0x00},
-      "REX.W + B8+ rd io", R"(
-      legacy_prefixes {
-        rex {
-          w: true
-        }
-      }
-      opcode: 184
-      immediate_value: "\206\206\231\016\000\000\000\000"
-      )");
+      "REX.W + B8+ rd io", R"proto(
+        legacy_prefixes { rex { w: true } }
+        opcode: 184
+        immediate_value: "\206\206\231\016\000\000\000\000"
+      )proto");
   // This instruciton has opcode length > 1 byte.
   // bswapl  %r12d
-  ParseInstructionAndCheckResult({0x41, 0x0F, 0xCC}, "0F C8+rd", R"(
-      legacy_prefixes {
-        rex {
-          b: true
-        }
-      }
-      opcode: 4044
-      )");
+  ParseInstructionAndCheckResult({0x41, 0x0F, 0xCC}, "0F C8+rd", R"proto(
+    legacy_prefixes { rex { b: true } }
+    opcode: 4044
+  )proto");
   // Instruction with unknown opcode, even after trimming least significant 3
   // bits.
   ParseInstructionAndCheckError(
@@ -1204,64 +1060,64 @@ TEST_F(InstructionParserTest, MultipleInstructionsWithSimilarOpcode) {
 // parse it always as the POP instruction.
 TEST_F(InstructionParserTest, POPvsXOP) {
   // popq -0x50(%rbp)
-  ParseInstructionAndCheckResult({0x8F, 0x45, 0xB0}, "8F /0", R"(
+  ParseInstructionAndCheckResult({0x8F, 0x45, 0xB0}, "8F /0", R"proto(
     opcode: 143
     modrm {
       addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
       rm_operand: 5
       address_displacement: -80
     }
-    )");
+  )proto");
 }
 
 TEST_F(InstructionParserTest, X87FpuInstructions) {
   // fadd %st(2), %st(0)
   ParseInstructionAndCheckResult({0xD8, 0xC2}, "D8 /0",
-                                 R"(opcode: 0xD8
-                                    modrm {
-                                      addressing_mode: DIRECT
-                                      rm_operand: 2
-                                    })");
+                                 R"proto(opcode: 0xD8
+                                         modrm {
+                                           addressing_mode: DIRECT
+                                           rm_operand: 2
+                                         })proto");
   // fadd %st(0), %st(2)
   ParseInstructionAndCheckResult({0xDC, 0xC2}, "DC /0",
-                                 R"(opcode: 0xDC
-                                    modrm {
-                                      addressing_mode: DIRECT
-                                      rm_operand: 2
-                                    })");
+                                 R"proto(opcode: 0xDC
+                                         modrm {
+                                           addressing_mode: DIRECT
+                                           rm_operand: 2
+                                         })proto");
   // faddq (%rsi)
   ParseInstructionAndCheckResult({0xDC, 0x06}, "DC /0",
-                                 R"(opcode: 0xDC
-                                    modrm {
-                                      addressing_mode: INDIRECT
-                                      rm_operand: 6
-                                    })");
+                                 R"proto(opcode: 0xDC
+                                         modrm {
+                                           addressing_mode: INDIRECT
+                                           rm_operand: 6
+                                         })proto");
   // fcos
   ParseInstructionAndCheckResult({0xD9, 0xFF}, "D9 FF", "opcode: 0xD9FF");
   // fld %st(1)
   ParseInstructionAndCheckResult({0xD9, 0xC1}, "D9 /0",
-                                 R"(opcode: 0xD9
-                                    modrm {
-                                      addressing_mode: DIRECT
-                                      rm_operand: 1
-                                    })");
+                                 R"proto(opcode: 0xD9
+                                         modrm {
+                                           addressing_mode: DIRECT
+                                           rm_operand: 1
+                                         })proto");
   // flds 0x7b(%rax)
   constexpr const char* const expected_decoded_instruction =
-      R"(opcode: 0xD9
-         modrm {
-           addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-           address_displacement: 0x7B
-         })";
+      R"proto(opcode: 0xD9
+              modrm {
+                addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                address_displacement: 0x7B
+              })proto";
   ParseInstructionAndCheckResult({0xD9, 0x40, 0x7B}, "D9 /0",
                                  expected_decoded_instruction);
   // fsubl %(rsi)
   ParseInstructionAndCheckResult({0xD8, 0x26}, "D8 /4",
-                                 R"(opcode: 0xD8
-                                    modrm {
-                                      addressing_mode: INDIRECT
-                                      register_operand: 4
-                                      rm_operand: 6
-                                    })");
+                                 R"proto(opcode: 0xD8
+                                         modrm {
+                                           addressing_mode: INDIRECT
+                                           register_operand: 4
+                                           rm_operand: 6
+                                         })proto");
 }
 
 }  // namespace

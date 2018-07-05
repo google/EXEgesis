@@ -114,7 +114,10 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
     const char* expected_error_message;
   } kTestCases[] =  //
       {{R"proto(instructions {
-                  vendor_syntax { mnemonic: 'FSUB' operands { name: 'ST(i)' } }
+                  vendor_syntax {
+                    mnemonic: 'FSUB'
+                    operands { name: 'ST(i)' }
+                  }
                   raw_encoding_specification: 'D8 E0+i'
                   x86_encoding_specification {
                     opcode: 55520

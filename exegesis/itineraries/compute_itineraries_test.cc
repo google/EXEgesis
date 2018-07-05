@@ -31,7 +31,7 @@ namespace {
 TEST(ComputeItinerariesTest, ADC) {
   // Restrict instructions to the given range.
   const auto instruction_set =
-      ParseProtoFromStringOrDie<InstructionSetProto>(R"(
+      ParseProtoFromStringOrDie<InstructionSetProto>(R"proto(
         instructions {
           llvm_mnemonic: "ADC8i8"
           vendor_syntax {
@@ -57,12 +57,10 @@ TEST(ComputeItinerariesTest, ADC) {
           raw_encoding_specification: "14 ib"
           x86_encoding_specification {
             opcode: 20
-            legacy_prefixes {
-            }
+            legacy_prefixes {}
             immediate_value_bytes: 1
           }
-        }
-      )");
+        })proto");
   // Always compute itineraries for the host CPU.
   const std::string& host_cpu_model_id = HostCpuInfoOrDie().cpu_model_id();
   const std::string& host_cpu_microarchitecture =

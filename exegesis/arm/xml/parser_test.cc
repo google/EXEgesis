@@ -101,7 +101,10 @@ TEST(ParserTest, ParseXmlInstruction) {
             lsb: 1
             pattern { bits: CONSTANT_ZERO bits: CONSTANT_ONE }
           }
-          bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+          bit_ranges {
+            name: "lsb"
+            pattern { bits: CONSTANT_ZERO }
+          }
         }
         asm_template {
           pieces { text: "I1 " }
@@ -161,7 +164,10 @@ TEST(ParserTest, ParseXmlInstruction) {
             lsb: 1
             pattern { bits: CONSTANT_ZERO bits: VARIABLE }
           }
-          bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+          bit_ranges {
+            name: "lsb"
+            pattern { bits: CONSTANT_ZERO }
+          }
         }
         asm_template {
           pieces { text: "I1 " }
@@ -220,7 +226,10 @@ TEST(ParserTest, ParseXmlInstructionWithConstraints) {
               bits: VARIABLE
             }
           }
-          bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+          bit_ranges {
+            name: "lsb"
+            pattern { bits: CONSTANT_ZERO }
+          }
         }
         asm_template { pieces { text: "I2 " } }
       }
@@ -283,11 +292,7 @@ TEST(ParserTest, ParseXmlDatabase) {
               name: "range"
               msb: 30
               lsb: 28
-              pattern {
-                bits: VARIABLE
-                bits: CONSTANT_ONE
-                bits: CONSTANT_ZERO
-              }
+              pattern { bits: VARIABLE bits: CONSTANT_ONE bits: CONSTANT_ZERO }
             }
             bit_ranges {
               name: "partial-override"
@@ -295,7 +300,10 @@ TEST(ParserTest, ParseXmlDatabase) {
               lsb: 1
               pattern { bits: CONSTANT_ZERO bits: CONSTANT_ONE }
             }
-            bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+            bit_ranges {
+              name: "lsb"
+              pattern { bits: CONSTANT_ZERO }
+            }
           }
           asm_template {
             pieces { text: "I1 " }
@@ -347,11 +355,7 @@ TEST(ParserTest, ParseXmlDatabase) {
               name: "range"
               msb: 30
               lsb: 28
-              pattern {
-                bits: VARIABLE
-                bits: CONSTANT_ONE
-                bits: CONSTANT_ZERO
-              }
+              pattern { bits: VARIABLE bits: CONSTANT_ONE bits: CONSTANT_ZERO }
             }
             bit_ranges {
               name: "partial-override"
@@ -359,7 +363,10 @@ TEST(ParserTest, ParseXmlDatabase) {
               lsb: 1
               pattern { bits: CONSTANT_ZERO bits: VARIABLE }
             }
-            bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+            bit_ranges {
+              name: "lsb"
+              pattern { bits: CONSTANT_ZERO }
+            }
           }
           asm_template {
             pieces { text: "I1 " }
@@ -414,7 +421,10 @@ TEST(ParserTest, ParseXmlDatabase) {
                 bits: VARIABLE
               }
             }
-            bit_ranges { name: "lsb" pattern { bits: CONSTANT_ZERO } }
+            bit_ranges {
+              name: "lsb"
+              pattern { bits: CONSTANT_ZERO }
+            }
           }
           asm_template { pieces { text: "I2 " } }
         }

@@ -72,62 +72,51 @@ TEST(EncodingSpecificationParserTest, NoPrefixAndNoSuffix) {
 }
 
 TEST(EncodingSpecificationParserTest, NPPrefix) {
-  CheckParser("NP 0F 58 /r", R"(
-                  legacy_prefixes {
-                  }
-                  modrm_usage: FULL_MODRM
-                  opcode: 0x0f58)");
-  CheckParser("NP REX.W + 0F AE /1", R"(
-                  opcode: 4014
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 1
-                  legacy_prefixes {
-                    has_mandatory_rex_w_prefix: true
-                  })");
+  CheckParser("NP 0F 58 /r",
+              R"proto(
+    legacy_prefixes {} modrm_usage: FULL_MODRM opcode: 0x0f58)proto");
+  CheckParser("NP REX.W + 0F AE /1", R"proto(
+    opcode: 4014
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 1
+    legacy_prefixes { has_mandatory_rex_w_prefix: true })proto");
 }
 
 TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
-  CheckParser("REX + 80 /2 ib", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x80
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 2
-                  immediate_value_bytes: 1)");
-  CheckParser("REX.W + 8B /r", R"(
-                  legacy_prefixes {
-                    has_mandatory_rex_w_prefix: true
-                  }
-                  opcode: 0x8b
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("REX + 80 /2 ib", R"proto(
+    legacy_prefixes {}
+    opcode: 0x80
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 2
+    immediate_value_bytes: 1)proto");
+  CheckParser("REX.W + 8B /r", R"proto(
+    legacy_prefixes { has_mandatory_rex_w_prefix: true }
+    opcode: 0x8b
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, RexRPrefix) {
-  CheckParser("REX.R + 0F 20 /0", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x0f20
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 0)");
+  CheckParser("REX.R + 0F 20 /0", R"proto(
+    legacy_prefixes {}
+    opcode: 0x0f20
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 0)proto");
 }
 
 TEST(EncodingSpecificationParserTest, MultiplePrefixes) {
-  CheckParser("F2 REX 0F 38 F0 /r", R"(
-                  legacy_prefixes {
-                    has_mandatory_repne_prefix: true
-                  }
-                  opcode: 0x0f38f0
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("F2 REX 0F 38 F0 /r", R"proto(
+    legacy_prefixes { has_mandatory_repne_prefix: true }
+    opcode: 0x0f38f0
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, RegisterInOpcode) {
   for (const char* const specification :
        {"40+rd", "40 +rd", "40+ rd", "40 + rd", "40 +rw", "40 +rb"}) {
-    CheckParser(specification, R"(
-                    legacy_prefixes {
-                    }
-                    opcode: 0x40
-                    operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE)");
+    CheckParser(specification, R"proto(
+      legacy_prefixes {}
+      opcode: 0x40
+      operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE)proto");
   }
   for (const char* const specification :
        {"0F C8+rd", "0F C8 +rd", "0F C8+ rd", "0F C8 + rd"}) {
@@ -140,82 +129,66 @@ TEST(EncodingSpecificationParserTest, RegisterInOpcode) {
 TEST(EncodingSpecificationParserTest, FpStackRegisterInOpcode) {
   for (const char* const specification :
        {"DD D0+i", "DD D0 +i", "DD D0+ i", "DD D0 + i"}) {
-    CheckParser(specification, R"(
-                    legacy_prefixes {
-                    }
-                    opcode: 0xddd0
-                    operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE)");
+    CheckParser(specification, R"proto(
+      legacy_prefixes {}
+      opcode: 0xddd0
+      operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE)proto");
   }
 }
 
 TEST(EncodingSpecificationParserTest, ModRm) {
-  CheckParser("FF /2", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0xff
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 2)");
-  CheckParser("0F AE /1", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x0FAE
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 1)");
-  CheckParser("10 /r", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x10
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("FF /2", R"proto(
+    legacy_prefixes {}
+    opcode: 0xff
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 2)proto");
+  CheckParser("0F AE /1", R"proto(
+    legacy_prefixes {}
+    opcode: 0x0FAE
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 1)proto");
+  CheckParser("10 /r",
+              R"proto(
+    legacy_prefixes {} opcode: 0x10 modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, ModRmMemorySuffix) {
-  CheckParser("REX.W + 0F C7 /1 m128", R"(
-                  legacy_prefixes {
-                    has_mandatory_rex_w_prefix: true
-                  }
-                  opcode: 0x0fc7
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 1)");
+  CheckParser("REX.W + 0F C7 /1 m128", R"proto(
+    legacy_prefixes { has_mandatory_rex_w_prefix: true }
+    opcode: 0x0fc7
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 1)proto");
 }
 
 TEST(EncodingSpecificationParserTest, ImmediateValue) {
-  CheckParser("D5 ib", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0xd5
-                  immediate_value_bytes: 1)");
-  CheckParser("15 iw", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x15
-                  immediate_value_bytes: 2)");
-  CheckParser("15 id", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x15
-                  immediate_value_bytes: 4)");
-  CheckParser("C8 iw ib", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0xc8
-                  immediate_value_bytes: 2
-                  immediate_value_bytes: 1)");
+  CheckParser("D5 ib",
+              R"proto(
+    legacy_prefixes {} opcode: 0xd5 immediate_value_bytes: 1)proto");
+  CheckParser("15 iw",
+              R"proto(
+    legacy_prefixes {} opcode: 0x15 immediate_value_bytes: 2)proto");
+  CheckParser("15 id",
+              R"proto(
+    legacy_prefixes {} opcode: 0x15 immediate_value_bytes: 4)proto");
+  CheckParser("C8 iw ib", R"proto(
+    legacy_prefixes {}
+    opcode: 0xc8
+    immediate_value_bytes: 2
+    immediate_value_bytes: 1)proto");
 }
 
 TEST(EncodingSpecificationParserTest, ModRmAndImmediateValue) {
-  CheckParser("81 /1 iw", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x81
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 1
-                  immediate_value_bytes: 2)");
-  CheckParser("0F C2 /r ib", R"(
-                  legacy_prefixes {
-                  }
-                  opcode: 0x0fc2
-                  modrm_usage: FULL_MODRM
-                  immediate_value_bytes: 1)");
+  CheckParser("81 /1 iw", R"proto(
+    legacy_prefixes {}
+    opcode: 0x81
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 1
+    immediate_value_bytes: 2)proto");
+  CheckParser("0F C2 /r ib", R"proto(
+    legacy_prefixes {}
+    opcode: 0x0fc2
+    modrm_usage: FULL_MODRM
+    immediate_value_bytes: 1)proto");
 }
 
 TEST(EncodingSpecificationParserTest, CodeOffset) {
@@ -227,78 +200,72 @@ TEST(EncodingSpecificationParserTest, CodeOffset) {
 }
 
 TEST(EncodingSpecificationParserTest, MandatoryOperandSizeOverridePrefix) {
-  CheckParser("66 0F 58 /r", R"(
-                  legacy_prefixes {
-                    has_mandatory_operand_size_override_prefix: true
-                  }
-                  opcode: 0x0f58
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("66 0F 58 /r", R"proto(
+    legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+    opcode: 0x0f58
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, MandatoryAddressSizeOverridePrefix) {
-  CheckParser("67 A0 id", R"(
-                  legacy_prefixes {
-                    has_mandatory_address_size_override_prefix: true
-                  }
-                  opcode: 0xa0
-                  immediate_value_bytes: 4)");
+  CheckParser("67 A0 id", R"proto(
+    legacy_prefixes { has_mandatory_address_size_override_prefix: true }
+    opcode: 0xa0
+    immediate_value_bytes: 4)proto");
 }
 
 TEST(EncodingSpecificationParserTest, MandatoryRepnePrefix) {
-  CheckParser("F2 0F 58 /r", R"(
-                  legacy_prefixes {
-                    has_mandatory_repne_prefix: true
-                  }
-                  opcode: 0x0f58
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("F2 0F 58 /r", R"proto(
+    legacy_prefixes { has_mandatory_repne_prefix: true }
+    opcode: 0x0f58
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, VexNoSuffix) {
-  CheckParser("VEX.128.0F.WIG 77", R"(
-                  vex_prefix {
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    prefix_type: VEX_PREFIX
-                    map_select: MAP_SELECT_0F
-                  }
-                  opcode: 0x0f77)");
-  CheckParser("VEX.256.0F.WIG 77", R"(
-                  vex_prefix {
-                    vector_size: VEX_VECTOR_SIZE_256_BIT
-                    prefix_type: VEX_PREFIX
-                    map_select: MAP_SELECT_0F
-                  }
-                  opcode: 0x0f77)");
+  CheckParser("VEX.128.0F.WIG 77", R"proto(
+    vex_prefix {
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      prefix_type: VEX_PREFIX
+      map_select: MAP_SELECT_0F
+    }
+    opcode: 0x0f77)proto");
+  CheckParser("VEX.256.0F.WIG 77", R"proto(
+    vex_prefix {
+      vector_size: VEX_VECTOR_SIZE_256_BIT
+      prefix_type: VEX_PREFIX
+      map_select: MAP_SELECT_0F
+    }
+    opcode: 0x0f77)proto");
 }
 
 TEST(EncodingSpecificationParserTest, VexLig128) {
-  CheckParser("VEX.DDS.LIG.128.66.0F38.W1 99 /r", R"(
-                  vex_prefix {
-                    prefix_type: VEX_PREFIX
-                    vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F38
-                    vex_w_usage: VEX_W_IS_ONE
-                  }
-                  opcode: 0x0f3899
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("VEX.DDS.LIG.128.66.0F38.W1 99 /r", R"proto(
+    vex_prefix {
+      prefix_type: VEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F38
+      vex_w_usage: VEX_W_IS_ONE
+    }
+    opcode: 0x0f3899
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, VexLSynonyms) {
-  CheckParser("VEX.L0.0F.WIG 77", R"(
-                  vex_prefix {
-                    vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-                    prefix_type: VEX_PREFIX
-                    map_select: MAP_SELECT_0F
-                  }
-                  opcode: 0x0f77)");
-  CheckParser("VEX.L1.0F.WIG 77", R"(
-                  vex_prefix {
-                    vector_size: VEX_VECTOR_SIZE_BIT_IS_ONE
-                    prefix_type: VEX_PREFIX
-                    map_select: MAP_SELECT_0F
-                  }
-                  opcode: 0x0f77)");
+  CheckParser("VEX.L0.0F.WIG 77", R"proto(
+    vex_prefix {
+      vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+      prefix_type: VEX_PREFIX
+      map_select: MAP_SELECT_0F
+    }
+    opcode: 0x0f77)proto");
+  CheckParser("VEX.L1.0F.WIG 77", R"proto(
+    vex_prefix {
+      vector_size: VEX_VECTOR_SIZE_BIT_IS_ONE
+      prefix_type: VEX_PREFIX
+      map_select: MAP_SELECT_0F
+    }
+    opcode: 0x0f77)proto");
 }
 
 TEST(EncodingSpecificationParserTest, Vex512) {
@@ -308,126 +275,126 @@ TEST(EncodingSpecificationParserTest, Vex512) {
 }
 
 TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
-  CheckParser("VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"(
-                  vex_prefix {
-                    prefix_type: VEX_PREFIX
-                    vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-                    vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-                    mandatory_prefix: MANDATORY_PREFIX_REPE
-                    map_select: MAP_SELECT_0F38
-                    vex_w_usage: VEX_W_IS_ONE
-                  }
-                  opcode: 0x0f38f5
-                  modrm_usage: FULL_MODRM)");
-  CheckParser("VEX.DDS.128.66.0F38.W1 98 /r", R"(
-                  vex_prefix {
-                    prefix_type: VEX_PREFIX
-                    vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F38
-                    vex_w_usage: VEX_W_IS_ONE
-                  }
-                  opcode: 0x0f3898
-                  modrm_usage: FULL_MODRM)");
-  CheckParser("VEX.NDD.128.66.0F.WIG 72 /6 ib", R"(
-                  vex_prefix {
-                    prefix_type: VEX_PREFIX
-                    vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F
-                    vex_w_usage: VEX_W_IS_IGNORED
-                  }
-                  opcode: 0x0f72
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 6
-                  immediate_value_bytes: 1)");
+  CheckParser("VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"proto(
+    vex_prefix {
+      prefix_type: VEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+      vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+      mandatory_prefix: MANDATORY_PREFIX_REPE
+      map_select: MAP_SELECT_0F38
+      vex_w_usage: VEX_W_IS_ONE
+    }
+    opcode: 0x0f38f5
+    modrm_usage: FULL_MODRM)proto");
+  CheckParser("VEX.DDS.128.66.0F38.W1 98 /r", R"proto(
+    vex_prefix {
+      prefix_type: VEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F38
+      vex_w_usage: VEX_W_IS_ONE
+    }
+    opcode: 0x0f3898
+    modrm_usage: FULL_MODRM)proto");
+  CheckParser("VEX.NDD.128.66.0F.WIG 72 /6 ib", R"proto(
+    vex_prefix {
+      prefix_type: VEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F
+      vex_w_usage: VEX_W_IS_IGNORED
+    }
+    opcode: 0x0f72
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 6
+    immediate_value_bytes: 1)proto");
 }
 
 TEST(EncodingSpecificationParserTest, VexOperandSuffixByte) {
-  CheckParser("VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"(
-                  vex_prefix {
-                    prefix_type: VEX_PREFIX
-                    vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F3A
-                    vex_w_usage: VEX_W_IS_ZERO
-                    has_vex_operand_suffix: true
-                  }
-                  opcode: 0x0f3a4b
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"proto(
+    vex_prefix {
+      prefix_type: VEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F3A
+      vex_w_usage: VEX_W_IS_ZERO
+      has_vex_operand_suffix: true
+    }
+    opcode: 0x0f3a4b
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
-  CheckParser("EVEX.128.66.0F38.W0 92 /vsib", R"(
-                  vex_prefix {
-                    prefix_type: EVEX_PREFIX
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F38
-                    vex_w_usage: VEX_W_IS_ZERO
-                    vsib_usage: VSIB_USED
-                  }
-                  opcode: 0x0f3892
-                  modrm_usage: FULL_MODRM)");
-  CheckParser("EVEX.128.66.0F38.W0 92 /r /vsib", R"(
-                  vex_prefix {
-                    prefix_type: EVEX_PREFIX
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F38
-                    vex_w_usage: VEX_W_IS_ZERO
-                    vsib_usage: VSIB_USED
-                  }
-                  opcode: 0x0f3892
-      modrm_usage: FULL_MODRM)");
-  CheckParser("EVEX.128.66.0F38.W0 92 /5 /vsib", R"(
-                  vex_prefix {
-                    prefix_type: EVEX_PREFIX
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F38
-                    vex_w_usage: VEX_W_IS_ZERO
-                    vsib_usage: VSIB_USED
-                  }
-                  opcode: 0x0f3892
-                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
-                  modrm_opcode_extension: 5)");
+  CheckParser("EVEX.128.66.0F38.W0 92 /vsib", R"proto(
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F38
+      vex_w_usage: VEX_W_IS_ZERO
+      vsib_usage: VSIB_USED
+    }
+    opcode: 0x0f3892
+    modrm_usage: FULL_MODRM)proto");
+  CheckParser("EVEX.128.66.0F38.W0 92 /r /vsib", R"proto(
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F38
+      vex_w_usage: VEX_W_IS_ZERO
+      vsib_usage: VSIB_USED
+    }
+    opcode: 0x0f3892
+    modrm_usage: FULL_MODRM)proto");
+  CheckParser("EVEX.128.66.0F38.W0 92 /5 /vsib", R"proto(
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F38
+      vex_w_usage: VEX_W_IS_ZERO
+      vsib_usage: VSIB_USED
+    }
+    opcode: 0x0f3892
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 5)proto");
 }
 
 TEST(EncodingSpecificationParserTest, EvexPrefixWithModRm) {
-  CheckParser("EVEX.LIG.66.0F.W1 2F /r", R"(
-                  vex_prefix {
-                    prefix_type: EVEX_PREFIX
-                    mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                    map_select: MAP_SELECT_0F
-                    vex_w_usage: VEX_W_IS_ONE
-                  }
-                  opcode: 0x0f2f
-                  modrm_usage: FULL_MODRM)");
-  CheckParser("EVEX.128.0F.W0 29 /r", R"(
-                  vex_prefix {
-                    prefix_type: EVEX_PREFIX
-                    map_select: MAP_SELECT_0F
-                    vector_size: VEX_VECTOR_SIZE_128_BIT
-                    vex_w_usage: VEX_W_IS_ZERO
-                  }
-                  opcode: 0x0f29
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("EVEX.LIG.66.0F.W1 2F /r", R"proto(
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F
+      vex_w_usage: VEX_W_IS_ONE
+    }
+    opcode: 0x0f2f
+    modrm_usage: FULL_MODRM)proto");
+  CheckParser("EVEX.128.0F.W0 29 /r", R"proto(
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      map_select: MAP_SELECT_0F
+      vector_size: VEX_VECTOR_SIZE_128_BIT
+      vex_w_usage: VEX_W_IS_ZERO
+    }
+    opcode: 0x0f29
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, EvexLig512) {
-  CheckParser("EVEX.512.0F.W0 29 /r", R"(
-                  vex_prefix {
-                    prefix_type: EVEX_PREFIX
-                    map_select: MAP_SELECT_0F
-                    vector_size: VEX_VECTOR_SIZE_512_BIT
-                    vex_w_usage: VEX_W_IS_ZERO
-                  }
-                  opcode: 0x0f29
-                  modrm_usage: FULL_MODRM)");
+  CheckParser("EVEX.512.0F.W0 29 /r", R"proto(
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      map_select: MAP_SELECT_0F
+      vector_size: VEX_VECTOR_SIZE_512_BIT
+      vex_w_usage: VEX_W_IS_ZERO
+    }
+    opcode: 0x0f29
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(GetAvailableEncodingsTest, GetEncodings) {

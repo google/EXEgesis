@@ -34,9 +34,7 @@ using ::exegesis::util::error::NOT_FOUND;
 using ::testing::HasSubstr;
 using ::testing::Pointee;
 
-constexpr const char kTestArchitectureProto[] = R"(
-  name: "some_arch"
-)";
+constexpr const char kTestArchitectureProto[] = "name: \"some_arch\"";
 
 TEST(ArchitectureProtoProviderTest, TestPbTxtSource) {
   const std::string filename =

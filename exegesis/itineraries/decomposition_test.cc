@@ -38,30 +38,45 @@ TEST(DecompositionTest, Negate) {
   DecompositionSolver solver(HaswellMicroArchitecture());
   // TODO(bdb): Only consider user-time measurements with the :u modifier.
   const std::string kObservationProto =
-      R"(observations {
-           event_name: 'cycles'                     measurement: 2.3336 }
-         observations {
-           event_name: 'num_times'                    measurement: 1 }
-         observations {
-           event_name: 'uops_executed_port:port_0'  measurement: 0.4328 }
-         observations {
-           event_name: 'uops_executed_port:port_1'  measurement: 0.4720 }
-         observations {
-           event_name: 'uops_executed_port:port_2'  measurement: 0.8410 }
-         observations {
-           event_name: 'uops_executed_port:port_3'  measurement: 0.9518 }
-         observations {
-           event_name: 'uops_executed_port:port_4'  measurement: 1.0042 }
-         observations {
-           event_name: 'uops_executed_port:port_5'  measurement: 0.6130 }
-         observations {
-           event_name: 'uops_executed_port:port_6'  measurement: 0.6512 }
-         observations {
-           event_name: 'uops_executed_port:port_7'  measurement: 0.2257 }
-         observations {
-           event_name: 'uops_issued:any'            measurement: 5.1906 }
-         observations {
-           event_name: 'uops_retired:all'           measurement: 5.1162 })";
+      R"proto(observations { event_name: 'cycles' measurement: 2.3336 }
+              observations { event_name: 'num_times' measurement: 1 }
+              observations {
+                event_name: 'uops_executed_port:port_0'
+                measurement: 0.4328
+              }
+              observations {
+                event_name: 'uops_executed_port:port_1'
+                measurement: 0.4720
+              }
+              observations {
+                event_name: 'uops_executed_port:port_2'
+                measurement: 0.8410
+              }
+              observations {
+                event_name: 'uops_executed_port:port_3'
+                measurement: 0.9518
+              }
+              observations {
+                event_name: 'uops_executed_port:port_4'
+                measurement: 1.0042
+              }
+              observations {
+                event_name: 'uops_executed_port:port_5'
+                measurement: 0.6130
+              }
+              observations {
+                event_name: 'uops_executed_port:port_6'
+                measurement: 0.6512
+              }
+              observations {
+                event_name: 'uops_executed_port:port_7'
+                measurement: 0.2257
+              }
+              observations { event_name: 'uops_issued:any' measurement: 5.1906 }
+              observations {
+                event_name: 'uops_retired:all'
+                measurement: 5.1162
+              })proto";
   ObservationVector observation;
   google::protobuf::TextFormat::ParseFromString(kObservationProto,
                                                 &observation);
@@ -81,28 +96,28 @@ TEST(DecompositionTest, Negate) {
 
   ItineraryProto proto;
   *proto.mutable_micro_ops() = solver.GetMicroOps();
-  constexpr char kExpected[] = R"(
-      micro_ops {
-        port_mask { port_numbers: [2, 3] }
-        latency: 1
-      }
-      micro_ops {
-        port_mask { port_numbers: [0, 1, 5, 6] }
-        latency: 1
-      }
-      micro_ops {
-        port_mask { port_numbers: [0, 1, 5, 6] }
-        latency: 1
-      }
-      micro_ops {
-        port_mask { port_numbers: [2, 3, 7] }
-        latency: 1
-      }
-      micro_ops {
-        port_mask { port_numbers: 4 }
-        latency: 1
-      }
-    )";
+  constexpr char kExpected[] = R"proto(
+    micro_ops {
+      port_mask { port_numbers: [ 2, 3 ] }
+      latency: 1
+    }
+    micro_ops {
+      port_mask { port_numbers: [ 0, 1, 5, 6 ] }
+      latency: 1
+    }
+    micro_ops {
+      port_mask { port_numbers: [ 0, 1, 5, 6 ] }
+      latency: 1
+    }
+    micro_ops {
+      port_mask { port_numbers: [ 2, 3, 7 ] }
+      latency: 1
+    }
+    micro_ops {
+      port_mask { port_numbers: 4 }
+      latency: 1
+    }
+  )proto";
   EXPECT_THAT(proto, EqualsProto(kExpected));
 }
 

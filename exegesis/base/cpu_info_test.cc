@@ -25,12 +25,11 @@ namespace exegesis {
 namespace {
 
 TEST(CpuInfoTest, SupportsFeature) {
-  const CpuInfo cpu_info(ParseProtoFromStringOrDie<CpuInfoProto>(R"(
-      model_id: "doesnotexist"
-      feature_names: "ADX"
-      feature_names: "SSE"
-      feature_names: "LZCNT"
-  )"));
+  const CpuInfo cpu_info(ParseProtoFromStringOrDie<CpuInfoProto>(R"proto(
+    model_id: "doesnotexist"
+    feature_names: "ADX"
+    feature_names: "SSE"
+    feature_names: "LZCNT")proto"));
   EXPECT_TRUE(cpu_info.SupportsFeature("ADX"));
   EXPECT_TRUE(cpu_info.SupportsFeature("SSE"));
   EXPECT_TRUE(cpu_info.SupportsFeature("LZCNT"));

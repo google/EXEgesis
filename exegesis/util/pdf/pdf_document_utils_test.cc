@@ -32,24 +32,16 @@ using ::exegesis::testing::EqualsProto;
 using ::testing::Pointee;
 
 PdfPage GetFakeDocument() {
-  return ParseProtoFromStringOrDie<PdfPage>(R"(
-      rows {
-        blocks {
-          text: "0, 0"
-        }
-        blocks {
-          text: "0, 1"
-        }
-      }
-      rows {
-        blocks {
-          text: "1, 0"
-        }
-        blocks {
-          text: "1, 1"
-        }
-      }
-    )");
+  return ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    rows {
+      blocks { text: "0, 0" }
+      blocks { text: "0, 1" }
+    }
+    rows {
+      blocks { text: "1, 0" }
+      blocks { text: "1, 1" }
+    }
+  )proto");
 }
 
 TEST(PdfDocumentExtractorTest, GetCellOrNull) {
@@ -117,31 +109,22 @@ TEST(PdfDocumentExtractorTest, MutateCellOrNull) {
 }
 
 TEST(PdfDocumentExtractorTest, PatchDocument) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
-      number: 5
-      rows {
-        blocks {
-          text: "0, 0"
-        }
-        blocks {
-          text: "0, 1"
-        }
-      }
-      rows {
-        blocks {
-          text: "1, 0"
-        }
-        blocks {
-          text: "1, 1"
-        }
-      }
-    )");
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    number: 5
+    rows {
+      blocks { text: "0, 0" }
+      blocks { text: "0, 1" }
+    }
+    rows {
+      blocks { text: "1, 0" }
+      blocks { text: "1, 1" }
+    }
+  )proto");
 
-  const PdfPagePatch patch = ParseProtoFromStringOrDie<PdfPagePatch>(R"(
-      row: 0 col: 1
-      expected: "0, 1"
-      replacement: "will be replaced"
-    )");
+  const PdfPagePatch patch = ParseProtoFromStringOrDie<PdfPagePatch>(
+      R"proto(
+        row: 0 col: 1 expected: "0, 1" replacement: "will be replaced"
+      )proto");
   ApplyPatchOrDie(patch, &page);
   EXPECT_EQ(GetCellTextOrEmpty(page, 0, 0), "0, 0");
   EXPECT_EQ(GetCellTextOrEmpty(page, 0, 1), "will be replaced");
@@ -150,186 +133,116 @@ TEST(PdfDocumentExtractorTest, PatchDocument) {
 }
 
 TEST(PdfDocumentExtractorTest, PatchDocumentDeleteBlock) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
-      number: 5
-      rows {
-        blocks {
-          row: 0
-          col: 0
-          text: "0, 0"
-        }
-        blocks {
-          row: 0
-          col: 1
-          text: "0, 1"
-        }
-      }
-    )");
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    number: 5
+    rows {
+      blocks { row: 0 col: 0 text: "0, 0" }
+      blocks { row: 0 col: 1 text: "0, 1" }
+    }
+  )proto");
 
-  const PdfPagePatch patch = ParseProtoFromStringOrDie<PdfPagePatch>(R"(
-      row: 0
-      col: 0
-      expected: "0, 0"
-      remove_cell: true
-    )");
+  const PdfPagePatch patch = ParseProtoFromStringOrDie<PdfPagePatch>(
+      R"proto(
+        row: 0 col: 0 expected: "0, 0" remove_cell: true
+      )proto");
   ApplyPatchOrDie(patch, &page);
-  constexpr char kExpectedSuccessful[] = R"(
-      number: 5
-      rows {
-        blocks {
-          row: 0
-          col: 0
-          text: "0, 1"
-        }
-      }
-    )";
+  constexpr char kExpectedSuccessful[] = R"proto(
+    number: 5
+    rows { blocks { row: 0 col: 0 text: "0, 1" } }
+  )proto";
   EXPECT_THAT(page, EqualsProto(kExpectedSuccessful));
 }
 
 TEST(PdfDocumentExtractorTest, GetPageBodyRows) {
-  const PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
-      width: 100
-      height: 30
-      rows { bounding_box { top: 1.0 bottom: 9.0 } }   # in header
-      rows { bounding_box { top: 1.0 bottom: 11.0 } }  # across header boundary
-      rows { bounding_box { top: 11.0 bottom: 19.0 } } # in body
-      rows { bounding_box { top: 11.0 bottom: 21.0 } } # across footer boundary
-      rows { bounding_box { top: 21.0 bottom: 29.0 } } # in footer
-      rows { bounding_box { top: 1.0 bottom: 29.0 } }  # across header & footer
-    )");
+  const PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    width: 100
+    height: 30
+    rows { bounding_box { top: 1.0 bottom: 9.0 } }    # in header
+    rows { bounding_box { top: 1.0 bottom: 11.0 } }   # across header boundary
+    rows { bounding_box { top: 11.0 bottom: 19.0 } }  # in body
+    rows { bounding_box { top: 11.0 bottom: 21.0 } }  # across footer boundary
+    rows { bounding_box { top: 21.0 bottom: 29.0 } }  # in footer
+    rows { bounding_box { top: 1.0 bottom: 29.0 } }   # across header & footer
+  )proto");
   const auto result = GetPageBodyRows(page, 10.0f);
   EXPECT_EQ(result.size(), 1);
 }
 
 TEST(PdfDocumentExtractorTest, TransferPatches) {
-  const auto from_pdf = ParseProtoFromStringOrDie<PdfDocument>(R"(
-      document_id { title: "doc 1" }
-      pages {
-        number: 5
-        width: 100
-        height: 30
-        rows {
-          blocks {
-            row: 0
-            col: 0
-            text: "incorrect"
-          }
-          bounding_box { top: 11.0 bottom: 12.0 } # in body
-        }
-        rows {
-          blocks {
-            row: 1
-            col: 0
-            text: "to replace"
-          }
-          bounding_box { top: 12.0 bottom: 13.0 } # in body
-        }
-        rows {
-          blocks {
-            row: 2
-            col: 0
-            text: "to remove"
-          }
-          bounding_box { top: 13.0 bottom: 14.0 } # in body
-        }
+  const auto from_pdf = ParseProtoFromStringOrDie<PdfDocument>(R"proto(
+    document_id { title: "doc 1" }
+    pages {
+      number: 5
+      width: 100
+      height: 30
+      rows {
+        blocks { row: 0 col: 0 text: "incorrect" }
+        bounding_box { top: 11.0 bottom: 12.0 }  # in body
       }
-    )");
+      rows {
+        blocks { row: 1 col: 0 text: "to replace" }
+        bounding_box { top: 12.0 bottom: 13.0 }  # in body
+      }
+      rows {
+        blocks { row: 2 col: 0 text: "to remove" }
+        bounding_box { top: 13.0 bottom: 14.0 }  # in body
+      }
+    }
+  )proto");
 
-  const auto patches = ParseProtoFromStringOrDie<PdfDocumentChanges>(R"(
-      document_id { title: "doc 1" }
-      pages {
-        page_number: 5
-        patches {
-          row: 0
-          col: 0
-          expected: "incorrect"
-          replacement: "correct"
-        }
-        patches {
-          row: 1
-          col: 0
-          expected: "to replace"
-          replacement: "replaced"
-        }
-        patches {
-          row: 2
-          col: 0
-          expected: "to remove"
-          remove_cell: true
-        }
-      }
-    )");
+  const auto patches = ParseProtoFromStringOrDie<PdfDocumentChanges>(R"proto(
+    document_id { title: "doc 1" }
+    pages {
+      page_number: 5
+      patches { row: 0 col: 0 expected: "incorrect" replacement: "correct" }
+      patches { row: 1 col: 0 expected: "to replace" replacement: "replaced" }
+      patches { row: 2 col: 0 expected: "to remove" remove_cell: true }
+    }
+  )proto");
 
-  const auto to_pdf = ParseProtoFromStringOrDie<PdfDocument>(R"(
-      document_id { title: "doc 2" }
-      pages {
-        number: 6
-        width: 100
-        height: 30
-        rows {
-          blocks {
-            row: 0
-            col: 0
-            text: "incorrect"
-          }
-          bounding_box { top: 11.0 bottom: 12.0 } # in body
-        }
-        rows {
-          blocks {
-            row: 1
-            col: 0
-            text: "to replace with typo"
-          }
-          bounding_box { top: 12.0 bottom: 13.0 } # in body
-        }
-        rows {
-          blocks {
-            row: 2
-            col: 0
-            text: "to remove"
-          }
-          bounding_box { top: 13.0 bottom: 14.0 } # in body
-        }
+  const auto to_pdf = ParseProtoFromStringOrDie<PdfDocument>(R"proto(
+    document_id { title: "doc 2" }
+    pages {
+      number: 6
+      width: 100
+      height: 30
+      rows {
+        blocks { row: 0 col: 0 text: "incorrect" }
+        bounding_box { top: 11.0 bottom: 12.0 }  # in body
       }
-    )");
+      rows {
+        blocks { row: 1 col: 0 text: "to replace with typo" }
+        bounding_box { top: 12.0 bottom: 13.0 }  # in body
+      }
+      rows {
+        blocks { row: 2 col: 0 text: "to remove" }
+        bounding_box { top: 13.0 bottom: 14.0 }  # in body
+      }
+    }
+  )proto");
 
   PdfDocumentChanges successful_patches;
   PdfDocumentChanges failed_patches;
   TransferPatches(patches, from_pdf, to_pdf, &successful_patches,
                   &failed_patches);
 
-  constexpr char kExpectedSuccessful[] = R"(
-      document_id { title: "doc 2" }
-      pages {
-        page_number: 6
-        patches {
-          row: 0
-          col: 0
-          expected: "incorrect"
-          replacement: "correct"
-        }
-        patches {
-          row: 2
-          col: 0
-          expected: "to remove"
-          remove_cell: true
-        }
-      }
-    )";
+  constexpr char kExpectedSuccessful[] = R"proto(
+    document_id { title: "doc 2" }
+    pages {
+      page_number: 6
+      patches { row: 0 col: 0 expected: "incorrect" replacement: "correct" }
+      patches { row: 2 col: 0 expected: "to remove" remove_cell: true }
+    }
+  )proto";
   EXPECT_THAT(successful_patches, EqualsProto(kExpectedSuccessful));
 
-  constexpr char kExpectedFailed[] = R"(
-      document_id { title: "doc 1" }
-      pages {
-        page_number: 5
-        patches {
-          row: 1
-          col: 0
-          expected: "to replace"
-          replacement: "replaced"
-        }
-      }
-    )";
+  constexpr char kExpectedFailed[] = R"proto(
+    document_id { title: "doc 1" }
+    pages {
+      page_number: 5
+      patches { row: 1 col: 0 expected: "to replace" replacement: "replaced" }
+    }
+  )proto";
   EXPECT_THAT(failed_patches, EqualsProto(kExpectedFailed));
 }
 

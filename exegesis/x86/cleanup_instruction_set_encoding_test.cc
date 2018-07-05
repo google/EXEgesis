@@ -29,807 +29,639 @@ using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::google::protobuf::TextFormat;
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VMOVD'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'r32'
-          }
-        }
-        raw_encoding_specification: 'VEX.128.66.0F.W0 6E'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VMOVD'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'r32'
-          }
-        }
-        raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
-      })";
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VMOVD'
+        operands { name: 'xmm1' }
+        operands { name: 'r32' }
+      }
+      raw_encoding_specification: 'VEX.128.66.0F.W0 6E'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VMOVD'
+        operands { name: 'xmm1' }
+        operands { name: 'r32' }
+      }
+      raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
+    })proto";
   TestTransform(AddMissingModRmAndImmediateSpecification, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Kshiftlb) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'KSHIFTLB'
-          operands {
-            name: 'k1'
-          }
-          operands {
-            name: 'k2'
-          }
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: 'VEX.L0.66.0F3A.W0 32 /r'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'KSHIFTLB'
-          operands {
-            name: 'k1'
-          }
-          operands {
-            name: 'k2'
-          }
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: 'VEX.L0.66.0F3A.W0 32 /r ib'
-      })";
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'KSHIFTLB'
+        operands { name: 'k1' }
+        operands { name: 'k2' }
+        operands { name: 'imm8' }
+      }
+      raw_encoding_specification: 'VEX.L0.66.0F3A.W0 32 /r'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'KSHIFTLB'
+        operands { name: 'k1' }
+        operands { name: 'k2' }
+        operands { name: 'imm8' }
+      }
+      raw_encoding_specification: 'VEX.L0.66.0F3A.W0 32 /r ib'
+    })proto";
   TestTransform(AddMissingModRmAndImmediateSpecification, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingMemoryOffsetEncodingTest, AddOffset) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'AAD'
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: 'D5 ib'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'AAD'
+        operands { name: 'imm8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'AL'
-          }
-          operands {
-            name: 'moffs8'
-          }
-        }
-        raw_encoding_specification: 'A0'
+      raw_encoding_specification: 'D5 ib'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'AL' }
+        operands { name: 'moffs8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'RAX'
-          }
-          operands {
-            name: 'moffs64'
-          }
-        }
-        legacy_instruction: false
-        raw_encoding_specification: 'REX.W + A1'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'AAD'
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: 'D5 ib'
+      raw_encoding_specification: 'A0'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'RAX' }
+        operands { name: 'moffs64' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'AL'
-          }
-          operands {
-            name: 'moffs8'
-          }
-        }
-        raw_encoding_specification: 'A0 io'
+      legacy_instruction: false
+      raw_encoding_specification: 'REX.W + A1'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'AAD'
+        operands { name: 'imm8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'RAX'
-          }
-          operands {
-            name: 'moffs64'
-          }
-        }
-        legacy_instruction: false
-        raw_encoding_specification: 'REX.W + A1 io'
+      raw_encoding_specification: 'D5 ib'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'AL' }
+        operands { name: 'moffs8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'AL'
-          }
-          operands {
-            name: 'moffs8'
-          }
-        }
-        raw_encoding_specification: '67 A0 id'
+      raw_encoding_specification: 'A0 io'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'RAX' }
+        operands { name: 'moffs64' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'RAX'
-          }
-          operands {
-            name: 'moffs64'
-          }
-        }
-        legacy_instruction: false
-        raw_encoding_specification: '67 REX.W + A1 id'
-      })";
+      legacy_instruction: false
+      raw_encoding_specification: 'REX.W + A1 io'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'AL' }
+        operands { name: 'moffs8' }
+      }
+      raw_encoding_specification: '67 A0 id'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'RAX' }
+        operands { name: 'moffs64' }
+      }
+      legacy_instruction: false
+      raw_encoding_specification: '67 REX.W + A1 id'
+    })proto";
   TestTransform(AddMissingMemoryOffsetEncoding, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, NoChange) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'AAD'
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: 'D5 ib'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'AAD'
+        operands { name: 'imm8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VMOVD'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'r32'
-          }
-        }
-        raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
-      })";
+      raw_encoding_specification: 'D5 ib'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VMOVD'
+        operands { name: 'xmm1' }
+        operands { name: 'r32' }
+      }
+      raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
+    })proto";
   TestTransform(AddMissingModRmAndImmediateSpecification, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 TEST(FixAndCleanUpEncodingSpecificationsOfSetInstructionsTest,
      SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'SETA'
-          operands {
-            name: 'r/m8'
-          }
-        }
-        raw_encoding_specification: '0F 97'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'SETA'
+        operands { name: 'r/m8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'SETA'
-          operands {
-            name: 'r/m8'
-          }
-        }
-        raw_encoding_specification: 'REX + 0F 97'
+      raw_encoding_specification: '0F 97'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'SETA'
+        operands { name: 'r/m8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'STOS'
-          operands {
-            name: 'BYTE PTR [RDI]'
-          }
-          operands {
-            name: 'AL'
-          }
-        }
-        raw_encoding_specification: 'AA'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'SETA'
-          operands {
-            name: 'r/m8'
-          }
-        }
-        raw_encoding_specification: '0F 97 /0'
+      raw_encoding_specification: 'REX + 0F 97'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'STOS'
+        operands { name: 'BYTE PTR [RDI]' }
+        operands { name: 'AL' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'STOS'
-          operands {
-            name: 'BYTE PTR [RDI]'
-          }
-          operands {
-            name: 'AL'
-          }
-        }
-        raw_encoding_specification: 'AA'
-      })";
+      raw_encoding_specification: 'AA'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'SETA'
+        operands { name: 'r/m8' }
+      }
+      raw_encoding_specification: '0F 97 /0'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'STOS'
+        operands { name: 'BYTE PTR [RDI]' }
+        operands { name: 'AL' }
+      }
+      raw_encoding_specification: 'AA'
+    })proto";
   TestTransform(FixAndCleanUpEncodingSpecificationsOfSetInstructions,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationOfPopFsAndGsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        legacy_instruction: false
-        raw_encoding_specification: '0F A1'
       }
-      instructions {
-        description: 'Pop top of stack into FS. Increment stack pointer by 16 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      legacy_instruction: false
+      raw_encoding_specification: '0F A1'
+    }
+    instructions {
+      description: 'Pop top of stack into FS. Increment stack pointer by 16 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '0F A1'
       }
-      instructions {
-        description: 'Pop top of stack into GS. Increment stack pointer by 64 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '0F A1'
+    }
+    instructions {
+      description: 'Pop top of stack into GS. Increment stack pointer by 64 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        legacy_instruction: false
-        raw_encoding_specification: '0F A9'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
-        }
-        legacy_instruction: false
-        raw_encoding_specification: '0F A1'
       }
-      instructions {
-        description: 'Pop top of stack into FS. Increment stack pointer by 16 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      legacy_instruction: false
+      raw_encoding_specification: '0F A9'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '66 0F A1'
       }
-      instructions {
-        description: 'Pop top of stack into GS. Increment stack pointer by 64 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      legacy_instruction: false
+      raw_encoding_specification: '0F A1'
+    }
+    instructions {
+      description: 'Pop top of stack into FS. Increment stack pointer by 16 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        legacy_instruction: false
-        raw_encoding_specification: '0F A9'
       }
-      instructions {
-        description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '66 0F A1'
+    }
+    instructions {
+      description: 'Pop top of stack into GS. Increment stack pointer by 64 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        legacy_instruction: false
-        raw_encoding_specification: 'REX.W 0F A1'
       }
-      instructions {
-        description: 'Pop top of stack into GS. Increment stack pointer by 64 bits.'
-        vendor_syntax {
-          mnemonic: 'POP'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      legacy_instruction: false
+      raw_encoding_specification: '0F A9'
+    }
+    instructions {
+      description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        legacy_instruction: false
-        raw_encoding_specification: 'REX.W 0F A9'
-      })";
+      }
+      legacy_instruction: false
+      raw_encoding_specification: 'REX.W 0F A1'
+    }
+    instructions {
+      description: 'Pop top of stack into GS. Increment stack pointer by 64 bits.'
+      vendor_syntax {
+        mnemonic: 'POP'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
+        }
+      }
+      legacy_instruction: false
+      raw_encoding_specification: 'REX.W 0F A9'
+    })proto";
   TestTransform(FixEncodingSpecificationOfPopFsAndGs, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationOfPushFsAndGsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '0F A0'
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '0F A0'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '0F A8'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
-        }
-        raw_encoding_specification: '0F A0'
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '0F A8'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '0F A8'
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '0F A0'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '66 0F A0'
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'FS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '0F A8'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: 'REX.W 0F A0'
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: '66 0F A0'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'FS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: '66 0F A8'
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PUSH'
-          operands {
-            name: 'GS'
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: IMPLICIT_ENCODING
-            value_size_bits: 16
-          }
+      raw_encoding_specification: 'REX.W 0F A0'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
         }
-        raw_encoding_specification: 'REX.W 0F A8'
-      })";
+      }
+      raw_encoding_specification: '66 0F A8'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PUSH'
+        operands {
+          name: 'GS'
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: IMPLICIT_ENCODING
+          value_size_bits: 16
+        }
+      }
+      raw_encoding_specification: 'REX.W 0F A8'
+    })proto";
   TestTransform(FixEncodingSpecificationOfPushFsAndGs, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationOfXBeginTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XBEGIN'
-          operands {
-            name: 'rel16'
-          }
-        }
-        raw_encoding_specification: 'C7 F8'
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'XBEGIN'
+        operands { name: 'rel16' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XBEGIN'
-          operands {
-            name: 'rel32'
-          }
-        }
-        raw_encoding_specification: 'C7 F8'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+      raw_encoding_specification: 'C7 F8'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'XBEGIN'
+        operands { name: 'rel32' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XBEGIN'
-          operands {
-            name: 'rel16'
-          }
-        }
-        raw_encoding_specification: '66 C7 F8 cw'
+      raw_encoding_specification: 'C7 F8'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XBEGIN'
-          operands {
-            name: 'rel32'
-          }
-        }
-        raw_encoding_specification: 'C7 F8 cd'
-      })";
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'XBEGIN'
+        operands { name: 'rel16' }
+      }
+      raw_encoding_specification: '66 C7 F8 cw'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'XBEGIN'
+        operands { name: 'rel32' }
+      }
+      raw_encoding_specification: 'C7 F8 cd'
+    })proto";
   TestTransform(FixEncodingSpecificationOfXBegin, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PCMPISTRI'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: '66 0F 3A 63 /r imm8'
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PCMPISTRI'
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
+        operands { name: 'imm8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PMOVSXBW'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'xmm2'
-          }
-        }
-        raw_encoding_specification: '66 0f 38 20 /r'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+      raw_encoding_specification: '66 0F 3A 63 /r imm8'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PMOVSXBW'
+        operands { name: 'xmm1' }
+        operands { name: 'xmm2' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PCMPISTRI'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-          operands {
-            name: 'imm8'
-          }
-        }
-        raw_encoding_specification: '66 0F 3A 63 /r ib'
+      raw_encoding_specification: '66 0f 38 20 /r'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PMOVSXBW'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'xmm2'
-          }
-        }
-        raw_encoding_specification: '66 0F 38 20 /r'
-      })";
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PCMPISTRI'
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
+        operands { name: 'imm8' }
+      }
+      raw_encoding_specification: '66 0F 3A 63 /r ib'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PMOVSXBW'
+        operands { name: 'xmm1' }
+        operands { name: 'xmm2' }
+      }
+      raw_encoding_specification: '66 0F 38 20 /r'
+    })proto";
   TestTransform(FixEncodingSpecifications, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixRexPrefixSpecificationTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: "MOVSX"
-          operands {
-            name: "r64"
-          }
-          operands {
-            name: "m8"
-          }
-        }
-        raw_encoding_specification: "REX + 0F BE /r"
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOVSX"
+        operands { name: "r64" }
+        operands { name: "m8" }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "ADC"
-          operands {
-            name: "m8"
-          }
-          operands {
-            name: "r8"
-          }
-        }
-        raw_encoding_specification: "REX + 10 /r"
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: "MOVSX"
-          operands {
-            name: "r64"
-          }
-          operands {
-            name: "m8"
-          }
-        }
-        raw_encoding_specification: "REX.W + 0F BE /r"
+      raw_encoding_specification: "REX + 0F BE /r"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "m8" }
+        operands { name: "r8" }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "ADC"
-          operands {
-            name: "m8"
-          }
-          operands {
-            name: "r8"
-          }
-        }
-        raw_encoding_specification: "REX + 10 /r"
-      })";
+      raw_encoding_specification: "REX + 10 /r"
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOVSX"
+        operands { name: "r64" }
+        operands { name: "m8" }
+      }
+      raw_encoding_specification: "REX.W + 0F BE /r"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "m8" }
+        operands { name: "r8" }
+      }
+      raw_encoding_specification: "REX + 10 /r"
+    })proto";
   TestTransform(FixRexPrefixSpecification, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PMOVSXBW'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'xmm2'
-          }
-        }
-        raw_encoding_specification: '66 0F 38 20 /r'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
-        x86_encoding_specification {
-          opcode: 997562
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ZERO
-          }
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PMOVSXBW'
+        operands { name: 'xmm1' }
+        operands { name: 'xmm2' }
+      }
+      raw_encoding_specification: '66 0F 38 20 /r'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
+      }
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.W0 BA /r'
+      x86_encoding_specification {
+        opcode: 997562
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PMOVSXBW'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'xmm2'
-          }
-        }
-        raw_encoding_specification: '66 0F 38 20 /r'
-        x86_encoding_specification {
-          opcode: 997408
-          modrm_usage: FULL_MODRM
-          legacy_prefixes {
-            has_mandatory_operand_size_override_prefix: true
-          }
-        }
-      })";
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PMOVSXBW'
+        operands { name: 'xmm1' }
+        operands { name: 'xmm2' }
+      }
+      raw_encoding_specification: '66 0F 38 20 /r'
+      x86_encoding_specification {
+        opcode: 997408
+        modrm_usage: FULL_MODRM
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+      }
+    })proto";
   TestTransform(ParseEncodingSpecifications, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(ParseEncodingSpecificationsTest, ParseErrors) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'VFMSUB231PS'
-          operands {
-            name: 'xmm0'
-          }
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'm128'
-          }
-        }
-        raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'VFMSUB231PS'
+        operands { name: 'xmm0' }
+        operands { name: 'xmm1' }
+        operands { name: 'm128' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PMOVSXBW'
-          operands {
-            name: 'xmm1'
-          }
-          operands {
-            name: 'xmm2'
-          }
-        }
-        raw_encoding_specification: '66 0F 38 20 /r'
-      })";
+      raw_encoding_specification: 'VEX.DDS.128.66.0F38.0 BA /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PMOVSXBW'
+        operands { name: 'xmm1' }
+        operands { name: 'xmm2' }
+      }
+      raw_encoding_specification: '66 0F 38 20 /r'
+    })proto";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -839,54 +671,28 @@ TEST(ParseEncodingSpecificationsTest, ParseErrors) {
 
 TEST(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,
      SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        raw_encoding_specification: "D8 F0+i"
-      }
-      instructions {
-        raw_encoding_specification: "DC C0+i"
-      }
-      instructions {
-        raw_encoding_specification: "D8 /6"
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        raw_encoding_specification: "D8 /6"
-      }
-      instructions {
-        raw_encoding_specification: "DC /0"
-      }
-      instructions {
-        raw_encoding_specification: "D8 /6"
-      })";
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "D8 F0+i" }
+    instructions { raw_encoding_specification: "DC C0+i" }
+    instructions { raw_encoding_specification: "D8 /6" })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "D8 /6" }
+    instructions { raw_encoding_specification: "DC /0" }
+    instructions { raw_encoding_specification: "D8 /6" })proto";
   TestTransform(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(AddRexWPrefixedVersionOfStr, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        raw_encoding_specification: "0F 00 /1"
-      }
-      instructions {
-        raw_encoding_specification: "66 0F 38 20 /r"
-      }
-      instructions {
-        raw_encoding_specification: "D8 /6"
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        raw_encoding_specification: "0F 00 /1"
-      }
-      instructions {
-        raw_encoding_specification: "66 0F 38 20 /r"
-      }
-      instructions {
-        raw_encoding_specification: "D8 /6"
-      }
-      instructions {
-        raw_encoding_specification: "REX.W 0F 00 /1"
-      })";
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "0F 00 /1" }
+    instructions { raw_encoding_specification: "66 0F 38 20 /r" }
+    instructions { raw_encoding_specification: "D8 /6" })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "0F 00 /1" }
+    instructions { raw_encoding_specification: "66 0F 38 20 /r" }
+    instructions { raw_encoding_specification: "D8 /6" }
+    instructions { raw_encoding_specification: "REX.W 0F 00 /1" })proto";
   TestTransform(AddRexWPrefixedVersionOfStr, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

@@ -22,122 +22,100 @@ namespace x86 {
 namespace {
 
 TEST(AddMissingCpuFlagsTest, AddsMissing) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'CLFLUSH'
-        }
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions { vendor_syntax { mnemonic: 'CLFLUSH' } }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'INS'
+        operands { name: 'm8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'INS'
-          operands {
-            name: 'm8'
-          }
-        }
-        raw_encoding_specification: '6C'
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'CLFLUSH'
-        }
-        feature_name: 'CLFSH'
+      raw_encoding_specification: '6C'
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'CLFLUSH' }
+      feature_name: 'CLFSH'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'INS'
+        operands { name: 'm8' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'INS'
-          operands {
-            name: 'm8'
-          }
-        }
-        raw_encoding_specification: '6C'
-      })";
+      raw_encoding_specification: '6C'
+    })proto";
   TestTransform(AddMissingCpuFlags, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddRestrictedModesTest, AddsProtectionModes) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'HLT'
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'HLT' }
+      protection_mode: -1
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOV"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 64
+          name: "r64"
+          usage: USAGE_WRITE
         }
-        protection_mode: -1
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 64
+          name: "CR0-CR7"
+          usage: USAGE_READ
+        }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "MOV"
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 64
-            name: "r64"
-            usage: USAGE_WRITE
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 64
-            name: "CR0-CR7"
-            usage: USAGE_READ
-          }
-        }
-        available_in_64_bit: true
-        raw_encoding_specification: "0F 20/r"
+      available_in_64_bit: true
+      raw_encoding_specification: "0F 20/r"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'r64' }
+        operands { name: 'imm64' }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'r64'
-          }
-          operands {
-            name: 'imm64'
-          }
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'HLT' }
+      protection_mode: 0
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOV"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 64
+          name: "r64"
+          usage: USAGE_WRITE
         }
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'HLT'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 64
+          name: "CR0-CR7"
+          usage: USAGE_READ
         }
-        protection_mode: 0
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "MOV"
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 64
-            name: "r64"
-            usage: USAGE_WRITE
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 64
-            name: "CR0-CR7"
-            usage: USAGE_READ
-          }
-        }
-        protection_mode: 0
-        available_in_64_bit: true
-        raw_encoding_specification: "0F 20/r"
+      protection_mode: 0
+      available_in_64_bit: true
+      raw_encoding_specification: "0F 20/r"
+    }
+    instructions {
+      protection_mode: -1
+      vendor_syntax {
+        mnemonic: 'MOV'
+        operands { name: 'r64' }
+        operands { name: 'imm64' }
       }
-      instructions {
-        protection_mode: -1
-        vendor_syntax {
-          mnemonic: 'MOV'
-          operands {
-            name: 'r64'
-          }
-          operands {
-            name: 'imm64'
-          }
-        }
-      })";
+    })proto";
   TestTransform(AddProtectionModes, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

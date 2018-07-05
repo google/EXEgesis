@@ -22,158 +22,154 @@ namespace x86 {
 namespace {
 
 TEST(AddAlternativesTest, InstructionWithRM8) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ADC'
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 8
-            name: 'r8'
-          }
-          operands {
-            addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 8
-            name: 'r/m8'
-          }
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'ADC'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 8
+          name: 'r8'
         }
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ADC'
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 8
-            name: 'r8'
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 8
-            name: 'r8'
-          }
+        operands {
+          addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 8
+          name: 'r/m8'
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'ADC'
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 8
-            name: 'r8'
-          }
-          operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 8
-            name: 'm8'
-          }
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'ADC'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 8
+          name: 'r8'
         }
-      })";
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 8
+          name: 'r8'
+        }
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'ADC'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 8
+          name: 'r8'
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 8
+          name: 'm8'
+        }
+      }
+    })proto";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddAlternativesTest, DifferentSizes) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PINSRB'
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 128
-            name: 'xmm1'
-          }
-          operands {
-            addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 8
-            name: 'r32/m8'
-          }
-          operands {
-            addressing_mode: NO_ADDRESSING
-            encoding: IMMEDIATE_VALUE_ENCODING
-            value_size_bits: 8
-            name: 'imm8'
-          }
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PINSRB'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 128
+          name: 'xmm1'
         }
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PINSRB'
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 128
-            name: 'xmm1'
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 32
-            name: 'r32'
-          }
-          operands {
-            addressing_mode: NO_ADDRESSING
-            encoding: IMMEDIATE_VALUE_ENCODING
-            value_size_bits: 8
-            name: 'imm8'
-          }
+        operands {
+          addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 8
+          name: 'r32/m8'
+        }
+        operands {
+          addressing_mode: NO_ADDRESSING
+          encoding: IMMEDIATE_VALUE_ENCODING
+          value_size_bits: 8
+          name: 'imm8'
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'PINSRB'
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-            value_size_bits: 128
-            name: 'xmm1'
-          }
-          operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 8
-            name: 'm8'
-          }
-          operands {
-            addressing_mode: NO_ADDRESSING
-            encoding: IMMEDIATE_VALUE_ENCODING
-            value_size_bits: 8
-            name: 'imm8'
-          }
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PINSRB'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 128
+          name: 'xmm1'
         }
-      })";
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 32
+          name: 'r32'
+        }
+        operands {
+          addressing_mode: NO_ADDRESSING
+          encoding: IMMEDIATE_VALUE_ENCODING
+          value_size_bits: 8
+          name: 'imm8'
+        }
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: 'PINSRB'
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 128
+          name: 'xmm1'
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 8
+          name: 'm8'
+        }
+        operands {
+          addressing_mode: NO_ADDRESSING
+          encoding: IMMEDIATE_VALUE_ENCODING
+          value_size_bits: 8
+          name: 'imm8'
+        }
+      }
+    })proto";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddAlternativesTest, NoRenaming) {
-  constexpr char kInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'FBLD'
-          operands {
-            name: 'm80bcd'
-          }
-        }
-      })";
-  constexpr char kExpectedInstructionSetProto[] = R"(
-      instructions {
-        vendor_syntax {
-          mnemonic: 'FBLD'
-          operands {
-            name: 'm80bcd'
-          }
-        }
-      })";
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'FBLD'
+        operands { name: 'm80bcd' }
+      }
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: 'FBLD'
+        operands { name: 'm80bcd' }
+      }
+    })proto";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

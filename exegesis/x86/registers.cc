@@ -89,19 +89,28 @@ RegisterSetProto GetFlagsRegisters() {
           name: "CF"
           description: "The carry flag."
         }
-        subfields { bit_range { lsb: 1 msb: 1 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 1 msb: 1 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 2 msb: 2 }
           name: "PF"
           description: "The parity flag."
         }
-        subfields { bit_range { lsb: 3 msb: 3 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 3 msb: 3 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 4 msb: 4 }
           name: "AF"
           description: "The auxiliary carry flag."
         }
-        subfields { bit_range { lsb: 5 msb: 5 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 5 msb: 5 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 6 msb: 6 }
           name: "ZF"
@@ -142,7 +151,10 @@ RegisterSetProto GetFlagsRegisters() {
           name: "NT"
           description: "The nested task."
         }
-        subfields { bit_range { lsb: 15 msb: 15 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 15 msb: 15 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 16 msb: 16 }
           name: "RF"
@@ -173,7 +185,10 @@ RegisterSetProto GetFlagsRegisters() {
           name: "ID"
           description: "The ID flag."
         }
-        subfields { bit_range { lsb: 22 msb: 31 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 22 msb: 31 }
+          name: "reserved"
+        }
       }
       registers {
         name: "RFLAGS"
@@ -185,19 +200,28 @@ RegisterSetProto GetFlagsRegisters() {
           name: "CF"
           description: "The carry flag."
         }
-        subfields { bit_range { lsb: 1 msb: 1 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 1 msb: 1 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 2 msb: 2 }
           name: "PF"
           description: "The parity flag."
         }
-        subfields { bit_range { lsb: 3 msb: 3 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 3 msb: 3 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 4 msb: 4 }
           name: "AF"
           description: "The auxiliary carry flag."
         }
-        subfields { bit_range { lsb: 5 msb: 5 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 5 msb: 5 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 6 msb: 6 }
           name: "ZF"
@@ -238,7 +262,10 @@ RegisterSetProto GetFlagsRegisters() {
           name: "NT"
           description: "The nested task."
         }
-        subfields { bit_range { lsb: 15 msb: 15 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 15 msb: 15 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 16 msb: 16 }
           name: "RF"
@@ -269,7 +296,10 @@ RegisterSetProto GetFlagsRegisters() {
           name: "ID"
           description: "The ID flag."
         }
-        subfields { bit_range { lsb: 22 msb: 63 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 22 msb: 63 }
+          name: "reserved"
+        }
       }
     })proto";
   return ParseProtoFromStringOrDie<RegisterSetProto>(kFlagsRegisters);
@@ -388,7 +418,10 @@ RegisterSetProto GetFpuAndMmxRegisters() {
           name: "PM"
           description: "Precision Mask"
         }
-        subfields { bit_range { lsb: 6 msb: 7 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 6 msb: 7 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 8 msb: 9 }
           name: "PC"
@@ -404,7 +437,10 @@ RegisterSetProto GetFpuAndMmxRegisters() {
           name: "X"
           description: "Infinity Control"
         }
-        subfields { bit_range { lsb: 13 msb: 15 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 13 msb: 15 }
+          name: "reserved"
+        }
       }
     })proto";
   RegisterSetProto register_set = MakeRegistersFromBaseNameAndIndices(
@@ -439,7 +475,10 @@ RegisterSetProto GetMpxRegisters() {
           name: "BNDPRESERVE"
           description: "Preserve bounds across calls."
         }
-        subfields { bit_range { lsb: 2 msb: 11 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 2 msb: 11 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 12 msb: 63 }
           name: "Base"
@@ -466,7 +505,10 @@ RegisterSetProto GetMpxRegisters() {
           name: "BNDPRESERVE"
           description: "Preserve bounds across calls."
         }
-        subfields { bit_range { lsb: 2 msb: 11 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 2 msb: 11 }
+          name: "reserved"
+        }
         subfields {
           bit_range { lsb: 12 msb: 63 }
           name: "Base"
@@ -604,7 +646,10 @@ RegisterSetProto GetXmmRegisters() {
           name: "FZ"
           description: "Flush to Zero"
         }
-        subfields { bit_range { lsb: 16 msb: 31 } name: "reserved" }
+        subfields {
+          bit_range { lsb: 16 msb: 31 }
+          name: "reserved"
+        }
       }
     })proto";
   RegisterSetProto register_set =

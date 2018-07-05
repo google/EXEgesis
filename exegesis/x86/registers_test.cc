@@ -123,178 +123,142 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
     const char* register_name;
     const char* expected_proto;
   } kTestCases[] =  //
-      {{"RAX", R"(
-        name: 'RAX group'
-        description: 'The group of registers aliased with RAX'
-        registers {
-          name: 'RAX'
-          binary_encoding: 0
-          register_class: GENERAL_PURPOSE_REGISTER_64_BIT
-          position_in_group {
-            msb: 63
+      {{"RAX", R"proto(
+          name: 'RAX group'
+          description: 'The group of registers aliased with RAX'
+          registers {
+            name: 'RAX'
+            binary_encoding: 0
+            register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+            position_in_group { msb: 63 }
           }
-        }
-        registers {
-          name: 'EAX'
-          binary_encoding: 0
-          register_class: GENERAL_PURPOSE_REGISTER_32_BIT
-          position_in_group {
-            msb: 31
+          registers {
+            name: 'EAX'
+            binary_encoding: 0
+            register_class: GENERAL_PURPOSE_REGISTER_32_BIT
+            position_in_group { msb: 31 }
           }
-        }
-        registers {
-          name: 'AX'
-          binary_encoding: 0
-          register_class: GENERAL_PURPOSE_REGISTER_16_BIT
-          position_in_group {
-            msb: 15
+          registers {
+            name: 'AX'
+            binary_encoding: 0
+            register_class: GENERAL_PURPOSE_REGISTER_16_BIT
+            position_in_group { msb: 15 }
           }
-        }
-        registers {
-          name: 'AL'
-          binary_encoding: 0
-          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
-          position_in_group {
-            msb: 7
+          registers {
+            name: 'AL'
+            binary_encoding: 0
+            register_class: GENERAL_PURPOSE_REGISTER_8_BIT
+            position_in_group { msb: 7 }
           }
-        }
-        registers {
-          name: 'AH'
-          binary_encoding: 4
-          register_class: GENERAL_PURPOSE_REGISTER_8_BIT
-          position_in_group {
-            lsb: 8
-            msb: 15
-          }
-        })"},
+          registers {
+            name: 'AH'
+            binary_encoding: 4
+            register_class: GENERAL_PURPOSE_REGISTER_8_BIT
+            position_in_group { lsb: 8 msb: 15 }
+          })proto"},
        {"R16", ""},
-       {"ST7", R"(
-        name: 'ST7 group'
-        description: 'The group of registers aliased with ST7'
-        registers {
-          name: 'ST7'
-          binary_encoding: 7
-          register_class: FLOATING_POINT_STACK_REGISTER
-          position_in_group {
-            msb: 79
+       {"ST7", R"proto(
+          name: 'ST7 group'
+          description: 'The group of registers aliased with ST7'
+          registers {
+            name: 'ST7'
+            binary_encoding: 7
+            register_class: FLOATING_POINT_STACK_REGISTER
+            position_in_group { msb: 79 }
+            feature_name: 'FPU'
           }
-          feature_name: 'FPU'
-        }
-        registers {
-          name: 'MM7'
-          binary_encoding: 7
-          register_class: MMX_STACK_REGISTER
-          position_in_group {
-            msb: 63
+          registers {
+            name: 'MM7'
+            binary_encoding: 7
+            register_class: MMX_STACK_REGISTER
+            position_in_group { msb: 63 }
+            feature_name: 'MMX'
+          })proto"},
+       {"DS", R"proto(
+          name: 'DS group'
+          description: 'The group of registers aliased with DS'
+          registers {
+            name: 'DS'
+            binary_encoding: 3
+            register_class: SPECIAL_REGISTER_SEGMENT
+            position_in_group { lsb: 0 msb: 15 }
+          })proto"},
+       {"XMM15", R"proto(
+          name: 'XMM15 group'
+          description: 'The group of registers aliased with XMM15'
+          registers {
+            name: 'XMM15'
+            binary_encoding: 15
+            register_class: VECTOR_REGISTER_128_BIT
+            position_in_group { msb: 127 }
+            feature_name: 'SSE'
           }
-          feature_name: 'MMX'
-        })"},
-       {"DS", R"(
-        name: 'DS group'
-        description: 'The group of registers aliased with DS'
-        registers {
-          name: 'DS'
-          binary_encoding: 3
-          register_class: SPECIAL_REGISTER_SEGMENT
-          position_in_group {
-            lsb: 0
-            msb: 15
+          registers {
+            name: 'YMM15'
+            binary_encoding: 15
+            register_class: VECTOR_REGISTER_256_BIT
+            position_in_group { msb: 255 }
+            feature_name: 'AVX'
           }
-        })"},
-       {"XMM15", R"(
-        name: 'XMM15 group'
-        description: 'The group of registers aliased with XMM15'
-        registers {
-          name: 'XMM15'
-          binary_encoding: 15
-          register_class: VECTOR_REGISTER_128_BIT
-          position_in_group {
-            msb: 127
+          registers {
+            name: 'ZMM15'
+            binary_encoding: 15
+            register_class: VECTOR_REGISTER_512_BIT
+            position_in_group { msb: 511 }
+            feature_name: 'AVX512'
+          })proto"},
+       {"XMM17", R"proto(
+          name: 'XMM17 group'
+          description: 'The group of registers aliased with XMM17'
+          registers {
+            name: 'XMM17'
+            binary_encoding: 17
+            register_class: VECTOR_REGISTER_128_BIT
+            position_in_group { msb: 127 }
+            feature_name: 'AVX512'
           }
-          feature_name: 'SSE'
-        }
-        registers {
-          name: 'YMM15'
-          binary_encoding: 15
-          register_class: VECTOR_REGISTER_256_BIT
-          position_in_group {
-            msb: 255
+          registers {
+            name: 'YMM17'
+            binary_encoding: 17
+            register_class: VECTOR_REGISTER_256_BIT
+            position_in_group { msb: 255 }
+            feature_name: 'AVX512'
           }
-          feature_name: 'AVX'
-        }
-        registers {
-          name: 'ZMM15'
-          binary_encoding: 15
-          register_class: VECTOR_REGISTER_512_BIT
-          position_in_group {
-            msb: 511
-          }
-          feature_name: 'AVX512'
-        })"},
-       {"XMM17", R"(
-        name: 'XMM17 group'
-        description: 'The group of registers aliased with XMM17'
-        registers {
-          name: 'XMM17'
-          binary_encoding: 17
-          register_class: VECTOR_REGISTER_128_BIT
-          position_in_group {
-            msb: 127
-          }
-          feature_name: 'AVX512'
-        }
-        registers {
-          name: 'YMM17'
-          binary_encoding: 17
-          register_class: VECTOR_REGISTER_256_BIT
-          position_in_group {
-            msb: 255
-          }
-          feature_name: 'AVX512'
-        }
-        registers {
-          name: 'ZMM17'
-          binary_encoding: 17
-          register_class: VECTOR_REGISTER_512_BIT
-          position_in_group {
-            msb: 511
-          }
-          feature_name: 'AVX512'
-        })"},
-       {"CR3", R"(
-        name: 'CR3 group'
-        description: 'The group of registers aliased with CR3'
-        registers {
-          name: 'CR3'
-          binary_encoding: 3
-          register_class: SPECIAL_REGISTER_CONTROL
-          position_in_group {
-            msb: 63
-          }
-        })"},
-       {"DR3", R"(
-        name: 'DR3 group'
-        description: 'The group of registers aliased with DR3'
-        registers {
-          name: 'DR3'
-          binary_encoding: 3
-          register_class: SPECIAL_REGISTER_DEBUG
-          position_in_group {
-            msb: 63
-          }
-        })"},
-       {"BND1", R"(
-         name: "BND1 group"
-         description: "The group of registers aliased with BND1"
-         registers {
-           name: "BND1"
-           binary_encoding: 1
-           position_in_group {
-             msb: 127
-           }
-           feature_name: "MPX"
-           register_class: SPECIAL_REGISTER_MPX_BOUNDS
-         })"}};
+          registers {
+            name: 'ZMM17'
+            binary_encoding: 17
+            register_class: VECTOR_REGISTER_512_BIT
+            position_in_group { msb: 511 }
+            feature_name: 'AVX512'
+          })proto"},
+       {"CR3", R"proto(
+          name: 'CR3 group'
+          description: 'The group of registers aliased with CR3'
+          registers {
+            name: 'CR3'
+            binary_encoding: 3
+            register_class: SPECIAL_REGISTER_CONTROL
+            position_in_group { msb: 63 }
+          })proto"},
+       {"DR3", R"proto(
+          name: 'DR3 group'
+          description: 'The group of registers aliased with DR3'
+          registers {
+            name: 'DR3'
+            binary_encoding: 3
+            register_class: SPECIAL_REGISTER_DEBUG
+            position_in_group { msb: 63 }
+          })proto"},
+       {"BND1", R"proto(
+          name: "BND1 group"
+          description: "The group of registers aliased with BND1"
+          registers {
+            name: "BND1"
+            binary_encoding: 1
+            position_in_group { msb: 127 }
+            feature_name: "MPX"
+            register_class: SPECIAL_REGISTER_MPX_BOUNDS
+          })proto"}};
   for (const auto& test_case : kTestCases) {
     const std::string register_name = test_case.register_name;
     SCOPED_TRACE(absl::StrCat("register_name = ", register_name));

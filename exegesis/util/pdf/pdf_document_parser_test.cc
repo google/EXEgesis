@@ -40,19 +40,14 @@ TEST(ExtractLine, no_segment) {
 }
 
 TEST(ExtractLine, one_segment) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
     characters {
-      codepoint      : 0x00000049
+      codepoint: 0x00000049
       utf8: "I"
-      font_size   : 24.0
-      orientation : EAST
-      bounding_box: {
-        left  : 202.92
-        top   : 165.84
-        right : 209.328
-        bottom: 189.84
-      }
-    })");
+      font_size: 24.0
+      orientation: EAST
+      bounding_box: { left: 202.92 top: 165.84 right: 209.328 bottom: 189.84 }
+    })proto");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 1);
   EXPECT_THAT(page.segments(0).character_indices(), ElementsAreArray({0}));
@@ -62,74 +57,69 @@ TEST(ExtractLine, one_segment) {
 }
 
 TEST(ExtractLine, connect_forward) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
-    number    : 1
-    width     : 612
-    height    : 792
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    number: 1
+    width: 612
+    height: 792
     characters: {
-      codepoint      : 0x00000049
+      codepoint: 0x00000049
       utf8: "I"
-      font_size      : 24.0
-      orientation    : EAST
-      bounding_box: {
-        left  : 202.92
-        top   : 165.84
-        right : 209.328
-        bottom: 189.84
-      }
+      font_size: 24.0
+      orientation: EAST
+      bounding_box: { left: 202.92 top: 165.84 right: 209.328 bottom: 189.84 }
       fill_color_hash: 1
     }
     characters: {
-      codepoint      : 0x0000006e
+      codepoint: 0x0000006e
       utf8: "n"
-      font_size      : 24.0
-      orientation    : EAST
+      font_size: 24.0
+      orientation: EAST
       bounding_box: {
-        left  : 209.3232
-        top   : 165.84
-        right : 223.0992
+        left: 209.3232
+        top: 165.84
+        right: 223.0992
         bottom: 189.84
       }
       fill_color_hash: 1
     }
-  )");
+  )proto");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 1);
   ASSERT_THAT(page.segments(0).character_indices(), ElementsAreArray({0, 1}));
 }
 
 TEST(ExtractLine, connect_bottom_top) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
-    number    : 1
-    width     : 612
-    height    : 792
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    number: 1
+    width: 612
+    height: 792
     characters: {
-      codepoint      : 0x00000052
+      codepoint: 0x00000052
       utf8: "R"
-      font_size      : 9.0
-      orientation    : NORTH
+      font_size: 9.0
+      orientation: NORTH
       bounding_box: {
-        left  : 133.08
-        top   : 153.0869
-        right : 142.08
+        left: 133.08
+        top: 153.0869
+        right: 142.08
         bottom: 158.8199
       }
       fill_color_hash: 1
     }
     characters: {
-      codepoint      : 0x00000065
+      codepoint: 0x00000065
       utf8: "e"
-      font_size      : 9.0
-      orientation    : NORTH
+      font_size: 9.0
+      orientation: NORTH
       bounding_box: {
-        left  : 133.08
-        top   : 148.26201
-        right : 142.08
+        left: 133.08
+        top: 148.26201
+        right: 142.08
         bottom: 153.302
       }
       fill_color_hash: 1
     }
-  )");
+  )proto");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 1);
   ASSERT_THAT(page.segments(0).character_indices(), ElementsAreArray({0, 1}));
@@ -139,37 +129,32 @@ TEST(ExtractLine, connect_bottom_top) {
 }
 
 TEST(ExtractLine, do_not_connect) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"(
-    number    : 1
-    width     : 612
-    height    : 792
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+    number: 1
+    width: 612
+    height: 792
     characters: {
-      codepoint      : 0x00000049
+      codepoint: 0x00000049
       utf8: "I"
-      font_size      : 24.0
-      orientation    : EAST
-      bounding_box: {
-        left  : 202.92
-        top   : 165.84
-        right : 209.328
-        bottom: 189.84
-      }
+      font_size: 24.0
+      orientation: EAST
+      bounding_box: { left: 202.92 top: 165.84 right: 209.328 bottom: 189.84 }
       fill_color_hash: 1
     }
     characters: {
-      codepoint      : 0x0000006e
+      codepoint: 0x0000006e
       utf8: "n"
-      font_size      : 24.0
-      orientation    : EAST
+      font_size: 24.0
+      orientation: EAST
       bounding_box: {
-        left  : 229.3232 # too far from right of previous char
-        top   : 165.84
-        right : 243.0992
+        left: 229.3232  # too far from right of previous char
+        top: 165.84
+        right: 243.0992
         bottom: 189.84
       }
       fill_color_hash: 1
     }
-  )");
+  )proto");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 2);
   ASSERT_THAT(page.segments(0).character_indices(), ElementsAreArray({0}));

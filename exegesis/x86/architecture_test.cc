@@ -39,272 +39,276 @@ namespace {
 using ::testing::Contains;
 using ::testing::UnorderedElementsAreArray;
 
-constexpr char kArchitectureProto[] = R"(
-    instruction_set {
-      instructions {
-        llvm_mnemonic: "BLSMSK64rr"
-        vendor_syntax {
-          mnemonic: "BLSMSK"
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: VEX_V_ENCODING
-            value_size_bits: 64
-            name: "r64"
-            usage: USAGE_WRITE
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-            value_size_bits: 64
-            name: "r64"
-            usage: USAGE_READ
-          }
+constexpr char kArchitectureProto[] = R"proto(
+  instruction_set {
+    instructions {
+      llvm_mnemonic: "BLSMSK64rr"
+      vendor_syntax {
+        mnemonic: "BLSMSK"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 64
+          name: "r64"
+          usage: USAGE_WRITE
         }
-        feature_name: "BMI1"
-        raw_encoding_specification: "VEX.NDD.LZ.0F38.W1 F3 /2"
-        x86_encoding_specification {
-          opcode: 0x0f38f3
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          modrm_opcode_extension: 2
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
-            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-            map_select: MAP_SELECT_0F38
-            vex_w_usage: VEX_W_IS_ONE
-          }
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 64
+          name: "r64"
+          usage: USAGE_READ
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: "MOV"
-        }
-        raw_encoding_specification: "B8+ rd id"
-        x86_encoding_specification {
-          opcode: 184
-          operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 4
-        }
-      }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'NOP'
-        }
-        raw_encoding_specification: 'NP 90'
-        x86_encoding_specification {
-          opcode: 144
-          legacy_prefixes {
-          }
+      feature_name: "BMI1"
+      raw_encoding_specification: "VEX.NDD.LZ.0F38.W1 F3 /2"
+      x86_encoding_specification {
+        opcode: 0x0f38f3
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 2
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ONE
         }
       }
-      instructions {
-        vendor_syntax {
-          mnemonic: 'XCHG'
-        }
-        raw_encoding_specification: '90+rd'
-        x86_encoding_specification {
-          opcode: 144
-          operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-          legacy_prefixes {
-          }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "MOV" }
+      raw_encoding_specification: "B8+ rd id"
+      x86_encoding_specification {
+        opcode: 184
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes {} immediate_value_bytes: 4
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'NOP' }
+      raw_encoding_specification: 'NP 90'
+      x86_encoding_specification { opcode: 144 legacy_prefixes {} }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'XCHG' }
+      raw_encoding_specification: '90+rd'
+      x86_encoding_specification {
+        opcode: 144
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'MR'
+      raw_encoding_specification: '00 /r'
+      x86_encoding_specification { modrm_usage: FULL_MODRM legacy_prefixes {} }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'I'
+      raw_encoding_specification: '14 ib'
+      x86_encoding_specification {
+        opcode: 0x14
+        legacy_prefixes {} immediate_value_bytes: 1
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: false
+      encoding_scheme: 'I'
+      raw_encoding_specification: 'REX.W + 15 id'
+      x86_encoding_specification {
+        opcode: 0x15
+        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        immediate_value_bytes: 4
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'I'
+      raw_encoding_specification: '66 15 iw'
+      x86_encoding_specification {
+        opcode: 0x15
+        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        immediate_value_bytes: 2
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'I'
+      raw_encoding_specification: '15 id'
+      x86_encoding_specification {
+        opcode: 0x15
+        legacy_prefixes {} immediate_value_bytes: 4
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'D'
+      raw_encoding_specification: '7F cb'
+      x86_encoding_specification {
+        opcode: 0x7F
+        legacy_prefixes {} code_offset_bytes: 1
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: false
+      encoding_scheme: 'M'
+      raw_encoding_specification: 'REX + F6 /2'
+      x86_encoding_specification {
+        opcode: 0xF6
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 2
+        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'M'
+      raw_encoding_specification: '0F 00 /4'
+      x86_encoding_specification {
+        opcode: 0x0F00
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 4
+        legacy_prefixes {}
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'RVM'
+      raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG 15 /r'
+      x86_encoding_specification {
+        opcode: 0x0F15
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_256_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
         }
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'MR'
-        raw_encoding_specification: '00 /r'
-        x86_encoding_specification {
-          modrm_usage: FULL_MODRM
-          legacy_prefixes {
-          }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'FV-RVM'
+      raw_encoding_specification: 'EVEX.NDS.128.66.0F.W1 58 /r'
+      x86_encoding_specification {
+        opcode: 0x0F58
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: EVEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
+          vex_w_usage: VEX_W_IS_ONE
+          evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
+          opmask_usage: EVEX_OPMASK_IS_OPTIONAL
+          masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
         }
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'I'
-        raw_encoding_specification: '14 ib'
-        x86_encoding_specification {
-          opcode: 0x14
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 1
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'FV'
+      raw_encoding_specification: 'EVEX.NDS.128.66.0F.W0 FE /r'
+      x86_encoding_specification {
+        opcode: 0x0FFE
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: EVEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
+          vex_w_usage: VEX_W_IS_ZERO
+          evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST
+          opmask_usage: EVEX_OPMASK_IS_OPTIONAL
+          masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
         }
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: false
-        encoding_scheme: 'I'
-        raw_encoding_specification: 'REX.W + 15 id'
-        x86_encoding_specification {
-          opcode: 0x15
-          legacy_prefixes {
-            has_mandatory_rex_w_prefix: true
-          }
-          immediate_value_bytes: 4
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'RVM'
+      raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG FE /r'
+      x86_encoding_specification {
+        opcode: 0x0FFE
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_256_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
         }
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'I'
-        raw_encoding_specification: '66 15 iw'
-        x86_encoding_specification {
-          opcode: 0x15
-          legacy_prefixes {
-            has_mandatory_operand_size_override_prefix: true
-          }
-          immediate_value_bytes: 2
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: 'RVM'
+      raw_encoding_specification: 'VEX.NDS.128.66.0F.WIG FE /r'
+      x86_encoding_specification {
+        opcode: 0x0FFE
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F
         }
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'I'
-        raw_encoding_specification: '15 id'
-        x86_encoding_specification {
-          opcode: 0x15
-          legacy_prefixes {
-          }
-          immediate_value_bytes: 4
-        }
+    }
+    instructions {
+      vendor_syntax { mnemonic: "XEND" }
+      feature_name: "RTM"
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "A"
+      raw_encoding_specification: "NP 0F 01 D5"
+      x86_encoding_specification { opcode: 983509 legacy_prefixes {} }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "KSHIFTLD"
+        operands { name: "k1" }
+        operands { name: "k2" }
+        operands { name: "imm8" }
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'D'
-        raw_encoding_specification: '7F cb'
-        x86_encoding_specification {
-          opcode: 0x7F
-          legacy_prefixes {
-          }
-          code_offset_bytes: 1
+      feature_name: "AVX512BW"
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "RRI"
+      raw_encoding_specification: "VEX.L0.66.0F3A.W0 33 /r ib"
+      x86_encoding_specification {
+        opcode: 997939
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+          map_select: MAP_SELECT_0F3A
+          vex_w_usage: VEX_W_IS_ZERO
         }
+        immediate_value_bytes: 1
       }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: false
-        encoding_scheme: 'M'
-        raw_encoding_specification: 'REX + F6 /2'
-        x86_encoding_specification {
-          opcode: 0xF6
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          modrm_opcode_extension: 2
-          legacy_prefixes {
-            has_mandatory_rex_w_prefix: true
-          }
-        }
-      }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'M'
-        raw_encoding_specification: '0F 00 /4'
-        x86_encoding_specification {
-          opcode: 0x0F00
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          modrm_opcode_extension: 4
-          legacy_prefixes {
-          }
-        }
-      }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'RVM'
-        raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG 15 /r'
-        x86_encoding_specification {
-          opcode: 0x0F15
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_256_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-          }
-        }
-      }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'FV-RVM'
-        raw_encoding_specification: 'EVEX.NDS.128.66.0F.W1 58 /r'
-        x86_encoding_specification {
-          opcode: 0x0F58
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: EVEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-            vex_w_usage: VEX_W_IS_ONE
-            evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
-            opmask_usage: EVEX_OPMASK_IS_OPTIONAL
-            masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
-          }
-        }
-      }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'FV'
-        raw_encoding_specification: 'EVEX.NDS.128.66.0F.W0 FE /r'
-        x86_encoding_specification {
-          opcode: 0x0FFE
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: EVEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-            vex_w_usage: VEX_W_IS_ZERO
-            evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST
-            opmask_usage: EVEX_OPMASK_IS_OPTIONAL
-            masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
-          }
-        }
-      }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'RVM'
-        raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG FE /r'
-        x86_encoding_specification {
-          opcode: 0x0FFE
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_256_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-          }
-        }
-      }
-      instructions {
-        available_in_64_bit: true
-        legacy_instruction: true
-        encoding_scheme: 'RVM'
-        raw_encoding_specification: 'VEX.NDS.128.66.0F.WIG FE /r'
-        x86_encoding_specification {
-          opcode: 0x0FFE
-          modrm_usage: FULL_MODRM
-          vex_prefix {
-            prefix_type: VEX_PREFIX
-            vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-          }
-        }
-      }
-    })";
+    }
+  })proto";
 
 class X86ArchitectureTest : public ::testing::Test {
  protected:
@@ -362,75 +366,68 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
       {"opcode: 0x15", "15 id", "15 id"},
       // movl $0x12345678, %ecx
       // To check we can resolve opcodes that encode an operand.
-      {R"(opcode: 0xB9
-          immediate_value: "xV4\022")",
-       "B8+ rd id", "B8+ rd id"},
+      {R"proto(opcode: 0xB9 immediate_value: "xV4\022")proto", "B8+ rd id",
+       "B8+ rd id"},
       {"opcode: 148", "90+rd", "90+rd"},
       {"opcode: 22", nullptr, nullptr},
-      {R"(legacy_prefixes {
-            operand_size_override: OPERAND_SIZE_OVERRIDE
-          }
-          opcode: 0x15)",
-       "66 15 iw", "66 15 iw"},
-      {R"(
-          legacy_prefixes {
-            rex {
-              w: true
-            }
-          }
-          opcode: 0x15)",
+      {R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+               opcode: 0x15)proto", "66 15 iw", "66 15 iw"},
+      {R"proto(
+         legacy_prefixes { rex { w: true } } opcode: 0x15)proto",
        "REX.W + 15 id", "REX.W + 15 id"},
-      {R"(vex_prefix { not_b: true not_r: true not_x: true
-                       w: true map_select: MAP_SELECT_0F38
-          }
-          opcode: 0x0f38f3
-          modrm { register_operand: 2 addressing_mode: DIRECT }
-      )",
-       "VEX.NDD.LZ.0F38.W1 F3 /2", "VEX.NDD.LZ.0F38.W1 F3 /2"},
-      {R"(vex_prefix { not_b: true not_r: true not_x: true
-                       w: true map_select: MAP_SELECT_0F38
-          }
-          opcode: 0x0f38f3
-          modrm { register_operand: 7 })",
-       nullptr, "VEX.NDD.LZ.0F38.W1 F3 /2"},
+      {R"proto(vex_prefix {
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 w: true
+                 map_select: MAP_SELECT_0F38
+               }
+               opcode: 0x0f38f3
+               modrm { register_operand: 2 addressing_mode: DIRECT }
+       )proto", "VEX.NDD.LZ.0F38.W1 F3 /2", "VEX.NDD.LZ.0F38.W1 F3 /2"},
+      {R"proto(vex_prefix {
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 w: true
+                 map_select: MAP_SELECT_0F38
+               }
+               opcode: 0x0f38f3
+               modrm { register_operand: 7 })proto", nullptr,
+       "VEX.NDD.LZ.0F38.W1 F3 /2"},
       // The opcode 0x14 exists only for the 8-bit version of ADC. All other
       // versions use 0x15 and optionally a prefix.
-      {R"(legacy_prefixes {
-            rex {
-              w: true
-            }
-          }
-          opcode: 0x14)",
-       nullptr, nullptr},
-      {R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true
-          }
-          opcode: 0x0ffe)",
-       "VEX.NDS.256.66.0F.WIG FE /r", "VEX.NDS.256.66.0F.WIG FE /r"},
-      {R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true
-            w: true
-          }
-          opcode: 0x0ffe)",
-       "VEX.NDS.256.66.0F.WIG FE /r", "VEX.NDS.256.66.0F.WIG FE /r"},
-      {R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-          }
-          opcode: 0x0ffe)",
-       "VEX.NDS.128.66.0F.WIG FE /r", "VEX.NDS.128.66.0F.WIG FE /r"},
-      {R"(evex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-            w: true
-            vector_length_or_rounding: 0
-          }
-          opcode: 0x0f58)",
-       "EVEX.NDS.128.66.0F.W1 58 /r", "EVEX.NDS.128.66.0F.W1 58 /r"}};
+      {R"proto(legacy_prefixes { rex { w: true } } opcode: 0x14)proto", nullptr,
+       nullptr},
+      {R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 0x0ffe)proto", "VEX.NDS.256.66.0F.WIG FE /r",
+       "VEX.NDS.256.66.0F.WIG FE /r"},
+      {R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+                 w: true
+               }
+               opcode: 0x0ffe)proto", "VEX.NDS.256.66.0F.WIG FE /r",
+       "VEX.NDS.256.66.0F.WIG FE /r"},
+      {R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 map_select: MAP_SELECT_0F
+               }
+               opcode: 0x0ffe)proto", "VEX.NDS.128.66.0F.WIG FE /r",
+       "VEX.NDS.128.66.0F.WIG FE /r"},
+      {R"proto(evex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 map_select: MAP_SELECT_0F
+                 w: true
+                 vector_length_or_rounding: 0
+               }
+               opcode: 0x0f58)proto", "EVEX.NDS.128.66.0F.W1 58 /r",
+       "EVEX.NDS.128.66.0F.W1 58 /r"}};
   for (const auto test_case : kTestCases) {
     SCOPED_TRACE(absl::StrCat("test_case.encoded_instruction_proto:\n",
                               test_case.encoded_instruction_proto));

@@ -24,13 +24,13 @@ namespace {
 
 TEST(PrettyPrintTest, CpuModel) {
   const MicroArchitecture microarchitecture(
-      ParseProtoFromStringOrDie<MicroArchitectureProto>(R"(
-      id: 'hsw'
-      port_masks { port_numbers: [0, 1, 5, 6] }
-      port_masks { port_numbers: [2, 3, 7] }
-      protected_mode { user_modes: 3 }
-      model_ids: 'intel:06_3F'
-  )"));
+      ParseProtoFromStringOrDie<MicroArchitectureProto>(R"proto(
+        id: 'hsw'
+        port_masks { port_numbers: [ 0, 1, 5, 6 ] }
+        port_masks { port_numbers: [ 2, 3, 7 ] }
+        protected_mode { user_modes: 3 }
+        model_ids: 'intel:06_3F'
+      )proto"));
   EXPECT_EQ(PrettyPrintMicroArchitecture(microarchitecture), "hsw");
   EXPECT_EQ(PrettyPrintMicroArchitecture(
                 microarchitecture, PrettyPrintOptions().WithCpuDetails(true)),
@@ -41,61 +41,54 @@ TEST(PrettyPrintTest, CpuModel) {
 }
 
 TEST(PrettyPrintTest, Instruction) {
-  const InstructionProto proto = ParseProtoFromStringOrDie<InstructionProto>(R"(
-      description: "Blah"
-      llvm_mnemonic: "VBROADCASTF128"
-      vendor_syntax {
-        mnemonic: "VBROADCASTF128"
-        operands {
-          addressing_mode: DIRECT_ADDRESSING
-          encoding: MODRM_REG_ENCODING
-          value_size_bits: 256
-          name: "ymm1"
-          usage: USAGE_WRITE
+  const InstructionProto proto =
+      ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+        description: "Blah"
+        llvm_mnemonic: "VBROADCASTF128"
+        vendor_syntax {
+          mnemonic: "VBROADCASTF128"
+          operands {
+            addressing_mode: DIRECT_ADDRESSING
+            encoding: MODRM_REG_ENCODING
+            value_size_bits: 256
+            name: "ymm1"
+            usage: USAGE_WRITE
+          }
+          operands {
+            addressing_mode: INDIRECT_ADDRESSING
+            encoding: MODRM_RM_ENCODING
+            value_size_bits: 128
+            name: "m128"
+            usage: USAGE_READ
+          }
         }
-        operands {
-          addressing_mode: INDIRECT_ADDRESSING
-          encoding: MODRM_RM_ENCODING
-          value_size_bits: 128
-          name: "m128"
-          usage: USAGE_READ
+        syntax {
+          mnemonic: "vbroadcastf128"
+          operands { name: "ymm1" }
+          operands { name: "xmmword ptr [rsi]" }
         }
-      }
-      syntax {
-        mnemonic: "vbroadcastf128"
-        operands {
-          name: "ymm1"
+        att_syntax {
+          mnemonic: "vbroadcastf128"
+          operands { name: '(%rsi)' }
+          operands { name: "%ymm1" }
         }
-        operands {
-          name: "xmmword ptr [rsi]"
+        feature_name: "AVX"
+        available_in_64_bit: true
+        legacy_instruction: true
+        encoding_scheme: "RM"
+        raw_encoding_specification: "VEX.256.66.0F38.W0 1A /r"
+        x86_encoding_specification {
+          opcode: 997402
+          modrm_usage: FULL_MODRM
+          vex_prefix {
+            prefix_type: VEX_PREFIX
+            vector_size: VEX_VECTOR_SIZE_256_BIT
+            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+            map_select: MAP_SELECT_0F38
+            vex_w_usage: VEX_W_IS_ZERO
+          }
         }
-      }
-      att_syntax {
-        mnemonic: "vbroadcastf128"
-        operands {
-          name: '(%rsi)'
-        }
-        operands {
-          name: "%ymm1"
-        }
-      }
-      feature_name: "AVX"
-      available_in_64_bit: true
-      legacy_instruction: true
-      encoding_scheme: "RM"
-      raw_encoding_specification: "VEX.256.66.0F38.W0 1A /r"
-      x86_encoding_specification {
-        opcode: 997402
-        modrm_usage: FULL_MODRM
-        vex_prefix {
-          prefix_type: VEX_PREFIX
-          vector_size: VEX_VECTOR_SIZE_256_BIT
-          mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-          map_select: MAP_SELECT_0F38
-          vex_w_usage: VEX_W_IS_ZERO
-        }
-      }
-  )");
+      )proto");
   EXPECT_EQ(PrettyPrintInstruction(proto, PrettyPrintOptions()),
             "VBROADCASTF128 ymm1, m128\n"
             "llvm: VBROADCASTF128");
@@ -108,19 +101,18 @@ TEST(PrettyPrintTest, Instruction) {
 }
 
 TEST(PrettyPrintTest, Itinerary) {
-  const ItineraryProto proto = ParseProtoFromStringOrDie<ItineraryProto>(R"(
-      micro_ops {
-        port_mask { port_numbers: [0, 1, 5, 6]}
-        latency: 2
-      }
-      micro_ops {
-        port_mask { port_numbers: [2,3,7]}
-      }
-      micro_ops {
-        port_mask { port_numbers: [4]}
-        dependencies: [0, 1]
-      }
-  )");
+  const ItineraryProto proto =
+      ParseProtoFromStringOrDie<ItineraryProto>(R"proto(
+        micro_ops {
+          port_mask { port_numbers: [ 0, 1, 5, 6 ] }
+          latency: 2
+        }
+        micro_ops { port_mask { port_numbers: [ 2, 3, 7 ] } }
+        micro_ops {
+          port_mask { port_numbers: [ 4 ] }
+          dependencies: [ 0, 1 ]
+        }
+      )proto");
   EXPECT_EQ(PrettyPrintItinerary(proto, PrettyPrintOptions()),
             "  P0156 (lat:2)\n"
             "  P237 (lat:0)\n"
@@ -128,19 +120,18 @@ TEST(PrettyPrintTest, Itinerary) {
 }
 
 TEST(PrettyPrintTest, ItineraryOneLine) {
-  const ItineraryProto proto = ParseProtoFromStringOrDie<ItineraryProto>(R"(
-      micro_ops {
-        port_mask { port_numbers: [0, 1, 5, 6]}
-        latency: 2
-      }
-      micro_ops {
-        port_mask { port_numbers: [2,3,7]}
-      }
-      micro_ops {
-        port_mask { port_numbers: [4]}
-        dependencies: [0, 1]
-      }
-  )");
+  const ItineraryProto proto =
+      ParseProtoFromStringOrDie<ItineraryProto>(R"proto(
+        micro_ops {
+          port_mask { port_numbers: [ 0, 1, 5, 6 ] }
+          latency: 2
+        }
+        micro_ops { port_mask { port_numbers: [ 2, 3, 7 ] } }
+        micro_ops {
+          port_mask { port_numbers: [ 4 ] }
+          dependencies: [ 0, 1 ]
+        }
+      )proto");
   EXPECT_EQ(PrettyPrintItinerary(proto, PrettyPrintOptions()
                                             .WithItinerariesOnOneLine(true)
                                             .WithMicroOpLatencies(false)

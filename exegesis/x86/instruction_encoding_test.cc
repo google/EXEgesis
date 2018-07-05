@@ -91,12 +91,12 @@ TEST(NumModRmDisplacementBytesTest, Test) {
     int expected_num_bytes;
   } kInputs[] = {
       {"addressing_mode: DIRECT register_operand: 1 rm_operand: 2", "", 0},
-      {R"(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT register_operand: 2
-          rm_operand: 3)",
-       "", 1},
-      {R"(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT register_operand: 2
-          rm_operand: 4)",
-       "base: 5 index: 3 scale: 1", 1},
+      {R"proto(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+               register_operand: 2
+               rm_operand: 3)proto", "", 1},
+      {R"proto(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+               register_operand: 2
+               rm_operand: 4)proto", "base: 5 index: 3 scale: 1", 1},
       {"addressing_mode: INDIRECT register_operand: 2 rm_operand: 4",
        "base: 5 index: 3 scale: 1", 4},
       {"addressing_mode: INDIRECT register_operand: 2 rm_operand: 5", "", 4},
@@ -121,19 +121,19 @@ TEST(ModRmRequiresSibTest, Test) {
       {"addressing_mode: DIRECT register_operand: 1 rm_operand: 2", false},
       {"addressing_mode: DIRECT register_operand: 2 rm_operand: 4", false},
       {"addressing_mode: INDIRECT register_operand: 0 rm_operand: 0", false},
-      {R"(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT register_operand: 0
-          rm_operand: 0)",
-       false},
-      {R"(addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT register_operand: 0
-          rm_operand: 0)",
-       false},
+      {R"proto(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+               register_operand: 0
+               rm_operand: 0)proto", false},
+      {R"proto(addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+               register_operand: 0
+               rm_operand: 0)proto", false},
       {"addressing_mode: INDIRECT register_operand: 0 rm_operand: 4", true},
-      {R"(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT register_operand: 0
-          rm_operand: 4)",
-       true},
-      {R"(addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT register_operand: 0
-          rm_operand: 4)",
-       true},
+      {R"proto(addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+               register_operand: 0
+               rm_operand: 4)proto", true},
+      {R"proto(addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+               register_operand: 0
+               rm_operand: 4)proto", true},
   };
   for (const auto& input : kInputs) {
     SCOPED_TRACE(input.modrm);
@@ -456,68 +456,62 @@ TEST(ModRmUsageMatchesSpecification, FullModRm) {
   } kInputs[] = {
       {"modrm_usage: FULL_MODRM",
        "modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT }",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-          }
-          operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_REG_ENCODING
+               }
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm_usage: FULL_MODRM",
        "modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT }",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_REG_ENCODING
+               }
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
       {"modrm_usage: FULL_MODRM", "modrm { addressing_mode: DIRECT }",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_REG_ENCODING
+               }
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm_usage: FULL_MODRM", "modrm { addressing_mode: DIRECT }",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-          }
-          operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_REG_ENCODING
+               }
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
       {"modrm_usage: FULL_MODRM",
        "modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT }",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-          }
-          operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_REG_ENCODING
+               }
+               operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm_usage: FULL_MODRM",
        "modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT }",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_REG_ENCODING
-          }
-          operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_REG_ENCODING
+               }
+               operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
   };
   for (const auto& input : kInputs) {
     SCOPED_TRACE(input.specification);
@@ -566,30 +560,30 @@ TEST(ConvertToInstructionOperandAddressingMode, SibIndirectWithDisplacement) {
     const char* decoded_instruction;
     InstructionOperand::AddressingMode expected;
   } kInputs[] = {
-      {R"(modrm {
-            addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-            rm_operand: 4
-          }
-          sib { index: 4 })",
+      {R"proto(modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 rm_operand: 4
+               }
+               sib { index: 4 })proto",
        InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT},
-      {R"(modrm {
-            addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-            rm_operand: 4
-          }
-          sib {})",
+      {R"proto(modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 rm_operand: 4
+               }
+               sib {})proto",
        InstructionOperand::
            INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX},
-      {R"(modrm {
-            addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-            rm_operand: 4
-          }
-          sib { index: 4 })",
+      {R"proto(modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 rm_operand: 4
+               }
+               sib { index: 4 })proto",
        InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT},
-      {R"(modrm {
-            addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-            rm_operand: 4
-          }
-          sib {})",
+      {R"proto(modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 rm_operand: 4
+               }
+               sib {})proto",
        InstructionOperand::
            INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX},
   };
@@ -638,52 +632,45 @@ TEST(AddressingModeMatchesSpecification, NoSibIndirect) {
     bool expected_match;
   } kInputs[] = {
       {"modrm { addressing_mode: INDIRECT }", "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT }",
        "modrm_usage: OPCODE_EXTENSION_IN_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT }",
        "modrm_usage: NO_MODRM_USAGE",
-       R"(operands {
-            addressing_mode: DIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: DIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm { addressing_mode: INDIRECT rm_operand: 5 }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_INSTRUCTION_POINTER
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_INSTRUCTION_POINTER
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"modrm { addressing_mode: DIRECT }", "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
       {"modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
   };
   for (const auto& input : kInputs) {
     SCOPED_TRACE(input.specification);
@@ -711,51 +698,47 @@ TEST(AddressingModeMatchesSpecification, SibIndirect) {
       {"sib { index: 0x04 base: 0x05 } modrm { rm_operand: 4 addressing_mode: "
        "INDIRECT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"sib { index: 0x04 base: 0x02 } modrm { rm_operand: 4 addressing_mode: "
        "INDIRECT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"sib { index: 0x04 base: 0x02 } modrm { rm_operand: 4 addressing_mode: "
        "INDIRECT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
       {"sib { index: 0x02 base: 0x05 } modrm { rm_operand: 4 addressing_mode: "
        "INDIRECT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_INDEX_AND_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode:
+                     INDIRECT_ADDRESSING_WITH_INDEX_AND_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"sib { index: 0x02 base: 0x04 } modrm { rm_operand: 4 addressing_mode: "
        "INDIRECT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_INDEX
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_INDEX
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
       {"sib { index: 0x02 base: 0x04 } modrm { rm_operand: 4 addressing_mode: "
        "INDIRECT }",
        "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_INDEX_AND_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+       R"proto(operands {
+                 addressing_mode:
+                     INDIRECT_ADDRESSING_WITH_INDEX_AND_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
   };
   for (const auto& input : kInputs) {
     SCOPED_TRACE(input.decoded_instruction);
@@ -780,61 +763,53 @@ TEST(AddressingModeMatchesSpecification, SibIndirectDWithDisplacement) {
     const char* instruction_format;
     bool expected_match;
   } kInputs[] = {
-      {R"(sib { index: 0x04 }
-          modrm {
-            rm_operand: 4
-            addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-          })",
-       "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
-      {R"(sib { index: 0x04 }
-          modrm {
-            rm_operand: 4
-            addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-          })",
-       "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
-      {R"(sib { index: 0x02 }
-          modrm {
-            rm_operand: 4
-            addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-          })",
-       "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
-      {R"(sib { index: 0x02 }
-          modrm {
-            rm_operand: 4
-            addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-          })",
-       "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX
-            encoding: MODRM_RM_ENCODING
-          })",
-       true},
-      {R"(sib { index: 0x02 }
-          modrm {
-            rm_operand: 4
-            addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-          })",
-       "modrm_usage: FULL_MODRM",
-       R"(operands {
-            addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_INDEX
-            encoding: MODRM_RM_ENCODING
-          })",
-       false},
+      {R"proto(sib { index: 0x04 }
+               modrm {
+                 rm_operand: 4
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+               })proto", "modrm_usage: FULL_MODRM",
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
+      {R"proto(sib { index: 0x04 }
+               modrm {
+                 rm_operand: 4
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+               })proto", "modrm_usage: FULL_MODRM",
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
+      {R"proto(sib { index: 0x02 }
+               modrm {
+                 rm_operand: 4
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+               })proto", "modrm_usage: FULL_MODRM",
+       R"proto(operands {
+                 addressing_mode:
+                     INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
+      {R"proto(sib { index: 0x02 }
+               modrm {
+                 rm_operand: 4
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+               })proto", "modrm_usage: FULL_MODRM",
+       R"proto(operands {
+                 addressing_mode:
+                     INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX
+                 encoding: MODRM_RM_ENCODING
+               })proto", true},
+      {R"proto(sib { index: 0x02 }
+               modrm {
+                 rm_operand: 4
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+               })proto", "modrm_usage: FULL_MODRM",
+       R"proto(operands {
+                 addressing_mode: INDIRECT_ADDRESSING_WITH_BASE_AND_INDEX
+                 encoding: MODRM_RM_ENCODING
+               })proto", false},
   };
   for (const auto& input : kInputs) {
     SCOPED_TRACE(input.decoded_instruction);
@@ -856,91 +831,137 @@ TEST(BaseDecodedInstructionTest, Test) {
   constexpr struct {
     const char* specification;
     const char* expected_encoding;
-  } kInputs[] = {
-      {R"(legacy_prefixes {} opcode: 0xff
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          modrm_opcode_extension: 2)",
-       R"(legacy_prefixes {} opcode: 0xff
-          modrm { register_operand: 2 })"},
-      {R"(legacy_prefixes { has_mandatory_repne_prefix: true }
-          opcode: 0x0f58 modrm_usage: FULL_MODRM)",
-       R"(legacy_prefixes { lock_or_rep: REPNE_PREFIX } opcode: 0x0f58
-          modrm {})"},
-      {R"(legacy_prefixes {} opcode: 0xd5
-          immediate_value_bytes: 1)",
-       "legacy_prefixes {} opcode: 0xd5 "},
-      {R"(vex_prefix { vector_size: VEX_VECTOR_SIZE_128_BIT
-                       map_select: MAP_SELECT_0F }
-          opcode: 0x0f77)",
-       R"(vex_prefix { not_r: true not_x: true
-                       not_b: true map_select: MAP_SELECT_0F
-                       w: false use_256_bit_vector_length: false }
-          opcode: 0x0f77)"},
-      {R"(vex_prefix {
-            vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F38 vex_w_usage: VEX_W_IS_ONE }
-          opcode: 0x0f3899 modrm_usage: FULL_MODRM)",
-       R"(vex_prefix { not_b: true not_r: true
-                       not_x: true map_select: MAP_SELECT_0F38
-                       mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                       w: true }
-          opcode: 0x0f3899 modrm {})"},
-      {R"(vex_prefix {
-            vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
-            vector_size: VEX_VECTOR_SIZE_128_BIT
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            map_select: MAP_SELECT_0F
-            vex_w_usage: VEX_W_IS_IGNORED }
-          opcode: 0x0f72
-          modrm_usage: OPCODE_EXTENSION_IN_MODRM
-          modrm_opcode_extension: 6
-          immediate_value_bytes: 1)",
-       R"(vex_prefix { not_b: true not_r: true
-                       not_x: true map_select: MAP_SELECT_0F
-                       mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-          }
-          opcode: 0x0f72 modrm { register_operand: 6 })"},
-      {R"(opcode: 0x0f38f3
-            modrm_usage: OPCODE_EXTENSION_IN_MODRM
-            modrm_opcode_extension: 2
-            vex_prefix {
-              prefix_type: VEX_PREFIX
-              vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
-              vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-              map_select: MAP_SELECT_0F38
-              vex_w_usage: VEX_W_IS_ONE
-            })",
-       R"(vex_prefix { not_b: true not_r: true not_x: true
-                       w: true map_select: MAP_SELECT_0F38
-          }
-          opcode: 0x0f38f3
-          modrm { register_operand: 2 }
-      )"},
-      {R"(opcode: 0x0f38f3
-            modrm_usage: OPCODE_EXTENSION_IN_MODRM
-            modrm_opcode_extension: 3
-            vex_prefix {
-              prefix_type: VEX_PREFIX
-              vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
-              vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
-              map_select: MAP_SELECT_0F38
-              vex_w_usage: VEX_W_IS_ONE
-            })",
-       R"(vex_prefix { not_b: true not_r: true not_x: true
-                       w: true map_select: MAP_SELECT_0F38
-          }
-          opcode: 0x0f38f3
-          modrm { register_operand: 3 }
-      )"},
-      {R"(vex_prefix { vector_size: VEX_VECTOR_SIZE_256_BIT
-                       map_select: MAP_SELECT_0F }
-          opcode: 0x0f77)",
-       R"(vex_prefix { not_b: true not_r: true
-                       not_x: true map_select: MAP_SELECT_0F
-                       use_256_bit_vector_length: true }
-          opcode: 0x0f77)"}};
+  } kInputs[] = {{R"proto(legacy_prefixes {}
+                          opcode: 0xff
+                          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                          modrm_opcode_extension: 2)proto",
+                  R"proto(legacy_prefixes {}
+                          opcode: 0xff
+                          modrm { register_operand: 2 })proto"},
+                 {R"proto(legacy_prefixes { has_mandatory_repne_prefix: true }
+                          opcode: 0x0f58
+                          modrm_usage: FULL_MODRM)proto",
+                  R"proto(legacy_prefixes { lock_or_rep: REPNE_PREFIX }
+                          opcode: 0x0f58
+                          modrm {})proto"},
+                 {R"proto(legacy_prefixes {}
+                          opcode: 0xd5
+                          immediate_value_bytes: 1)proto",
+                  "legacy_prefixes {} opcode: 0xd5 "},
+                 {R"proto(vex_prefix {
+                            vector_size: VEX_VECTOR_SIZE_128_BIT
+                            map_select: MAP_SELECT_0F
+                          }
+                          opcode: 0x0f77)proto",
+                  R"proto(vex_prefix {
+                            not_r: true
+                            not_x: true
+                            not_b: true
+                            map_select: MAP_SELECT_0F
+                            w: false
+                            use_256_bit_vector_length: false
+                          }
+                          opcode: 0x0f77)proto"},
+                 {R"proto(vex_prefix {
+                            vex_operand_usage:
+                                VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+                            vector_size: VEX_VECTOR_SIZE_128_BIT
+                            mandatory_prefix:
+                                MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                            map_select: MAP_SELECT_0F38
+                            vex_w_usage: VEX_W_IS_ONE
+                          }
+                          opcode: 0x0f3899
+                          modrm_usage: FULL_MODRM)proto",
+                  R"proto(vex_prefix {
+                            not_b: true
+                            not_r: true
+                            not_x: true
+                            map_select: MAP_SELECT_0F38
+                            mandatory_prefix:
+                                MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                            w: true
+                          }
+                          opcode: 0x0f3899
+                          modrm {})proto"},
+                 {R"proto(vex_prefix {
+                            vex_operand_usage:
+                                VEX_OPERAND_IS_DESTINATION_REGISTER
+                            vector_size: VEX_VECTOR_SIZE_128_BIT
+                            mandatory_prefix:
+                                MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                            map_select: MAP_SELECT_0F
+                            vex_w_usage: VEX_W_IS_IGNORED
+                          }
+                          opcode: 0x0f72
+                          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                          modrm_opcode_extension: 6
+                          immediate_value_bytes: 1)proto",
+                  R"proto(vex_prefix {
+                            not_b: true
+                            not_r: true
+                            not_x: true
+                            map_select: MAP_SELECT_0F
+                            mandatory_prefix:
+                                MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                          }
+                          opcode: 0x0f72
+                          modrm { register_operand: 6 })proto"},
+                 {R"proto(opcode: 0x0f38f3
+                          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                          modrm_opcode_extension: 2
+                          vex_prefix {
+                            prefix_type: VEX_PREFIX
+                            vex_operand_usage:
+                                VEX_OPERAND_IS_DESTINATION_REGISTER
+                            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+                            map_select: MAP_SELECT_0F38
+                            vex_w_usage: VEX_W_IS_ONE
+                          })proto",
+                  R"proto(vex_prefix {
+                            not_b: true
+                            not_r: true
+                            not_x: true
+                            w: true
+                            map_select: MAP_SELECT_0F38
+                          }
+                          opcode: 0x0f38f3
+                          modrm { register_operand: 2 }
+                  )proto"},
+                 {R"proto(opcode: 0x0f38f3
+                          modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                          modrm_opcode_extension: 3
+                          vex_prefix {
+                            prefix_type: VEX_PREFIX
+                            vex_operand_usage:
+                                VEX_OPERAND_IS_DESTINATION_REGISTER
+                            vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+                            map_select: MAP_SELECT_0F38
+                            vex_w_usage: VEX_W_IS_ONE
+                          })proto",
+                  R"proto(vex_prefix {
+                            not_b: true
+                            not_r: true
+                            not_x: true
+                            w: true
+                            map_select: MAP_SELECT_0F38
+                          }
+                          opcode: 0x0f38f3
+                          modrm { register_operand: 3 }
+                  )proto"},
+                 {R"proto(vex_prefix {
+                            vector_size: VEX_VECTOR_SIZE_256_BIT
+                            map_select: MAP_SELECT_0F
+                          }
+                          opcode: 0x0f77)proto",
+                  R"proto(vex_prefix {
+                            not_b: true
+                            not_r: true
+                            not_x: true
+                            map_select: MAP_SELECT_0F
+                            use_256_bit_vector_length: true
+                          }
+                          opcode: 0x0f77)proto"}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(input.specification);
     EncodingSpecification specification;
@@ -966,32 +987,39 @@ void TestGenerateEncodingExamples(
 
 TEST(GenerateEncodingExamplesTest, NoOperands) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax { mnemonic: 'CLC' }
-         encoding_scheme: 'NP'
-         raw_encoding_specification: 'F8')",
+      R"proto(vendor_syntax { mnemonic: 'CLC' }
+              encoding_scheme: 'NP'
+              raw_encoding_specification: 'F8')proto",
       {"legacy_prefixes {} opcode: 0xf8 "});
 }
 
 TEST(GenerateEncodingExamplesTest, OperandInOpcode) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'BSWAP'
-           operands { name: 'r32'
-                      encoding: OPCODE_ENCODING
-                      addressing_mode: DIRECT_ADDRESSING
-                      value_size_bits: 32 }}
-         encoding_scheme: 'O'
-         raw_encoding_specification: '0F C8+rd')",
+      R"proto(vendor_syntax {
+                mnemonic: 'BSWAP'
+                operands {
+                  name: 'r32'
+                  encoding: OPCODE_ENCODING
+                  addressing_mode: DIRECT_ADDRESSING
+                  value_size_bits: 32
+                }
+              }
+              encoding_scheme: 'O'
+              raw_encoding_specification: '0F C8+rd')proto",
       {"legacy_prefixes {} opcode: 0x0fc8",
        "legacy_prefixes { rex { b: true }} opcode: 0x0fc8"});
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'BSWAP' operands { }
-           operands { name: 'r64' encoding: OPCODE_ENCODING
-                      addressing_mode: DIRECT_ADDRESSING
-                      value_size_bits: 64 }}
-         encoding_scheme: 'O'
-         raw_encoding_specification: 'REX.W + 0F C8+rd')",
+      R"proto(vendor_syntax {
+                mnemonic: 'BSWAP'
+                operands {} operands {
+                  name: 'r64'
+                  encoding: OPCODE_ENCODING
+                  addressing_mode: DIRECT_ADDRESSING
+                  value_size_bits: 64
+                }
+              }
+              encoding_scheme: 'O'
+              raw_encoding_specification: 'REX.W + 0F C8+rd')proto",
       // Note that there is no version of the instruction with rex.b set to
       // true, because the instruction already requires the REX prefix because
       // of rex.w.
@@ -1000,15 +1028,23 @@ TEST(GenerateEncodingExamplesTest, OperandInOpcode) {
 
 TEST(GenerateEncodingExamplesTest, ImplicitOperands) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'LODS'
-           operands { name: 'EAX' addressing_mode: DIRECT_ADDRESSING
-                      encoding: IMPLICIT_ENCODING value_size_bits: 32 }
-           operands { name: 'DWORD PTR [RSI]'
-                      addressing_mode: INDIRECT_ADDRESSING_BY_RSI
-                      encoding: IMPLICIT_ENCODING value_size_bits: 32 }}
-         encoding_scheme: 'NP'
-         raw_encoding_specification: 'AD')",
+      R"proto(vendor_syntax {
+                mnemonic: 'LODS'
+                operands {
+                  name: 'EAX'
+                  addressing_mode: DIRECT_ADDRESSING
+                  encoding: IMPLICIT_ENCODING
+                  value_size_bits: 32
+                }
+                operands {
+                  name: 'DWORD PTR [RSI]'
+                  addressing_mode: INDIRECT_ADDRESSING_BY_RSI
+                  encoding: IMPLICIT_ENCODING
+                  value_size_bits: 32
+                }
+              }
+              encoding_scheme: 'NP'
+              raw_encoding_specification: 'AD')proto",
       {"legacy_prefixes {} opcode: 0xad"});
 }
 
@@ -1016,319 +1052,556 @@ TEST(GenerateEncodingExamplesTest, ImmediateValue) {}
 
 TEST(GenerateEncodingExamplesTest, CodeOffset) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax { mnemonic: 'JS'
-                         operands { name: 'rel32'
-                                    addressing_mode: NO_ADDRESSING
-                                    encoding: IMMEDIATE_VALUE_ENCODING }}
-         encoding_scheme: 'D'
-         raw_encoding_specification: '0F 88 cd')",
-      {R"(legacy_prefixes {} opcode: 0x0f88 code_offset: '\xc0\xc0\xc0\xc0')"});
+      R"proto(vendor_syntax {
+                mnemonic: 'JS'
+                operands {
+                  name: 'rel32'
+                  addressing_mode: NO_ADDRESSING
+                  encoding: IMMEDIATE_VALUE_ENCODING
+                }
+              }
+              encoding_scheme: 'D'
+              raw_encoding_specification: '0F 88 cd')proto",
+      {R"proto(legacy_prefixes {} opcode: 0x0f88 code_offset: '\xc0\xc0\xc0\xc0')proto"});
   TestGenerateEncodingExamples(
-      R"(vendor_syntax { mnemonic: 'JS'
-                         operands { name: 'rel8'
-                                    addressing_mode: NO_ADDRESSING
-                                    encoding: IMMEDIATE_VALUE_ENCODING }}
-         encoding_scheme: 'D'
-         raw_encoding_specification: '78 cb')",
-      {R"(legacy_prefixes {} opcode: 0x78 code_offset: '\xc0')"});
+      R"proto(vendor_syntax {
+                mnemonic: 'JS'
+                operands {
+                  name: 'rel8'
+                  addressing_mode: NO_ADDRESSING
+                  encoding: IMMEDIATE_VALUE_ENCODING
+                }
+              }
+              encoding_scheme: 'D'
+              raw_encoding_specification: '78 cb')proto",
+      {R"proto(legacy_prefixes {} opcode: 0x78 code_offset: '\xc0')proto"});
 }
 
 TEST(GenerateEncodingExamplesTest, DirectAddressingInModRmRm) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'RDFSBASE' operands { }
-           operands { name: 'r64'
-                      addressing_mode: DIRECT_ADDRESSING
-                      encoding: MODRM_RM_ENCODING
-                      value_size_bits: 64 }}
-         feature_name: 'FSGSBASE'
-         legacy_instruction: false
-         encoding_scheme: 'M'
-         raw_encoding_specification: 'REX.W + F3 0F AE /0')",
-      {R"(legacy_prefixes { rex { w: true } lock_or_rep: REP_PREFIX }
-          opcode: 0x0fae
-          modrm { addressing_mode: DIRECT rm_operand: 3 })"});
+      R"proto(vendor_syntax {
+                mnemonic: 'RDFSBASE'
+                operands {} operands {
+                  name: 'r64'
+                  addressing_mode: DIRECT_ADDRESSING
+                  encoding: MODRM_RM_ENCODING
+                  value_size_bits: 64
+                }
+              }
+              feature_name: 'FSGSBASE'
+              legacy_instruction: false
+              encoding_scheme: 'M'
+              raw_encoding_specification: 'REX.W + F3 0F AE /0')proto",
+      {R"proto(legacy_prefixes { rex { w: true } lock_or_rep: REP_PREFIX }
+               opcode: 0x0fae
+               modrm { addressing_mode: DIRECT rm_operand: 3 })proto"});
 }
 
 TEST(GenerateEncodingExamplesTest, IndirectAddressingInModRm) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'LDMXCSR' operands { }
-           operands { name: 'm32' addressing_mode: INDIRECT_ADDRESSING
-                      encoding: MODRM_RM_ENCODING value_size_bits: 32 }}
-         feature_name: 'SSE'
-         encoding_scheme: 'M'
-         raw_encoding_specification: '0F AE /2')",
+      R"proto(vendor_syntax {
+                mnemonic: 'LDMXCSR'
+                operands {} operands {
+                  name: 'm32'
+                  addressing_mode: INDIRECT_ADDRESSING
+                  encoding: MODRM_RM_ENCODING
+                  value_size_bits: 32
+                }
+              }
+              feature_name: 'SSE'
+              encoding_scheme: 'M'
+              raw_encoding_specification: '0F AE /2')proto",
       {// Indirect addressing with 8-bit displacement, with and without SIB.
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 3
-                  address_displacement: 127 })",
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 4 address_displacement: 127 }
-          sib { scale: 2 index: 1 base: 4 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 3
+                 address_displacement: 127
+               })proto",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 4
+                 address_displacement: 127
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
        // Indirect addressing with 32-bit displacement.
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 3
-                  address_displacement: 305419896 })",
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 4 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 3
+                 address_displacement: 305419896
+               })proto",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
        // Indirect addressing with no displacement and just a base register.
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 3 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 3
+               })proto",
        // Indirect addressing with RIP-relative addressing using a fixed
        // displacement.
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 5
-                  address_displacement: 305419896 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 5
+                 address_displacement: 305419896
+               })proto",
        // Indirect addressing with ModR/M and SIB and no specialities.
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 4 }
-          sib { scale: 2 index: 1 base: 4 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 4
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
        // Indirect addressing with ModR/M, SIB and a 32-bit displacement
        // (obtained through SIB).
-       R"(legacy_prefixes {}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 5 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 5 })proto",
        // All of the above, but with rex.b set to one.
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 3
-                  address_displacement: 127 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 4 address_displacement: 127 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 3
-                  address_displacement: 305419896 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 2 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 3 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 5
-                  address_displacement: 305419896 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 4 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(legacy_prefixes { rex { b: true }}
-          opcode: 0x0fae
-          modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 5 })"});
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 3
+                 address_displacement: 127
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 4
+                 address_displacement: 127
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 3
+                 address_displacement: 305419896
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 2
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 3
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 5
+                 address_displacement: 305419896
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 4
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x0fae
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 2
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 5 })proto"});
 }
 
 TEST(GenerateEncodingExamplesTest, FullModRm) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'ADD'
-           operands { name: 'r/m8'
-                      addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                      encoding: MODRM_RM_ENCODING
-                      value_size_bits: 8 }
-           operands { name: 'imm8' addressing_mode: NO_ADDRESSING
-                      encoding: IMMEDIATE_VALUE_ENCODING
-                      value_size_bits: 8 }}
-         encoding_scheme: 'MI'
-         raw_encoding_specification: '80 /0 ib')",
+      R"proto(vendor_syntax {
+                mnemonic: 'ADD'
+                operands {
+                  name: 'r/m8'
+                  addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+                  encoding: MODRM_RM_ENCODING
+                  value_size_bits: 8
+                }
+                operands {
+                  name: 'imm8'
+                  addressing_mode: NO_ADDRESSING
+                  encoding: IMMEDIATE_VALUE_ENCODING
+                  value_size_bits: 8
+                }
+              }
+              encoding_scheme: 'MI'
+              raw_encoding_specification: '80 /0 ib')proto",
       {// Direct addressing.
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: DIRECT register_operand: 0 rm_operand: 3 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: DIRECT
+                 register_operand: 0
+                 rm_operand: 3
+               })proto",
        // Indirect addressing with 8-bit displacement.
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 3 address_displacement: 127 })",
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 4 address_displacement: 127 }
-          sib { scale: 2 index: 1 base: 4 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 3
+                 address_displacement: 127
+               })proto",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 4
+                 address_displacement: 127
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
        // Indirect addressing with 32-bit displacement.
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 3
-                  address_displacement: 305419896 })",
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 4 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 3
+                 address_displacement: 305419896
+               })proto",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
        // Indirect addressing with no displacement and just a base register.
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT
-                  register_operand: 0
-                  rm_operand: 3 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 3
+               })proto",
        // Indirect addressing with RIP-relative addressing using a fixed
        // displacement.
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT register_operand: 0 rm_operand: 5
-                  address_displacement: 305419896 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 5
+                 address_displacement: 305419896
+               })proto",
        // Indirect addressing with ModR/M and SIB and no specialities.
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT register_operand: 0 rm_operand: 4 }
-          sib { scale: 2 index: 1 base: 4 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 4
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
        // Indirect addressing with ModR/M, SIB and a 32-bit displacement
        // (obtained through SIB).
-       R"(legacy_prefixes {} opcode: 0x80 immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT register_operand: 0 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 5 })",
+       R"proto(legacy_prefixes {}
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 5 })proto",
        // All of the above, but with rex.b set to one.
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: DIRECT register_operand: 0 rm_operand: 3 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 0
-                  rm_operand: 3
-                  address_displacement: 127 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 4 address_displacement: 127 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 3
-                  address_displacement: 305419896 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 0 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT
-                  register_operand: 0
-                  rm_operand: 3 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT register_operand: 0 rm_operand: 5
-                  address_displacement: 305419896 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT register_operand: 0 rm_operand: 4 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(legacy_prefixes { rex { b: true }} opcode: 0x80
-          immediate_value: '\xab'
-          modrm { addressing_mode: INDIRECT register_operand: 0 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 5 })"});
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: DIRECT
+                 register_operand: 0
+                 rm_operand: 3
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 3
+                 address_displacement: 127
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 4
+                 address_displacement: 127
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 3
+                 address_displacement: 305419896
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 0
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 3
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 5
+                 address_displacement: 305419896
+               })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 4
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(legacy_prefixes { rex { b: true } }
+               opcode: 0x80
+               immediate_value: '\xab'
+               modrm {
+                 addressing_mode: INDIRECT
+                 register_operand: 0
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 5 })proto"});
 }
 
 TEST(GenerateEncodingExamplesTest, ThreeByteVex) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'ANDN'
-           operands { name: 'r32a' addressing_mode: DIRECT_ADDRESSING
-                      encoding: MODRM_REG_ENCODING value_size_bits: 32 }
-           operands { name: 'r32b' addressing_mode: DIRECT_ADDRESSING
-                      encoding: VEX_V_ENCODING value_size_bits: 32 }
-           operands { name: 'r/m32'
-                      addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                      encoding: MODRM_RM_ENCODING value_size_bits: 32 }}
-         feature_name: 'BMI1'
-         encoding_scheme: 'RVM'
-         raw_encoding_specification: 'VEX.NDS.LZ.0F38.W0 F2 /r')",
+      R"proto(vendor_syntax {
+                mnemonic: 'ANDN'
+                operands {
+                  name: 'r32a'
+                  addressing_mode: DIRECT_ADDRESSING
+                  encoding: MODRM_REG_ENCODING
+                  value_size_bits: 32
+                }
+                operands {
+                  name: 'r32b'
+                  addressing_mode: DIRECT_ADDRESSING
+                  encoding: VEX_V_ENCODING
+                  value_size_bits: 32
+                }
+                operands {
+                  name: 'r/m32'
+                  addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+                  encoding: MODRM_RM_ENCODING
+                  value_size_bits: 32
+                }
+              }
+              feature_name: 'BMI1'
+              encoding_scheme: 'RVM'
+              raw_encoding_specification: 'VEX.NDS.LZ.0F38.W0 F2 /r')proto",
       {
           // Direct addressing.
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { addressing_mode: DIRECT
-                     register_operand: 6
-                     rm_operand: 3 })",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    addressing_mode: DIRECT
+                    register_operand: 6
+                    rm_operand: 3
+                  })proto",
           // Indirect addressing with 8-bit displacement.
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                     register_operand: 6 rm_operand: 3
-                     address_displacement: 127 })",
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                     register_operand: 6 rm_operand: 4
-                     address_displacement: 127 }
-             sib { scale: 2 index: 1 base: 4 })",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                    register_operand: 6
+                    rm_operand: 3
+                    address_displacement: 127
+                  })proto",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                    register_operand: 6
+                    rm_operand: 4
+                    address_displacement: 127
+                  }
+                  sib { scale: 2 index: 1 base: 4 })proto",
           // Indirect addressing with 32-bit displacement.
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                     register_operand: 6 rm_operand: 3
-                     address_displacement: 305419896 })",
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                     register_operand: 6 rm_operand: 4
-                     address_displacement: 305419896 }
-             sib { scale: 2 index: 1 base: 4 })",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                    register_operand: 6
+                    rm_operand: 3
+                    address_displacement: 305419896
+                  })proto",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                    register_operand: 6
+                    rm_operand: 4
+                    address_displacement: 305419896
+                  }
+                  sib { scale: 2 index: 1 base: 4 })proto",
           // Indirect addressing with no displacement and just a base register.
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { register_operand: 6 rm_operand: 3 })",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm { register_operand: 6 rm_operand: 3 })proto",
           // Indirect addressing with RIP-relative addressing using a fixed
           // displacement.
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { register_operand: 6 rm_operand: 5
-                     address_displacement: 305419896 })",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    register_operand: 6
+                    rm_operand: 5
+                    address_displacement: 305419896
+                  })proto",
           // Indirect addressing with ModR/M and SIB and no specialities.
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { register_operand: 6 rm_operand: 4 }
-             sib { scale: 2 index: 1 base: 4 })",
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm { register_operand: 6 rm_operand: 4 }
+                  sib { scale: 2 index: 1 base: 4 })proto",
           // Indirect addressing with ModR/M, SIB and a 32-bit displacement
           // (obtained through SIB).
-          R"(vex_prefix { not_b: true not_r: true
-                          not_x: true map_select: MAP_SELECT_0F38
-                          inverted_register_operand: 7 }
-             opcode: 0x0f38f2
-             modrm { register_operand: 6 rm_operand: 4
-                     address_displacement: 305419896 }
-             sib { scale: 2 index: 1 base: 5 })"
+          R"proto(vex_prefix {
+                    not_b: true
+                    not_r: true
+                    not_x: true
+                    map_select: MAP_SELECT_0F38
+                    inverted_register_operand: 7
+                  }
+                  opcode: 0x0f38f2
+                  modrm {
+                    register_operand: 6
+                    rm_operand: 4
+                    address_displacement: 305419896
+                  }
+                  sib { scale: 2 index: 1 base: 5 })proto"
           // There are no variations of the instruction with vex.not_b
           // set to zero, because the instruction has vex.map_select == 0F38,
           // and this already forces the three-byte VEX prefix.
@@ -1337,172 +1610,291 @@ TEST(GenerateEncodingExamplesTest, ThreeByteVex) {
 
 TEST(GenerateEncodingExamplesTest, TwoByteVex) {
   TestGenerateEncodingExamples(
-      R"(vendor_syntax {
-           mnemonic: 'VADDPD' operands { }
-           operands { name: 'ymm1' addressing_mode: DIRECT_ADDRESSING
-                      encoding: MODRM_REG_ENCODING
-                      value_size_bits: 256 }
-           operands { name: 'ymm2' addressing_mode: DIRECT_ADDRESSING
-                      encoding: VEX_V_ENCODING
-                      value_size_bits: 256 }
-           operands { name: 'ymm3/m256'
-                      addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                      encoding: MODRM_RM_ENCODING
-                      value_size_bits: 256 }}
-         feature_name: 'AVX'
-         encoding_scheme: 'RVM'
-         raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG 58 /r')",
-      {R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            map_select: MAP_SELECT_0F inverted_register_operand: 7
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: DIRECT register_operand: 6 rm_operand: 3 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 3 address_displacement: 127 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 4 address_displacement: 127 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 3
-                  address_displacement: 305419896 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 3 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 5
-                  address_displacement: 305419896 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 4 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_b: true not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 5 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: DIRECT register_operand: 6 rm_operand: 3 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 3
-                  address_displacement: 127 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 4 address_displacement: 127 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 3
-                  address_displacement: 305419896 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                  register_operand: 6 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 3 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 5
-                  address_displacement: 305419896 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 4 }
-          sib { scale: 2 index: 1 base: 4 })",
-       R"(vex_prefix {
-            mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-            not_r: true not_x: true
-            inverted_register_operand: 7 map_select: MAP_SELECT_0F
-            use_256_bit_vector_length: true }
-          opcode: 3928
-          modrm { register_operand: 6 rm_operand: 4
-                  address_displacement: 305419896 }
-          sib { scale: 2 index: 1 base: 5 })"});
+      R"proto(vendor_syntax {
+                mnemonic: 'VADDPD'
+                operands {} operands {
+                  name: 'ymm1'
+                  addressing_mode: DIRECT_ADDRESSING
+                  encoding: MODRM_REG_ENCODING
+                  value_size_bits: 256
+                }
+                operands {
+                  name: 'ymm2'
+                  addressing_mode: DIRECT_ADDRESSING
+                  encoding: VEX_V_ENCODING
+                  value_size_bits: 256
+                }
+                operands {
+                  name: 'ymm3/m256'
+                  addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+                  encoding: MODRM_RM_ENCODING
+                  value_size_bits: 256
+                }
+              }
+              feature_name: 'AVX'
+              encoding_scheme: 'RVM'
+              raw_encoding_specification: 'VEX.NDS.256.66.0F.WIG 58 /r')proto",
+      {R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 map_select: MAP_SELECT_0F
+                 inverted_register_operand: 7
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: DIRECT
+                 register_operand: 6
+                 rm_operand: 3
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 3
+                 address_displacement: 127
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 4
+                 address_displacement: 127
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 3
+                 address_displacement: 305419896
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm { register_operand: 6 rm_operand: 3 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 register_operand: 6
+                 rm_operand: 5
+                 address_displacement: 305419896
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm { register_operand: 6 rm_operand: 4 }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_b: true
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 register_operand: 6
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 5 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: DIRECT
+                 register_operand: 6
+                 rm_operand: 3
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 3
+                 address_displacement: 127
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 4
+                 address_displacement: 127
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 3
+                 address_displacement: 305419896
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                 register_operand: 6
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm { register_operand: 6 rm_operand: 3 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 register_operand: 6
+                 rm_operand: 5
+                 address_displacement: 305419896
+               })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm { register_operand: 6 rm_operand: 4 }
+               sib { scale: 2 index: 1 base: 4 })proto",
+       R"proto(vex_prefix {
+                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                 not_r: true
+                 not_x: true
+                 inverted_register_operand: 7
+                 map_select: MAP_SELECT_0F
+                 use_256_bit_vector_length: true
+               }
+               opcode: 3928
+               modrm {
+                 register_operand: 6
+                 rm_operand: 4
+                 address_displacement: 305419896
+               }
+               sib { scale: 2 index: 1 base: 5 })proto"});
 }
 
 class PrefixesAndOpcodeMatchSpecificationTest : public ::testing::Test {
@@ -1568,21 +1960,33 @@ TEST_F(PrefixesAndOpcodeMatchSpecificationTest, SimpleInstruction) {
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, RexPrefix) {
   TestMatch("REX.W + 35 id", "legacy_prefixes { rex { w: true } } opcode: 0x35",
             true);
+  TestMatch("REX.W + 35 id",
+            R"proto(legacy_prefixes {
+                      rex { w: true }
+                      operand_size_override: OPERAND_SIZE_OVERRIDE
+                    }
+                    opcode: 0x35)proto", false);
   TestMatch("REX.W + 35 id", "legacy_prefixes {} opcode: 0x35", false);
+  TestMatch(
+      "REX.W + 35 id",
+      R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+              opcode: 0x35)proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, InstructionWithOperands) {
   TestMatch("11 /r", "opcode: 0x11", true);
   TestMatch("11 /r", "opcode: 0x11 modrm { rm_operand: 3 }", true);
-  TestMatch("11 /r",
-            R"(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
-               opcode: 0x11 modrm { rm_operand: 3 })",
-            false);
+  TestMatch(
+      "11 /r",
+      R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+              opcode: 0x11
+              modrm { rm_operand: 3 })proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest,
        InstructionWithOperandsEncodedInOpcode) {
-  TestMatch("B8+ rd id", R"(opcode: 0xB9 immediate_value: "xV4\022")", true);
+  TestMatch("B8+ rd id", R"proto(opcode: 0xB9 immediate_value: "xV4\022")proto",
+            true);
 
   // Returns false when there is no operand encoded in the opcode.
   TestMatch("10 /r", "opcode: 0x11", false);
@@ -1590,42 +1994,34 @@ TEST_F(PrefixesAndOpcodeMatchSpecificationTest,
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, OperandSizeOverride) {
   TestMatch("66 11 /r", "opcode: 0x11", false);
-  TestMatch("66 11 /r",
-            R"(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
-               opcode: 0x11)",
-            true);
+  TestMatch(
+      "66 11 /r",
+      R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+              opcode: 0x11)proto", true);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, AddressSizeOverride) {
   TestMatch("67 11 /r", "opcode: 0x11", false);
-  TestMatch("67 11 /r",
-            R"(legacy_prefixes { address_size_override: ADDRESS_SIZE_OVERRIDE }
-               opcode: 0x11)",
-            true);
+  TestMatch(
+      "67 11 /r",
+      R"proto(legacy_prefixes { address_size_override: ADDRESS_SIZE_OVERRIDE }
+              opcode: 0x11)proto", true);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, RepRepnPrefix) {
   // 0xF2 is REPNE prefix
   TestMatch("F2 11 /r", "opcode: 0x11", false);
-  TestMatch("F2 11 /r",
-            R"(legacy_prefixes { lock_or_rep: REP_PREFIX }
-               opcode: 0x11)",
-            false);
-  TestMatch("F2 11 /r",
-            R"(legacy_prefixes { lock_or_rep: REPNE_PREFIX }
-               opcode: 0x11)",
-            true);
+  TestMatch("F2 11 /r", R"proto(legacy_prefixes { lock_or_rep: REP_PREFIX }
+                                opcode: 0x11)proto", false);
+  TestMatch("F2 11 /r", R"proto(legacy_prefixes { lock_or_rep: REPNE_PREFIX }
+                                opcode: 0x11)proto", true);
 
   // 0xF3 is REPE prefix
   TestMatch("F3 11 /r", "opcode: 0x11", false);
-  TestMatch("F3 11 /r",
-            R"(legacy_prefixes { lock_or_rep: REP_PREFIX }
-               opcode: 0x11)",
-            true);
-  TestMatch("F3 11 /r",
-            R"(legacy_prefixes { lock_or_rep: REPNE_PREFIX }
-               opcode: 0x11)",
-            false);
+  TestMatch("F3 11 /r", R"proto(legacy_prefixes { lock_or_rep: REP_PREFIX }
+                                opcode: 0x11)proto", true);
+  TestMatch("F3 11 /r", R"proto(legacy_prefixes { lock_or_rep: REPNE_PREFIX }
+                                opcode: 0x11)proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, VexPrefix) {
@@ -1645,189 +2041,192 @@ TEST_F(PrefixesAndOpcodeMatchSpecificationTest, VexPrefix) {
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, VexPrefix128Bit) {
   TestMatch("VEX.128.66.0F3A.WIG DF /r ib",
-            R"(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F3A
-                 w: true }
-               opcode: 0x0f3adf)",
-            true);
+            R"proto(vex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F3A
+                      w: true
+                    }
+                    opcode: 0x0f3adf)proto", true);
   TestMatch("VEX.128.66.0F3A.WIG DF /r ib",
-            R"(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F3A }
-               opcode: 0x0f3adf)",
-            true);
+            R"proto(vex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F3A
+                    }
+                    opcode: 0x0f3adf)proto", true);
   TestMatch(
       "VEX.128.66.0F3A.WIG DF /r ib",
       "vex_prefix { map_select: MAP_SELECT_0F3A w: true } opcode: 0x0f3adf ",
       false);
   TestMatch("VEX.128.66.0F3A.WIG DF /r ib",
-            R"(vex_prefix {
-                 map_select: MAP_SELECT_0F3A
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 w: true
-                 use_256_bit_vector_length: true }
-               opcode: 0x0f3adf)",
-            false);
+            R"proto(vex_prefix {
+                      map_select: MAP_SELECT_0F3A
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      w: true
+                      use_256_bit_vector_length: true
+                    }
+                    opcode: 0x0f3adf)proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, VexPrefix256Bit) {
   TestMatch("VEX.256.66.0F38.W0 19 /r",
-            R"(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F38
-                 use_256_bit_vector_length: true }
-               opcode: 0x0f3819)",
-            true);
+            R"proto(vex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F38
+                      use_256_bit_vector_length: true
+                    }
+                    opcode: 0x0f3819)proto", true);
   TestMatch("VEX.256.66.0F38.W0 19 /r",
-            R"(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F38 }
-               opcode: 0x0f3819)",
-            false);
+            R"proto(vex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F38
+                    }
+                    opcode: 0x0f3819)proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexPrefix) {
   TestMatch("EVEX.NDS.128.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true }
-               opcode: 0x0f58)",
-            true);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: true
+                    }
+                    opcode: 0x0f58)proto", true);
   TestMatch("EVEX.NDS.128.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: false }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: false
+                    }
+                    opcode: 0x0f58)proto", false);
   TestMatch("EVEX.NDS.128.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 vector_length_or_rounding: 1
-                 w: true }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      vector_length_or_rounding: 1
+                      w: true
+                    }
+                    opcode: 0x0f58)proto", false);
   TestMatch("EVEX.NDS.128.66.0F.W1 58 /r",
-            R"(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 use_256_bit_vector_length: false
-                 w: true }
-               opcode: 0x0f58)",
-            false);
+            R"proto(vex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      use_256_bit_vector_length: false
+                      w: true
+                    }
+                    opcode: 0x0f58)proto", false);
   TestMatch("EVEX.NDS.128.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F38
-                 w: true }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F38
+                      w: true
+                    }
+                    opcode: 0x0f58)proto", false);
   TestMatch("EVEX.NDS.128.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true }
-               opcode: 0x0f68)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: true
+                    }
+                    opcode: 0x0f68)proto", false);
 
   // Check that an instruction using the EVEX prefix does not match one of the
   // older encoding schemes.
   TestMatch("0F 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: true
+                    }
+                    opcode: 0x0f58)proto", false);
   TestMatch("VEX.NDS.128.66.0F.WIG FE /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true
-                 vector_length_or_rounding: 0 }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: true
+                      vector_length_or_rounding: 0
+                    }
+                    opcode: 0x0f58)proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexPrefix256Bit) {
   TestMatch("EVEX.NDS.256.0F.W0 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: NO_MANDATORY_PREFIX
-                 map_select: MAP_SELECT_0F
-                 w: false
-                 vector_length_or_rounding: 1 }
-               opcode: 0x0f58)",
-            true);
+            R"proto(evex_prefix {
+                      mandatory_prefix: NO_MANDATORY_PREFIX
+                      map_select: MAP_SELECT_0F
+                      w: false
+                      vector_length_or_rounding: 1
+                    }
+                    opcode: 0x0f58)proto", true);
   TestMatch("EVEX.NDS.256.0F.W0 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: NO_MANDATORY_PREFIX
-                 map_select: MAP_SELECT_0F
-                 w: true
-                 vector_length_or_rounding: 1 }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: NO_MANDATORY_PREFIX
+                      map_select: MAP_SELECT_0F
+                      w: true
+                      vector_length_or_rounding: 1
+                    }
+                    opcode: 0x0f58)proto", false);
   TestMatch("EVEX.NDS.256.0F.W0 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: NO_MANDATORY_PREFIX
-                 map_select: MAP_SELECT_0F
-                 w: false
-                 vector_length_or_rounding: 2 }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: NO_MANDATORY_PREFIX
+                      map_select: MAP_SELECT_0F
+                      w: false
+                      vector_length_or_rounding: 2
+                    }
+                    opcode: 0x0f58)proto", false);
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexPrefix512Bit) {
   TestMatch("EVEX.NDS.512.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true
-                 vector_length_or_rounding: 2 }
-               opcode: 0x0f58)",
-            true);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: true
+                      vector_length_or_rounding: 2
+                    }
+                    opcode: 0x0f58)proto", true);
   TestMatch("EVEX.NDS.512.66.0F.W1 58 /r",
-            R"(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true
-                 vector_length_or_rounding: 3 }
-               opcode: 0x0f58)",
-            false);
+            R"proto(evex_prefix {
+                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                      map_select: MAP_SELECT_0F
+                      w: true
+                      vector_length_or_rounding: 3
+                    }
+                    opcode: 0x0f58)proto", false);
 }
 
 // Tests matching on instructions where the EVEX.b bit overrides the vector
 // length; checks that the encoded instruction matches the 512-bit specification
 // only when the EVEX.b bit is set to one.
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexBStaticRounding) {
-  constexpr char kSpecification[] = R"(
-      opcode: 0x0f7a
-      modrm_usage: FULL_MODRM
-      vex_prefix {
-        prefix_type: EVEX_PREFIX
-        vector_size: VEX_VECTOR_SIZE_512_BIT
-        mandatory_prefix: MANDATORY_PREFIX_REPNE
-        map_select: MAP_SELECT_0F
-        vex_w_usage: VEX_W_IS_ONE
-        evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
-        evex_b_interpretations: EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL})";
-  constexpr char kInstructionWithStaticRounding[] = R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_REPNE
-        map_select: MAP_SELECT_0F
-        w: true
-        broadcast_or_control: true
-        vector_length_or_rounding: 1 }
-      opcode: 0x0f7a)";
-  constexpr char kInstructionWithoutStaticRounding[] = R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_REPNE
-        map_select: MAP_SELECT_0F
-        w: true
-        vector_length_or_rounding: 1 }
-      opcode: 0x0f7a)";
+  constexpr char kSpecification[] = R"proto(
+    opcode: 0x0f7a
+    modrm_usage: FULL_MODRM
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      vector_size: VEX_VECTOR_SIZE_512_BIT
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+      map_select: MAP_SELECT_0F
+      vex_w_usage: VEX_W_IS_ONE
+      evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
+      evex_b_interpretations: EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL
+    })proto";
+  constexpr char kInstructionWithStaticRounding[] = R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+      map_select: MAP_SELECT_0F
+      w: true
+      broadcast_or_control: true
+      vector_length_or_rounding: 1
+    }
+    opcode: 0x0f7a)proto";
+  constexpr char kInstructionWithoutStaticRounding[] = R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+      map_select: MAP_SELECT_0F
+      w: true
+      vector_length_or_rounding: 1
+    }
+    opcode: 0x0f7a)proto";
   TestMatchWithSpecificationProto(kSpecification,
                                   kInstructionWithStaticRounding, true);
   TestMatchWithSpecificationProto(kSpecification,
@@ -1835,41 +2234,45 @@ TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexBStaticRounding) {
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexBSuppressAllExceptions) {
-  constexpr char kSpecification[] = R"(
-      opcode: 0x0fc2
-      modrm_usage: FULL_MODRM
-      vex_prefix {
-        prefix_type: EVEX_PREFIX
-        vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-        vector_size: VEX_VECTOR_SIZE_512_BIT
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-        map_select: MAP_SELECT_0F
-        vex_w_usage: VEX_W_IS_ONE
-        evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
-        evex_b_interpretations: EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS })";
-  constexpr char kInstructionWithSae[] = R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-        map_select: MAP_SELECT_0F
-        w: true
-        broadcast_or_control: true
-        vector_length_or_rounding: 2 }
-      opcode: 0x0fc2)";
-  constexpr char kInstructionWithoutSae[] = R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-        map_select: MAP_SELECT_0F
-        w: true
-        vector_length_or_rounding: 2 }
-      opcode: 0x0fc2)";
-  constexpr char kInstructionWithSaeAndDifferentVectorLength[] = R"(
-      evex_prefix {
-        mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-        map_select: MAP_SELECT_0F
-        w: true
-        broadcast_or_control: true
-        vector_length_or_rounding: 1 }
-      opcode: 0x0fc2)";
+  constexpr char kSpecification[] = R"proto(
+    opcode: 0x0fc2
+    modrm_usage: FULL_MODRM
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+      vector_size: VEX_VECTOR_SIZE_512_BIT
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F
+      vex_w_usage: VEX_W_IS_ONE
+      evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
+      evex_b_interpretations: EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS
+    })proto";
+  constexpr char kInstructionWithSae[] = R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F
+      w: true
+      broadcast_or_control: true
+      vector_length_or_rounding: 2
+    }
+    opcode: 0x0fc2)proto";
+  constexpr char kInstructionWithoutSae[] = R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F
+      w: true
+      vector_length_or_rounding: 2
+    }
+    opcode: 0x0fc2)proto";
+  constexpr char kInstructionWithSaeAndDifferentVectorLength[] = R"proto(
+    evex_prefix {
+      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+      map_select: MAP_SELECT_0F
+      w: true
+      broadcast_or_control: true
+      vector_length_or_rounding: 1
+    }
+    opcode: 0x0fc2)proto";
   TestMatchWithSpecificationProto(kSpecification, kInstructionWithSae, true);
   TestMatchWithSpecificationProto(kSpecification, kInstructionWithoutSae, true);
   TestMatchWithSpecificationProto(
@@ -1877,32 +2280,46 @@ TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexBSuppressAllExceptions) {
 }
 
 TEST_F(PrefixesAndOpcodeMatchSpecificationTest, EvexBVectorLengthIsIgnored) {
-  constexpr char kSpecification[] = R"(
-      opcode: 0x0f11
-      modrm_usage: FULL_MODRM
-      vex_prefix { prefix_type: EVEX_PREFIX
-                   vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
-                   mandatory_prefix: MANDATORY_PREFIX_REPNE
-                   map_select: MAP_SELECT_0F
-                   vex_w_usage: VEX_W_IS_ONE
-                   opmask_usage: EVEX_OPMASK_IS_OPTIONAL
-                   masking_operation: EVEX_MASKING_MERGING_AND_ZEROING })";
+  constexpr char kSpecification[] = R"proto(
+    opcode: 0x0f11
+    modrm_usage: FULL_MODRM
+    vex_prefix {
+      prefix_type: EVEX_PREFIX
+      vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+      mandatory_prefix: MANDATORY_PREFIX_REPNE
+      map_select: MAP_SELECT_0F
+      vex_w_usage: VEX_W_IS_ONE
+      opmask_usage: EVEX_OPMASK_IS_OPTIONAL
+      masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
+    })proto";
   constexpr const char* const kInstructions[] = {
-      R"(evex_prefix { mandatory_prefix: MANDATORY_PREFIX_REPNE
-                    map_select: MAP_SELECT_0F w: true }
-         opcode: 0x0f11)",
-      R"(evex_prefix { mandatory_prefix: MANDATORY_PREFIX_REPNE
-                       map_select: MAP_SELECT_0F w: true
-                       vector_length_or_rounding: 1 }
-         opcode: 0x0f11)",
-      R"(evex_prefix { mandatory_prefix: MANDATORY_PREFIX_REPNE
-                       map_select: MAP_SELECT_0F w: true
-                       vector_length_or_rounding: 2 }
-         opcode: 0x0f11)",
-      R"(evex_prefix { mandatory_prefix: MANDATORY_PREFIX_REPNE
-                       map_select: MAP_SELECT_0F w: true
-                       vector_length_or_rounding: 3 }
-         opcode: 0x0f11)"};
+      R"proto(evex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_REPNE
+                map_select: MAP_SELECT_0F
+                w: true
+              }
+              opcode: 0x0f11)proto",
+      R"proto(evex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_REPNE
+                map_select: MAP_SELECT_0F
+                w: true
+                vector_length_or_rounding: 1
+              }
+              opcode: 0x0f11)proto",
+      R"proto(evex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_REPNE
+                map_select: MAP_SELECT_0F
+                w: true
+                vector_length_or_rounding: 2
+              }
+              opcode: 0x0f11)proto",
+      R"proto(evex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_REPNE
+                map_select: MAP_SELECT_0F
+                w: true
+                vector_length_or_rounding: 3
+              }
+              opcode: 0x0f11)proto"};
   for (const char* instruction : kInstructions) {
     TestMatchWithSpecificationProto(kSpecification, instruction, true);
   }
@@ -1960,30 +2377,52 @@ class SetOperandTestBase : public ::testing::Test {
  protected:
   // A legacy instruction used in the tests (ADC r/m32, r32).
   static constexpr char kLegacyInstructionEncodingSpecification[] = "11 /r";
-  static constexpr char kLegacyInstructionFormat[] = R"(
-      mnemonic: 'ADC'
-        operands { name: 'r/m32'
-                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                   encoding: MODRM_RM_ENCODING value_size_bits: 32 }
-        operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                   encoding: MODRM_REG_ENCODING value_size_bits: 32 })";
+  static constexpr char kLegacyInstructionFormat[] = R"proto(
+    mnemonic: 'ADC'
+    operands {
+      name: 'r/m32'
+      addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+      encoding: MODRM_RM_ENCODING
+      value_size_bits: 32
+    }
+    operands {
+      name: 'r32'
+      addressing_mode: DIRECT_ADDRESSING
+      encoding: MODRM_REG_ENCODING
+      value_size_bits: 32
+    })proto";
   static constexpr int kLegacyInstructionRegOperand = 1;
   static constexpr int kLegacyInstructionRmOperand = 0;
 
   // A VEX instruction used in the tests (VPBLENDVB xmm1, xmm2, xmm3/m128, xmm4
   static constexpr char kVexInstructionEncodingSpecification[] =
       "VEX.NDS.128.66.0F3A.W0 4C /r /is4";
-  static constexpr char kVexInstructionFormat[] = R"(
-      mnemonic: 'VPBLENDVB'
-        operands { name: 'xmm1' addressing_mode: DIRECT_ADDRESSING
-                   encoding: MODRM_REG_ENCODING value_size_bits: 128 }
-        operands { name: 'xmm2' addressing_mode: DIRECT_ADDRESSING
-                   encoding: VEX_V_ENCODING value_size_bits: 128 }
-        operands { name: 'xmm3/m128'
-                   addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
-                   encoding: MODRM_RM_ENCODING value_size_bits: 128 }
-        operands { name: 'xmm4' addressing_mode: DIRECT_ADDRESSING
-                   encoding: VEX_SUFFIX_ENCODING value_size_bits: 128 })";
+  static constexpr char kVexInstructionFormat[] = R"proto(
+    mnemonic: 'VPBLENDVB'
+    operands {
+      name: 'xmm1'
+      addressing_mode: DIRECT_ADDRESSING
+      encoding: MODRM_REG_ENCODING
+      value_size_bits: 128
+    }
+    operands {
+      name: 'xmm2'
+      addressing_mode: DIRECT_ADDRESSING
+      encoding: VEX_V_ENCODING
+      value_size_bits: 128
+    }
+    operands {
+      name: 'xmm3/m128'
+      addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+      encoding: MODRM_RM_ENCODING
+      value_size_bits: 128
+    }
+    operands {
+      name: 'xmm4'
+      addressing_mode: DIRECT_ADDRESSING
+      encoding: VEX_SUFFIX_ENCODING
+      value_size_bits: 128
+    })proto";
   static constexpr int kVexInstructionRegOperand = 0;
   static constexpr int kVexInstructionRmOperand = 2;
   static constexpr int kVexInstructionVexVOperand = 1;
@@ -1991,10 +2430,14 @@ class SetOperandTestBase : public ::testing::Test {
 
   // An instruction that does not use the ModR/M byte, and thus can't accept a
   // memory operand.
-  static constexpr char kLegacyInstructionNoMemoryOperandFormat[] = R"(
-      mnemonic: 'BSWAP'
-      operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                 encoding: OPCODE_ENCODING value_size_bits: 32 })";
+  static constexpr char kLegacyInstructionNoMemoryOperandFormat[] = R"proto(
+    mnemonic: 'BSWAP'
+    operands {
+      name: 'r32'
+      addressing_mode: DIRECT_ADDRESSING
+      encoding: OPCODE_ENCODING
+      value_size_bits: 32
+    })proto";
 };
 
 class SetOperandToRegisterTest : public SetOperandTestBase {
@@ -2070,17 +2513,23 @@ TEST_F(SetOperandToRegisterTest, InvalidRegisterIndex) {
 TEST_F(SetOperandToRegisterTest, OperandInOpcode) {
   // Test that the function sets the operand correctly if possible.
   TestSetOperand(
-      R"(mnemonic: 'BSWAP'
-         operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                    encoding: OPCODE_ENCODING value_size_bits: 32 })",
-      "0F C8+rd", "opcode: 0x0fc8", 0, RegisterIndex(3), "opcode: 0x0fcb",
-      "BSWAP EBX");
+      R"proto(mnemonic: 'BSWAP'
+              operands {
+                name: 'r32'
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: OPCODE_ENCODING
+                value_size_bits: 32
+              })proto", "0F C8+rd", "opcode: 0x0fc8", 0, RegisterIndex(3),
+      "opcode: 0x0fcb", "BSWAP EBX");
   // Test that the function returns an error for non-legacy operands.
   TestSetOperandError(
-      R"(mnemonic: 'BSWAP'
-         operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                    encoding: OPCODE_ENCODING value_size_bits: 32 })",
-      0, RegisterIndex(13));
+      R"proto(mnemonic: 'BSWAP'
+              operands {
+                name: 'r32'
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: OPCODE_ENCODING
+                value_size_bits: 32
+              })proto", 0, RegisterIndex(13));
 }
 
 TEST_F(SetOperandToRegisterTest, OperandInModRmRegLegacy) {
@@ -2092,130 +2541,155 @@ TEST_F(SetOperandToRegisterTest, OperandInModRmRegLegacy) {
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "opcode: 0x11",
                  kLegacyInstructionRegOperand, RegisterIndex(12),
-                 R"(legacy_prefixes { rex { r: true }}
-                    opcode: 0x11
-                    modrm { register_operand: 4 })",
+                 R"proto(legacy_prefixes { rex { r: true } }
+                         opcode: 0x11
+                         modrm { register_operand: 4 })proto",
                  "ADC DWORD PTR [RAX], R12D");
 }
 
 TEST_F(SetOperandToRegisterTest, OperandInModRmRegVex) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c)",
-                 kVexInstructionRegOperand, RegisterIndex(5),
-                 R"(vex_prefix {
-                      not_r: true map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c
-                    modrm { register_operand: 5 })",
-                 "VPBLENDVB XMM5, XMM15, XMMWORD PTR [R8], XMM0");
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c)",
-                 kVexInstructionRegOperand, RegisterIndex(15),
-                 R"(vex_prefix {
-                      not_r: false map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c
-                    modrm { register_operand: 7 })",
-                 "VPBLENDVB XMM15, XMM15, XMMWORD PTR [R8], XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c)proto", kVexInstructionRegOperand,
+      RegisterIndex(5),
+      R"proto(vex_prefix {
+                not_r: true
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c
+              modrm { register_operand: 5 })proto",
+      "VPBLENDVB XMM5, XMM15, XMMWORD PTR [R8], XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c)proto", kVexInstructionRegOperand,
+      RegisterIndex(15),
+      R"proto(vex_prefix {
+                not_r: false
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c
+              modrm { register_operand: 7 })proto",
+      "VPBLENDVB XMM15, XMM15, XMMWORD PTR [R8], XMM0");
 }
 
 TEST_F(SetOperandToRegisterTest, OperandInModRmRmLegacy) {
-  TestSetOperand(kLegacyInstructionFormat,
-                 kLegacyInstructionEncodingSpecification, "opcode: 0x11",
-                 kLegacyInstructionRmOperand, RegisterIndex(3),
-                 R"(legacy_prefixes { rex {}}
-                    opcode: 0x11
-                    modrm { addressing_mode: DIRECT rm_operand: 3 })",
-                 "ADC EBX, EAX");
-  TestSetOperand(kLegacyInstructionFormat,
-                 kLegacyInstructionEncodingSpecification, "opcode: 0x11",
-                 kLegacyInstructionRmOperand, RegisterIndex(10),
-                 R"(legacy_prefixes { rex { b: true }}
-                    opcode: 0x11
-                    modrm { addressing_mode: DIRECT rm_operand: 2 })",
-                 "ADC R10D, EAX");
+  TestSetOperand(
+      kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
+      "opcode: 0x11", kLegacyInstructionRmOperand, RegisterIndex(3),
+      R"proto(legacy_prefixes { rex {} }
+              opcode: 0x11
+              modrm { addressing_mode: DIRECT rm_operand: 3 })proto",
+      "ADC EBX, EAX");
+  TestSetOperand(
+      kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
+      "opcode: 0x11", kLegacyInstructionRmOperand, RegisterIndex(10),
+      R"proto(legacy_prefixes { rex { b: true } }
+              opcode: 0x11
+              modrm { addressing_mode: DIRECT rm_operand: 2 })proto",
+      "ADC R10D, EAX");
+  TestSetOperand(
+      kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
+      "legacy_prefixes { rex { w: true }} opcode: 0x11",
+      kLegacyInstructionRmOperand, RegisterIndex(10),
+      R"proto(legacy_prefixes { rex { b: true w: true } }
+              opcode: 0x11
+              modrm { addressing_mode: DIRECT rm_operand: 2 })proto",
+      "ADC R10, RAX");
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification,
-                 "legacy_prefixes { rex { w: true }} opcode: 0x11",
-                 kLegacyInstructionRmOperand, RegisterIndex(10),
-                 R"(legacy_prefixes { rex { b: true w: true }}
-                    opcode: 0x11
-                    modrm { addressing_mode: DIRECT rm_operand: 2 })",
-                 "ADC R10, RAX");
-  TestSetOperand(kLegacyInstructionFormat,
-                 kLegacyInstructionEncodingSpecification,
-                 R"(legacy_prefixes { rex { w: true }} opcode: 0x11
-                    sib { base: 3 })",
-                 kLegacyInstructionRmOperand, RegisterIndex(10),
-                 R"(legacy_prefixes { rex { b: true w: true }}
-                    opcode: 0x11
-                    modrm { addressing_mode: DIRECT rm_operand: 2 })",
+                 R"proto(legacy_prefixes { rex { w: true } }
+                         opcode: 0x11
+                         sib { base: 3 })proto", kLegacyInstructionRmOperand,
+                 RegisterIndex(10),
+                 R"proto(legacy_prefixes { rex { b: true w: true } }
+                         opcode: 0x11
+                         modrm { addressing_mode: DIRECT rm_operand: 2 })proto",
                  "ADC R10, RAX");
 }
 
 TEST_F(SetOperandToRegisterTest, OperandInModRmRmVex) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c)",
-                 kVexInstructionRmOperand, RegisterIndex(1),
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      not_b: true }
-                    opcode: 0x0f3a4c
-                    modrm { addressing_mode: DIRECT rm_operand: 1 })",
-                 "VPBLENDVB XMM8, XMM15, XMM1, XMM0");
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c)",
-                 kVexInstructionRmOperand, RegisterIndex(11),
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      not_b: false }
-                    opcode: 0x0f3a4c
-                    modrm { addressing_mode: DIRECT rm_operand: 3 })",
-                 "VPBLENDVB XMM8, XMM15, XMM11, XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c)proto", kVexInstructionRmOperand,
+      RegisterIndex(1),
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                not_b: true
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: DIRECT rm_operand: 1 })proto",
+      "VPBLENDVB XMM8, XMM15, XMM1, XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c)proto", kVexInstructionRmOperand,
+      RegisterIndex(11),
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                not_b: false
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: DIRECT rm_operand: 3 })proto",
+      "VPBLENDVB XMM8, XMM15, XMM11, XMM0");
 }
 
 TEST_F(SetOperandToRegisterTest, OperandInVexV) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c modrm { addressing_mode: DIRECT })",
-                 kVexInstructionVexVOperand, RegisterIndex(12),
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      inverted_register_operand: 3 }
-                    opcode: 0x0f3a4c modrm { addressing_mode: DIRECT })",
-                 "VPBLENDVB XMM8, XMM12, XMM8, XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: DIRECT })proto",
+      kVexInstructionVexVOperand, RegisterIndex(12),
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                inverted_register_operand: 3
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: DIRECT })proto",
+      "VPBLENDVB XMM8, XMM12, XMM8, XMM0");
 }
 
 TEST_F(SetOperandToRegisterTest, OperandInVexSuffix) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE }
-                    opcode: 0x0f3a4c modrm { addressing_mode: DIRECT })",
-                 kVexInstructionVexSuffixOperand, RegisterIndex(7),
-                 R"(vex_prefix {
-                      map_select: MAP_SELECT_0F3A
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      vex_suffix_value: 0x70 }
-                    opcode: 0x0f3a4c modrm { addressing_mode: DIRECT })",
-                 "VPBLENDVB XMM8, XMM15, XMM8, XMM7");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: DIRECT })proto",
+      kVexInstructionVexSuffixOperand, RegisterIndex(7),
+      R"proto(vex_prefix {
+                map_select: MAP_SELECT_0F3A
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                vex_suffix_value: 0x70
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: DIRECT })proto",
+      "VPBLENDVB XMM8, XMM15, XMM8, XMM7");
 }
 
 class SetOperandToMemoryAbsoluteTest : public SetOperandTestBase {
@@ -2264,18 +2738,25 @@ void SetOperandToMemoryAbsoluteTest::TestSetOperandError(
 TEST_F(SetOperandToMemoryAbsoluteTest, LegacyInstruction) {
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", 0x12345678,
-                 R"(legacy_prefixes { rex {}}
-                    modrm { addressing_mode: INDIRECT rm_operand: 4
-                            address_displacement: 0x12345678 }
-                    sib { index: 4 base: 5 })",
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT
+                           rm_operand: 4
+                           address_displacement: 0x12345678
+                         }
+                         sib { index: 4 base: 5 })proto",
                  "ADC DWORD PTR [0x12345678], EAX");
 }
 
 TEST_F(SetOperandToMemoryAbsoluteTest, NoMemoryOperand) {
   TestSetOperandError(
-      R"(mnemonic: 'BSWAP'
-         operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                    encoding: OPCODE_ENCODING value_size_bits: 32 })");
+      R"proto(mnemonic: 'BSWAP'
+              operands {
+                name: 'r32'
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: OPCODE_ENCODING
+                value_size_bits: 32
+              })proto");
 }
 
 class SetOperandToMemoryBaseTest : public SetOperandTestBase {
@@ -2322,64 +2803,74 @@ void SetOperandToMemoryBaseTest::TestSetOperandError(
 }
 
 TEST_F(SetOperandToMemoryBaseTest, LegacyInstruction) {
-  TestSetOperand(kLegacyInstructionFormat,
-                 kLegacyInstructionEncodingSpecification, "opcode: 0x11",
-                 RegisterIndex(7),
-                 R"(legacy_prefixes { rex {}}
-         opcode: 0x11 modrm { addressing_mode: INDIRECT rm_operand: 7 })",
-                 "ADC DWORD PTR [RDI], EAX");
+  TestSetOperand(
+      kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
+      "opcode: 0x11", RegisterIndex(7),
+      R"proto(legacy_prefixes { rex {} }
+              opcode: 0x11
+              modrm { addressing_mode: INDIRECT rm_operand: 7 })proto",
+      "ADC DWORD PTR [RDI], EAX");
   // In addition to setting the operand, this test verifies that the function
   // removes the SIB byte that is not needed with this addressing mode.
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification,
-                 R"(opcode: 0x11
-                    modrm { addressing_mode: INDIRECT register_operand: 3
-                            rm_operand: 4 }
-                    sib { base: 4 index: 4 })",
-                 RegisterIndex(7),
-                 R"(legacy_prefixes { rex {}}
-         opcode: 0x11
-         modrm { addressing_mode: INDIRECT register_operand: 3 rm_operand: 7 })",
-                 "ADC DWORD PTR [RDI], EBX");
+                 R"proto(opcode: 0x11
+                         modrm {
+                           addressing_mode: INDIRECT
+                           register_operand: 3
+                           rm_operand: 4
+                         }
+                         sib { base: 4 index: 4 })proto", RegisterIndex(7),
+                 R"proto(legacy_prefixes { rex {} }
+                         opcode: 0x11
+                         modrm {
+                           addressing_mode: INDIRECT
+                           register_operand: 3
+                           rm_operand: 7
+                         })proto", "ADC DWORD PTR [RDI], EBX");
 }
 
 TEST_F(SetOperandToMemoryBaseTest, LegacyInstructionWithExtendedBit) {
-  TestSetOperand(kLegacyInstructionFormat,
-                 kLegacyInstructionEncodingSpecification, "opcode: 0x11",
-                 RegisterIndex(15),
-                 R"(legacy_prefixes { rex { b: true }}
-                    opcode: 0x11 modrm { addressing_mode: INDIRECT
-                                         rm_operand: 7 })",
-                 "ADC DWORD PTR [R15], EAX");
+  TestSetOperand(
+      kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
+      "opcode: 0x11", RegisterIndex(15),
+      R"proto(legacy_prefixes { rex { b: true } }
+              opcode: 0x11
+              modrm { addressing_mode: INDIRECT rm_operand: 7 })proto",
+      "ADC DWORD PTR [R15], EAX");
 }
 
 TEST_F(SetOperandToMemoryBaseTest, VexInstruction) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A }
-                    opcode: 0x0f3a4c)",
-                 RegisterIndex(6),
-                 R"(vex_prefix {
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A
-                      not_b: true }
-                    opcode: 0x0f3a4c
-                    modrm { addressing_mode: INDIRECT rm_operand: 6 })",
-                 "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI], XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              }
+              opcode: 0x0f3a4c)proto", RegisterIndex(6),
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+                not_b: true
+              }
+              opcode: 0x0f3a4c
+              modrm { addressing_mode: INDIRECT rm_operand: 6 })proto",
+      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI], XMM0");
 }
 
 TEST_F(SetOperandToMemoryBaseTest, VexInstructionWithExtendedBit) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A })",
-                 RegisterIndex(11),
-                 R"(vex_prefix {
-                      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A }
-                    modrm { addressing_mode: INDIRECT rm_operand: 3 })",
-                 "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R11], XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              })proto", RegisterIndex(11),
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              }
+              modrm { addressing_mode: INDIRECT rm_operand: 3 })proto",
+      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R11], XMM0");
 }
 
 TEST_F(SetOperandToMemoryBaseTest, NoMemoryOperand) {
@@ -2387,10 +2878,13 @@ TEST_F(SetOperandToMemoryBaseTest, NoMemoryOperand) {
   // encoded in the opcode, so the instruction can accept only register
   // operands.
   TestSetOperandError(
-      R"(mnemonic: 'BSWAP'
-         operands { name: 'r/m32' addressing_mode: DIRECT_ADDRESSING
-                    encoding: OPCODE_ENCODING value_size_bits: 32 })",
-      RegisterIndex(0));
+      R"proto(mnemonic: 'BSWAP'
+              operands {
+                name: 'r/m32'
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: OPCODE_ENCODING
+                value_size_bits: 32
+              })proto", RegisterIndex(0));
 }
 
 TEST_F(SetOperandToMemoryBaseTest, UnencodableOperand) {
@@ -2451,49 +2945,60 @@ TEST_F(SetOperandToMemoryBaseSibTest, LegacyInstruction) {
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification,
                  "modrm { register_operand: 2 }", RegisterIndex(7),
-                 R"(legacy_prefixes { rex {}}
-                    modrm { addressing_mode: INDIRECT register_operand: 2
-                            rm_operand: 4 }
-                    sib { base: 7 index: 4 })",
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT
+                           register_operand: 2
+                           rm_operand: 4
+                         }
+                         sib { base: 7 index: 4 })proto",
                  "ADC DWORD PTR [RDI + RIZ], EDX");
   // Tests that it is possible to encode ADC DWORD PTR [RSP], EAX. This
   // instruction is not encodable with just the ModR/M byte, because the
   // register index of RSP is used as an escape value.
-  TestSetOperand(kLegacyInstructionFormat,
-                 kLegacyInstructionEncodingSpecification,
-                 "legacy_prefixes { rex { b: true }} ", RegisterIndex(4),
-                 R"(legacy_prefixes { rex {}}
-                    modrm { addressing_mode: INDIRECT rm_operand: 4 }
-                    sib { base: 4 index: 4 })",
-                 "ADC DWORD PTR [RSP], EAX");
+  TestSetOperand(
+      kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
+      "legacy_prefixes { rex { b: true }} ", RegisterIndex(4),
+      R"proto(legacy_prefixes { rex {} }
+              modrm { addressing_mode: INDIRECT rm_operand: 4 }
+              sib { base: 4 index: 4 })proto", "ADC DWORD PTR [RSP], EAX");
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(12),
-                 R"(legacy_prefixes { rex { b: true }}
-                    modrm { addressing_mode: INDIRECT rm_operand: 4 }
-                    sib { base: 4 index: 4 })",
+                 R"proto(legacy_prefixes { rex { b: true } }
+                         modrm { addressing_mode: INDIRECT rm_operand: 4 }
+                         sib { base: 4 index: 4 })proto",
                  "ADC DWORD PTR [R12], EAX");
 }
 
 TEST_F(SetOperandToMemoryBaseSibTest, VexInstruction) {
   TestSetOperand(
       kVexInstructionFormat, kVexInstructionEncodingSpecification,
-      R"(vex_prefix { mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A })",
-      RegisterIndex(6),
-      R"(vex_prefix { mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A not_b: true not_x: true }
-         modrm { addressing_mode: INDIRECT rm_operand: 4 }
-         sib { base: 6 index: 4 })",
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              })proto", RegisterIndex(6),
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+                not_b: true
+                not_x: true
+              }
+              modrm { addressing_mode: INDIRECT rm_operand: 4 }
+              sib { base: 6 index: 4 })proto",
       "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI + RIZ], XMM0");
   TestSetOperand(
       kVexInstructionFormat, kVexInstructionEncodingSpecification,
-      R"(vex_prefix { mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A })",
-      RegisterIndex(14),
-      R"(vex_prefix { mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                      map_select: MAP_SELECT_0F3A not_x: true }
-         modrm { addressing_mode: INDIRECT rm_operand: 4 }
-         sib { base: 6 index: 4 })",
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              })proto", RegisterIndex(14),
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+                not_x: true
+              }
+              modrm { addressing_mode: INDIRECT rm_operand: 4 }
+              sib { base: 6 index: 4 })proto",
       "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R14 + RIZ], XMM0");
 }
 
@@ -2513,10 +3018,13 @@ TEST_F(SetOperandToMemoryBaseSibTest, NoMemoryOperand) {
   // BSWAP encodes the operand in the opcode; there is no way to encode a memory
   // operand.
   TestSetOperandError(
-      R"(mnemonic: 'BSWAP'
-         operands { name: 'r/m32' addressing_mode: DIRECT_ADDRESSING
-                    encoding: OPCODE_ENCODING value_size_bits: 32 })",
-      RegisterIndex(0));
+      R"proto(mnemonic: 'BSWAP'
+              operands {
+                name: 'r/m32'
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: OPCODE_ENCODING
+                value_size_bits: 32
+              })proto", RegisterIndex(0));
 }
 
 class SetOperandToMemoryRelativeToRipTest : public SetOperandTestBase {
@@ -2564,17 +3072,23 @@ TEST_F(SetOperandToMemoryRelativeToRipTest, LegacyInstruction) {
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification,
                  "modrm { register_operand: 2 }", 0x12345,
-                 R"(legacy_prefixes { rex {}}
-         modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 5
-                 address_displacement: 0x12345 })",
-                 "ADC DWORD PTR [RIP + 0x12345], EDX");
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT
+                           register_operand: 2
+                           rm_operand: 5
+                           address_displacement: 0x12345
+                         })proto", "ADC DWORD PTR [RIP + 0x12345], EDX");
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification,
                  "modrm { register_operand: 2 }", -45,
-                 R"(legacy_prefixes { rex {}}
-         modrm { addressing_mode: INDIRECT register_operand: 2 rm_operand: 5
-                 address_displacement: 0xffffffd3 })",
-                 "ADC DWORD PTR [RIP - 0x2D], EDX");
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT
+                           register_operand: 2
+                           rm_operand: 5
+                           address_displacement: 0xffffffd3
+                         })proto", "ADC DWORD PTR [RIP - 0x2D], EDX");
 }
 
 TEST_F(SetOperandToMemoryRelativeToRipTest, NoMemoryOperand) {
@@ -2658,30 +3172,40 @@ TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest, LegacyInstruction) {
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(3),
                  12,
-                 R"(legacy_prefixes { rex {}}
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT rm_operand: 3
-                 address_displacement: 12 })",
-                 "ADC DWORD PTR [RBX + 0xC], EAX");
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                           rm_operand: 3
+                           address_displacement: 12
+                         })proto", "ADC DWORD PTR [RBX + 0xC], EAX");
   // Tests that the function replaces all previous contents of the ModR/M and
   // SIB bytes.
   TestSetOperand(
       kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
-      R"(modrm { addressing_mode: INDIRECT register_operand: 3 rm_operand: 4 }
-         sib { base: 4 index: 4 })",
-      RegisterIndex(3), 0x12,
-      R"(legacy_prefixes { rex {}}
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
-                 register_operand: 3 rm_operand: 3 address_displacement: 0x12 })",
-      "ADC DWORD PTR [RBX + 0x12], EBX");
+      R"proto(modrm {
+                addressing_mode: INDIRECT
+                register_operand: 3
+                rm_operand: 4
+              }
+              sib { base: 4 index: 4 })proto", RegisterIndex(3), 0x12,
+      R"proto(legacy_prefixes { rex {} }
+              modrm {
+                addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                register_operand: 3
+                rm_operand: 3
+                address_displacement: 0x12
+              })proto", "ADC DWORD PTR [RBX + 0x12], EBX");
   // Tests that the negative 8-bit displacement is converted to the unsiged/bit
   // representation correctly (no sign extension beyond the 8 bits).
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(3),
                  -15,
-                 R"(legacy_prefixes { rex {}}
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT rm_operand: 3
-                 address_displacement: 241 })",
-                 "ADC DWORD PTR [RBX - 0xF], EAX");
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                           rm_operand: 3
+                           address_displacement: 241
+                         })proto", "ADC DWORD PTR [RBX - 0xF], EAX");
 }
 
 TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest,
@@ -2689,57 +3213,74 @@ TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest,
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(15),
                  0x7f,
-                 R"(legacy_prefixes { rex { b: true }}
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT rm_operand: 7
-                 address_displacement: 0x7f })",
-                 "ADC DWORD PTR [R15 + 0x7F], EAX");
+                 R"proto(legacy_prefixes { rex { b: true } }
+                         modrm {
+                           addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                           rm_operand: 7
+                           address_displacement: 0x7f
+                         })proto", "ADC DWORD PTR [R15 + 0x7F], EAX");
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(15),
                  -127,
-                 R"(legacy_prefixes { rex { b: true }}
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT rm_operand: 7
-                 address_displacement: 129 })",
-                 "ADC DWORD PTR [R15 - 0x7F], EAX");
+                 R"proto(legacy_prefixes { rex { b: true } }
+                         modrm {
+                           addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                           rm_operand: 7
+                           address_displacement: 129
+                         })proto", "ADC DWORD PTR [R15 - 0x7F], EAX");
 }
 
 TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest, VexInstruction) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-           map_select: MAP_SELECT_0F3A })",
-                 RegisterIndex(6), 0x6f,
-                 R"(vex_prefix {
-           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-           map_select: MAP_SELECT_0F3A
-           not_b: true }
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT rm_operand: 6
-                 address_displacement: 0x6f })",
-                 "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI + 0x6F], XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              })proto", RegisterIndex(6), 0x6f,
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+                not_b: true
+              }
+              modrm {
+                addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                rm_operand: 6
+                address_displacement: 0x6f
+              })proto",
+      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [RSI + 0x6F], XMM0");
 }
 
 TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest,
        VexInstructionWithExtendedBit) {
-  TestSetOperand(kVexInstructionFormat, kVexInstructionEncodingSpecification,
-                 R"(vex_prefix {
-           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-           map_select: MAP_SELECT_0F3A })",
-                 RegisterIndex(11), -4,
-                 R"(vex_prefix {
-           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-           map_select: MAP_SELECT_0F3A }
-         modrm { addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT rm_operand: 3
-                 address_displacement: 252 })",
-                 "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R11 - 0x4], XMM0");
+  TestSetOperand(
+      kVexInstructionFormat, kVexInstructionEncodingSpecification,
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              })proto", RegisterIndex(11), -4,
+      R"proto(vex_prefix {
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                map_select: MAP_SELECT_0F3A
+              }
+              modrm {
+                addressing_mode: INDIRECT_WITH_8_BIT_DISPLACEMENT
+                rm_operand: 3
+                address_displacement: 252
+              })proto",
+      "VPBLENDVB XMM8, XMM15, XMMWORD PTR [R11 - 0x4], XMM0");
 }
 
 TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest, NoMemoryOperand) {
   // Note that the operand of BSWAP is encoded in the opcode, so the instruction
   // can accept only register operands.
   TestSetOperandError(
-      R"(mnemonic: 'BSWAP'
-         operands { name: 'r32' addressing_mode: DIRECT_ADDRESSING
-                    encoding: OPCODE_ENCODING value_size_bits: 32 })",
-      RegisterIndex(0));
+      R"proto(mnemonic: 'BSWAP'
+              operands {
+                name: 'r32'
+                addressing_mode: DIRECT_ADDRESSING
+                encoding: OPCODE_ENCODING
+                value_size_bits: 32
+              })proto", RegisterIndex(0));
 }
 
 TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest, UnencodableOperand) {
@@ -2773,32 +3314,40 @@ TEST_F(SetOperandToMemoryBaseAnd32BitDisplacementTest, LegacyInstruction) {
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(3),
                  0x12345678,
-                 R"(legacy_prefixes { rex {}}
-                    modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                    rm_operand: 3
-                            address_displacement: 0x12345678 })",
-                 "ADC DWORD PTR [RBX + 0x12345678], EAX");
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                           rm_operand: 3
+                           address_displacement: 0x12345678
+                         })proto", "ADC DWORD PTR [RBX + 0x12345678], EAX");
   // Tests that the function replaces all previous contents of the ModR/M and
   // SIB bytes.
   TestSetOperand(
       kLegacyInstructionFormat, kLegacyInstructionEncodingSpecification,
-      R"(modrm { addressing_mode: INDIRECT register_operand: 3 rm_operand: 4 }
-         sib { base: 4 index: 4 })",
-      RegisterIndex(3), 0x12345678,
-      R"(legacy_prefixes { rex {}}
-         modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                 register_operand: 3 rm_operand: 3
-                 address_displacement: 0x12345678 })",
-      "ADC DWORD PTR [RBX + 0x12345678], EBX");
+      R"proto(modrm {
+                addressing_mode: INDIRECT
+                register_operand: 3
+                rm_operand: 4
+              }
+              sib { base: 4 index: 4 })proto", RegisterIndex(3), 0x12345678,
+      R"proto(legacy_prefixes { rex {} }
+              modrm {
+                addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                register_operand: 3
+                rm_operand: 3
+                address_displacement: 0x12345678
+              })proto", "ADC DWORD PTR [RBX + 0x12345678], EBX");
   // Tests that the negative 8-bit displacement is converted to the unsiged/bit
   // representation correctly (no sign extension beyond the 8 bits).
   TestSetOperand(kLegacyInstructionFormat,
                  kLegacyInstructionEncodingSpecification, "", RegisterIndex(3),
                  -0x9b,
-                 R"(legacy_prefixes { rex {}}
-                    modrm { addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-                            rm_operand: 3 address_displacement: 4294967141 })",
-                 "ADC DWORD PTR [RBX - 0x9b], EAX");
+                 R"proto(legacy_prefixes { rex {} }
+                         modrm {
+                           addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+                           rm_operand: 3
+                           address_displacement: 4294967141
+                         })proto", "ADC DWORD PTR [RBX - 0x9b], EAX");
 }
 
 }  // namespace

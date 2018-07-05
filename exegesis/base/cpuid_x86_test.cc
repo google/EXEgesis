@@ -136,31 +136,28 @@ TEST(CpuIdDumpTest, VendorAndBrandString) {
 }
 
 TEST(CpuIdDumpTest, FromProto) {
-  const CpuIdDumpProto kDump = ParseProtoFromStringOrDie<CpuIdDumpProto>(R"(
-      x86_cpuid_dump {
-        entries {
-          input {
-            leaf: 0
+  const CpuIdDumpProto kDump =
+      ParseProtoFromStringOrDie<CpuIdDumpProto>(R"proto(
+        x86_cpuid_dump {
+          entries {
+            input { leaf: 0 }
+            output {
+              eax: 0x00000001
+              ebx: 0x756e6547
+              ecx: 0x6c65746e
+              edx: 0x49656e69
+            }
           }
-          output {
-            eax: 0x00000001
-            ebx: 0x756e6547
-            ecx: 0x6c65746e
-            edx: 0x49656e69
+          entries {
+            input { leaf: 1 }
+            output {
+              eax: 0x00000480
+              ebx: 0x00000000
+              ecx: 0x00000000
+              edx: 0x00000003
+            }
           }
-        }
-        entries {
-          input {
-            leaf: 1
-          }
-          output {
-            eax: 0x00000480
-            ebx: 0x00000000
-            ecx: 0x00000000
-            edx: 0x00000003
-          }
-        }
-      })");
+        })proto");
   const CpuIdDump dump(kDump);
   EXPECT_THAT(dump.dump_proto(), EqualsProto(kDump));
   ASSERT_TRUE(dump.IsValid());

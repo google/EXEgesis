@@ -28,39 +28,29 @@ using ::exegesis::testing::EqualsProto;
 TEST(ParseVendorSyntaxTest, Simple) {
   InstructionFormat vendor_syntax;
   EXPECT_TRUE(ParseVendorSyntax("ADC r/m16, imm8", &vendor_syntax));
-  constexpr char kExpected[] = R"(
-      mnemonic: 'ADC'
-      operands {
-        name: 'r/m16'
-      }
-      operands {
-        name: 'imm8'
-      })";
+  constexpr char kExpected[] = R"proto(
+    mnemonic: 'ADC'
+    operands { name: 'r/m16' }
+    operands { name: 'imm8' })proto";
   EXPECT_THAT(vendor_syntax, EqualsProto(kExpected));
 }
 
 TEST(ParseVendorSyntaxTest, AsterixAreRemoved) {
   InstructionFormat vendor_syntax;
   EXPECT_TRUE(ParseVendorSyntax("ADC* r/m16*, imm8", &vendor_syntax));
-  constexpr char kExpected[] = R"(
-      mnemonic: 'ADC'
-      operands {
-        name: 'r/m16'
-      }
-      operands {
-        name: 'imm8'
-      })";
+  constexpr char kExpected[] = R"proto(
+    mnemonic: 'ADC'
+    operands { name: 'r/m16' }
+    operands { name: 'imm8' })proto";
   EXPECT_THAT(vendor_syntax, EqualsProto(kExpected));
 }
 
 TEST(ParseVendorSyntaxTest, Prefix) {
   InstructionFormat vendor_syntax;
   EXPECT_TRUE(ParseVendorSyntax("REP STOS m8", &vendor_syntax));
-  constexpr char kExpected[] = R"(
-      mnemonic: 'REP STOS'
-      operands {
-        name: 'm8'
-      })";
+  constexpr char kExpected[] = R"proto(
+    mnemonic: 'REP STOS'
+    operands { name: 'm8' })proto";
   EXPECT_THAT(vendor_syntax, EqualsProto(kExpected));
 }
 
@@ -68,20 +58,18 @@ TEST(ParseVendorSyntaxTest, Opmasks) {
   InstructionFormat vendor_syntax;
   EXPECT_TRUE(ParseVendorSyntax(
       "VMULPD zmm1 {k1}{z}, zmm2, zmm3/m512/m64bcst{er}", &vendor_syntax));
-  constexpr char kExpected[] = R"(
-      mnemonic: 'VMULPD'
-      operands {
-        name: 'zmm1'
-        tags { name: 'k1' }
-        tags { name: 'z' }
-      }
-      operands {
-        name: 'zmm2'
-      }
-      operands {
-        name: 'zmm3/m512/m64bcst'
-        tags { name: 'er' }
-      })";
+  constexpr char kExpected[] = R"proto(
+    mnemonic: 'VMULPD'
+    operands {
+      name: 'zmm1'
+      tags { name: 'k1' }
+      tags { name: 'z' }
+    }
+    operands { name: 'zmm2' }
+    operands {
+      name: 'zmm3/m512/m64bcst'
+      tags { name: 'er' }
+    })proto";
   EXPECT_THAT(vendor_syntax, EqualsProto(kExpected));
 }
 
@@ -94,14 +82,10 @@ TEST(ParseVendorSyntaxTest, SimpleNoOperand) {
 TEST(ParseVendorSyntaxTest, SimpleInvalidOperand) {
   InstructionFormat vendor_syntax;
   EXPECT_TRUE(ParseVendorSyntax("ADC r/m16, invalid_operand", &vendor_syntax));
-  constexpr char kExpected[] = R"(
-      mnemonic: 'ADC'
-      operands {
-        name: 'r/m16'
-      }
-      operands {
-        name: '<UNKNOWN>'
-      })";
+  constexpr char kExpected[] = R"proto(
+    mnemonic: 'ADC'
+    operands { name: 'r/m16' }
+    operands { name: '<UNKNOWN>' })proto";
   EXPECT_THAT(vendor_syntax, EqualsProto(kExpected));
 }
 
