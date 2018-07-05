@@ -125,6 +125,21 @@ pages {
   }
 }
 pages {
+  page_number: 1000
+  patches {
+    row: 1
+    col: 0
+    expected: "FYL2XP1-Compute y ∗ log2"
+    replacement: "FYL2XP1-Compute y ∗ log2(x+1)"
+  }
+  patches {
+    row: 1
+    col: 1
+    expected: "(x +1)"
+    remove_cell: true
+  }
+}
+pages {
   page_number: 1022
   patches {
     row: 11
