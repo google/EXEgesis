@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "src/google/protobuf/message.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"
@@ -63,12 +64,12 @@ Proto ReadBinaryProtoOrDie(const std::string& filename) {
 }
 
 // Reads a proto in text format from a string.
-void ParseProtoFromStringOrDie(const std::string& text,
+void ParseProtoFromStringOrDie(absl::string_view text,
                                ::google::protobuf::Message* message);
 
 // Typed version of the above.
 template <typename Proto>
-Proto ParseProtoFromStringOrDie(const std::string& text) {
+Proto ParseProtoFromStringOrDie(absl::string_view text) {
   Proto proto;
   ParseProtoFromStringOrDie(text, &proto);
   return proto;

@@ -72,9 +72,10 @@ Status ReadBinaryProto(const std::string& filename,
   return OkStatus();
 }
 
-void ParseProtoFromStringOrDie(const std::string& text,
+void ParseProtoFromStringOrDie(absl::string_view text,
                                google::protobuf::Message* message) {
-  CHECK(google::protobuf::TextFormat::ParseFromString(text, message));
+  google::protobuf::io::ArrayInputStream input_stream(text.data(), text.size());
+  CHECK(google::protobuf::TextFormat::Parse(&input_stream, message));
 }
 
 void WriteTextProtoOrDie(const std::string& filename,
