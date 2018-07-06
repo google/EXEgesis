@@ -154,5 +154,21 @@ Status AddProtectionModes(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddProtectionModes, 1000);
 
+Status FixAvailableIn64Bits(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const std::unordered_set<std::string> kEncodingSpecifications = {
+      // LAHF and SAHF
+      "9F", "9E"};
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    if (ContainsKey(kEncodingSpecifications,
+                    instruction.raw_encoding_specification())) {
+      instruction.set_available_in_64_bit(true);
+    }
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixAvailableIn64Bits, 100);
+
 }  // namespace x86
 }  // namespace exegesis

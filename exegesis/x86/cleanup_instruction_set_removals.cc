@@ -97,7 +97,9 @@ Status RemoveNonEncodableInstructions(InstructionSetProto* instruction_set) {
       instructions->end());
   return OkStatus();
 }
-REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveNonEncodableInstructions, 0);
+// NOTE(ondrasej): We can remove the non-encodable instructions only after
+// fixing up the availability in 64-bits for LAHF and SAHF.
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveNonEncodableInstructions, 110);
 
 Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);

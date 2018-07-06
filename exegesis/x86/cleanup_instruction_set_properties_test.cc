@@ -120,6 +120,44 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
                 kExpectedInstructionSetProto);
 }
 
+TEST(FixAvailableIn64BitsTest, FixAvailability) {
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "AAD"
+        operands { name: "imm8" }
+      }
+      legacy_instruction: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "D5 ib"
+    }
+    instructions {
+      vendor_syntax { mnemonic: "LAHF" }
+      legacy_instruction: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "9F"
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "AAD"
+        operands { name: "imm8" }
+      }
+      legacy_instruction: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "D5 ib"
+    }
+    instructions {
+      vendor_syntax { mnemonic: "LAHF" }
+      legacy_instruction: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "9F"
+      available_in_64_bit: true
+    })proto";
+  TestTransform(FixAvailableIn64Bits, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 }  // namespace
 }  // namespace x86
 }  // namespace exegesis

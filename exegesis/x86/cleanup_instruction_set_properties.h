@@ -35,6 +35,10 @@ Status AddMissingCpuFlags(InstructionSetProto* instruction_set);
 // is not stored in a consistent format (and sometimes not at given all).
 Status AddProtectionModes(InstructionSetProto* instruction_set);
 
+// Fixes the 'available in 64 bits' status of certain instructions that are
+// marked as "unavailable except when they are available" in the SDM.
+Status FixAvailableIn64Bits(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 
