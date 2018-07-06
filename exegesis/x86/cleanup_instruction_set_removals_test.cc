@@ -340,45 +340,13 @@ TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
       raw_encoding_specification: 'DB E8+i'
     }
     instructions {
-      vendor_syntax { mnemonic: 'FFREE' operands { name: 'ST(i)' } }
+      vendor_syntax {
+        mnemonic: 'FFREE'
+        operands { name: 'ST(i)' }
+      }
       raw_encoding_specification: 'DD C0+i'
     })proto";
   TestTransform(RemoveSpecialCaseInstructions, kInstructionSetProto,
-                kExpectedInstructionSetProto);
-}
-
-TEST(RemoveUndefinedInstructionsTest, RemoveSomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
-    instructions {
-      vendor_syntax { mnemonic: 'FUCOM' operands { name: 'ST(i)' } }
-      raw_encoding_specification: 'DD E0+i'
-    }
-    instructions {
-      vendor_syntax { mnemonic: 'UD0' }
-      raw_encoding_specification: '0F FF'
-    }
-    instructions {
-      vendor_syntax { mnemonic: 'FFREE' operands { name: 'ST(i)' } }
-      raw_encoding_specification: 'DD C0+i'
-    }
-    instructions {
-      vendor_syntax { mnemonic: 'FADDP' }
-      raw_encoding_specification: 'DE C1'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
-    instructions {
-      vendor_syntax { mnemonic: 'FUCOM' operands { name: 'ST(i)' } }
-      raw_encoding_specification: 'DD E0+i'
-    }
-    instructions {
-      vendor_syntax { mnemonic: 'FFREE' operands { name: 'ST(i)' } }
-      raw_encoding_specification: 'DD C0+i'
-    }
-    instructions {
-      vendor_syntax { mnemonic: 'FADDP' }
-      raw_encoding_specification: 'DE C1'
-    })proto";
-  TestTransform(RemoveUndefinedInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
