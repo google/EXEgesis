@@ -18,14 +18,18 @@
 #include <stdint.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/MC/MCAsmBackend.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCCodeEmitter.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCDisassembler/MCDisassembler.h"
+#include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstPrinter.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCObjectFileInfo.h"
@@ -43,10 +47,9 @@ class Disassembler {
   // default one will be used.
   explicit Disassembler(const std::string& triple_name);
 
-  // Disassembles an instruction from an array of bytes pointed to by memory.
-  // The return value is the length of the disassembled instruction in bytes (or
-  // 0 on error).
-  // The values pointed to by the other parameters are modified as follows:
+  // Disassembles an instruction from a span of bytes. The return value is the
+  // length of the disassembled instruction in bytes (or 0 on error). The values
+  // pointed to by the other parameters are modified as follows:
   //   *llvm_opcode contains the LLVM opcode of the disassembled instruction,
   //   *llvm_mnemonic contains the LLVM mnemonic of the disassembled
   //   instruction,
@@ -55,24 +58,27 @@ class Disassembler {
   //   in Intel format.
   //   *att_instruction contains the x86 instruction (mnemonic and operands)
   //   in ATT format.
-  int Disassemble(const std::vector<uint8_t>& bytes, unsigned* llvm_opcode,
+  int Disassemble(absl::Span<const uint8_t> bytes, unsigned* llvm_opcode,
                   std::string* llvm_mnemonic,
                   std::vector<std::string>* llvm_operands,
-                  std::string* intel_instruction, std::string* att_instruction);
+                  std::string* intel_instruction,
+                  std::string* att_instruction) const;
 
   // Disassembles a hex string and returns a (possibly multi-line) string
   // containing: "Address; Hex code; Intel syntax; ATT syntax; LLVM Mnemonic"
   // For example: disasm.DisassembleString("48B85634129078563412") returns:
   // "00000000; 48B85634129078563412; movabs rax, 0x1234567890123456; movabsq "
   // "$0x1234567890123456, %rax; MOV64ri",
-  std::string DisassembleHexString(const std::string& hex_bytes);
+  std::string DisassembleHexString(const std::string& hex_bytes) const;
 
  private:
-  // Initializes the Disassembler. This is done automatically when needed.
+  // Initializes the Disassembler. This is done automatically when constructed.
   void Init();
 
-  // Indicator of whether the object was initialized or not.
-  bool initialized_ = false;
+  // Disassembles an intruction from a span of bytes. The returns the length of
+  // the disassembled instruction in bytes and an MCInst (or nullopt on error).
+  absl::optional<std::pair<int, llvm::MCInst>> DisassembleToMCInst(
+      absl::Span<const uint8_t> bytes) const;
 
   // Target arch to assemble for.
   std::string arch_name_;
@@ -80,42 +86,40 @@ class Disassembler {
   // Target triple to assemble for.
   std::string triple_name_;
 
-  // Target a specific cpu type.
-  std::string cpu_type_;
-
   // LLVM triple looked up from triple_name_.
-  mutable llvm::Triple triple_;
+  llvm::Triple triple_;
 
   // The LLVM which we are using.
   const llvm::Target* target_;
 
-  // Register info for the target.
-  std::unique_ptr<llvm::MCRegisterInfo> register_info_;
+  std::unique_ptr<const llvm::MCRegisterInfo> register_info_;
 
-  std::unique_ptr<llvm::MCAsmInfo> asm_info_;
+  std::unique_ptr<const llvm::MCAsmInfo> asm_info_;
 
   std::unique_ptr<llvm::MCObjectFileInfo> object_file_info_;
 
-  std::unique_ptr<llvm::SourceMgr> source_manager_;
+  std::unique_ptr<const llvm::SourceMgr> source_manager_;
 
   std::unique_ptr<llvm::MCContext> mc_context_;
 
   std::unique_ptr<const llvm::MCDisassembler> disasm_;
 
-  std::unique_ptr<llvm::MCInstrInfo> instruction_info_;
+  std::unique_ptr<const llvm::MCInstrInfo> instruction_info_;
 
-  std::unique_ptr<llvm::MCSubtargetInfo> sub_target_info_;
+  std::unique_ptr<const llvm::MCSubtargetInfo> sub_target_info_;
 
-  llvm::MCCodeEmitter* code_emitter_;
+  const llvm::MCCodeEmitter* code_emitter_;
 
-  llvm::MCAsmBackend* asm_backend_;
+  const llvm::MCAsmBackend* asm_backend_;
 
   std::unique_ptr<llvm::MCInstPrinter> intel_instruction_printer_;
 
   std::unique_ptr<llvm::MCInstPrinter> att_instruction_printer_;
 
+  // Print marked up assembly.
   const bool use_markup_ = false;
 
+  // Print immediate operands in hex.
   const bool print_imm_hex_ = true;
 
   // Hide instruction encodings.

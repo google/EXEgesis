@@ -15,8 +15,13 @@
 #include "exegesis/llvm/disassembler.h"
 
 #include <algorithm>
+#include <string>
+#include <utility>
 
 #include "absl/base/macros.h"
+#include "absl/memory/memory.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "base/stringprintf.h"
 #include "exegesis/llvm/llvm_utils.h"
 #include "glog/logging.h"
@@ -35,10 +40,11 @@
 namespace exegesis {
 
 Disassembler::Disassembler(const std::string& triple_name)
-    : triple_name_(triple_name.c_str()) {}
+    : triple_name_(triple_name.c_str()) {
+  Init();
+}
 
 void Disassembler::Init() {
-  initialized_ = true;
   EnsureLLVMWasInitialized();
 
   if (triple_name_.empty()) {
@@ -64,24 +70,22 @@ void Disassembler::Init() {
 
   // FIXME: This is not pretty. MCContext has a ptr to MCObjectFileInfo and
   // MCObjectFileInfo needs a MCContext reference in order to initialize itself.
-  object_file_info_.reset(new llvm::MCObjectFileInfo());
+  object_file_info_ = absl::make_unique<llvm::MCObjectFileInfo>();
   bool is_pic = false;
 
   // Create an empty SourceMgr.
-  source_manager_.reset(new llvm::SourceMgr());
+  source_manager_ = absl::make_unique<llvm::SourceMgr>();
 
-  mc_context_.reset(new llvm::MCContext(asm_info_.get(), register_info_.get(),
-                                        object_file_info_.get(),
-                                        source_manager_.get()));
+  mc_context_ = absl::make_unique<llvm::MCContext>(
+      asm_info_.get(), register_info_.get(), object_file_info_.get(),
+      source_manager_.get());
   object_file_info_->InitMCObjectFileInfo(llvm::Triple(triple_name_), is_pic,
                                           *mc_context_);
 
   CHECK(error_string.empty()) << error_string;
 
   instruction_info_.reset(target_->createMCInstrInfo());
-  std::string features_string;
-  sub_target_info_.reset(
-      target_->createMCSubtargetInfo(triple_name_, cpu_type_, features_string));
+  sub_target_info_.reset(target_->createMCSubtargetInfo(triple_name_, "", ""));
 
   code_emitter_ = hide_encoding_
                       ? nullptr
@@ -106,60 +110,66 @@ void Disassembler::Init() {
   disasm_.reset(target_->createMCDisassembler(*sub_target_info_, *mc_context_));
 }
 
-int Disassembler::Disassemble(const std::vector<uint8_t>& bytes,
+absl::optional<std::pair<int, llvm::MCInst>> Disassembler::DisassembleToMCInst(
+    absl::Span<const uint8_t> bytes) const {
+  llvm::MCInst inst;
+  uint64_t decode_size;
+  const llvm::MCDisassembler::DecodeStatus decode_status =
+      disasm_->getInstruction(
+          inst, decode_size,
+          llvm::ArrayRef<uint8_t>{bytes.data(), bytes.size()}, 0, llvm::nulls(),
+          llvm::nulls());
+  if (decode_status == llvm::MCDisassembler::Fail) return absl::nullopt;
+  if (decode_status == llvm::MCDisassembler::SoftFail) {
+    LOG(WARNING) << "Potentially undefined instruction encoding";
+  }
+  return std::make_pair(static_cast<int>(decode_size), inst);
+}
+
+int Disassembler::Disassemble(absl::Span<const uint8_t> bytes,
                               unsigned* const llvm_opcode,
                               std::string* const llvm_mnemonic,
                               std::vector<std::string>* const llvm_operands,
                               std::string* const intel_instruction,
-                              std::string* const att_instruction) {
+                              std::string* const att_instruction) const {
   *llvm_opcode = 0;
   llvm_mnemonic->clear();
   llvm_operands->clear();
   intel_instruction->clear();
   att_instruction->clear();
-  if (!initialized_) Init();
-  uint64_t instruction_size;
-  llvm::MCInst instruction;
-  llvm::MCDisassembler::DecodeStatus decode_status = disasm_->getInstruction(
-      instruction, instruction_size, llvm::ArrayRef<uint8_t>{bytes}, 0,
-      llvm::nulls(), llvm::nulls());
+
+  const auto result = DisassembleToMCInst(bytes);
+  if (!result) return 0;
+  const int decode_size = result->first;
+  const llvm::MCInst& instruction = result->second;
+
   std::string tmp;
-  switch (decode_status) {
-    case llvm::MCDisassembler::Fail:
-      return 0;
-      break;
-    case llvm::MCDisassembler::SoftFail:
-      LOG(INFO) << "Potentially undefined instruction encoding";
-      ABSL_FALLTHROUGH_INTENDED;
-    case llvm::MCDisassembler::Success:
-      tmp.clear();
-      llvm::raw_string_ostream att_stream(tmp);
-      att_instruction_printer_->printInst(&instruction, att_stream, "",
-                                          *sub_target_info_);
-      att_stream.flush();
-      att_instruction->assign(tmp);
+  tmp.clear();
+  llvm::raw_string_ostream att_stream(tmp);
+  att_instruction_printer_->printInst(&instruction, att_stream, "",
+                                      *sub_target_info_);
+  att_stream.flush();
+  att_instruction->assign(tmp);
 
-      tmp.clear();
-      llvm::raw_string_ostream intel_stream(tmp);
-      intel_instruction_printer_->printInst(&instruction, intel_stream, "",
-                                            *sub_target_info_);
-      intel_stream.flush();
-      intel_instruction->assign(tmp);
+  tmp.clear();
+  llvm::raw_string_ostream intel_stream(tmp);
+  intel_instruction_printer_->printInst(&instruction, intel_stream, "",
+                                        *sub_target_info_);
+  intel_stream.flush();
+  intel_instruction->assign(tmp);
 
-      *llvm_opcode = instruction.getOpcode();
-      *llvm_mnemonic = instruction_info_->getName(instruction.getOpcode());
-      llvm_operands->resize(instruction.getNumOperands());
-      for (int i = 0; i < instruction.getNumOperands(); ++i) {
-        tmp.clear();
-        llvm::raw_string_ostream operand_stream(tmp);
-        const llvm::MCOperand operand = instruction.getOperand(i);
-        operand_stream << operand;
-        operand_stream.flush();
-        (*llvm_operands)[i].assign(tmp);
-      }
-      break;
+  *llvm_opcode = instruction.getOpcode();
+  *llvm_mnemonic = instruction_info_->getName(instruction.getOpcode());
+  llvm_operands->resize(instruction.getNumOperands());
+  for (int i = 0; i < instruction.getNumOperands(); ++i) {
+    tmp.clear();
+    llvm::raw_string_ostream operand_stream(tmp);
+    const llvm::MCOperand operand = instruction.getOperand(i);
+    operand_stream << operand;
+    operand_stream.flush();
+    (*llvm_operands)[i].assign(tmp);
   }
-  return instruction_size;
+  return decode_size;
 }
 
 namespace {
@@ -180,7 +190,8 @@ uint8_t HexValue(char c) {
 }
 }  // namespace
 
-std::string Disassembler::DisassembleHexString(const std::string& hex_bytes) {
+std::string Disassembler::DisassembleHexString(
+    const std::string& hex_bytes) const {
   std::string result;
   const int size = hex_bytes.size() / 2;
   CHECK_EQ(0, hex_bytes.size() % 2);
