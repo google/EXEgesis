@@ -268,6 +268,37 @@ cc_test(
 )
 
 cc_library(
+    name = "cleanup_instruction_set_missing_instructions",
+    srcs = ["cleanup_instruction_set_missing_instructions.cc"],
+    hdrs = ["cleanup_instruction_set_missing_instructions.h"],
+    deps = [
+        "//base",
+        "//exegesis/base:cleanup_instruction_set",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/util:proto_util",
+        "//util/task:status",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "cleanup_instruction_set_missing_instructions_test",
+    size = "small",
+    srcs = ["cleanup_instruction_set_missing_instructions_test.cc"],
+    deps = [
+        ":cleanup_instruction_set_missing_instructions",
+        "//exegesis/base:cleanup_instruction_set",
+        "//exegesis/base:cleanup_instruction_set_test_utils",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "cleanup_instruction_set_operand_info",
     srcs = ["cleanup_instruction_set_operand_info.cc"],
     hdrs = ["cleanup_instruction_set_operand_info.h"],
