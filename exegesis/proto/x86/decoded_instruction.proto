@@ -162,14 +162,10 @@ message LegacyPrefixes {
   // The state of the lock or rep prefix.
   LegacyEncoding.LockOrRepPrefix lock_or_rep = 2;
 
-  // The state of the segment override prefix.
-  LegacyEncoding.SegmentOverridePrefix segment_override = 3;
-
   // The state of the operand size override prefix.
   LegacyEncoding.OperandSizeOverridePrefix operand_size_override = 4;
 
-  // The state of the address size override prefix.
-  LegacyEncoding.AddressSizeOverridePrefix address_size_override = 5;
+  reserved 3, 5;
 }
 
 // Contains the values from the ModR/M byte of the instruction.
@@ -248,6 +244,13 @@ message DecodedInstruction {
     // The information from the EVEX prefix of the instruction.
     EvexPrefix evex_prefix = 3;
   }
+
+  // The state of the segment override prefix. Note that the segment override
+  // prefixes may be used with all encoding schemes.
+  LegacyEncoding.SegmentOverridePrefix segment_override = 9;
+
+  // The state of the address size override prefix.
+  LegacyEncoding.AddressSizeOverridePrefix address_size_override = 10;
 
   // The opcode of the instruction.
   uint32 opcode = 4;

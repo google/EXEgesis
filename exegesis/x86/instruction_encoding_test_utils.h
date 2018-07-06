@@ -36,15 +36,20 @@ namespace x86 {
 // instruction can't be encoded in the first place.
 //
 // Usage:
+// constexpr char kEncodingSpecificationProto[] = R"proto(
+//   legacy_prefixes { rex_w_prefix: PREFIX_IS_IGNORED }
+//   opcode: 0x04
+//   immediate_value_bytes: 1)proto";
 // DecodedInstruction instruction_data;
 // instruction_data.set_opcode(0x04);
 // instruction_data.add_immediate_values("\x0a");
-// EXPECT_THAT(instruction_data, DisassemblesTo("04 ib", "ADD AL, 0xa"));
+// EXPECT_THAT(instruction_data,
+//             DisassemblesTo(kEncodingSpecificationProto, "ADD AL, 0xa"));
 ::testing::Matcher<const DecodedInstruction&> DisassemblesTo(
-    const std::string& encoding_specification,
+    const std::string& encoding_specification_proto,
     const std::string& expected_disassembly);
 ::testing::Matcher<const DecodedInstruction&> DisassemblesTo(
-    const EncodingSpecification& encoding_specification,
+    const EncodingSpecification& encoding_specification_proto,
     const std::string& expected_disassembly);
 
 // -----------------------------------------------------------------------------
@@ -56,7 +61,7 @@ namespace x86 {
 class DisassemblesToMatcher
     : public ::testing::MatcherInterface<const DecodedInstruction&> {
  public:
-  DisassemblesToMatcher(const std::string& encoding_specification,
+  DisassemblesToMatcher(const std::string& encoding_specification_proto,
                         std::string expected_disassembly);
   DisassemblesToMatcher(const EncodingSpecification& specification,
                         std::string expected_disassembly);

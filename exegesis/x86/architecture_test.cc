@@ -81,13 +81,23 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 184
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes {} immediate_value_bytes: 4
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+        immediate_value_bytes: 4
       }
     }
     instructions {
       vendor_syntax { mnemonic: 'NOP' }
       raw_encoding_specification: 'NP 90'
-      x86_encoding_specification { opcode: 144 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 144
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
     }
     instructions {
       vendor_syntax { mnemonic: 'XCHG' }
@@ -95,7 +105,10 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 144
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -103,7 +116,13 @@ constexpr char kArchitectureProto[] = R"proto(
       legacy_instruction: true
       encoding_scheme: 'MR'
       raw_encoding_specification: '00 /r'
-      x86_encoding_specification { modrm_usage: FULL_MODRM legacy_prefixes {} }
+      x86_encoding_specification {
+        modrm_usage: FULL_MODRM
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
     }
     instructions {
       available_in_64_bit: true
@@ -112,7 +131,11 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: '14 ib'
       x86_encoding_specification {
         opcode: 0x14
-        legacy_prefixes {} immediate_value_bytes: 1
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+        immediate_value_bytes: 1
       }
     }
     instructions {
@@ -122,7 +145,10 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: 'REX.W + 15 id'
       x86_encoding_specification {
         opcode: 0x15
-        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_REQUIRED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
         immediate_value_bytes: 4
       }
     }
@@ -133,7 +159,10 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: '66 15 iw'
       x86_encoding_specification {
         opcode: 0x15
-        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_REQUIRED
+        }
         immediate_value_bytes: 2
       }
     }
@@ -144,7 +173,11 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: '15 id'
       x86_encoding_specification {
         opcode: 0x15
-        legacy_prefixes {} immediate_value_bytes: 4
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+        immediate_value_bytes: 4
       }
     }
     instructions {
@@ -154,7 +187,11 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: '7F cb'
       x86_encoding_specification {
         opcode: 0x7F
-        legacy_prefixes {} code_offset_bytes: 1
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+        code_offset_bytes: 1
       }
     }
     instructions {
@@ -166,7 +203,10 @@ constexpr char kArchitectureProto[] = R"proto(
         opcode: 0xF6
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         modrm_opcode_extension: 2
-        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_REQUIRED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -178,7 +218,10 @@ constexpr char kArchitectureProto[] = R"proto(
         opcode: 0x0F00
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         modrm_opcode_extension: 4
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -281,7 +324,13 @@ constexpr char kArchitectureProto[] = R"proto(
       legacy_instruction: true
       encoding_scheme: "A"
       raw_encoding_specification: "NP 0F 01 D5"
-      x86_encoding_specification { opcode: 983509 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 983509
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
     }
     instructions {
       vendor_syntax {
@@ -369,8 +418,8 @@ void CheckInstructionIndex(const X86Architecture& architecture,
 TEST_F(X86ArchitectureTest, GetInstructionIndex) {
   constexpr struct {
     const char* encoded_instruction_proto;
-    const char* expected_raw_encoding_specification_true;
-    const char* expected_raw_encoding_specification_false;
+    const char* expected_raw_encoding_specification_with_modrm;
+    const char* expected_raw_encoding_specification_without_modrm;
   } kTestCases[] = {
       {"opcode: 0x14", "14 ib", "14 ib"},
       {"opcode: 0x15", "15 id", "15 id"},
@@ -383,8 +432,8 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
       {R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
                opcode: 0x15)proto", "66 15 iw", "66 15 iw"},
       {R"proto(
-         legacy_prefixes { rex { w: true } } opcode: 0x15)proto",
-       "REX.W + 15 id", "REX.W + 15 id"},
+         legacy_prefixes { rex { w: true } }
+         opcode: 0x15)proto", "REX.W + 15 id", "REX.W + 15 id"},
       {R"proto(vex_prefix {
                  not_b: true
                  not_r: true
@@ -405,10 +454,10 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
                opcode: 0x0f38f3
                modrm { register_operand: 7 })proto", nullptr,
        "VEX.NDD.LZ.0F38.W1 F3 /2"},
-      // The opcode 0x14 exists only for the 8-bit version of ADC. All other
-      // versions use 0x15 and optionally a prefix.
-      {R"proto(legacy_prefixes { rex { w: true } } opcode: 0x14)proto", nullptr,
-       nullptr},
+      // The opcode 0x14 always uses 8-bit values. Prefixes affecting the size
+      // of the instruction are ignored.
+      {R"proto(legacy_prefixes { rex { w: true } }
+               opcode: 0x14)proto", "14 ib", "14 ib"},
       {R"proto(vex_prefix {
                  mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                  map_select: MAP_SELECT_0F
@@ -443,12 +492,12 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
                               test_case.encoded_instruction_proto));
     const auto instruction = ParseProtoFromStringOrDie<DecodedInstruction>(
         test_case.encoded_instruction_proto);
-    CheckInstructionIndex(*architecture_, instruction,
-                          test_case.expected_raw_encoding_specification_true,
-                          true);
-    CheckInstructionIndex(*architecture_, instruction,
-                          test_case.expected_raw_encoding_specification_false,
-                          false);
+    CheckInstructionIndex(
+        *architecture_, instruction,
+        test_case.expected_raw_encoding_specification_with_modrm, true);
+    CheckInstructionIndex(
+        *architecture_, instruction,
+        test_case.expected_raw_encoding_specification_without_modrm, false);
   }
 }
 

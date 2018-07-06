@@ -27,7 +27,7 @@
 //  absl::Span<const uint8_t> binary_code = ...;
 //  while (!binary_code.empty()) {
 //    StatusOr<DecodedInstruction> instruction_or_status =
-//        parser.ConsumeBinaryEncoding(&binary_code);
+//        parser.ParseBinaryEncoding(&binary_code);
 //    RETURN_IF_ERROR(instruction_or_status.status());
 //
 //    ...
@@ -95,6 +95,17 @@ class InstructionParser {
 
   // Parses the REX prefix of the instruction.
   Status ParseRexPrefix(uint8_t prefix_byte);
+
+  // When the first byte of 'encoded_instruction' is a segment override prefix,
+  // parses the prefix, removes the byte from the span, and returns true.
+  // Otherwise, does nothing and returns false.
+  bool ConsumeSegmentOverridePrefixIfNeeded(
+      absl::Span<const uint8_t>* encoded_instruction);
+  // When the first byte of 'encoded_instruction' is an address size override
+  // prefix, parses the prefix, removes the byte from the span, and returns
+  // true. Otherwise, does nothing and returns false.
+  bool ConsumeAddressSizeOverridePrefixIfNeeded(
+      absl::Span<const uint8_t>* encoded_instruction);
 
   // Parses the VEX (resp. EVEX) prefix of the instruction. Expects that
   // 'encoded_instruction' starts with the first byte of the (E)VEX prefix. It
@@ -166,9 +177,9 @@ class InstructionParser {
   // an error per se, but it leads to undefined behavior of the CPU and we want
   // to reject instructions like that.
   Status AddLockOrRepPrefix(LegacyEncoding::LockOrRepPrefix prefix);
-  Status AddSegmentOverridePrefix(LegacyEncoding::SegmentOverridePrefix prefix);
+  void AddSegmentOverridePrefix(LegacyEncoding::SegmentOverridePrefix prefix);
   Status AddOperandSizeOverridePrefix();
-  Status AddAddressSizeOverridePrefix();
+  void AddAddressSizeOverridePrefix();
 
   // The architecture information used by the parser. The architecture is used
   // to determine what parts of an instruction are present for a given
@@ -182,6 +193,9 @@ class InstructionParser {
   // valid as long as 'instruction_db_' is valid and it must not be deleted
   // explicitly.
   const EncodingSpecification* specification_;
+
+  // The encoded form of the current instruction processed by the parser.
+  absl::Span<const uint8_t> encoded_instruction_;
 
   // The current instruction processed by the parser.
   DecodedInstruction instruction_;

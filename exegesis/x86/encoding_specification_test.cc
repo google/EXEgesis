@@ -72,27 +72,34 @@ TEST(EncodingSpecificationParserTest, NoPrefixAndNoSuffix) {
 }
 
 TEST(EncodingSpecificationParserTest, NPPrefix) {
-  CheckParser("NP 0F 58 /r",
-              R"proto(
-    legacy_prefixes {} modrm_usage: FULL_MODRM opcode: 0x0f58)proto");
+  CheckParser("NP 0F 58 /r", R"proto(
+    legacy_prefixes { operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED }
+    modrm_usage: FULL_MODRM
+    opcode: 0x0f58)proto");
   CheckParser("NP REX.W + 0F AE /1", R"proto(
     opcode: 4014
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
     modrm_opcode_extension: 1
-    legacy_prefixes { has_mandatory_rex_w_prefix: true })proto");
+    legacy_prefixes {
+      rex_w_prefix: PREFIX_IS_REQUIRED
+      operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+    })proto");
 }
 
 TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
-  CheckParser("REX + 80 /2 ib", R"proto(
-    legacy_prefixes {}
-    opcode: 0x80
-    modrm_usage: OPCODE_EXTENSION_IN_MODRM
-    modrm_opcode_extension: 2
-    immediate_value_bytes: 1)proto");
-  CheckParser("REX.W + 8B /r", R"proto(
-    legacy_prefixes { has_mandatory_rex_w_prefix: true }
-    opcode: 0x8b
-    modrm_usage: FULL_MODRM)proto");
+  CheckParser("REX + 80 /2 ib", R"(
+                  legacy_prefixes {
+                  }
+                  opcode: 0x80
+                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                  modrm_opcode_extension: 2
+                  immediate_value_bytes: 1)");
+  CheckParser("REX.W + 8B /r", R"(
+                  legacy_prefixes {
+                    rex_w_prefix: PREFIX_IS_REQUIRED
+                  }
+                  opcode: 0x8b
+                  modrm_usage: FULL_MODRM)");
 }
 
 TEST(EncodingSpecificationParserTest, RexRPrefix) {
@@ -149,27 +156,37 @@ TEST(EncodingSpecificationParserTest, ModRm) {
     modrm_opcode_extension: 1)proto");
   CheckParser("10 /r",
               R"proto(
-    legacy_prefixes {} opcode: 0x10 modrm_usage: FULL_MODRM)proto");
+    legacy_prefixes {}
+    opcode: 0x10
+    modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, ModRmMemorySuffix) {
-  CheckParser("REX.W + 0F C7 /1 m128", R"proto(
-    legacy_prefixes { has_mandatory_rex_w_prefix: true }
-    opcode: 0x0fc7
-    modrm_usage: OPCODE_EXTENSION_IN_MODRM
-    modrm_opcode_extension: 1)proto");
+  CheckParser("REX.W + 0F C7 /1 m128", R"(
+                  legacy_prefixes {
+                    rex_w_prefix: PREFIX_IS_REQUIRED
+                  }
+                  opcode: 0x0fc7
+                  modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                  modrm_opcode_extension: 1)");
 }
 
 TEST(EncodingSpecificationParserTest, ImmediateValue) {
   CheckParser("D5 ib",
               R"proto(
-    legacy_prefixes {} opcode: 0xd5 immediate_value_bytes: 1)proto");
+    legacy_prefixes {}
+    opcode: 0xd5
+    immediate_value_bytes: 1)proto");
   CheckParser("15 iw",
               R"proto(
-    legacy_prefixes {} opcode: 0x15 immediate_value_bytes: 2)proto");
+    legacy_prefixes {}
+    opcode: 0x15
+    immediate_value_bytes: 2)proto");
   CheckParser("15 id",
               R"proto(
-    legacy_prefixes {} opcode: 0x15 immediate_value_bytes: 4)proto");
+    legacy_prefixes {}
+    opcode: 0x15
+    immediate_value_bytes: 4)proto");
   CheckParser("C8 iw ib", R"proto(
     legacy_prefixes {}
     opcode: 0xc8
@@ -201,7 +218,7 @@ TEST(EncodingSpecificationParserTest, CodeOffset) {
 
 TEST(EncodingSpecificationParserTest, MandatoryOperandSizeOverridePrefix) {
   CheckParser("66 0F 58 /r", R"proto(
-    legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+    legacy_prefixes { operand_size_override_prefix: PREFIX_IS_REQUIRED }
     opcode: 0x0f58
     modrm_usage: FULL_MODRM)proto");
 }

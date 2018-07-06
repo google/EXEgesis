@@ -151,11 +151,6 @@ EncodingSpecificationParser::EncodingSpecificationParser()
 StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
     absl::string_view specification) {
   specification_.Clear();
-  // TODO(b/37203350): In 2017/03, Intel started adding NP to the encoding
-  // specifications of instructions that do not accept any additional prefixes,
-  // but it's inconsistent across the SDM. For now we simply drop the prefix and
-  // ignore it.
-  RE2::Consume(&specification, "NP ");
   if (StartsWith(specification, "VEX.") || StartsWith(specification, "EVEX")) {
     RETURN_IF_ERROR(ParseVexOrEvexPrefix(&specification));
   } else {
@@ -179,6 +174,9 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   static constexpr char kLegacyPrefixRegex[] =
       // Optional whitespace before the prefix.
       " *(?:"
+      // The meta-prefix stating that the instruction does not allow any
+      // additional prefixes.
+      "(NP)|"
       // The operand size override prefix.
       "(66)|"
       // THe address size override prefix.
@@ -205,20 +203,23 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
       "(?: *\\+ *)?";
   static constexpr char kRexWPrefix[] = "REX.W";
   static const LazyRE2 legacy_prefix_parser = {kLegacyPrefixRegex};
+  std::string no_additional_prefixes;
   std::string operand_size_override_prefix;
   std::string address_size_override_prefix;
   std::string repne_prefix;
   std::string repe_prefix;
   std::string rex_prefix;
+  bool has_no_additional_prefixes = false;
   bool has_mandatory_address_size_override_prefix = false;
   bool has_mandatory_operand_size_override_prefix = false;
   bool has_mandatory_repe_prefix = false;
   bool has_mandatory_repne_prefix = false;
   bool has_mandatory_rex_prefix = false;
   while (RE2::Consume(specification, *legacy_prefix_parser,
-                      &operand_size_override_prefix,
+                      &no_additional_prefixes, &operand_size_override_prefix,
                       &address_size_override_prefix, &repne_prefix,
                       &repe_prefix, &rex_prefix)) {
+    has_no_additional_prefixes |= !no_additional_prefixes.empty();
     has_mandatory_operand_size_override_prefix |=
         !operand_size_override_prefix.empty();
     has_mandatory_address_size_override_prefix |=
@@ -233,13 +234,26 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   // instructions.
   LegacyPrefixEncodingSpecification* const legacy_prefixes =
       specification_.mutable_legacy_prefixes();
-  legacy_prefixes->set_has_mandatory_operand_size_override_prefix(
-      has_mandatory_operand_size_override_prefix);
+  if (has_no_additional_prefixes) {
+    // We simply set all prefixes to PREFIX_IS_NOT_PERMITTED at the beginning,
+    // and then overwrite them with any prefixes that did appear in the encoding
+    // specification.
+    // TODO(b/37203350): Add support for the REPE/REPNE prefixes when they are
+    // converted to use LegacyEncoding::PrefixUsage.
+    legacy_prefixes->set_operand_size_override_prefix(
+        LegacyEncoding::PREFIX_IS_NOT_PERMITTED);
+  }
+  if (has_mandatory_operand_size_override_prefix) {
+    legacy_prefixes->set_operand_size_override_prefix(
+        LegacyEncoding::PREFIX_IS_REQUIRED);
+  }
   legacy_prefixes->set_has_mandatory_address_size_override_prefix(
       has_mandatory_address_size_override_prefix);
   legacy_prefixes->set_has_mandatory_repe_prefix(has_mandatory_repe_prefix);
   legacy_prefixes->set_has_mandatory_repne_prefix(has_mandatory_repne_prefix);
-  legacy_prefixes->set_has_mandatory_rex_w_prefix(has_mandatory_rex_prefix);
+  if (has_mandatory_rex_prefix) {
+    legacy_prefixes->set_rex_w_prefix(LegacyEncoding::PREFIX_IS_REQUIRED);
+  }
   return OkStatus();
 }
 
@@ -478,7 +492,7 @@ std::string GenerateLegacyPrefixEncodingSpec(
     const LegacyPrefixEncodingSpecification& prefixes) {
   std::string raw_encoding_spec;
 
-  if (prefixes.has_mandatory_rex_w_prefix()) {
+  if (prefixes.rex_w_prefix() == LegacyEncoding::PREFIX_IS_REQUIRED) {
     raw_encoding_spec.append("REX.W + ");
   }
   if (prefixes.has_mandatory_repne_prefix()) {
@@ -490,7 +504,8 @@ std::string GenerateLegacyPrefixEncodingSpec(
   if (prefixes.has_mandatory_address_size_override_prefix()) {
     StringAppendF(&raw_encoding_spec, "%02X ", kAddressSizeOverrideByte);
   }
-  if (prefixes.has_mandatory_operand_size_override_prefix()) {
+  if (prefixes.operand_size_override_prefix() ==
+      LegacyEncoding::PREFIX_IS_REQUIRED) {
     StringAppendF(&raw_encoding_spec, "%02X ", kOperandSizeOverrideByte);
   }
 

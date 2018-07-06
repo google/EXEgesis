@@ -44,7 +44,8 @@ TEST(CheckOpcodeFormatTest, ValidOpcodes) {
       raw_encoding_specification: "14 ib"
       x86_encoding_specification {
         opcode: 0x14
-        legacy_prefixes {} immediate_value_bytes: 1
+        legacy_prefixes { operand_size_override_prefix: PREFIX_IS_IGNORED }
+        immediate_value_bytes: 1
       }
     }
     instructions {
@@ -78,7 +79,7 @@ TEST(CheckOpcodeFormatTest, ValidOpcodes) {
       x86_encoding_specification {
         opcode: 997408
         modrm_usage: FULL_MODRM
-        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        legacy_prefixes { operand_size_override_prefix: PREFIX_IS_REQUIRED }
       }
     }
     instructions {
@@ -122,7 +123,9 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
                   x86_encoding_specification {
                     opcode: 55520
                     operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
-                    legacy_prefixes {}
+                    legacy_prefixes {
+                      operand_size_override_prefix: PREFIX_IS_IGNORED
+                    }
                   }
                 })proto", "Invalid opcode upper bytes: d800"},
        {R"proto(instructions {
@@ -130,7 +133,9 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
                   raw_encoding_specification: "NP 0F 01 D6"
                   x86_encoding_specification {
                     opcode: 983510
-                    legacy_prefixes {}
+                    legacy_prefixes {
+                      operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+                    }
                   }
                 })proto", "Invalid opcode upper bytes: f0100"}};
   for (const auto& test_case : kTestCases) {

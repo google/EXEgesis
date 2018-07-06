@@ -23,6 +23,7 @@
 #include "base/stringprintf.h"
 #include "exegesis/base/opcode.h"
 #include "exegesis/util/bits.h"
+#include "exegesis/util/strings.h"
 #include "exegesis/x86/instruction_encoding.h"
 #include "glog/logging.h"
 #include "util/task/canonical_errors.h"
@@ -113,6 +114,7 @@ InstructionParser::InstructionParser(const X86Architecture* architecture)
 
 void InstructionParser::Reset() {
   instruction_.Clear();
+  encoded_instruction_ = absl::Span<uint8_t>();
   specification_ = nullptr;
 }
 
@@ -120,6 +122,7 @@ StatusOr<DecodedInstruction> InstructionParser::ConsumeBinaryEncoding(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   Reset();
+  encoded_instruction_ = *encoded_instruction;
 
   RETURN_IF_ERROR(ConsumePrefixes(encoded_instruction));
   RETURN_IF_ERROR(ConsumeOpcode(encoded_instruction));
@@ -131,9 +134,61 @@ StatusOr<DecodedInstruction> InstructionParser::ConsumeBinaryEncoding(
   return instruction_;
 }
 
+bool InstructionParser::ConsumeSegmentOverridePrefixIfNeeded(
+    absl::Span<const uint8_t>* encoded_instruction) {
+  CHECK(encoded_instruction != nullptr);
+  if (encoded_instruction->empty()) return false;
+  bool consume_first_byte = true;
+  switch (encoded_instruction->front()) {
+    // The segment override and branch prediction prefixes.
+    case kCsOverrideByte:
+      AddSegmentOverridePrefix(LegacyEncoding::CS_OVERRIDE_OR_BRANCH_NOT_TAKEN);
+      break;
+    case kSsOverrideByte:
+      AddSegmentOverridePrefix(LegacyEncoding::SS_OVERRIDE);
+      break;
+    case kDsOverrideByte:
+      AddSegmentOverridePrefix(LegacyEncoding::DS_OVERRIDE_OR_BRANCH_TAKEN);
+      break;
+    case kEsOverrideByte:
+      AddSegmentOverridePrefix(LegacyEncoding::ES_OVERRIDE);
+      break;
+    case kFsOverrideByte:
+      AddSegmentOverridePrefix(LegacyEncoding::FS_OVERRIDE);
+      break;
+    case kGsOverrideByte:
+      AddSegmentOverridePrefix(LegacyEncoding::GS_OVERRIDE);
+      break;
+    default:
+      consume_first_byte = false;
+      break;
+  }
+  if (consume_first_byte) encoded_instruction->remove_prefix(1);
+  return consume_first_byte;
+}
+
+bool InstructionParser::ConsumeAddressSizeOverridePrefixIfNeeded(
+    absl::Span<const uint8_t>* encoded_instruction) {
+  CHECK(encoded_instruction != nullptr);
+  if (!encoded_instruction->empty() &&
+      encoded_instruction->front() == kAddressSizeOverrideByte) {
+    AddAddressSizeOverridePrefix();
+    encoded_instruction->remove_prefix(1);
+    return true;
+  }
+  return false;
+}
+
 Status InstructionParser::ConsumePrefixes(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
+
+  // The segment override and address size override prefixes may appear with all
+  // encoding schemes, including the VEX and EVEX prefixes. In such cases, the
+  // segment override would be the first byte.
+  while (ConsumeSegmentOverridePrefixIfNeeded(encoded_instruction) ||
+         ConsumeAddressSizeOverridePrefixIfNeeded(encoded_instruction)) {
+  }
 
   // A VEX/EVEX prefix is mutually exclusive with all other prefixes.
   // If we detect a VEX/EVEX byte at the beginning of the instruction, we
@@ -170,24 +225,13 @@ Status InstructionParser::ConsumePrefixes(
 
       // The segment override and branch prediction prefixes.
       case kCsOverrideByte:
-        RETURN_IF_ERROR(AddSegmentOverridePrefix(
-            LegacyEncoding::CS_OVERRIDE_OR_BRANCH_NOT_TAKEN));
-        break;
       case kSsOverrideByte:
-        RETURN_IF_ERROR(AddSegmentOverridePrefix(LegacyEncoding::SS_OVERRIDE));
-        break;
       case kDsOverrideByte:
-        RETURN_IF_ERROR(AddSegmentOverridePrefix(
-            LegacyEncoding::DS_OVERRIDE_OR_BRANCH_TAKEN));
-        break;
       case kEsOverrideByte:
-        RETURN_IF_ERROR(AddSegmentOverridePrefix(LegacyEncoding::ES_OVERRIDE));
-        break;
       case kFsOverrideByte:
-        RETURN_IF_ERROR(AddSegmentOverridePrefix(LegacyEncoding::FS_OVERRIDE));
-        break;
       case kGsOverrideByte:
-        RETURN_IF_ERROR(AddSegmentOverridePrefix(LegacyEncoding::GS_OVERRIDE));
+        ConsumeSegmentOverridePrefixIfNeeded(encoded_instruction);
+        consumed_first_byte = true;
         break;
 
       // Operand size override prefix.
@@ -197,7 +241,7 @@ Status InstructionParser::ConsumePrefixes(
 
       // Address size override prefix.
       case kAddressSizeOverrideByte:
-        RETURN_IF_ERROR(AddAddressSizeOverridePrefix());
+        AddAddressSizeOverridePrefix();
         break;
 
       // If we got here, we either found a REX prefix or we found the first byte
@@ -643,23 +687,15 @@ Status InstructionParser::AddLockOrRepPrefix(
   return OkStatus();
 }
 
-Status InstructionParser::AddSegmentOverridePrefix(
+void InstructionParser::AddSegmentOverridePrefix(
     LegacyEncoding::SegmentOverridePrefix prefix) {
-  if (instruction_.has_vex_prefix()) {
-    return InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
+  if (instruction_.segment_override() != LegacyEncoding::NO_SEGMENT_OVERRIDE) {
+    VLOG(1) << "Multiple segment override or branch prediction prefixes: "
+            << LegacyEncoding::SegmentOverridePrefix_Name(
+                   instruction_.segment_override())
+            << " and " << LegacyEncoding::SegmentOverridePrefix_Name(prefix);
   }
-  LegacyPrefixes* const legacy_prefixes =
-      instruction_.mutable_legacy_prefixes();
-  if (legacy_prefixes->segment_override() !=
-      LegacyEncoding::NO_SEGMENT_OVERRIDE) {
-    return InvalidArgumentError(absl::StrCat(
-        "Multiple segment override or branch prediction prefixes: ",
-        LegacyEncoding::SegmentOverridePrefix_Name(
-            legacy_prefixes->segment_override()),
-        " and ", LegacyEncoding::SegmentOverridePrefix_Name(prefix)));
-  }
-  legacy_prefixes->set_segment_override(prefix);
-  return OkStatus();
+  instruction_.set_segment_override(prefix);
 }
 
 Status InstructionParser::AddOperandSizeOverridePrefix() {
@@ -670,26 +706,21 @@ Status InstructionParser::AddOperandSizeOverridePrefix() {
       instruction_.mutable_legacy_prefixes();
   if (legacy_prefixes->operand_size_override() !=
       LegacyEncoding::NO_OPERAND_SIZE_OVERRIDE) {
-    return InvalidArgumentError("Duplicate operand size override prefix.");
+    VLOG(1) << "Duplicate operand size override prefix: "
+            << ToHumanReadableHexString(encoded_instruction_);
   }
   legacy_prefixes->set_operand_size_override(
       LegacyEncoding::OPERAND_SIZE_OVERRIDE);
   return OkStatus();
 }
 
-Status InstructionParser::AddAddressSizeOverridePrefix() {
-  if (instruction_.has_vex_prefix()) {
-    return InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
-  }
-  LegacyPrefixes* const legacy_prefixes =
-      instruction_.mutable_legacy_prefixes();
-  if (legacy_prefixes->address_size_override() !=
+void InstructionParser::AddAddressSizeOverridePrefix() {
+  if (instruction_.address_size_override() !=
       LegacyEncoding::NO_ADDRESS_SIZE_OVERRIDE) {
-    return InvalidArgumentError("Duplicate address size override prefix.");
+    VLOG(1) << "Duplicate address size override prefix: "
+            << ToHumanReadableHexString(encoded_instruction_);
   }
-  legacy_prefixes->set_address_size_override(
-      LegacyEncoding::ADDRESS_SIZE_OVERRIDE);
-  return OkStatus();
+  instruction_.set_address_size_override(LegacyEncoding::ADDRESS_SIZE_OVERRIDE);
 }
 
 }  // namespace x86

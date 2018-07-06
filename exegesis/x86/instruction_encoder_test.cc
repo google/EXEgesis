@@ -42,7 +42,13 @@ constexpr char kArchitectureProto[] = R"proto(
       available_in_64_bit: true
       legacy_instruction: true
       raw_encoding_specification: '0F 06'
-      x86_encoding_specification { opcode: 3846 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 3846
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
     }
     instructions {
       available_in_64_bit: true
@@ -51,7 +57,10 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 997897
         modrm_usage: FULL_MODRM
-        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_REQUIRED
+        }
         immediate_value_bytes: 1
       }
     }
@@ -62,14 +71,23 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 135
         modrm_usage: FULL_MODRM
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
       available_in_64_bit: true
       legacy_instruction: true
       raw_encoding_specification: '98'
-      x86_encoding_specification { opcode: 152 legacy_prefixes {} }
+      x86_encoding_specification {
+        opcode: 152
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+      }
     }
     instructions {
       available_in_64_bit: true
@@ -78,7 +96,10 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 4040
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -87,7 +108,11 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: '14 ib'
       x86_encoding_specification {
         opcode: 20
-        legacy_prefixes {} immediate_value_bytes: 1
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+        immediate_value_bytes: 1
       }
     }
     instructions {
@@ -96,7 +121,12 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: 'C8 iw ib'
       x86_encoding_specification {
         opcode: 200
-        legacy_prefixes {} immediate_value_bytes: 2 immediate_value_bytes: 1
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+        immediate_value_bytes: 2
+        immediate_value_bytes: 1
       }
     }
     instructions {
@@ -105,7 +135,11 @@ constexpr char kArchitectureProto[] = R"proto(
       raw_encoding_specification: 'E8 cd'
       x86_encoding_specification {
         opcode: 232
-        legacy_prefixes {} code_offset_bytes: 4
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+        code_offset_bytes: 4
       }
     }
     instructions {
@@ -115,7 +149,10 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 144
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -125,7 +162,23 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 135
         modrm_usage: FULL_MODRM
-        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_REQUIRED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+      }
+    }
+    instructions {
+      available_in_64_bit: true
+      legacy_instruction: false
+      raw_encoding_specification: '66 87 /r'
+      x86_encoding_specification {
+        opcode: 135
+        modrm_usage: FULL_MODRM
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_REQUIRED
+        }
       }
     }
     instructions {
@@ -136,7 +189,10 @@ constexpr char kArchitectureProto[] = R"proto(
         opcode: 255
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         modrm_opcode_extension: 1
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -146,7 +202,11 @@ constexpr char kArchitectureProto[] = R"proto(
       x86_encoding_specification {
         opcode: 199
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
-        legacy_prefixes {} immediate_value_bytes: 4
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+        immediate_value_bytes: 4
       }
     }
     instructions {
@@ -627,7 +687,7 @@ TEST_F(EncodeInstructionTest,
        AddressSizeOverrideOpcodeAndModRmWithSibAnd32BitDisplacement) {
   constexpr char kSpecification[] = "87 /r";
   constexpr char kDecodedInstruction[] = R"proto(
-    legacy_prefixes { address_size_override: ADDRESS_SIZE_OVERRIDE }
+    address_size_override: ADDRESS_SIZE_OVERRIDE
     modrm {
       addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
       register_operand: 2
@@ -646,7 +706,7 @@ TEST_F(EncodeInstructionTest,
 TEST_F(EncodeInstructionTest, SegmentOverridePrefix) {
   constexpr char kSpecification[] = "90+rd";
   constexpr char kDecodedInstruction[] = R"proto(
-    legacy_prefixes { segment_override: SS_OVERRIDE })proto";
+    segment_override: SS_OVERRIDE)proto";
   constexpr uint8_t kExpectedEncoding[] = {0x36, 0x90};
   constexpr char kExpectedDisassembly[] = "NOP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
@@ -654,7 +714,7 @@ TEST_F(EncodeInstructionTest, SegmentOverridePrefix) {
 }
 
 TEST_F(EncodeInstructionTest, OperandSizeOverrideOpcodeAndModRm) {
-  constexpr char kSpecification[] = "87 /r";
+  constexpr char kSpecification[] = "66 87 /r";
   constexpr char kDecodedInstruction[] = R"proto(
     legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
     modrm { addressing_mode: DIRECT register_operand: 2 rm_operand: 5 })proto";
@@ -687,10 +747,19 @@ TEST_F(EncodeInstructionTest, RexROpcodeAndModRm) {
 }
 
 TEST_F(EncodeInstructionTest, RexRWOpcodeAndModRm) {
-  constexpr char kSpecification[] = "87 /r";
-  constexpr char kDecodedInstruction[] = R"proto(
-    legacy_prefixes { rex { r: true w: true } }
-    modrm { addressing_mode: DIRECT register_operand: 2 rm_operand: 5 })proto";
+  constexpr char kSpecification[] = "REX.W + 87 /r";
+  constexpr char kDecodedInstruction[] = R"(
+      legacy_prefixes {
+        rex {
+          r: true
+          w: true
+        }
+      }
+      modrm {
+        addressing_mode: DIRECT
+        register_operand: 2
+        rm_operand: 5
+      })";
   constexpr uint8_t kExpectedEncoding[] = {0x4c, 0x87, 0xd5};
   constexpr char kExpectedDisassembly[] = "XCHG R10, RBP";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
@@ -748,6 +817,42 @@ TEST_F(EncodeInstructionTest, TwoByteVexPrefix) {
       map_select: MAP_SELECT_0F
     })proto";
   constexpr uint8_t kExpectedEncoding[] = {0xc5, 0xfc, 0x77};
+  constexpr char kExpectedDisassembly[] = "VZEROALL";
+  TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
+                         kExpectedDisassembly);
+}
+
+TEST_F(EncodeInstructionTest, TwoByteVexPrefixAndSegmentOverride) {
+  constexpr char kSpecification[] = "VEX.256.0F.WIG 77";
+  constexpr char kDecodedInstruction[] = R"proto(
+    segment_override: FS_OVERRIDE
+    vex_prefix {
+      not_b: true
+      not_r: true
+      not_x: true
+      mandatory_prefix: NO_MANDATORY_PREFIX
+      use_256_bit_vector_length: true
+      map_select: MAP_SELECT_0F
+    })proto";
+  constexpr uint8_t kExpectedEncoding[] = {0x64, 0xc5, 0xfc, 0x77};
+  constexpr char kExpectedDisassembly[] = "VZEROALL";
+  TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
+                         kExpectedDisassembly);
+}
+
+TEST_F(EncodeInstructionTest, TwoByteVexPrefixAndAddressSizeOverride) {
+  constexpr char kSpecification[] = "VEX.256.0F.WIG 77";
+  constexpr char kDecodedInstruction[] = R"proto(
+    address_size_override: ADDRESS_SIZE_OVERRIDE
+    vex_prefix {
+      not_b: true
+      not_r: true
+      not_x: true
+      mandatory_prefix: NO_MANDATORY_PREFIX
+      use_256_bit_vector_length: true
+      map_select: MAP_SELECT_0F
+    })proto";
+  constexpr uint8_t kExpectedEncoding[] = {0x67, 0xc5, 0xfc, 0x77};
   constexpr char kExpectedDisassembly[] = "VZEROALL";
   TestInstructionEncoder(kSpecification, kDecodedInstruction, kExpectedEncoding,
                          kExpectedDisassembly);

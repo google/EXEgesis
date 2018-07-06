@@ -15,6 +15,7 @@ cc_library(
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/proto/x86:instruction_encoding_cc_proto",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
@@ -29,6 +30,7 @@ cc_test(
     deps = [
         ":cleanup_instruction_set_utils",
         "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
         "//exegesis/testing:test_util",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -51,10 +53,12 @@ cc_library(
         ":cleanup_instruction_set_encoding",
         ":cleanup_instruction_set_evex",
         ":cleanup_instruction_set_fix_operands",
+        ":cleanup_instruction_set_missing_instructions",
         ":cleanup_instruction_set_operand_info",
         ":cleanup_instruction_set_operand_size_override",
         ":cleanup_instruction_set_properties",
         ":cleanup_instruction_set_removals",
+        ":cleanup_instruction_set_rex",
         ":cleanup_instruction_set_utils",
     ],
     alwayslink = 1,
@@ -347,6 +351,7 @@ cc_library(
         "//base",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:instruction_encoding_cc_proto",
         "//exegesis/util:instruction_syntax",
         "//util/gtl:map_util",
         "//util/task:status",
@@ -393,6 +398,38 @@ cc_test(
     srcs = ["cleanup_instruction_set_properties_test.cc"],
     deps = [
         ":cleanup_instruction_set_properties",
+        "//exegesis/base:cleanup_instruction_set_test_utils",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "cleanup_instruction_set_rex",
+    srcs = ["cleanup_instruction_set_rex.cc"],
+    hdrs = ["cleanup_instruction_set_rex.h"],
+    deps = [
+        ":cleanup_instruction_set_utils",
+        "//base",
+        "//exegesis/base:cleanup_instruction_set",
+        "//exegesis/base:opcode",
+        "//exegesis/proto:instructions_cc_proto",
+        "//exegesis/proto/x86:encoding_specification_cc_proto",
+        "//exegesis/proto/x86:instruction_encoding_cc_proto",
+        "//util/task:status",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_glog_glog//:glog",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "cleanup_instruction_set_rex_test",
+    size = "small",
+    srcs = ["cleanup_instruction_set_rex_test.cc"],
+    deps = [
+        ":cleanup_instruction_set_rex",
         "//exegesis/base:cleanup_instruction_set_test_utils",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -567,6 +604,7 @@ cc_library(
         "//exegesis/proto/x86:encoding_specification_cc_proto",
         "//exegesis/proto/x86:instruction_encoding_cc_proto",
         "//exegesis/util:bits",
+        "//exegesis/util:strings",
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
@@ -591,7 +629,6 @@ cc_test(
         "//exegesis/proto/x86:decoded_instruction_cc_proto",
         "//exegesis/testing:test_util",
         "//exegesis/util:strings",
-        "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
@@ -682,6 +719,7 @@ cc_library(
         "//util/task:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 

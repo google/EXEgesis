@@ -158,6 +158,8 @@ Status InstructionEncoder::ValidatePrefix() const {
 }
 
 void InstructionEncoder::EncodePrefix() {
+  EncodeSegmentOverridePrefixIfNeeded();
+  EncodeAddressSizeOverridePrefixIfNeeded();
   if (specification_->has_legacy_prefixes()) {
     EncodeLegacyPrefixes();
   } else if (decoded_instruction_->has_vex_prefix()) {
@@ -188,18 +190,15 @@ Status InstructionEncoder::ValidateLegacyPrefixes() const {
 void InstructionEncoder::EncodeLegacyPrefixes() {
   EncodeRexPrefixIfNeeded();
   EncodeLockOrRepPrefixIfNeeded();
-  EncodeSegmentOverridePrefixIfNeeded();
   EncodeOperandSizeOverridePrefixIfNeeded();
-  EncodeAddressSizeOverridePrefixIfNeeded();
 }
 
 Status InstructionEncoder::ValidateRexPrefix() const {
   const RexPrefix& rex = decoded_instruction_->legacy_prefixes().rex();
-  if (specification_->legacy_prefixes().has_mandatory_rex_w_prefix() &&
-      !rex.w()) {
+  if (!PrefixMatchesSpecification(
+          specification_->legacy_prefixes().rex_w_prefix(), rex.w())) {
     return InvalidArgumentError(
-        "The encoding specification prescribes a REX.W prefix but the "
-        "instruction does not use it.");
+        "The REX.W prefix does not match the specification.");
   }
   return OkStatus();
 }
@@ -261,23 +260,21 @@ void InstructionEncoder::EncodeSegmentOverridePrefixIfNeeded() {
                                                     kFsOverrideByte,
                                                     kGsOverrideByte};
   const LegacyEncoding::SegmentOverridePrefix prefix =
-      decoded_instruction_->legacy_prefixes().segment_override();
+      decoded_instruction_->segment_override();
   if (prefix != LegacyEncoding::NO_SEGMENT_OVERRIDE) {
     EmitByte(kSegmentOverridePrefixByte[prefix]);
   }
 }
 
 Status InstructionEncoder::ValidateOperandSizeOverridePrefix() const {
-  const LegacyPrefixEncodingSpecification& specification_prefixes =
-      specification_->legacy_prefixes();
-  const LegacyPrefixes& instruction_prefixes =
-      decoded_instruction_->legacy_prefixes();
-  if (specification_prefixes.has_mandatory_operand_size_override_prefix() &&
-      instruction_prefixes.operand_size_override() ==
-          LegacyEncoding::NO_OPERAND_SIZE_OVERRIDE) {
+  const bool has_operand_size_override =
+      decoded_instruction_->legacy_prefixes().operand_size_override() ==
+      LegacyEncoding::OPERAND_SIZE_OVERRIDE;
+  if (!PrefixMatchesSpecification(
+          specification_->legacy_prefixes().operand_size_override_prefix(),
+          has_operand_size_override)) {
     return InvalidArgumentError(
-        "The encoding specification prescribes an operand size override prefix "
-        "but the instruction does not use it.");
+        "The operand size override prefix does not match the specification.");
   }
   return OkStatus();
 }
@@ -292,7 +289,7 @@ void InstructionEncoder::EncodeOperandSizeOverridePrefixIfNeeded() {
 Status InstructionEncoder::ValidateAddressSizeOverridePrefix() const {
   if (specification_->legacy_prefixes()
           .has_mandatory_address_size_override_prefix() &&
-      decoded_instruction_->legacy_prefixes().address_size_override() ==
+      decoded_instruction_->address_size_override() ==
           LegacyEncoding::NO_ADDRESS_SIZE_OVERRIDE) {
     return InvalidArgumentError(
         "The encoding specification prescribes an operand size override prefix "
@@ -302,7 +299,7 @@ Status InstructionEncoder::ValidateAddressSizeOverridePrefix() const {
 }
 
 void InstructionEncoder::EncodeAddressSizeOverridePrefixIfNeeded() {
-  if (decoded_instruction_->legacy_prefixes().address_size_override() ==
+  if (decoded_instruction_->address_size_override() ==
       LegacyEncoding::ADDRESS_SIZE_OVERRIDE) {
     EmitByte(kAddressSizeOverrideByte);
   }

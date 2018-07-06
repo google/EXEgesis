@@ -74,7 +74,13 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
     instructions {
       vendor_syntax { mnemonic: "FCOS" }
       raw_encoding_specification: "D9 FF"
-      x86_encoding_specification { opcode: 0xD9FF }
+      x86_encoding_specification {
+        opcode: 0xD9FF
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
     }
     instructions {
       vendor_syntax { mnemonic: "FLD" }
@@ -82,6 +88,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 0xD9
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -90,6 +100,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 0xD8
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -99,6 +113,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
         opcode: 0xD8
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         modrm_opcode_extension: 4
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -107,6 +125,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 0xDC
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -124,7 +146,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 4040
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -151,7 +176,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 184
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_REQUIRED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
         immediate_value_bytes: 8
       }
     }
@@ -170,7 +198,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 143
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -178,7 +209,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: '14 ib'
       x86_encoding_specification {
         opcode: 20
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
         immediate_value_bytes: 1
       }
     }
@@ -187,7 +221,11 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: '66 15 iw'
       x86_encoding_specification {
         opcode: 21
-        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_REQUIRED
+
+        }
         immediate_value_bytes: 2
       }
     }
@@ -196,7 +234,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: '15 id'
       x86_encoding_specification {
         opcode: 21
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
         immediate_value_bytes: 4
       }
     }
@@ -220,7 +261,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: 'REX.W + 98'
       x86_encoding_specification {
         opcode: 152
-        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_REQUIRED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -229,7 +273,11 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 997617
         modrm_usage: FULL_MODRM
-        legacy_prefixes { has_mandatory_repne_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+          has_mandatory_repne_prefix: true
+        }
       }
     }
     instructions {
@@ -237,7 +285,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: '98'
       x86_encoding_specification {
         opcode: 152
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -245,7 +296,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: 'C8 iw ib'
       x86_encoding_specification {
         opcode: 200
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
         immediate_value_bytes: 2
         immediate_value_bytes: 1
       }
@@ -256,7 +310,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       protection_mode: 0
       x86_encoding_specification {
         opcode: 3848
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -265,7 +322,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 139
         modrm_usage: FULL_MODRM
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -274,7 +334,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 997617
         modrm_usage: FULL_MODRM
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
       }
     }
     instructions {
@@ -282,7 +345,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       raw_encoding_specification: 'NP 90'
       x86_encoding_specification {
         opcode: 144
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -419,7 +485,11 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 144
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_REQUIRED
+
+        }
       }
     }
     instructions {
@@ -428,7 +498,22 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 144
         operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+        }
+      }
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'XCHG' }
+      raw_encoding_specification: '66 90+rd'
+      x86_encoding_specification {
+        opcode: 144
+        operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+          operand_size_override_prefix: PREFIX_IS_REQUIRED
+        }
       }
     }
     instructions {
@@ -444,7 +529,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
         opcode: 3841
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         modrm_opcode_extension: 7
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
     }
     instructions {
@@ -461,7 +549,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       protection_mode: -1
       x86_encoding_specification {
         opcode: 983509
-        legacy_prefixes {}
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
       instruction_group_index: 624
     }
@@ -492,7 +583,10 @@ const char* const InstructionParserTest::kArchitectureProto = R"proto(
       x86_encoding_specification {
         opcode: 141
         modrm_usage: FULL_MODRM
-        legacy_prefixes { has_mandatory_rex_w_prefix: true }
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_REQUIRED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
       instruction_group_index: 198
     }
@@ -586,9 +680,45 @@ TEST_F(InstructionParserTest, ParseNopWithRepPrefix) {
 }
 
 TEST_F(InstructionParserTest, ParseNopWithOperandSizeOverride) {
-  ParseInstructionAndCheckResult({0x66, 0x90}, "90+rd", R"proto(
+  ParseInstructionAndCheckResult({0x66, 0x90}, "66 90+rd", R"proto(
     legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
     opcode: 0x90)proto");
+  // Check that a repeated operand size override is parsed correctly. Repeated
+  // prefixes are discouraged by Intel (not officially supported), but they seem
+  // to work just fine on the CPUs, and seem to be emitted by GCC in some cases.
+  // We can't use ParseInstructionAndCheckResult here, because the re-encoding
+  // of the instruction would have only one operand size override prefix, and
+  // wouldn't match the parsed encoding.
+  InstructionParser instruction_parser(architecture_.get());
+  absl::Span<const uint8_t> binary_encoding = {0x66, 0x66, 0x90};
+  EXPECT_THAT(instruction_parser.ConsumeBinaryEncoding(&binary_encoding),
+              IsOkAndHolds(EqualsProto(R"proto(
+                legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+                opcode: 0x90)proto")));
+  EXPECT_TRUE(binary_encoding.empty())
+      << "The parser did not consume the whole input. Remaining bytes: "
+      << ToHumanReadableHexString(binary_encoding);
+}
+
+TEST_F(InstructionParserTest, ParseNopWithAddressSizeOverride) {
+  ParseInstructionAndCheckResult({0x67, 0x90}, "90+rd", R"proto(
+    address_size_override: ADDRESS_SIZE_OVERRIDE
+    opcode: 0x90)proto");
+  // Check that a repeated operand size override is parsed correctly. Repeated
+  // prefixes are discouraged by Intel (not officially supported), but they seem
+  // to work just fine on the CPUs, and seem to be emitted by GCC in some cases.
+  // We can't use ParseInstructionAndCheckResult here, because the re-encoding
+  // of the instruction would have only one operand size override prefix, and
+  // wouldn't match the parsed encoding.
+  InstructionParser instruction_parser(architecture_.get());
+  absl::Span<const uint8_t> binary_encoding = {0x67, 0x67, 0x90};
+  EXPECT_THAT(instruction_parser.ConsumeBinaryEncoding(&binary_encoding),
+              IsOkAndHolds(EqualsProto(R"proto(
+                address_size_override: ADDRESS_SIZE_OVERRIDE
+                opcode: 0x90)proto")));
+  EXPECT_TRUE(binary_encoding.empty())
+      << "The parser did not consume the whole input. Remaining bytes: "
+      << ToHumanReadableHexString(binary_encoding);
 }
 
 TEST_F(InstructionParserTest, RepeatedLockGroupPrefix) {
@@ -598,19 +728,19 @@ TEST_F(InstructionParserTest, RepeatedLockGroupPrefix) {
 
 TEST_F(InstructionParserTest, ParseNopWithCsSegmentOverride) {
   ParseInstructionAndCheckResult({0x2e, 0x90}, "90+rd", R"proto(
-    legacy_prefixes { segment_override: CS_OVERRIDE_OR_BRANCH_NOT_TAKEN }
+    segment_override: CS_OVERRIDE_OR_BRANCH_NOT_TAKEN
     opcode: 0x90)proto");
 }
 
 TEST_F(InstructionParserTest, ParseNopWithSsSegmentOverride) {
-  ParseInstructionAndCheckResult(
-      {0x36, 0x90}, "90+rd",
-      "legacy_prefixes { segment_override: SS_OVERRIDE } opcode: 0x90");
+  ParseInstructionAndCheckResult({0x36, 0x90}, "90+rd",
+                                 "segment_override: SS_OVERRIDE opcode: 0x90");
 }
 
 TEST_F(InstructionParserTest, ParseNopWithLockAndSsSegmentOverride) {
   constexpr char kExpectedDecodedInstruction[] = R"proto(
-    legacy_prefixes { segment_override: SS_OVERRIDE lock_or_rep: LOCK_PREFIX }
+    segment_override: SS_OVERRIDE
+    legacy_prefixes { lock_or_rep: LOCK_PREFIX }
     opcode: 0x90)proto";
   ParseInstructionAndCheckResult({0xf0, 0x36, 0x90}, "90+rd",
                                  kExpectedDecodedInstruction);
@@ -632,17 +762,21 @@ TEST_F(InstructionParserTest, ParseThreeByteOpcode) {
 }
 
 TEST_F(InstructionParserTest, ParseRexPrefix) {
-  // Variants of CBW/CWDE with different values of the REX prefix bits. This
+  // Variants of FCOS with different values of the REX prefix bits. This
   // instruction does not use any operands, so these bits should not have any
   // effect save for rex.w.
   ParseInstructionAndCheckResult(
-      {0x48, 0x98}, "98", "opcode: 0x98 legacy_prefixes { rex { w: true } } ");
+      {0x48, 0xD9, 0xFF}, "D9 FF",
+      "opcode: 0xD9FF legacy_prefixes { rex { w: true } } ");
   ParseInstructionAndCheckResult(
-      {0x44, 0x98}, "98", "opcode: 0x98 legacy_prefixes { rex { r: true } } ");
+      {0x44, 0xD9, 0xFF}, "D9 FF",
+      "opcode: 0xD9FF legacy_prefixes { rex { r: true } } ");
   ParseInstructionAndCheckResult(
-      {0x42, 0x98}, "98", "opcode: 0x98 legacy_prefixes { rex { x: true } } ");
+      {0x42, 0xD9, 0xFF}, "D9 FF",
+      "opcode: 0xD9FF legacy_prefixes { rex { x: true } } ");
   ParseInstructionAndCheckResult(
-      {0x41, 0x98}, "98", "opcode: 0x98 legacy_prefixes { rex { b: true } } ");
+      {0x41, 0xD9, 0xFF}, "D9 FF",
+      "opcode: 0xD9FF legacy_prefixes { rex { b: true } } ");
 }
 
 TEST_F(InstructionParserTest, ParseModRmWithBaseOnly) {
@@ -827,6 +961,71 @@ TEST_F(InstructionParserTest, ParseTwoByteVexPrefix) {
     }
     opcode: 0x0f58
     modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 2 })proto");
+}
+
+TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithSegmentOverride) {
+  // VADDPD xmm2, xmm3, XMMWORD PTR fs:[rbx]
+  ParseInstructionAndCheckResult(
+      {0x64, 0xc5, 0xe1, 0x58, 0x13}, "VEX.NDS.128.66.0F.WIG 58 /r",
+      R"proto(segment_override: FS_OVERRIDE
+              vex_prefix {
+                map_select: MAP_SELECT_0F
+                inverted_register_operand: 12
+                not_b: true
+                not_r: true
+                not_x: true
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f58
+              modrm {
+                addressing_mode: INDIRECT
+                rm_operand: 3
+                register_operand: 2
+              })proto");
+}
+
+TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithAddressSizeOverride) {
+  // VADDPD xmm2, xmm3, XMMWORD PTR [ebx]
+  ParseInstructionAndCheckResult(
+      {0x67, 0xc5, 0xe1, 0x58, 0x13}, "VEX.NDS.128.66.0F.WIG 58 /r",
+      R"proto(address_size_override: ADDRESS_SIZE_OVERRIDE
+              vex_prefix {
+                map_select: MAP_SELECT_0F
+                inverted_register_operand: 12
+                not_b: true
+                not_r: true
+                not_x: true
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f58
+              modrm {
+                addressing_mode: INDIRECT
+                rm_operand: 3
+                register_operand: 2
+              })proto");
+}
+
+TEST_F(InstructionParserTest,
+       ParseTwoByteVexPrefixWithAddressSizeAndSegmentOverride) {
+  // VADDPD xmm2, xmm3, XMMWORD PTR [ebx]
+  ParseInstructionAndCheckResult(
+      {0x67, 0x64, 0xc5, 0xe1, 0x58, 0x13}, "VEX.NDS.128.66.0F.WIG 58 /r",
+      R"proto(address_size_override: ADDRESS_SIZE_OVERRIDE
+              segment_override: FS_OVERRIDE
+              vex_prefix {
+                map_select: MAP_SELECT_0F
+                inverted_register_operand: 12
+                not_b: true
+                not_r: true
+                not_x: true
+                mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              }
+              opcode: 0x0f58
+              modrm {
+                addressing_mode: INDIRECT
+                rm_operand: 3
+                register_operand: 2
+              })proto");
 }
 
 TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithExtendedRegisters) {
@@ -1147,6 +1346,38 @@ TEST_F(InstructionParserTest, ParseXend) {
                                            register_operand: 7
                                            rm_operand: 7
                                          })proto");
+}
+
+TEST_F(InstructionParserTest, ParseLea64) {
+  // LEA RDX, [RIP + 0xa3e1e0c]
+  ParseInstructionAndCheckResult({0x48, 0x8D, 0x15, 0x0C, 0x1E, 0x3E, 0x0A},
+                                 "REX.W + 8D /r", R"proto(
+    legacy_prefixes { rex { w: true } }
+    opcode: 0x8d
+    modrm {
+      addressing_mode: INDIRECT
+      register_operand: 2
+      rm_operand: 5
+      address_displacement: 0xa3e1e0c
+    }
+  )proto");
+
+  // LEA RDI, [RIP + 0xe7769c]
+  // The instruction has an operand size override prefix in addition to the
+  // REX.W prefix.
+  ParseInstructionAndCheckResult(
+      {0x66, 0x48, 0x8d, 0x3d, 0x9c, 0x76, 0xe7, 0x0}, "REX.W + 8D /r", R"proto(
+        legacy_prefixes {
+          rex { w: true }
+          operand_size_override: OPERAND_SIZE_OVERRIDE
+        }
+        opcode: 0x8d
+        modrm {
+          addressing_mode: INDIRECT
+          register_operand: 7
+          rm_operand: 5
+          address_displacement: 0xe7769c
+        })proto");
 }
 
 }  // namespace

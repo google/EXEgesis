@@ -34,6 +34,11 @@ using ::exegesis::util::Status;
 // syntax section of the instruction.
 Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set);
 
+// Adds operand size override prefix usage to the encoding specifications of the
+// legacy instructions in 'instruction_set'. This transform must run after other
+// transforms modifying the operand size override status.
+Status AddOperandSizeOverridePrefixUsage(InstructionSetProto* instruction_set);
+
 // Adds the operand size override prefix to 16-bit versions of instructions with
 // implicit operands. Because these instructions have no operand, we have no way
 // of detecting the 16-bit version other than through their mnemonics.

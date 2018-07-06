@@ -27,6 +27,7 @@
 #include "exegesis/util/strings.h"
 #include "exegesis/x86/encoding_specification.h"
 #include "exegesis/x86/instruction_encoder.h"
+#include "src/google/protobuf/text_format.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
@@ -43,18 +44,16 @@ inline bool EqualsIgnoreCase(absl::string_view a, absl::string_view b) {
 }
 
 DisassemblesToMatcher::DisassemblesToMatcher(
-    const std::string& encoding_specification, std::string expected_disassembly)
+    const std::string& encoding_specification_proto,
+    std::string expected_disassembly)
     : expected_disassembly_(std::move(expected_disassembly)) {
-  const StatusOr<EncodingSpecification> encoding_specification_or_status =
-      ParseEncodingSpecification(encoding_specification);
-  // We could also CHECK_OK(encoding_specification_or_status.status()), but that
-  // would kill the test if there is a syntax error in the encoding
-  // specification. Instead, we just report a match failure with an appropriate
-  // error message in MatchAndExplain, and let the test process continue.
-  if (encoding_specification_or_status.ok()) {
-    encoding_specification_ = encoding_specification_or_status.ValueOrDie();
-  } else {
-    encoding_specification_str_ = encoding_specification;
+  // We could CHECK that the parsing was successful, but that would kill the
+  // test if there is a syntax error in the encoding specification. Instead, we
+  // just report a match failure with an appropriate error message in
+  // MatchAndExplain, and let the test process continue;
+  if (!::google::protobuf::TextFormat::ParseFromString(
+          encoding_specification_proto, &encoding_specification_)) {
+    encoding_specification_str_ = encoding_specification_proto;
   }
 }
 
@@ -71,7 +70,7 @@ bool DisassemblesToMatcher::MatchAndExplain(
   // error.
   if (!encoding_specification_str_.empty()) {
     if (listener->IsInterested()) {
-      *listener << "Could not parse encoding specification: "
+      *listener << "Could not parse encoding specification:\n"
                 << encoding_specification_str_;
     }
     return false;
@@ -118,10 +117,10 @@ bool DisassemblesToMatcher::MatchAndExplain(
 }
 
 ::testing::Matcher<const DecodedInstruction&> DisassemblesTo(
-    const std::string& encoding_specification,
+    const std::string& encoding_specification_proto,
     const std::string& expected_disassembly) {
-  return ::testing::MakeMatcher(
-      new DisassemblesToMatcher(encoding_specification, expected_disassembly));
+  return ::testing::MakeMatcher(new DisassemblesToMatcher(
+      encoding_specification_proto, expected_disassembly));
 }
 
 ::testing::Matcher<const DecodedInstruction&> DisassemblesTo(

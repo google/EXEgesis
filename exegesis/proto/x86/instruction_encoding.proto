@@ -96,4 +96,21 @@ message LegacyEncoding {
     NO_ADDRESS_SIZE_OVERRIDE = 0;
     ADDRESS_SIZE_OVERRIDE = 1;
   }
+
+  enum PrefixUsage {
+    // The usage of the prefix by the instruction is not known.
+    PREFIX_USAGE_IS_UNKNOWN = 0;
+
+    // The prefix has no effect on the instruction. When matching a decoded
+    // instruction with the specification, this prefix is ignored.
+    PREFIX_IS_IGNORED = 1;
+
+    // The prefix is not permitted on the instruction. When matching a decoded
+    // instruction with the specification, the prefix must not be present.
+    PREFIX_IS_NOT_PERMITTED = 2;
+
+    // The prefix is required on the instruction. When matching a decoded
+    // instruction with the specification, the prefix must be present.
+    PREFIX_IS_REQUIRED = 3;
+  }
 }

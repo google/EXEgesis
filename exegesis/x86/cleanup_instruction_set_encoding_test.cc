@@ -636,7 +636,7 @@ TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
       x86_encoding_specification {
         opcode: 997408
         modrm_usage: FULL_MODRM
-        legacy_prefixes { has_mandatory_operand_size_override_prefix: true }
+        legacy_prefixes { operand_size_override_prefix: PREFIX_IS_REQUIRED }
       }
     })proto";
   TestTransform(ParseEncodingSpecifications, kInstructionSetProto,

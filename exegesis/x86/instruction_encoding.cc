@@ -382,13 +382,11 @@ VexPrefix BaseVexPrefix(const VexPrefixEncodingSpecification& specification) {
 LegacyPrefixes BaseLegacyPrefixes(
     const LegacyPrefixEncodingSpecification& specification) {
   LegacyPrefixes prefix;
-  if (specification.has_mandatory_operand_size_override_prefix()) {
+  if (specification.operand_size_override_prefix() ==
+      LegacyEncoding::PREFIX_IS_REQUIRED) {
     prefix.set_operand_size_override(LegacyEncoding::OPERAND_SIZE_OVERRIDE);
   }
-  if (specification.has_mandatory_address_size_override_prefix()) {
-    prefix.set_address_size_override(LegacyEncoding::ADDRESS_SIZE_OVERRIDE);
-  }
-  if (specification.has_mandatory_rex_w_prefix()) {
+  if (specification.rex_w_prefix() == LegacyEncoding::PREFIX_IS_REQUIRED) {
     prefix.mutable_rex()->set_w(true);
   }
   if (specification.has_mandatory_repe_prefix()) {
@@ -809,20 +807,28 @@ namespace {
 // Verifies that the legacy prefixes match the encoding specification, i.e. that
 // the presence of the operand size override and the rex.w prefix in the
 // instruction are the same as in the specification.
-bool LegacyPrefixesMatchesSpecification(
+bool LegacyPrefixesMatchSpecification(
     const LegacyPrefixEncodingSpecification& specification,
-    const LegacyPrefixes& prefixes) {
-  if (specification.has_mandatory_rex_w_prefix() != prefixes.rex().w()) {
+    const DecodedInstruction& instruction) {
+  const LegacyPrefixes& prefixes = instruction.legacy_prefixes();
+  if (!PrefixMatchesSpecification(specification.rex_w_prefix(),
+                                  prefixes.rex().w())) {
     DVLOG(1) << "rex.w bit mismatch!";
     return false;
   }
+
   // The operand size override prefix is listed explicitly in our instruction
   // database, so here we're looking for an exact match: the prefix must be
   // either present or absent in both the instruction and the specification.
+  // NOTE(ondrasej): According to the ISA specification, REX.W prefix trumps the
+  // operand size override prefix. However, as of 2018-05-31, GCC emits both in
+  // some instructions which confuses our parser. We skip the operand size
+  // override check if the instruction also uses the REX.W prefix.
   const bool has_operand_size_override =
       prefixes.operand_size_override() == LegacyEncoding::OPERAND_SIZE_OVERRIDE;
-  if (specification.has_mandatory_operand_size_override_prefix() !=
-      has_operand_size_override) {
+  if (!prefixes.rex().w() &&
+      !PrefixMatchesSpecification(specification.operand_size_override_prefix(),
+                                  has_operand_size_override)) {
     DVLOG(1) << "Operand size override prefix mismatch!";
     return false;
   }
@@ -830,7 +836,7 @@ bool LegacyPrefixesMatchesSpecification(
   // instruction database. We check that the instruction has it only if the
   // specification requires it.
   if (specification.has_mandatory_address_size_override_prefix() &&
-      prefixes.address_size_override() !=
+      instruction.address_size_override() !=
           LegacyEncoding::ADDRESS_SIZE_OVERRIDE) {
     DVLOG(1) << "Address size override mismatch!";
     return false;
@@ -1003,13 +1009,12 @@ bool AddressingModeMatchesSpecification(
     const DecodedInstruction& decoded_instruction) {
   for (const InstructionOperand& operand : instruction_format.operands()) {
     if (operand.encoding() == InstructionOperand::MODRM_RM_ENCODING) {
-      if (!InCategory(
-              ConvertToInstructionOperandAddressingMode(decoded_instruction),
-              operand.addressing_mode())) {
+      if (!ModRmAddressingModeMatchesInstructionOperandAddressingMode(
+              decoded_instruction, operand.addressing_mode())) {
         DVLOG(1) << "Addressing mode mismatch!\n"
-                 << "Expected:" << operand.addressing_mode() << "\nActual:"
-                 << ConvertToInstructionOperandAddressingMode(
-                        decoded_instruction);
+                 << "Operand: " << operand.addressing_mode() << "\nModRm: "
+                 << decoded_instruction.modrm().ShortDebugString()
+                 << "\nSib: " << decoded_instruction.sib().ShortDebugString();
         return false;
       }
       break;
@@ -1019,6 +1024,98 @@ bool AddressingModeMatchesSpecification(
 }
 
 }  // namespace
+
+bool ModRmAddressingModeMatchesInstructionOperandAddressingMode(
+    const DecodedInstruction& decoded_instruction,
+    InstructionOperand::AddressingMode rm_operand_addressing_mode) {
+  CHECK(decoded_instruction.has_modrm());
+  const ModRm& modrm = decoded_instruction.modrm();
+  const Sib& sib = decoded_instruction.sib();
+  const ModRm::AddressingMode modrm_addressing_mode =
+      decoded_instruction.modrm().addressing_mode();
+  switch (rm_operand_addressing_mode) {
+    case InstructionOperand::ANY_ADDRESSING_MODE:
+      return true;
+    case InstructionOperand::DIRECT_ADDRESSING:
+    case InstructionOperand::BLOCK_DIRECT_ADDRESSING:
+      return modrm_addressing_mode == ModRm::DIRECT;
+    case InstructionOperand::INDIRECT_ADDRESSING:
+    case InstructionOperand::LOAD_EFFECTIVE_ADDRESS:
+      return modrm_addressing_mode != ModRm::DIRECT;
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE:
+      // Indirect addressing with only a base register is possible only when
+      // modrm.addressing_mode == INDIRECT. All other indirect addressing modes
+      // add a displacement.
+      return modrm_addressing_mode == ModRm::INDIRECT &&
+             // modrm.addressing_mode == INDIRECT and modrm.rm == 5 is an escape
+             // value for RIP-relative addressing.
+             modrm.rm_operand() != 5 &&
+             // modrm.addressing_mode == INDIRECT and modrm.rm == 4 is an escape
+             // value for introducing the SIB byte. With a SIB byte, indirect
+             // addressing with only a base register is used only when
+             // sib.index == 4 and sib.base != 5.
+             (modrm.rm_operand() != 4 || (sib.index() == 4 && sib.base() != 5));
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_DISPLACEMENT:
+      return modrm_addressing_mode == ModRm::INDIRECT &&
+             // Indirect addressing with only displacement is possible only
+             // through the SIB byte.
+             modrm.rm_operand() == 4 &&
+             // Special escape values in SIB.
+             sib.index() == 4 && sib.base() == 5;
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE_AND_DISPLACEMENT:
+      // Indirect addressing with base + displacement is only possible through
+      // the two modes below.
+      return (modrm_addressing_mode ==
+                  ModRm::INDIRECT_WITH_8_BIT_DISPLACEMENT ||
+              modrm_addressing_mode ==
+                  ModRm::INDIRECT_WITH_32_BIT_DISPLACEMENT) &&
+             // When the SIB byte is used, addressing with base + displacement
+             // is achieved through an escape value.
+             (modrm.rm_operand() != 4 || sib.index() == 4);
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE_AND_INDEX:
+      // The only mode that does not add a displacement.
+      return modrm_addressing_mode == ModRm::INDIRECT &&
+             // Indirect addressing is only possible through the SIB byte.
+             modrm.rm_operand() == 4 &&
+             // We need to avoid the escape values within the SIB byte.
+             sib.index() != 4 && sib.base() != 5;
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_INDEX_AND_DISPLACEMENT:
+      // The only mode allowing this addressing mode.
+      return modrm_addressing_mode == ModRm::INDIRECT &&
+             // The addressing is only possible through the SIB byte.
+             modrm.rm_operand() == 4 &&
+             // ...with the right combination of escape values.
+             sib.index() != 4 && sib.base() == 5;
+    case InstructionOperand::
+        INDIRECT_ADDRESSING_WITH_BASE_DISPLACEMENT_AND_INDEX:
+      // This addressing mode is possible only through the two following ModR/M
+      // addressing modes.
+      return (modrm_addressing_mode ==
+                  ModRm::INDIRECT_WITH_8_BIT_DISPLACEMENT ||
+              modrm_addressing_mode ==
+                  ModRm::INDIRECT_WITH_32_BIT_DISPLACEMENT) &&
+             // The addressing is possible only through the SIB byte.
+             modrm.rm_operand() == 4 &&
+             // We need to avoid the escape values in the SIB byte.
+             sib.index() != 4;
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_VSIB:
+      // VSIB addressing is possible in all addressing modes other than DIRECT.
+      return modrm_addressing_mode != ModRm::DIRECT &&
+             // VSIB addressing is possible only with the SIB byte present. As
+             // of 2018-05-25, we do not dive deeper into the variants of VSIB
+             // addressing depending on the ModR/M addressing mode.
+             modrm.rm_operand() == 4;
+    case InstructionOperand::INDIRECT_ADDRESSING_WITH_INSTRUCTION_POINTER:
+      return modrm_addressing_mode == ModRm::INDIRECT &&
+             modrm.rm_operand() == 5;
+    default:
+      LOG(FATAL) << "Unsupported operand addressing mode: "
+                 << InstructionOperand::AddressingMode_Name(
+                        rm_operand_addressing_mode);
+      break;
+  }
+  return false;
+}
 
 bool ModRmUsageMatchesSpecification(
     const EncodingSpecification& specification,
@@ -1110,9 +1207,8 @@ bool PrefixesAndOpcodeMatchSpecification(
         break;
     }
   } else if (instruction.has_vex_prefix() || instruction.has_evex_prefix() ||
-             !LegacyPrefixesMatchesSpecification(
-                 specification.legacy_prefixes(),
-                 instruction.legacy_prefixes())) {
+             !LegacyPrefixesMatchSpecification(specification.legacy_prefixes(),
+                                               instruction)) {
     DVLOG(1) << "Legacy prefix mismatch!";
     return false;
   }

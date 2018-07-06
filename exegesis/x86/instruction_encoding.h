@@ -68,6 +68,26 @@ inline uint8_t GetModRmRmBits(uint8_t modrm_byte) {
   return GetBitRange(modrm_byte, 0, 3);
 }
 
+// Returns true if 'prefix_is_present' matches the requirements in
+// 'specification'.
+inline bool PrefixMatchesSpecification(
+    LegacyEncoding::PrefixUsage specification, bool prefix_is_present) {
+  switch (specification) {
+    case LegacyEncoding::PREFIX_IS_REQUIRED:
+      return prefix_is_present;
+    case LegacyEncoding::PREFIX_IS_NOT_PERMITTED:
+      return !prefix_is_present;
+    case LegacyEncoding::PREFIX_IS_IGNORED:
+      return true;
+    case LegacyEncoding::PREFIX_USAGE_IS_UNKNOWN:
+      LOG(DFATAL) << "Prefix state is unknown for an instruction";
+      return true;
+    default:
+      LOG(FATAL) << "Invalid prefix specification value: " << specification;
+      return false;
+  }
+}
+
 // -----------------------------------------------------------------------------
 //  Functions for validation and inspection of instructions
 // -----------------------------------------------------------------------------
@@ -203,6 +223,12 @@ bool PrefixesAndOpcodeMatchSpecification(
     const EncodingSpecification& specification,
     const DecodedInstruction& instruction);
 
+// Checks whether the contents of the ModR/M and SIB bytes (if present) match
+// the given addressing mode from InstructionOperand::AddressingMode.
+bool ModRmAddressingModeMatchesInstructionOperandAddressingMode(
+    const DecodedInstruction& decoded_instruction,
+    InstructionOperand::AddressingMode rm_operand_addressing_mode);
+
 // -----------------------------------------------------------------------------
 //  Functions for manually assigning operands of instructions
 // -----------------------------------------------------------------------------
@@ -301,8 +327,11 @@ Status SetOperandToMemoryBaseAnd32BitDisplacement(
     const InstructionFormat& instruction_format, RegisterIndex base_register,
     int32_t displacement, DecodedInstruction* instruction);
 
-// Extracts preceise addressing mode from decoded instruction proto by taking
+// Extracts precise addressing mode from decoded instruction proto by taking
 // ModR/M and SIB usage into account.
+// NOTE(ondrasej): Note that this function might not guess the addressing mode
+// correctly, e.g. for LEA instructions. It should not be used for matching a
+// DecodedInstruction with InstructionOperands.
 InstructionOperand::AddressingMode ConvertToInstructionOperandAddressingMode(
     const DecodedInstruction& decoded_instruction);
 

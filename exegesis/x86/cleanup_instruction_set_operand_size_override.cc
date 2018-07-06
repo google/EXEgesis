@@ -27,6 +27,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
+#include "exegesis/proto/x86/instruction_encoding.pb.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
 #include "exegesis/x86/encoding_specification.h"
@@ -49,6 +50,27 @@ using ::exegesis::util::Status;
 const char* const k16BitInstructionsWithImplicitOperands[] = {
     "CMPSW", "CBW",   "CWD",  "INSW",  "IRET",  "LODSW",
     "MOVSW", "OUTSW", "POPF", "PUSHF", "SCASW", "STOSW"};
+
+LegacyEncoding::PrefixUsage GetOperandSizeOverrideUsage(
+    const InstructionProto& instruction) {
+  DCHECK(instruction.has_x86_encoding_specification());
+  const EncodingSpecification& encoding_specification =
+      instruction.x86_encoding_specification();
+  DCHECK(encoding_specification.has_legacy_prefixes());
+  const auto& legacy_prefixes = encoding_specification.legacy_prefixes();
+  return legacy_prefixes.operand_size_override_prefix();
+}
+
+void SetOperandSizeOverrideUsage(InstructionProto* instruction,
+                                 LegacyEncoding::PrefixUsage usage) {
+  DCHECK(instruction != nullptr);
+  DCHECK(instruction->has_x86_encoding_specification());
+  EncodingSpecification* const encoding_specification =
+      instruction->mutable_x86_encoding_specification();
+  LegacyPrefixEncodingSpecification* const legacy_prefixes =
+      encoding_specification->mutable_legacy_prefixes();
+  legacy_prefixes->set_operand_size_override_prefix(usage);
+}
 
 }  // namespace
 
@@ -240,6 +262,17 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefix, 5000);
+
+Status AddOperandSizeOverridePrefixUsage(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  AddPrefixUsageToLegacyInstructions(GetOperandSizeOverrideUsage,
+                                     SetOperandSizeOverrideUsage,
+                                     instruction_set);
+  return OkStatus();
+}
+// This transform must run after all mandatory operand size overrides are added
+// to the encoding specifications.
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefixUsage, 5010);
 
 Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
