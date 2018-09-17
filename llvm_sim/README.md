@@ -4,5 +4,5 @@ This is the companion code for our
 [EuroLLVM 2018](https://llvm.org/devmtg/2018-04/) presentation
 ([link](https://llvm.org/devmtg/2018-04/talks.html#Lightning_17)).
 
-We intend to integrate this code in LLVM and merge it with a similar project
-from Sony: See the [discussion on the LLVM mailing lists](http://lists.llvm.org/pipermail/llvm-dev/2018-March/121490.html).
+This is now mostly for reference as most of the ideas were integrated in [llvm-mca](https://llvm.org/docs/CommandGuide/llvm-mca.html).
+
