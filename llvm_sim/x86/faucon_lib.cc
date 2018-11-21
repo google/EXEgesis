@@ -35,10 +35,15 @@ namespace simulator {
 namespace {
 
 // IACA magic markers.
-constexpr char kBeginMagicMarker[] = {0x0f, 0x0b, 0xbb, 0x6f, 0x00,
-                                      0x00, 0x00, 0x64, 0x67, 0x90};
-constexpr char kEndMagicMarker[] = {0xbb, 0xde, 0x00, 0x00, 0x00,
-                                    0x64, 0x67, 0x90, 0x0f, 0x0b};
+// NOTE(ondrasej): This format is required for GCC 7.3.0 which does not accept
+// numbers over 127 as char literals. On the other hand, this can't be an
+// unsigned char array, because SectionRef::getContents returns the data as
+// StringRef and std::search would do char/unsigned char comparisons which are
+// ill-defined when char is signed.
+constexpr char kBeginMagicMarker[] = {'\x0f', '\x0b', '\xbb', '\x6f', '\x00',
+                                      '\x00', '\x00', '\x64', '\x67', '\x90'};
+constexpr char kEndMagicMarker[] = {'\xbb', '\xde', '\x00', '\x00', '\x00',
+                                    '\x64', '\x67', '\x90', '\x0f', '\x0b'};
 
 }  // namespace
 
