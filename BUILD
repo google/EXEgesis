@@ -14,5 +14,6 @@ package_group(
     name = "internal_users",
     packages = [
         "//exegesis/...",
+        "//llvm_sim/...",
     ],
 )
