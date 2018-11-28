@@ -516,6 +516,34 @@ TEST_F(ReorderBufferTest, OldestFirst) {
   EXPECT_THAT(Port0Sink_.Buffer_, ElementsAre(HasROBEntryIndex(1)));
 }
 
+// Tests that the ROB can deal with a uop depending on another uop through more
+// than one register.
+TEST_F(ReorderBufferTest, MultipleDependencies) {
+  llvm::MCInst Inst;
+  Inst.setOpcode(4);
+  Instructions_ = {Inst, Inst};
+  const BlockContext BlockContext(Instructions_, false);
+  ROB_->Init();
+
+  const auto Uop0 = RenamedUopIdBuilder()
+                        .WithUop(0, 0)
+                        .AddDef(42)
+                        .AddDef(43)
+                        .AddUse(42)
+                        .AddUse(43);
+  const auto Uop1 = RenamedUopIdBuilder(Uop0).WithUop(1, 0);
+  UopSource_.Buffer_ = {Uop0.Build(), Uop1.Build()};
+  ROB_->Tick(&BlockContext);
+  // Without duplicate dependency handling Tick crashes. Otherwise test these
+  // were resourceless uops.
+  EXPECT_THAT(UopSource_.Buffer_, ElementsAre());
+  EXPECT_THAT(Port0Sink_.Buffer_, ElementsAre());
+  EXPECT_THAT(Port1Sink_.Buffer_, ElementsAre());
+  EXPECT_THAT(IssuedSink_.Buffer_, ElementsAre());
+  EXPECT_THAT(RetirementSink_.Buffer_,
+              ElementsAre(HasROBEntryIndex(0), HasROBEntryIndex(1)));
+}
+
 }  // namespace
 }  // namespace simulator
 }  // namespace exegesis

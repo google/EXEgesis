@@ -21,10 +21,10 @@
 #include <functional>
 #include <iterator>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -88,22 +88,23 @@ class EncodingSpecificationParser {
 
   // Hash maps mapping tokens of the instruction encoding specification language
   // to enum values of the encoding protos.
-  const std::unordered_map<std::string, VexOperandUsage>
+  const absl::flat_hash_map<std::string, VexOperandUsage>
       vex_operand_usage_tokens_;
-  const std::unordered_map<std::string, VexVectorSize> vector_size_tokens_;
-  const std::unordered_map<std::string, VexEncoding::MandatoryPrefix>
+  const absl::flat_hash_map<std::string, VexVectorSize> vector_size_tokens_;
+  const absl::flat_hash_map<std::string, VexEncoding::MandatoryPrefix>
       mandatory_prefix_tokens_;
-  const std::unordered_map<std::string,
-                           VexPrefixEncodingSpecification::VexWUsage>
+  const absl::flat_hash_map<std::string,
+                            VexPrefixEncodingSpecification::VexWUsage>
       vex_w_usage_tokens_;
-  const std::unordered_map<uint32_t, VexEncoding::MapSelect> map_select_tokens_;
+  const absl::flat_hash_map<uint32_t, VexEncoding::MapSelect>
+      map_select_tokens_;
 };
 
 // Definitions of maps from tokens to the enum values used in the instruction
 // encoding specification proto. These values are used to initialize the hash
 // maps used in the parser object.
 const std::pair<const char*, VexOperandUsage> kVexOperandUsageTokens[] = {
-    {"", NO_VEX_OPERAND_USAGE},
+    {"", UNDEFINED_VEX_OPERAND_USAGE},
     {"NDS", VEX_OPERAND_IS_FIRST_SOURCE_REGISTER},
     {"NDD", VEX_OPERAND_IS_DESTINATION_REGISTER},
     {"DDS", VEX_OPERAND_IS_SECOND_SOURCE_REGISTER}};
@@ -175,8 +176,10 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
       // Optional whitespace before the prefix.
       " *(?:"
       // The meta-prefix stating that the instruction does not allow any
-      // additional prefixes.
-      "(NP)|"
+      // additional prefixes. There are two options: NP means that neither of
+      // the 66/F2/F3 prefixes is allowed, while NFx means that only the F2/F3
+      // prefixes are not allowed.
+      "(NP|NFx)|"
       // The operand size override prefix.
       "(66)|"
       // THe address size override prefix.
@@ -202,6 +205,8 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
       // Consume also any whitespace at the end.
       "(?: *\\+ *)?";
   static constexpr char kRexWPrefix[] = "REX.W";
+  static constexpr char kNoAdditionalPrefixes[] = "NP";
+  static constexpr char kNoFxPrefixes[] = "NFx";
   static const LazyRE2 legacy_prefix_parser = {kLegacyPrefixRegex};
   std::string no_additional_prefixes;
   std::string operand_size_override_prefix;
@@ -210,6 +215,7 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   std::string repe_prefix;
   std::string rex_prefix;
   bool has_no_additional_prefixes = false;
+  bool has_no_fx_prefixes = false;
   bool has_mandatory_address_size_override_prefix = false;
   bool has_mandatory_operand_size_override_prefix = false;
   bool has_mandatory_repe_prefix = false;
@@ -219,7 +225,9 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
                       &no_additional_prefixes, &operand_size_override_prefix,
                       &address_size_override_prefix, &repne_prefix,
                       &repe_prefix, &rex_prefix)) {
-    has_no_additional_prefixes |= !no_additional_prefixes.empty();
+    has_no_additional_prefixes |=
+        no_additional_prefixes == kNoAdditionalPrefixes;
+    has_no_fx_prefixes |= no_additional_prefixes == kNoFxPrefixes;
     has_mandatory_operand_size_override_prefix |=
         !operand_size_override_prefix.empty();
     has_mandatory_address_size_override_prefix |=
@@ -238,11 +246,12 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
     // We simply set all prefixes to PREFIX_IS_NOT_PERMITTED at the beginning,
     // and then overwrite them with any prefixes that did appear in the encoding
     // specification.
-    // TODO(b/37203350): Add support for the REPE/REPNE prefixes when they are
-    // converted to use LegacyEncoding::PrefixUsage.
     legacy_prefixes->set_operand_size_override_prefix(
         LegacyEncoding::PREFIX_IS_NOT_PERMITTED);
   }
+  // TODO(user): Add support for the REPE/REPNE prefixes when they are
+  // converted to use LegacyEncoding::PrefixUsage. The state of these prefixes
+  // must also take into account the value of has_no_fx_prefixes.
   if (has_mandatory_operand_size_override_prefix) {
     legacy_prefixes->set_operand_size_override_prefix(
         LegacyEncoding::PREFIX_IS_REQUIRED);
@@ -301,19 +310,19 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   const VexPrefixType prefix_type =
       prefix_type_str == "EVEX" ? EVEX_PREFIX : VEX_PREFIX;
   const VexVectorSize vector_size =
-      FindOrDie(vector_size_tokens_, vex_l_usage_str);
+      gtl::FindOrDie(vector_size_tokens_, vex_l_usage_str);
   vex_prefix->set_prefix_type(prefix_type);
   vex_prefix->set_vex_operand_usage(
-      FindOrDie(vex_operand_usage_tokens_, vex_operand_directionality));
+      gtl::FindOrDie(vex_operand_usage_tokens_, vex_operand_directionality));
   vex_prefix->set_vector_size(vector_size);
   if (vector_size == VEX_VECTOR_SIZE_512_BIT && prefix_type != EVEX_PREFIX) {
     return InvalidArgumentError(
         "The 512 bit vector size can be used only in an EVEX prefix");
   }
   vex_prefix->set_mandatory_prefix(
-      FindOrDie(mandatory_prefix_tokens_, mandatory_prefix_str));
-  vex_prefix->set_vex_w_usage(FindOrDie(vex_w_usage_tokens_, vex_w_str));
-  vex_prefix->set_map_select(FindOrDie(map_select_tokens_, opcode_map));
+      gtl::FindOrDie(mandatory_prefix_tokens_, mandatory_prefix_str));
+  vex_prefix->set_vex_w_usage(gtl::FindOrDie(vex_w_usage_tokens_, vex_w_str));
+  vex_prefix->set_map_select(gtl::FindOrDie(map_select_tokens_, opcode_map));
 
   // NOTE(ondrasej): The string specification of the opcode map is an equivalent
   // of opcode prefixes in the legacy encoding, and not the actual value used in
@@ -704,9 +713,9 @@ std::string GenerateEncodingSpec(const InstructionFormat& instruction,
 
   for (int imm_size : encoding_spec.immediate_value_bytes()) {
     static const auto* const kImmediateValues =
-        new std::unordered_map<int, const char*>{
+        new absl::flat_hash_map<int, const char*>{
             {1, " ib"}, {2, " iw"}, {4, " id"}, {8, " io"}};
-    raw_encoding_spec.append(FindOrDie(*kImmediateValues, imm_size));
+    raw_encoding_spec.append(gtl::FindOrDie(*kImmediateValues, imm_size));
   }
 
   return raw_encoding_spec;
@@ -739,7 +748,7 @@ InstructionOperandEncodingMultiset GetAvailableEncodings(
   if (encoding_specification.has_vex_prefix()) {
     const VexPrefixEncodingSpecification& vex_prefix =
         encoding_specification.vex_prefix();
-    if (vex_prefix.vex_operand_usage() != NO_VEX_OPERAND_USAGE) {
+    if (vex_prefix.vex_operand_usage() != VEX_OPERAND_IS_NOT_USED) {
       available_encodings.insert(InstructionOperand::VEX_V_ENCODING);
     }
     if (vex_prefix.has_vex_operand_suffix()) {

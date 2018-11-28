@@ -15,9 +15,11 @@
 #include "exegesis/x86/cleanup_instruction_set_properties.h"
 
 #include <string>
-#include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "exegesis/base/cleanup_instruction_set.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 
@@ -28,9 +30,9 @@ namespace {
 using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 
-const std::unordered_map<std::string, std::string>& GetMissingCpuFlags() {
-  static const std::unordered_map<std::string, std::string>* const
-      kMissingFlags = new std::unordered_map<std::string, std::string>(
+const absl::flat_hash_map<std::string, std::string>& GetMissingCpuFlags() {
+  static const absl::flat_hash_map<std::string, std::string>* const
+      kMissingFlags = new absl::flat_hash_map<std::string, std::string>(
           {{"CLFLUSH", "CLFSH"},
            {"CLFLUSHOPT", "CLFLUSHOPT"},
            {"MOVBE", "MOVBE"}});
@@ -42,13 +44,13 @@ const std::unordered_map<std::string, std::string>& GetMissingCpuFlags() {
 Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
-    const std::string* const feature_name = FindOrNull(
-        GetMissingCpuFlags(), instruction.vendor_syntax().mnemonic());
+    const std::string* const feature_name =
+        FindByVendorSyntaxMnemonicOrNull(GetMissingCpuFlags(), instruction);
     if (feature_name) {
       // Be warned if they fix it someday. If this triggers, just remove the
       // rule.
       CHECK_NE(*feature_name, instruction.feature_name())
-          << instruction.vendor_syntax().mnemonic();
+          << instruction.DebugString();
       instruction.set_feature_name(*feature_name);
     }
   }
@@ -59,9 +61,9 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingCpuFlags, 1000);
 namespace {
 
 // Returns the list of protection modes for priviledged instructions.
-const std::unordered_map<std::string, int>& GetProtectionModesByMnemonic() {
-  static const std::unordered_map<std::string, int>* const kProtectionModes =
-      new std::unordered_map<std::string, int>({
+const absl::flat_hash_map<std::string, int>& GetProtectionModesByMnemonic() {
+  static const absl::flat_hash_map<std::string, int>* const kProtectionModes =
+      new absl::flat_hash_map<std::string, int>({
           // -----------------------
           // Restricted operations.
           {"CLAC", 0},
@@ -119,9 +121,9 @@ const std::unordered_map<std::string, int>& GetProtectionModesByMnemonic() {
 
 // Returns the list of protection modes for privileged instructions that are not
 // covered by GetProtectionModesByMnemonic().
-const std::unordered_map<std::string, int>& GetProtectionModesByEncoding() {
-  static const std::unordered_map<std::string, int>* const kProtectionModes =
-      new std::unordered_map<std::string, int>({
+const absl::flat_hash_map<std::string, int>& GetProtectionModesByEncoding() {
+  static const absl::flat_hash_map<std::string, int>* const kProtectionModes =
+      new absl::flat_hash_map<std::string, int>({
           // MOV from/to debug register.
           {"0F 21/r", 0},
           {"0F 23 /r", 0},
@@ -137,11 +139,11 @@ const std::unordered_map<std::string, int>& GetProtectionModesByEncoding() {
 Status AddProtectionModes(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
-    const int* mode = FindOrNull(GetProtectionModesByMnemonic(),
-                                 instruction.vendor_syntax().mnemonic());
+    const int* mode = FindByVendorSyntaxMnemonicOrNull(
+        GetProtectionModesByMnemonic(), instruction);
     if (mode == nullptr) {
-      mode = FindOrNull(GetProtectionModesByEncoding(),
-                        instruction.raw_encoding_specification());
+      mode = gtl::FindOrNull(GetProtectionModesByEncoding(),
+                             instruction.raw_encoding_specification());
     }
     // Set default protection_mode to something negative to make sure
     // instruction is not marked as protected.
@@ -156,13 +158,13 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddProtectionModes, 1000);
 
 Status FixAvailableIn64Bits(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> kEncodingSpecifications = {
+  const absl::flat_hash_set<std::string> kEncodingSpecifications = {
       // LAHF and SAHF
       "9F", "9E"};
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    if (ContainsKey(kEncodingSpecifications,
-                    instruction.raw_encoding_specification())) {
+    if (kEncodingSpecifications.contains(
+            instruction.raw_encoding_specification())) {
       instruction.set_available_in_64_bit(true);
     }
   }

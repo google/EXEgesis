@@ -24,9 +24,10 @@ InverseThroughputAnalysis ComputeInverseThroughput(
   // To compute the throughput, we want to be in in steady state. We skip the
   // first half of the iterations when we can.
   const size_t SkippedIterations = Log.GetNumCompleteIterations() / 2;
-  unsigned PrevEndCycle = SkippedIterations == 0
-                              ? 0
-                              : Log.Iterations[SkippedIterations - 1].EndCycle;
+  const unsigned StartCycle =
+      SkippedIterations == 0 ? 0
+                             : Log.Iterations[SkippedIterations - 1].EndCycle;
+  unsigned PrevEndCycle = StartCycle;
   Result.NumIterations = Log.GetNumCompleteIterations() - SkippedIterations;
   for (int I = SkippedIterations; I < Log.GetNumCompleteIterations(); ++I) {
     const unsigned ThisEndCycle = Log.Iterations[I].EndCycle;
@@ -36,6 +37,7 @@ InverseThroughputAnalysis ComputeInverseThroughput(
     Result.Max = std::max(Result.Max, InvThroughput);
     PrevEndCycle = ThisEndCycle;
   }
+  Result.TotalNumCycles = PrevEndCycle - StartCycle;
   return Result;
 }
 

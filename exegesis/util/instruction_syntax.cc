@@ -135,4 +135,35 @@ std::string ConvertToCodeString(const InstructionFormat& instruction) {
   return result;
 }
 
+InstructionFormat* GetOrAddUniqueVendorSyntaxOrDie(
+    InstructionProto* instruction) {
+  CHECK(instruction != nullptr);
+  const int num_vendor_syntaxes = instruction->vendor_syntax_size();
+  CHECK_LE(num_vendor_syntaxes, 1);
+  return num_vendor_syntaxes == 0 ? instruction->add_vendor_syntax()
+                                  : instruction->mutable_vendor_syntax(0);
+}
+
+const InstructionFormat& GetVendorSyntaxWithMostOperandsOrDie(
+    const InstructionProto& instruction) {
+  CHECK_GT(instruction.vendor_syntax_size(), 0);
+  const InstructionFormat* best_syntax = nullptr;
+  int best_num_operands = -1;
+  for (const InstructionFormat& syntax : instruction.vendor_syntax()) {
+    if (syntax.operands_size() > best_num_operands) {
+      best_syntax = &syntax;
+      best_num_operands = syntax.operands_size();
+    }
+  }
+  return *best_syntax;
+}
+
+bool HasMnemonicInVendorSyntax(const InstructionProto& instruction,
+                               absl::string_view mnemonic) {
+  for (const InstructionFormat& vendor_syntax : instruction.vendor_syntax()) {
+    if (vendor_syntax.mnemonic() == mnemonic) return true;
+  }
+  return false;
+}
+
 }  // namespace exegesis

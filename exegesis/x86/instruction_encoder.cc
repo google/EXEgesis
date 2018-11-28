@@ -366,7 +366,7 @@ void InstructionEncoder::EncodeVexPrefix() {
   // it is equivalent to the field not being set to the proto. However, in the
   // encoding, we must always use the inverted zero value.
   const uint32_t inverted_register_operand =
-      vex_specification.vex_operand_usage() == NO_VEX_OPERAND_USAGE
+      vex_specification.vex_operand_usage() == VEX_OPERAND_IS_NOT_USED
           ? 15
           : vex.inverted_register_operand();
   // Use the two-byte form of the prefix whenever possible.
@@ -401,7 +401,7 @@ void InstructionEncoder::EncodeEvexPrefix() {
   // it is equivalent to the field not being set to the proto. However, in the
   // encoding, we must always use the inverted zero value.
   const uint32_t inverted_register_operand =
-      evex_specification.vex_operand_usage() == NO_VEX_OPERAND_USAGE
+      evex_specification.vex_operand_usage() == VEX_OPERAND_IS_NOT_USED
           ? 31
           : evex.inverted_register_operand();
 

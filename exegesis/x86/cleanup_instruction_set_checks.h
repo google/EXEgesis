@@ -44,6 +44,9 @@ Status CheckOperandInfo(InstructionSetProto* instruction_set);
 // another instruction with a shorter opcode and a ModR/M byte specification.
 Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set);
 
+// Checks that all instructions have at least one vendor syntax.
+Status CheckHasVendorSyntax(InstructionSetProto* instruction_set);
+
 }  // namespace x86
 }  // namespace exegesis
 

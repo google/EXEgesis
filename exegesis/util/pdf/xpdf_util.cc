@@ -119,13 +119,13 @@ void CreateDocumentId(PdfDocument* document) {
   const google::protobuf::Map<std::string, std::string>& map =
       document->metadata();
   PdfDocumentId* const document_id = document->mutable_document_id();
-  if (ContainsKey(map, kMetadataTitle))
-    document_id->set_title(FindOrDie(map, kMetadataTitle));
-  if (ContainsKey(map, kMetadataCreationDate))
-    document_id->set_creation_date(FindOrDie(map, kMetadataCreationDate));
-  if (ContainsKey(map, kMetadataModificationDate))
+  if (gtl::ContainsKey(map, kMetadataTitle))
+    document_id->set_title(gtl::FindOrDie(map, kMetadataTitle));
+  if (gtl::ContainsKey(map, kMetadataCreationDate))
+    document_id->set_creation_date(gtl::FindOrDie(map, kMetadataCreationDate));
+  if (gtl::ContainsKey(map, kMetadataModificationDate))
     document_id->set_modification_date(
-        FindOrDie(map, kMetadataModificationDate));
+        gtl::FindOrDie(map, kMetadataModificationDate));
 }
 
 std::unique_ptr<PDFDoc> OpenOrDie(const std::string& filename) {
@@ -288,10 +288,10 @@ void ProtobufOutputDevice::drawChar(GfxState* state, double x, double y,
   pdf_char->set_font_size(font_size);
   pdf_char->set_orientation(orientation);
   const char* color_buffer =
-      reinterpret_cast<const char*>(CHECK_NOTNULL(state->getFillColor()->c));
+      reinterpret_cast<const char*>(state->getFillColor()->c);
+  CHECK(state->getFillColorSpace() != nullptr);
   const int color_buffer_size =
-      CHECK_NOTNULL(state->getFillColorSpace())->getNComps() *
-      sizeof(GfxColorComp);
+      state->getFillColorSpace()->getNComps() * sizeof(GfxColorComp);
   pdf_char->set_fill_color_hash(
       std::hash<std::string>()(std::string(color_buffer, color_buffer_size)));
   *pdf_char->mutable_bounding_box() = bounding_box;

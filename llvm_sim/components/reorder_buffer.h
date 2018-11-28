@@ -17,8 +17,8 @@
 #define EXEGESIS_LLVM_SIM_COMPONENTS_REORDER_BUFFER_H_
 
 #include <set>
-#include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
 #include "llvm_sim/components/common.h"
 #include "llvm_sim/components/issue_policy.h"
 #include "llvm_sim/framework/component.h"
@@ -240,7 +240,7 @@ class ReorderBuffer : public Component {
 
   // A map of microarchitectural register to the last live (not retired) entry
   // index that defs it.
-  std::unordered_map<size_t, size_t> InFlightRegisterDefs_;
+  absl::flat_hash_map<size_t, size_t> InFlightRegisterDefs_;
 };
 
 }  // namespace simulator

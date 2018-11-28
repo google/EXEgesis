@@ -14,8 +14,7 @@
 
 #include "exegesis/llvm/inline_asm.h"
 
-#include <unordered_map>
-
+#include "absl/container/flat_hash_map.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -54,7 +53,7 @@ class JitCompiler::StoreSizeMemoryManager : public llvm::SectionMemoryManager {
  public:
   // Returns the size of the section starting at `address`.
   int GetSectionSize(const uint8_t* const address) const {
-    return FindOrDieNoPrint(address_to_size_, address);
+    return gtl::FindOrDieNoPrint(address_to_size_, address);
   }
 
  private:
@@ -64,11 +63,11 @@ class JitCompiler::StoreSizeMemoryManager : public llvm::SectionMemoryManager {
     uint8_t* const result = llvm::SectionMemoryManager::allocateCodeSection(
         size, alignment, section_id, section_name);
     // We should never allocate a block of memory twice.
-    InsertOrDieNoPrint(&address_to_size_, result, size);
+    gtl::InsertOrDieNoPrint(&address_to_size_, result, size);
     return result;
   }
 
-  std::unordered_map<const uint8_t*, int> address_to_size_;
+  absl::flat_hash_map<const uint8_t*, int> address_to_size_;
 };
 
 JitCompiler::JitCompiler(const std::string& mcpu) : mcpu_(mcpu) {}

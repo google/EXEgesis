@@ -84,6 +84,11 @@ TEST(EncodingSpecificationParserTest, NPPrefix) {
       rex_w_prefix: PREFIX_IS_REQUIRED
       operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
     })proto");
+  CheckParser("NFx 0F C7 /6", R"proto(
+    opcode: 0x0fc7
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 6
+    legacy_prefixes {})proto");
 }
 
 TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
@@ -419,27 +424,29 @@ TEST(GetAvailableEncodingsTest, GetEncodings) {
     const char* encoding_specification;
     std::initializer_list<InstructionOperand::Encoding>
         expected_available_encodings;
-  } kTestCases[] = {
-      {"VEX.NDS.LZ.F3.0F38.W1 F5 /r",
-       {InstructionOperand::MODRM_REG_ENCODING,
-        InstructionOperand::MODRM_RM_ENCODING,
-        InstructionOperand::VEX_V_ENCODING}},
-      {"REX + 80 /2 ib",
-       {InstructionOperand::IMMEDIATE_VALUE_ENCODING,
-        InstructionOperand::MODRM_RM_ENCODING}},
-      {"40 + rd", {InstructionOperand::OPCODE_ENCODING}},
-      {"C8 iw ib",
-       {InstructionOperand::IMMEDIATE_VALUE_ENCODING,
-        InstructionOperand::IMMEDIATE_VALUE_ENCODING}},
-      {"VEX.NDS.128.66.0F3A.W0 4B /r /is4",
-       {InstructionOperand::MODRM_REG_ENCODING,
-        InstructionOperand::MODRM_RM_ENCODING,
-        InstructionOperand::VEX_SUFFIX_ENCODING,
-        InstructionOperand::VEX_V_ENCODING}},
-      {"EVEX.128.66.0F38.W0 92 /vsib",
-       {InstructionOperand::VSIB_ENCODING,
-        InstructionOperand::MODRM_REG_ENCODING}},
-      {"EVEX.512.66.0F38.W0 C6 /6 /vsib", {InstructionOperand::VSIB_ENCODING}}};
+  } kTestCases[] = {{"VEX.NDS.LZ.F3.0F38.W1 F5 /r",
+                     {InstructionOperand::MODRM_REG_ENCODING,
+                      InstructionOperand::MODRM_RM_ENCODING,
+                      InstructionOperand::VEX_V_ENCODING}},
+                    {"REX + 80 /2 ib",
+                     {InstructionOperand::IMMEDIATE_VALUE_ENCODING,
+                      InstructionOperand::MODRM_RM_ENCODING}},
+                    {"40 + rd", {InstructionOperand::OPCODE_ENCODING}},
+                    {"C8 iw ib",
+                     {InstructionOperand::IMMEDIATE_VALUE_ENCODING,
+                      InstructionOperand::IMMEDIATE_VALUE_ENCODING}},
+                    {"VEX.NDS.128.66.0F3A.W0 4B /r /is4",
+                     {InstructionOperand::MODRM_REG_ENCODING,
+                      InstructionOperand::MODRM_RM_ENCODING,
+                      InstructionOperand::VEX_SUFFIX_ENCODING,
+                      InstructionOperand::VEX_V_ENCODING}},
+                    {"EVEX.128.66.0F38.W0 92 /vsib",
+                     {InstructionOperand::VSIB_ENCODING,
+                      InstructionOperand::MODRM_REG_ENCODING,
+                      InstructionOperand::VEX_V_ENCODING}},
+                    {"EVEX.512.66.0F38.W0 C6 /6 /vsib",
+                     {InstructionOperand::VSIB_ENCODING,
+                      InstructionOperand::VEX_V_ENCODING}}};
   for (const auto& test_case : kTestCases) {
     EXPECT_THAT(
         ParseEncodingSpecification(test_case.encoding_specification),

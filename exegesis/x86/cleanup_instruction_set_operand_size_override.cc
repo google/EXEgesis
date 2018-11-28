@@ -20,13 +20,15 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
+#include "exegesis/base/prettyprint.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
@@ -77,13 +79,12 @@ void SetOperandSizeOverrideUsage(InstructionProto* instruction,
 Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> string_instructions(
+  const absl::flat_hash_set<std::string> string_instructions(
       std::begin(k16BitInstructionsWithImplicitOperands),
       std::end(k16BitInstructionsWithImplicitOperands));
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
-    if (ContainsKey(string_instructions, vendor_syntax.mnemonic())) {
+    if (ContainsVendorSyntaxMnemonic(string_instructions, instruction)) {
       AddOperandSizeOverrideToInstructionProto(&instruction);
     }
   }
@@ -95,12 +96,12 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(
 Status AddOperandSizeOverrideToSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> k16BitOperands = {"r16", "r/m16"};
+  const absl::flat_hash_set<std::string> k16BitOperands = {"r16", "r/m16"};
   // One of the operands of the instructions gives away its 16-bit-ness;
   // unfortunately, the position of these operands may differ from instruction
   // to instruction. In this map, we keep the list of affected binary encodings,
   // and the index of the operand that can be used to find the 16-bit version.
-  const std::unordered_map<std::string, int> kOperandIndex = {
+  const absl::flat_hash_map<std::string, int> kOperandIndex = {
       {"0F 01 /4", 0},        // SMSW r/m16; SMSW r32/m16
       {"0F B2 /r", 0},        // LSS r16,m16:16; LSS r32,m16:32
       {"0F B2 /r", 0},        // LSS r16,m16:16; LSS r32,m16:32
@@ -117,10 +118,11 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
   };
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    int32_t operand_index = std::numeric_limits<int32_t>::max();
-    if (FindCopy(kOperandIndex, instruction.raw_encoding_specification(),
-                 &operand_index)) {
-      const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+    int operand_index = -1;
+    if (gtl::FindCopy(kOperandIndex, instruction.raw_encoding_specification(),
+                      &operand_index)) {
+      const InstructionFormat& vendor_syntax =
+          GetUniqueVendorSyntaxOrDie(instruction);
       if (operand_index >= vendor_syntax.operands_size()) {
         return InvalidArgumentError(
             absl::StrCat("Unexpected number of operands of instruction: ",
@@ -131,8 +133,8 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
       // use a 16-bit value, and just leave the other bits undefined (or
       // zeroed). Instead, we need to look at the string representation of the
       // type of the operand.
-      if (ContainsKey(k16BitOperands,
-                      vendor_syntax.operands(operand_index).name())) {
+      if (k16BitOperands.contains(
+              vendor_syntax.operands(operand_index).name())) {
         AddOperandSizeOverrideToInstructionProto(&instruction);
       }
     }
@@ -146,7 +148,8 @@ namespace {
 
 // Returns true if 'instruction' has an operand of the given size.
 bool HasDataOperandOfSize(int size, const InstructionProto& instruction) {
-  const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+  const InstructionFormat& vendor_syntax =
+      GetVendorSyntaxWithMostOperandsOrDie(instruction);
   return std::any_of(vendor_syntax.operands().begin(),
                      vendor_syntax.operands().end(),
                      [size](const InstructionOperand& operand) {
@@ -161,8 +164,9 @@ std::string FormatAllInstructions(
   std::vector<std::string> vendor_syntaxes;
   vendor_syntaxes.reserve(instructions.size());
   for (const InstructionProto* const instruction : instructions) {
-    vendor_syntaxes.push_back(
-        ConvertToCodeString(instruction->vendor_syntax()));
+    vendor_syntaxes.push_back(PrettyPrintSyntaxes(
+        instruction->vendor_syntax(),
+        PrettyPrintOptions().WithVendorSyntaxesOnOneLine(true)));
   }
   return absl::StrJoin(vendor_syntaxes, "; ");
 }
@@ -171,7 +175,7 @@ std::string FormatAllInstructions(
 
 Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  std::unordered_map<std::string, std::vector<InstructionProto*>>
+  absl::node_hash_map<std::string, std::vector<InstructionProto*>>
       instructions_by_raw_encoding_specification;
 
   // First we cluster instructions by their binary encoding. We ignore the
@@ -183,12 +187,12 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
         instruction.raw_encoding_specification();
     if (raw_encoding_specification.empty()) {
       return InvalidArgumentError(
-          absl::StrCat("No binary encoding specification for instruction ",
-                       instruction.vendor_syntax().mnemonic()));
+          absl::StrCat("No binary encoding specification for instruction:\n",
+                       instruction.DebugString()));
     }
     if (!instruction.has_x86_encoding_specification()) {
       return FailedPreconditionError(absl::StrCat(
-          "Instruction does not have a parsed encoding spcification: ",
+          "Instruction does not have a parsed encoding spcification:\n",
           instruction.DebugString()));
     }
     EncodingSpecification specification =
@@ -277,12 +281,12 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefixUsage, 5010);
 Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> k16BitOperands = {"r16", "r/m16"};
+  const absl::flat_hash_set<std::string> k16BitOperands = {"r16", "r/m16"};
   // Following instructions can have operand size override prefix or not,
   // because they implicitly operate on 16 bit data. Since, it is up to compiler
   // to add the prefix or not we are adding both versions to be able to match
   // them in any case.
-  const std::unordered_map<std::string, int> kOperandIndex = {
+  const absl::flat_hash_map<std::string, int> kOperandIndex = {
       {"8C /r", 0},     // MOV Sreg to r/m16; MOV Sreg to r/m64
       {"0F 00 /0", 0},  // SLDT r/m16; SLDT r64/m16
       {"0F 00 /1", 0},  // STR r/m16; STR r64/m16
@@ -291,10 +295,11 @@ Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
 
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    int32_t operand_index = std::numeric_limits<int32_t>::max();
-    if (FindCopy(kOperandIndex, instruction.raw_encoding_specification(),
-                 &operand_index)) {
-      const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+    int operand_index = -1;
+    if (gtl::FindCopy(kOperandIndex, instruction.raw_encoding_specification(),
+                      &operand_index)) {
+      const InstructionFormat& vendor_syntax =
+          GetVendorSyntaxWithMostOperandsOrDie(instruction);
       if (operand_index >= vendor_syntax.operands_size()) {
         return InvalidArgumentError(
             absl::StrCat("Unexpected number of operands of instruction: ",
@@ -305,8 +310,8 @@ Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
       // use a 16-bit value, and just leave the other bits undefined (or
       // zeroed). Instead, we need to look at the string representation of the
       // type of the operand.
-      if (ContainsKey(k16BitOperands,
-                      vendor_syntax.operands(operand_index).name())) {
+      if (k16BitOperands.contains(
+              vendor_syntax.operands(operand_index).name())) {
         instructions_to_add.push_back(instruction);
       }
     }

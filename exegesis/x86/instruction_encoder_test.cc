@@ -222,6 +222,7 @@ constexpr char kArchitectureProto[] = R"proto(
           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
           map_select: MAP_SELECT_0F38
           vex_w_usage: VEX_W_IS_ZERO
+          vex_operand_usage: VEX_OPERAND_IS_NOT_USED
         }
       }
     }
@@ -235,6 +236,7 @@ constexpr char kArchitectureProto[] = R"proto(
           prefix_type: VEX_PREFIX
           vector_size: VEX_VECTOR_SIZE_256_BIT
           map_select: MAP_SELECT_0F
+          vex_operand_usage: VEX_OPERAND_IS_NOT_USED
         }
       }
     }
@@ -288,6 +290,7 @@ constexpr char kArchitectureProto[] = R"proto(
           evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST
           opmask_usage: EVEX_OPMASK_IS_OPTIONAL
           masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
+          vex_operand_usage: VEX_OPERAND_IS_NOT_USED
         }
       }
     }
@@ -386,6 +389,7 @@ constexpr char kArchitectureProto[] = R"proto(
           evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
           opmask_usage: EVEX_OPMASK_IS_OPTIONAL
           masking_operation: EVEX_MASKING_MERGING_ONLY
+          vex_operand_usage: VEX_OPERAND_IS_NOT_USED
         }
         immediate_value_bytes: 1
       }

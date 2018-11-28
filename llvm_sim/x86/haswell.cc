@@ -42,7 +42,8 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
   // "Instruction Queue", a.k.a. "Pre-Decode Buffer".
   auto InstructionQueue = llvm::make_unique<FifoBuffer<InstructionIndex>>(20);
   // "Instruction Decode Queue", a.k.a. "IDQ", "uOp Queue".
-  auto InstructionDecodeQueue = llvm::make_unique<FifoBuffer<UopId>>(64);
+  // TODO(user) Change back to 64 when IDIV decomposition gets fixed.
+  auto InstructionDecodeQueue = llvm::make_unique<FifoBuffer<UopId>>(68);
   // Ports.
   std::vector<std::unique_ptr<LinkBuffer<ROBUopId>>> Ports;
   std::vector<Sink<ROBUopId>*> PortSinks;

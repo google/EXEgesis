@@ -51,8 +51,11 @@ void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page);
 bool CheckPatch(const PdfPagePatch& patch, const PdfPage& page);
 
 // Retrieve the page's rows excluding header and footer.
+// If max_row is not set (or is set to negative), returns the whole table,
+// otherwise, returns the first max_row rows.
 std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
-                                                    float margin);
+                                                    float margin,
+                                                    int max_row = -1);
 
 // Loads all files in directory and returns the merged PdfDocumentsChanges.
 PdfDocumentsChanges LoadConfigurations(const std::string& directory);

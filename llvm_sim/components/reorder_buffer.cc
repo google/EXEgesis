@@ -332,9 +332,17 @@ void ReorderBuffer::SetInputDependencies(const BlockContext* BlockContext,
       continue;
     }
     // Case 3: The register will be modified by a µop that is not yet done
-    // executing, we need to create a dependency.
-    Entry->UnsatisfiedDependencies.insert(DeferEntry.ROBUop.ROBEntryIndex);
-    DeferEntry.DependentEntries.push_back(Entry->ROBUop.ROBEntryIndex);
+    // executing, we need to create a dependency. It's possible that a µop
+    // modifies more than one register we depend on; when this happens, we add
+    // only one dependency. Otherwise, removing the µop index from
+    // DependentEntries and setting its state to kReadyToExecute would result in
+    // DependentEntries unexpectedly containing an index of a kReadyToExecute
+    // µop.
+    const size_t DeferEntryROBIndex = DeferEntry.ROBUop.ROBEntryIndex;
+    if (Entry->UnsatisfiedDependencies.count(DeferEntryROBIndex) == 0) {
+      Entry->UnsatisfiedDependencies.insert(DeferEntryROBIndex);
+      DeferEntry.DependentEntries.push_back(Entry->ROBUop.ROBEntryIndex);
+    }
   }
   // TODO(courbet): Better model intra-instruction uop dependencies. Right now
   // we assume that each uop depends on the previous one.

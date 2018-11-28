@@ -41,8 +41,11 @@ message LegacyPrefixEncodingSpecification {
 // Specifies how the instruction uses the register index that is encoded in the
 // VEX/EVEX prefix (in the vvvv and V bits of the VEX/EVEX prefix).
 enum VexOperandUsage {
-  // The register index bits are not used.
-  NO_VEX_OPERAND_USAGE = 0;
+  // The usage of the VEX operand was not provided in the encoding
+  // specification. At the time of parsing, we don't know if that is because the
+  // instruction does not use the bits, or because that information was missing
+  // in the encoding specification.
+  UNDEFINED_VEX_OPERAND_USAGE = 0;
   // The register is the first source operand of a three-operand instruction.
   VEX_OPERAND_IS_FIRST_SOURCE_REGISTER = 1;
   // The register is the second source operand of a three-operand instruction.
@@ -50,6 +53,8 @@ enum VexOperandUsage {
   // The register is the destination register that could not be encoded in the
   // ModRM.reg bits.
   VEX_OPERAND_IS_DESTINATION_REGISTER = 3;
+  // The register index bits are not used.
+  VEX_OPERAND_IS_NOT_USED = 4;
 }
 
 // Specifies the interpretation of the EVEX.b bit (broadcast, static rounding,

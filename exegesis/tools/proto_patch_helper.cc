@@ -23,12 +23,12 @@
 
 #include <algorithm>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "gflags/gflags.h"
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
@@ -54,14 +54,13 @@ bool ShouldProcessTextBlock(const PdfTextBlock& block) {
   return RE2::PartialMatch(block.text(), FLAGS_exegesis_match_expression);
 }
 
-bool ShouldProcessPage(const std::unordered_set<size_t>& allowed_pages,
+bool ShouldProcessPage(const absl::flat_hash_set<size_t>& allowed_pages,
                        const PdfPage& page) {
-  if (allowed_pages.empty()) return true;
-  return ContainsKey(allowed_pages, page.number());
+  return allowed_pages.empty() || allowed_pages.contains(page.number());
 }
 
-std::unordered_set<size_t> ParsePageNumbers() {
-  std::unordered_set<size_t> pages;
+absl::flat_hash_set<size_t> ParsePageNumbers() {
+  absl::flat_hash_set<size_t> pages;
   int page_number = 0;
   absl::string_view input(FLAGS_exegesis_page_numbers);
   while (RE2::Consume(&input, "(\\d+),?", &page_number)) {

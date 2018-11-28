@@ -23,6 +23,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
+#include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
@@ -32,6 +33,7 @@ namespace {
 
 using ::exegesis::testing::EqualsProto;
 using ::testing::Contains;
+using ::testing::HasSubstr;
 
 const char kArchitectureProto[] = R"proto(
   instruction_set {
@@ -158,6 +160,27 @@ TEST_F(ArchitectureTest, GetInstructionIndicesByRawEncodingSpecification) {
                 instruction.raw_encoding_specification());
     }
   }
+}
+
+TEST(PrintInstructionSetProtoProtoTest, PrintZeroIndexedGroup) {
+  constexpr char kArchitectureProto[] = R"proto(
+    instructions {
+      description: "Enter VMX root operation."
+      vendor_syntax {
+        mnemonic: "VMXON"
+        operands { name: "m64" }
+      }
+      raw_encoding_specification: "F3 0F C7 /6"
+      instruction_group_index: 0
+    })proto";
+  const InstructionSetProto proto =
+      ParseProtoFromStringOrDie<InstructionSetProto>(kArchitectureProto);
+
+  auto printer = GetArchitectureProtoTextPrinter();
+  std::string printed_proto_text;
+  ASSERT_TRUE(printer->PrintToString(proto, &printed_proto_text));
+  EXPECT_THAT(proto, EqualsProto(printed_proto_text));
+  EXPECT_THAT(printed_proto_text, HasSubstr("instruction_group_index: 0"));
 }
 
 }  // namespace

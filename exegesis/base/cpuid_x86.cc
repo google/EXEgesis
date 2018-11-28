@@ -18,8 +18,7 @@
 #include <cpuid.h>
 #endif  //  __x86_64__
 
-#include <unordered_map>
-
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
 #include "base/stringprintf.h"
@@ -432,13 +431,13 @@ std::string CpuIdDump::GetVendorString() const {
   return std::string(buffer, 12);
 }
 
-#define PROCESS_FEATURE(name, reg, field)  \
-  if (reg.field()) {                       \
-    InsertOrDie(&indexed_features, #name); \
+#define PROCESS_FEATURE(name, reg, field)       \
+  if (reg.field()) {                            \
+    gtl::InsertOrDie(&indexed_features, #name); \
   }
 #define PROCESS_FEATURE_IF(condition, name, reg, field) \
   if ((condition) && reg.field()) {                     \
-    InsertOrDie(&indexed_features, #name);              \
+    gtl::InsertOrDie(&indexed_features, #name);         \
   }
 
 CpuInfo CpuIdDump::ToCpuInfo() const {
@@ -469,7 +468,7 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
   const bool is_intel = vendor == kVendorStringIntel;
   const bool is_amd = vendor == kVendorStringAMD;
 
-  std::unordered_set<std::string> indexed_features;
+  absl::flat_hash_set<std::string> indexed_features;
 
   if (is_intel) {
     PROCESS_FEATURE(3DNOW, ext_features.ecx, intel_only_prefetchwt1);
@@ -503,7 +502,7 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
   PROCESS_FEATURE(MOVBE, features.ecx, movbe);
   PROCESS_FEATURE_IF(is_intel, MPX, ext_features.ebx, intel_only_mpx);
   PROCESS_FEATURE_IF(is_intel, OSPKE, ext_features.ecx, intel_only_ospke);
-  PROCESS_FEATURE(PRFCHW, ext2_features.ecx, prefetchw);
+  PROCESS_FEATURE(PREFETCHW, ext2_features.ecx, prefetchw);
   PROCESS_FEATURE_IF(is_intel, RDPID, ext_features.ecx, intel_only_rdpid);
   PROCESS_FEATURE(RDRAND, features.ecx, rdrand);
   PROCESS_FEATURE(RDSEED, ext_features.ebx, rdseed);

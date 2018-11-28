@@ -79,6 +79,10 @@ using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
 using ::exegesis::util::error::Code;
 
+Code StatusCode(const Status& status) {
+  return static_cast<Code>(status.error_code());
+}
+
 void AddIgnoredFieldsToDifferencer(
     const ::google::protobuf::Descriptor* descriptor,
     const std::vector<std::string>& ignored_field_names,
@@ -232,7 +236,7 @@ namespace internal {
 // Monomorphic matcher for the error code of a Status.
 bool StatusIsMatcher(const Status& actual_status,
                      const Code& expected_error_code) {
-  return actual_status.error_code() == expected_error_code;
+  return StatusCode(actual_status) == expected_error_code;
 }
 
 // Monomorphic matcher for the error code of a StatusOr.
@@ -247,7 +251,7 @@ bool StatusIsMatcher(
     const Status& actual_status, const Code& expected_error_code,
     const ::testing::Matcher<const std::string&>& expected_message) {
   ::testing::StringMatchResultListener sink;
-  return actual_status.error_code() == expected_error_code &&
+  return StatusCode(actual_status) == expected_error_code &&
          expected_message.MatchAndExplain(actual_status.error_message(), &sink);
 }
 

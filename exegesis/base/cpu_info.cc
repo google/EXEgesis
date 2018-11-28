@@ -24,7 +24,7 @@
 namespace exegesis {
 
 bool CpuInfo::HasExactFeature(const std::string& name) const {
-  return ContainsKey(indexed_features_, name);
+  return gtl::ContainsKey(indexed_features_, name);
 }
 
 // TODO(courbet): Right now absl::StrSplit() does not support a string literal

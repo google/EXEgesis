@@ -17,6 +17,7 @@
 #include <string>
 #include <utility>
 
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/x86/instruction_encoding.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
@@ -56,20 +57,20 @@ void X86Architecture::BuildIndex() {
 
 OpcodeSet X86Architecture::GetOpcodes() const {
   OpcodeSet opcodes;
-  InsertKeysFromMap(instruction_index_by_opcode_, &opcodes);
+  gtl::InsertKeysFromMap(instruction_index_by_opcode_, &opcodes);
   return opcodes;
 }
 
 const std::vector<Architecture::InstructionIndex>*
 X86Architecture::GetCandidates(const Opcode opcode) const {
   const std::vector<InstructionIndex>* candidates =
-      FindOrNull(instruction_index_by_opcode_, opcode);
+      gtl::FindOrNull(instruction_index_by_opcode_, opcode);
   if (candidates == nullptr) {
     // Sometimes three least significant bits of the instruction are used to
     // encode an operand. In that case the database will have this opcodes with
     // these bits zeroed out, so let's try to search for it.
-    candidates = FindOrNull(instruction_index_by_opcode_,
-                            Opcode(opcode.value() & 0xFFFFFFF8));
+    candidates = gtl::FindOrNull(instruction_index_by_opcode_,
+                                 Opcode(opcode.value() & 0xFFFFFFF8));
     if (candidates == nullptr) {
       return nullptr;
     }
@@ -111,7 +112,8 @@ X86Architecture::InstructionIndex X86Architecture::GetInstructionIndex(
           encoding_specification(candidate_index);
       if (InstructionMatchesSpecification(
               specification, decoded_instruction,
-              instruction(candidate_index).vendor_syntax(), check_modrm)) {
+              GetAnyVendorSyntaxOrDie(instruction(candidate_index)),
+              check_modrm)) {
         return candidate_index;
       }
     }
@@ -131,7 +133,8 @@ X86Architecture::GetInstructionIndices(
           encoding_specification(candidate_index);
       if (InstructionMatchesSpecification(
               specification, decoded_instruction,
-              instruction(candidate_index).vendor_syntax(), check_modrm)) {
+              GetAnyVendorSyntaxOrDie(instruction(candidate_index)),
+              check_modrm)) {
         indices.push_back(candidate_index);
       }
     }

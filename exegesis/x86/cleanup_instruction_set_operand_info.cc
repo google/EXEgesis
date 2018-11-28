@@ -19,15 +19,18 @@
 #include <iterator>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/registers.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
+#include "exegesis/util/category_util.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/status_util.h"
 #include "exegesis/x86/encoding_specification.h"
 #include "glog/logging.h"
@@ -48,12 +51,12 @@ using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 
 using EncodingMap =
-    std::unordered_map<std::string, InstructionOperand::Encoding>;
+    absl::flat_hash_map<std::string, InstructionOperand::Encoding>;
 using AddressingModeMap =
-    std::unordered_map<std::string, InstructionOperand::AddressingMode>;
-using ValueSizeMap = std::unordered_map<std::string, uint32_t>;
+    absl::flat_hash_map<std::string, InstructionOperand::AddressingMode>;
+using ValueSizeMap = absl::flat_hash_map<std::string, uint32_t>;
 using RegisterClassMap =
-    std::unordered_map<std::string, RegisterProto::RegisterClass>;
+    absl::flat_hash_map<std::string, RegisterProto::RegisterClass>;
 
 // Contains mapping from operand names to their encoding types. Note that this
 // mapping is incomplete, because it contains the mapping only for the cases in
@@ -888,6 +891,10 @@ constexpr const std::pair<const char*, RegisterProto::RegisterClass>
 
 namespace {
 
+bool IsImplicitOperandEncoding(const InstructionOperand::Encoding& encoding) {
+  return InCategory(encoding, InstructionOperand::IMPLICIT_ENCODING);
+}
+
 // Tries to remove one occurrence of the operand encoding of 'operand' from
 // 'available_encodings'. If it is removed, returns Status::OK. If
 // 'available_encodings' does not contain such an encoding, returns an error
@@ -897,7 +904,7 @@ Status EraseOperandEncoding(
     InstructionOperandEncodingMultiset* available_encodings) {
   const InstructionOperand::Encoding encoding = operand.encoding();
   Status status = OkStatus();
-  if (encoding != InstructionOperand::IMPLICIT_ENCODING) {
+  if (!IsImplicitOperandEncoding(encoding)) {
     const auto iterator = available_encodings->find(encoding);
     if (iterator == available_encodings->end()) {
       status = InvalidArgumentError(
@@ -926,15 +933,20 @@ Status EraseOperandEncoding(
 // Returns an error if the addressing mode for an operand is not known, or the
 // uniquely determined enoding does not appear in 'available_encodings'.
 Status AssignOperandPropertiesWhereUniquelyDetermined(
-    const AddressingModeMap& addressing_mode_map,
-    const EncodingMap& encoding_map, const ValueSizeMap& value_size_map,
-    InstructionProto* instruction,
+    const InstructionProto& instruction, InstructionFormat* vendor_syntax,
     InstructionOperandEncodingMultiset* available_encodings,
     std::vector<int>* operands_with_no_encoding) {
-  CHECK(instruction != nullptr);
+  CHECK(vendor_syntax != nullptr);
   CHECK(available_encodings != nullptr);
   CHECK(operands_with_no_encoding != nullptr);
-  InstructionFormat* const vendor_syntax = instruction->mutable_vendor_syntax();
+  static const AddressingModeMap* const addressing_mode_map =
+      new AddressingModeMap(std::begin(kAddressingModeMap),
+                            std::end(kAddressingModeMap));
+  static const EncodingMap* const encoding_map =
+      new EncodingMap(std::begin(kEncodingMap), std::end(kEncodingMap));
+  static const ValueSizeMap* const value_size_map = new ValueSizeMap(
+      std::begin(kOperandValueSizeBitsMap), std::end(kOperandValueSizeBitsMap));
+
   Status status = OkStatus();
   for (int operand_index = 0; operand_index < vendor_syntax->operands_size();
        ++operand_index) {
@@ -943,7 +955,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
 
     if (operand->addressing_mode() == InstructionOperand::ANY_ADDRESSING_MODE) {
       InstructionOperand::AddressingMode addressing_mode;
-      if (!FindCopy(addressing_mode_map, operand->name(), &addressing_mode)) {
+      if (!gtl::FindCopy(*addressing_mode_map, operand->name(),
+                         &addressing_mode)) {
         status = InvalidArgumentError(absl::StrCat(
             "Could not determine addressing mode of operand: ", operand->name(),
             ", instruction ", vendor_syntax->mnemonic()));
@@ -954,12 +967,12 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     }
 
     uint32_t value_size_bits = 0;
-    if (FindCopy(value_size_map, operand->name(), &value_size_bits)) {
+    if (gtl::FindCopy(*value_size_map, operand->name(), &value_size_bits)) {
       operand->set_value_size_bits(value_size_bits);
     }
 
     if (operand->encoding() != InstructionOperand::ANY_ENCODING) {
-      UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
+      UpdateStatus(&status, EraseOperandEncoding(instruction, *operand,
                                                  available_encodings));
     } else {
       // If there is only one way how an operand can be encoded, we assign this
@@ -967,9 +980,9 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       // encodings. Then we'll need to assign encodings to the remaining
       // operands only from those "remaining" encodings.
       InstructionOperand::Encoding operand_encoding;
-      if (FindCopy(encoding_map, operand->name(), &operand_encoding)) {
+      if (gtl::FindCopy(*encoding_map, operand->name(), &operand_encoding)) {
         operand->set_encoding(operand_encoding);
-        UpdateStatus(&status, EraseOperandEncoding(*instruction, *operand,
+        UpdateStatus(&status, EraseOperandEncoding(instruction, *operand,
                                                    available_encodings));
       } else {
         operands_with_no_encoding->push_back(operand_index);
@@ -985,7 +998,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
 inline bool AssignEncodingIfAvailable(
     InstructionOperand* operand, InstructionOperand::Encoding encoding,
     InstructionOperandEncodingMultiset* available_encodings) {
-  if (ContainsKey(*available_encodings, encoding)) {
+  if (gtl::ContainsKey(*available_encodings, encoding)) {
     operand->set_encoding(encoding);
     available_encodings->erase(encoding);
     return true;
@@ -1017,11 +1030,12 @@ inline bool AssignEncodingIfAvailable(
 // them, and so far, we do not need to know the exact matching of operand
 // positions and encodings, only what encodings are used.
 Status AssignEncodingByEncodingScheme(
-    InstructionProto* instruction,
+    const InstructionProto& instruction,
     const std::vector<int>& operands_with_no_encoding,
+    InstructionFormat* vendor_syntax,
     InstructionOperandEncodingMultiset* available_encodings) {
-  InstructionFormat* const vendor_syntax = instruction->mutable_vendor_syntax();
-  const std::string& encoding_scheme = instruction->encoding_scheme();
+  CHECK(vendor_syntax != nullptr);
+  const std::string& encoding_scheme = instruction.encoding_scheme();
   if (encoding_scheme.length() >= vendor_syntax->operands_size()) {
     for (const int operand_index : operands_with_no_encoding) {
       InstructionOperand* const operand =
@@ -1052,7 +1066,7 @@ Status AssignEncodingByEncodingScheme(
           break;
         default:
           LOG(WARNING) << "Unknown encoding scheme : \n"
-                       << instruction->DebugString();
+                       << instruction.DebugString();
       }
     }
   }
@@ -1063,15 +1077,15 @@ Status AssignEncodingByEncodingScheme(
 // operands on a first come first served basis. Assumes that there are enough
 // available encodings for all remaining operands.
 Status AssignEncodingRandomlyFromAvailableEncodings(
-    InstructionProto* instruction,
+    const InstructionProto& instruction, InstructionFormat* vendor_syntax,
     InstructionOperandEncodingMultiset* available_encodings) {
-  InstructionFormat* const vendor_syntax = instruction->mutable_vendor_syntax();
+  CHECK(vendor_syntax != nullptr);
   for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
     if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
       if (available_encodings->empty()) {
         return InvalidArgumentError(
             absl::StrCat("No available encodings for instruction:\n",
-                         instruction->DebugString()));
+                         instruction.DebugString()));
       }
       operand.set_encoding(*available_encodings->begin());
       available_encodings->erase(available_encodings->begin());
@@ -1082,153 +1096,209 @@ Status AssignEncodingRandomlyFromAvailableEncodings(
 
 }  // namespace
 
+Status AddVmxOperandInfo(InstructionSetProto* instruction_set) {
+  static constexpr LazyRE2 kRegex = {R"(.*/[r0-7])"};
+
+  CHECK(instruction_set != nullptr);
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    // We only need to add the trailing /r to VMX instructions that have at
+    // least one argument and whose encoding_spec doesn't end in "/[0-7]".
+    if (instruction.feature_name() == "VMX" &&
+        GetVendorSyntaxWithMostOperandsOrDie(instruction).operands_size() > 0 &&
+        !RE2::FullMatch(instruction.raw_encoding_specification(), *kRegex)) {
+      *instruction.mutable_raw_encoding_specification() =
+          absl::StrCat(instruction.raw_encoding_specification(), " /r");
+    }
+  }
+  return util::OkStatus();
+}
+// We want this to run early so that VMX instructions' operands will benefit
+// from other cleanups.
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddVmxOperandInfo, 999);
+
+Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set) {
+  static constexpr char kDescriptionForVmfunc[] = "VM Function to be invoked.";
+  static constexpr char kVmfuncOpcode[] = "NP 0F 01 D4";
+  CHECK(instruction_set != nullptr);
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    if (instruction.raw_encoding_specification() == kVmfuncOpcode) {
+      DCHECK_EQ("VMX", instruction.feature_name());
+      auto& vendor_syntax = GetVendorSyntaxWithMostOperandsOrDie(instruction);
+      DCHECK_EQ("VMFUNC", vendor_syntax.mnemonic());
+      DCHECK_EQ(1, instruction.vendor_syntax_size());
+      DCHECK_EQ(0, instruction.vendor_syntax(0).operands_size());
+      auto* const operand =
+          instruction.mutable_vendor_syntax(0)->add_operands();
+      operand->set_name("EAX");
+      operand->set_usage(InstructionOperand::USAGE_READ);
+      operand->set_addressing_mode(
+          InstructionOperand::ANY_ADDRESSING_WITH_FIXED_REGISTERS);
+      operand->set_encoding(InstructionOperand::X86_REGISTER_EAX);
+      operand->set_description(kDescriptionForVmfunc);
+      break;
+    }
+  }
+  return util::OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(FixVmFuncOperandInfo, 998);
+
 Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const RegisterClassMap register_class_map(std::begin(kRegisterClassMap),
                                             std::end(kRegisterClassMap));
-  for (InstructionProto& instruction :
-       *instruction_set->mutable_instructions()) {
-    InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
-    for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
-      const RegisterProto::RegisterClass* const register_class =
-          FindOrNull(register_class_map, operand.name());
-      if (register_class == nullptr) {
-        return InvalidArgumentError(
-            absl::StrCat("Unexpected operand name:", operand.name(),
-                         "\nInstruction:", instruction.DebugString()));
-      } else {
-        operand.set_register_class(*register_class);
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    for (InstructionFormat& vendor_syntax :
+         *instruction.mutable_vendor_syntax()) {
+      for (InstructionOperand& operand : *vendor_syntax.mutable_operands()) {
+        const RegisterProto::RegisterClass* const register_class =
+            gtl::FindOrNull(register_class_map, operand.name());
+        if (register_class == nullptr) {
+          return InvalidArgumentError(
+              absl::StrCat("Unexpected operand name:", operand.name(),
+                           "\nInstruction:", instruction.DebugString()));
+        } else {
+          operand.set_register_class(*register_class);
+        }
       }
     }
   }
   return OkStatus();
 }
+
 // We are running this after alternatives transform has ran. Because an
 // operand with name r/m32 is ambigious. It can use both a 32 bit general
 // purpose register with direct addressing or use a 64 bit general purpose
 // register to perform indirect accessing.
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddRegisterClassToOperands, 7000);
 
-Status AddOperandInfo(InstructionSetProto* instruction_set) {
-  CHECK(instruction_set != nullptr);
-  const AddressingModeMap addressing_mode_map(std::begin(kAddressingModeMap),
-                                              std::end(kAddressingModeMap));
-  const EncodingMap encoding_map(std::begin(kEncodingMap),
-                                 std::end(kEncodingMap));
-  const ValueSizeMap value_size_map(std::begin(kOperandValueSizeBitsMap),
-                                    std::end(kOperandValueSizeBitsMap));
-  Status status = OkStatus();
-  for (InstructionProto& instruction :
-       *instruction_set->mutable_instructions()) {
-    InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
-    if (!instruction.has_x86_encoding_specification()) {
-      return FailedPreconditionError(absl::StrCat(
-          "Instruction does not have a parsed encoding specification: ",
-          instruction.DebugString()));
-    }
-    InstructionOperandEncodingMultiset available_encodings =
-        GetAvailableEncodings(instruction.x86_encoding_specification());
+Status AddOperandInfoToSyntax(const InstructionProto& instruction,
+                              InstructionFormat* vendor_syntax) {
+  CHECK(vendor_syntax != nullptr);
+  if (!instruction.has_x86_encoding_specification()) {
+    return FailedPreconditionError(absl::StrCat(
+        "Instruction does not have a parsed encoding specification: ",
+        instruction.DebugString()));
+  }
+  InstructionOperandEncodingMultiset available_encodings =
+      GetAvailableEncodings(instruction.x86_encoding_specification());
 
-    // First assign the addressing modes and the encodings that can be
-    // determined from the operand itself.
-    std::vector<int> operands_with_no_encoding;
-    RETURN_IF_ERROR(AssignOperandPropertiesWhereUniquelyDetermined(
-        addressing_mode_map, encoding_map, value_size_map, &instruction,
-        &available_encodings, &operands_with_no_encoding));
+  // First assign the addressing modes and the encodings that can be determined
+  // from the operand itself.
+  std::vector<int> operands_with_no_encoding;
+  RETURN_IF_ERROR(AssignOperandPropertiesWhereUniquelyDetermined(
+      instruction, vendor_syntax, &available_encodings,
+      &operands_with_no_encoding));
 
-    if (!operands_with_no_encoding.empty()) {
-      // There are some operands that were not assigned the encoding just from
-      // the name of the operand. We need to use a more sophisticated process.
-      if (operands_with_no_encoding.size() == 1 &&
-          available_encodings.size() == 1) {
-        // There is just one operand where we need to assign the encoding, and
-        // only one available encoding, so we simply match them. In theory, the
-        // following branch should catch this case, but it doesn't work
-        // correctly because some instructions of this type do not use the usual
-        // encoding_scheme conventions, but we can correctly handle them using
-        // this heuristic.
-        InstructionOperand* const operand =
-            vendor_syntax->mutable_operands(operands_with_no_encoding.front());
-        operand->set_encoding(*available_encodings.begin());
-      } else if (operands_with_no_encoding.size() <=
-                 available_encodings.size()) {
-        // We have enough available encodings to assign to the remaining
-        // operands. First try to use the encoding scheme as a guide, and if
-        // that fails, we just assign the remaining available encodings to the
-        // remaining operands randomly.
-        RETURN_IF_ERROR(AssignEncodingByEncodingScheme(
-            &instruction, operands_with_no_encoding, &available_encodings));
-        RETURN_IF_ERROR(AssignEncodingRandomlyFromAvailableEncodings(
-            &instruction, &available_encodings));
-      } else {
-        VLOG(1) << "operands_with_no_encoding:";
-        for (const int index : operands_with_no_encoding) {
-          VLOG(1) << "  " << index;
-        }
-        VLOG(1) << "available_encodings:";
-        for (const InstructionOperand::Encoding available_encoding :
-             available_encodings) {
-          VLOG(1) << "  "
-                  << InstructionOperand::Encoding_Name(available_encoding);
-        }
-        // We don't have enough available encodings to encode all the operands.
-        status = InvalidArgumentError(absl::StrCat(
-            "There are more operands remaining than available encodings: ",
-            instruction.DebugString()));
-        LOG(ERROR) << status;
-        continue;
+  if (!operands_with_no_encoding.empty()) {
+    // There are some operands that were not assigned the encoding just from the
+    // name of the operand. We need to use a more sophisticated process.
+    if (operands_with_no_encoding.size() == 1 &&
+        available_encodings.size() == 1) {
+      // There is just one operand where we need to assign the encoding, and
+      // only one available encoding, so we simply match them. In theory, the
+      // following branch should catch this case, but it doesn't work correctly
+      // because some instructions of this type do not use the usual
+      // encoding_scheme conventions, but we can correctly handle them using
+      // this heuristic.
+      InstructionOperand* const operand =
+          vendor_syntax->mutable_operands(operands_with_no_encoding.front());
+      operand->set_encoding(*available_encodings.begin());
+    } else if (operands_with_no_encoding.size() <= available_encodings.size()) {
+      // We have enough available encodings to assign to the remaining
+      // operands. First try to use the encoding scheme as a guide, and if
+      // that fails, we just assign the remaining available encodings to the
+      // remaining operands randomly.
+      RETURN_IF_ERROR(
+          AssignEncodingByEncodingScheme(instruction, operands_with_no_encoding,
+                                         vendor_syntax, &available_encodings));
+      RETURN_IF_ERROR(AssignEncodingRandomlyFromAvailableEncodings(
+          instruction, vendor_syntax, &available_encodings));
+    } else {
+      VLOG(1) << "operands_with_no_encoding:";
+      for (const int index : operands_with_no_encoding) {
+        VLOG(1) << "  " << index;
       }
+      VLOG(1) << "available_encodings:";
+      for (const InstructionOperand::Encoding available_encoding :
+           available_encodings) {
+        VLOG(1) << "  "
+                << InstructionOperand::Encoding_Name(available_encoding);
+      }
+      // We don't have enough available encodings to encode all the
+      // operands.
+      const Status status = InvalidArgumentError(absl::StrCat(
+          "There are more operands remaining than available encodings: ",
+          instruction.DebugString()));
+      LOG(ERROR) << status;
+      return status;
     }
   }
-  return status;
+  return OkStatus();
+}
+
+Status AddOperandInfo(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    for (InstructionFormat& vendor_syntax :
+         *instruction.mutable_vendor_syntax()) {
+      RETURN_IF_ERROR(AddOperandInfoToSyntax(instruction, &vendor_syntax));
+    }
+  }
+  return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandInfo, 4000);
 
+Status AddMissingOperandUsageToOperand(const InstructionProto& instruction,
+                                       int operand_pos,
+                                       InstructionOperand* operand) {
+  CHECK(operand != nullptr);
+  if (operand->usage() != InstructionOperand::USAGE_UNKNOWN) {
+    // Nothing to do.
+    return OkStatus();
+  }
+  if (operand->encoding() == InstructionOperand::IMMEDIATE_VALUE_ENCODING) {
+    // An immediate can only be read from.
+    operand->set_usage(InstructionOperand::USAGE_READ);
+  } else if (operand->encoding() == InstructionOperand::VEX_V_ENCODING) {
+    // A VEX encoded operand is always a source unless explicitly marked as a
+    // destination. See table table 2-9 of the SDM volume 2 for details.
+    if (operand_pos == 0) {
+      return InvalidArgumentError(absl::StrCat(
+          "Unexpected VEX.vvvv operand without usage specification "
+          "at position 0:\n",
+          instruction.DebugString()));
+    }
+    operand->set_usage(InstructionOperand::USAGE_READ);
+  } else if (operand->encoding() == InstructionOperand::IMPLICIT_ENCODING &&
+             operand->addressing_mode() ==
+                 InstructionOperand::DIRECT_ADDRESSING) {
+    // A few instructions have implicit source or destination registers,
+    // typically AND AX, imm8.
+    if (operand_pos == 0) {
+      operand->set_usage(InstructionOperand::USAGE_WRITE);
+    } else {
+      operand->set_usage(InstructionOperand::USAGE_READ);
+    }
+  } else if (operand->encoding() == InstructionOperand::IMPLICIT_ENCODING &&
+             operand->addressing_mode() == InstructionOperand::NO_ADDRESSING) {
+    // The operand is an implicit immediate value.
+    operand->set_usage(InstructionOperand::USAGE_READ);
+  }
+  // TODO(courbet): Add usage information for X87.
+  return OkStatus();
+}
+
 Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  for (InstructionProto& instruction :
-       *instruction_set->mutable_instructions()) {
-    for (int operand_pos = 0;
-         operand_pos < instruction.vendor_syntax().operands_size();
-         ++operand_pos) {
-      InstructionOperand* const operand =
-          instruction.mutable_vendor_syntax()->mutable_operands(operand_pos);
-      if (operand->usage() != InstructionOperand::USAGE_UNKNOWN) {
-        // Nothing to do.
-        continue;
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    for (InstructionFormat& vendor_syntax :
+         *instruction.mutable_vendor_syntax()) {
+      for (int operand_pos = 0; operand_pos < vendor_syntax.operands_size();
+           ++operand_pos) {
+        RETURN_IF_ERROR(AddMissingOperandUsageToOperand(
+            instruction, operand_pos,
+            vendor_syntax.mutable_operands(operand_pos)));
       }
-      if (operand->encoding() == InstructionOperand::IMMEDIATE_VALUE_ENCODING) {
-        // An immediate can only be read from.
-        operand->set_usage(InstructionOperand::USAGE_READ);
-      } else if (operand->encoding() == InstructionOperand::VEX_V_ENCODING) {
-        // A VEX encoded operand is always a source unless explicitly marked as
-        // a destination. See table table 2-9 of the SDM volume 2 for details.
-        if (operand_pos == 0) {
-          return InvalidArgumentError(absl::StrCat(
-              "Unexpected VEX.vvvv operand without usage specification "
-              "at position 0:\n",
-              instruction.DebugString()));
-        }
-        operand->set_usage(InstructionOperand::USAGE_READ);
-      } else if (operand->encoding() == InstructionOperand::IMPLICIT_ENCODING &&
-                 operand->addressing_mode() ==
-                     InstructionOperand::DIRECT_ADDRESSING) {
-        // A few instructions have implicit source or destination registers,
-        // typically AND AX, imm8.
-        if (operand_pos == 0) {
-          operand->set_usage(InstructionOperand::USAGE_WRITE);
-        } else {
-          operand->set_usage(InstructionOperand::USAGE_READ);
-        }
-      } else if (operand->encoding() == InstructionOperand::IMPLICIT_ENCODING &&
-                 operand->addressing_mode() ==
-                     InstructionOperand::NO_ADDRESSING) {
-        // The operand is an implicit immediate value.
-        operand->set_usage(InstructionOperand::USAGE_READ);
-      }
-      // TODO(courbet): Add usage information for X87.
     }
   }
   return OkStatus();
@@ -1239,21 +1309,73 @@ Status AddMissingOperandUsageToVblendInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static const LazyRE2 kVblendRegexp = {"VP?BLENDV?P?[DSB]"};
-  for (InstructionProto& instruction :
-       *instruction_set->mutable_instructions()) {
-    InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
-    if (!RE2::FullMatch(vendor_syntax->mnemonic(), *kVblendRegexp)) continue;
-    InstructionOperand& last_operand =
-        *vendor_syntax->mutable_operands()->rbegin();
-    if (last_operand.usage() == InstructionOperand::USAGE_UNKNOWN) {
-      last_operand.set_usage(InstructionOperand::USAGE_READ);
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    for (InstructionFormat& vendor_syntax :
+         *instruction.mutable_vendor_syntax()) {
+      if (!RE2::FullMatch(vendor_syntax.mnemonic(), *kVblendRegexp)) continue;
+      InstructionOperand& last_operand =
+          *vendor_syntax.mutable_operands()->rbegin();
+      if (last_operand.usage() == InstructionOperand::USAGE_UNKNOWN) {
+        last_operand.set_usage(InstructionOperand::USAGE_READ);
+      }
     }
   }
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsageToVblendInstructions,
                                    8000);
+
+Status AddMissingVexVOperandUsage(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    EncodingSpecification* const encoding_specification =
+        instruction.mutable_x86_encoding_specification();
+    if (!encoding_specification->has_vex_prefix()) continue;
+    VexPrefixEncodingSpecification* const vex_specification =
+        encoding_specification->mutable_vex_prefix();
+    if (vex_specification->vex_operand_usage() != UNDEFINED_VEX_OPERAND_USAGE) {
+      continue;
+    }
+
+    const InstructionFormat& vendor_syntax =
+        GetVendorSyntaxWithMostOperandsOrDie(instruction);
+    const InstructionOperand* vex_operand = nullptr;
+    for (const InstructionOperand& operand : vendor_syntax.operands()) {
+      if (operand.encoding() == InstructionOperand::VEX_V_ENCODING) {
+        vex_operand = &operand;
+        break;
+      }
+    }
+    if (vex_operand == nullptr) continue;
+    switch (vex_operand->usage()) {
+      case InstructionOperand::USAGE_UNKNOWN:
+        // The usage is unknown - we mark the VEX operand as the destination
+        // register. This is an arbitrarily chosen value, whose main purpose is
+        // not being NO_VEX_OPERAND_USAGE.
+        LOG(WARNING) << "Unknown VEX operand usage in "
+                     << instruction.raw_encoding_specification();
+        ABSL_FALLTHROUGH_INTENDED;
+      case InstructionOperand::USAGE_READ:
+        vex_specification->set_vex_operand_usage(
+            vendor_syntax.operands(0).usage() ==
+                    InstructionOperand::USAGE_READ_WRITE
+                ? VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+                : VEX_OPERAND_IS_FIRST_SOURCE_REGISTER);
+        break;
+      case InstructionOperand::USAGE_WRITE:
+      case InstructionOperand::USAGE_READ_WRITE:
+        vex_specification->set_vex_operand_usage(
+            VEX_OPERAND_IS_DESTINATION_REGISTER);
+        break;
+      default:
+        // The remaining values are sentinels and the number of operands. None
+        // of them can appear in the proto.
+        LOG(FATAL) << "Unexpected VEX operand usage: " << vex_operand->usage();
+    }
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingVexVOperandUsage, 3900);
 
 }  // namespace x86
 }  // namespace exegesis

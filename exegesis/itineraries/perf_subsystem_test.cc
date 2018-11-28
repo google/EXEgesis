@@ -182,7 +182,7 @@ TEST(PerfSubsystemTest, Cvtpd2psShufpd) {
   EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
       ".rept 1000\n"
       "    cvtpd2ps %%xmm0,%%xmm1;         # 3 cycles on port 1, 1 on port 5.\n"
-      "   shufpd %[shuffle],%%xmm0,%%xmm1; # 1 cycle on port 5.\n"
+      "    shufpd %[shuffle],%%xmm0,%%xmm1; # 1 cycle on port 5.\n"
       ".endr"
       :
       : [shuffle] "I"(3)
@@ -436,6 +436,285 @@ TEST(PerfSubsystemTest, LoopDetectorJL) {
       :
       :
       : "%rcx", "%xmm2", "%xmm3"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+// Starting with Sandy Bridge, LEA's with 3 parameters (base, index and offset)
+// are executed on port 1 and take as much as 3 cycles.
+// The following two benchmarks explore the difference in performance between
+// LEA and the corresponding code using ADDs.
+TEST(PerfSubsystemTest, Lea) {
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "    mov $1, %%rax\n"
+      "    mov $1, %%rdx\n"
+      "2:\n"
+      "    lea 2(%%rax, %%rdx, 2), %%rax;  # rax += 2*rdx + 2\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b\n"
+      :
+      :
+      : "%rcx", "%rax", "%rdx"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, ReplaceLeaWithAdditions) {
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx;\n"
+      "    mov $1, %%rax\n"
+      "    mov $1, %%rdx\n"
+      "2:\n"
+      "    movq %%rdx, %%rbx;   # rbx = rdx\n"
+      "    add $2, %%rax;       # rax += 2\n"
+      "    addq %%rdx, %%rbx;   # rbx += rdx ; rbx=2*rdx\n"
+      "    addq %%rbx, %%rax;   # rax += rbx ; rax = rax + 2 + 2 * rdx\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b\n"
+      :
+      :
+      : "%rax", "%rbx", "%rcx", "%rdx"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+// The four benchmarks below explore different ways of expressing
+// bool rax = (rcx && rbx).
+// - rax is set using setne al / movzx.
+// - rax is set using cmovne
+
+TEST(PerfSubsystemTest, TestSetNe) {
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "    mov $1, %%rbx\n"
+      "2:\n"
+      "    xor %%eax, %%eax\n"
+      "    testq %%rcx, %%rbx\n"
+      "    setne %%al;  # al = (rcx && rbx) != 0\n"
+      "    ; # optional movzx %%al, %%eax\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b\n"
+      :
+      :
+      : "%rax", "%rbx", "%rcx", "%rdx"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, TestSetNeManualRenaming) {
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "    mov $1, %%rbx\n"
+      "2:\n"
+      "    movq  %%rcx, %%rdx;  # Rename rcx to rdx & break dependency chain.\n"
+      "    xor %%eax, %%eax\n"
+      "    testq %%rdx, %%rbx\n"
+      "    setne %%al;           # al = (rdx && rbx) != 0\n"
+      "    ; # optional movzx %%al, %%eax\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b\n"
+      :
+      :
+      : "%rax", "%rbx", "%rcx", "%rdx"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, TestCmov) {
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "    mov $1, %%rbx\n"
+      "2:\n"
+      "    xor %%eax, %%eax\n"
+      "    mov $1, %%rdi\n"
+      "    test %%rcx, %%rbx\n"
+      "    cmovne %%rdi, %%rax;  # al = (rcx && rbx) != 0\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b\n"
+      :
+      :
+      : "%rax", "%rbx", "%rcx", "%rdx", "%rdi"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, TestCmovManualRenaming) {
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      "    xor %%rcx, %%rcx\n"
+      "    mov $1, %%rbx\n"
+      "2:\n"
+      "    movq %%rcx, %%rdx;   # Rename rcx to rdx & break dependency chain.\n"
+      "    xor %%eax, %%eax\n"
+      "    mov $1, %%rdi\n"
+      "    test %%rdx, %%rbx\n"
+      "    cmovne %%rdi, %%rax;  # al = (rdx && rbx) != 0\n"
+      "    inc %%rcx\n"
+      "    cmpq $0xFFFF, %%rcx\n"
+      "    jl 2b\n"
+      :
+      :
+      : "%rax", "%rbx", "%rcx", "%rdx", "%rdi"));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, FullCode) {
+  PerfResult result;
+  int64_t r;
+  int64_t size = 8;
+  int64_t size_1;
+  int64_t log;
+  int64_t one;
+  int64_t sum;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(
+      &result, kIter,
+      asm volatile(".rept 1000\n"
+                   "     xor %[result], %[result]\n"
+                   "     test %[size], %[size]\n"
+                   "     je 2\n"
+                   "     bsr %[size],%[log]\n"
+                   "     leaq -1(%[size]),%[size_1]\n"
+                   "     test %[size],%[size_1]\n"
+                   "     setne %b[result]\n"
+                   "     leaq 2(%[result], %[log], 2), %[result]\n"
+                   "2:\n"
+                   ".endr\n"
+                   : /* output */ [result] "=r"(r), [log] "=&r"(log),
+                        [one] "=&r"(one), [sum] "=&r"(sum),
+                        [size_1] "=&r"(size_1)
+                   : /* input  */ [size] "r"(size)
+                   : /* clobbered */));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, FullCodeOptimized) {
+  PerfResult result;
+  int64_t r;
+  int64_t size = 8;
+  int64_t size_1;
+  int64_t log;
+  int64_t sum;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    xor %[result], %[result];    # result = 0\n"
+      "    test %[size], %[size];       # if size == 0 return \n"
+      "    je 2\n"
+      "    bsr %[size],%[log];          # log = ceil(lg2(size))\n"
+      "    leaq -1(%[size]),%[size_1];  # size_1 = size - 1\n"
+      "    ; # Placing this LEA well in advance shaves .25 c on average.\n"
+      "    leaq 2(%[log], %[log]), %[sum];   # sum = 2 + 2 * log\n"
+      "    test %[size],%[size_1];      # if ((size - 1) && size)\n"
+      "    setne %b[result];            # result = 1\n"
+      "    addq %[sum], %[result];      # result += sum\n"
+      "2:\n"
+      ".endr\n"
+       : /* output */ [result] "=r" (r), [log] "=&r"(log),
+         [sum] "=&r"(sum), [size_1] "=&r" (size_1)
+       : /* input  */ [size] "r" (size)
+       : /* clobbered */ ));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, Cvtsd2ssLatency) {
+  // Mesure latency by waiting register cloberring.
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsd2ss %%xmm0,%%xmm1\n"
+      "    cvtsd2ss %%xmm1,%%xmm0\n"
+      ".endr"
+      :
+      :
+      :));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+// The following tests implement the instruction collision mechanism described
+// in  go/exegesis:collision .
+TEST(PerfSubsystemTest, Cvtsd2ssCollisionOnPort5) {
+  // Latency.
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsd2ss %%xmm0,%%xmm1\n"
+      "    shufpd %[shuffle],%%xmm0,%%xmm1; # 1 cycle on port 5.\n"
+      ".endr"
+      :
+      : [shuffle] "I"(3)
+      :));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, Cvtsd2ssCollisionOnPort1) {
+  // Latency.
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsd2ss %%xmm0,%%xmm1\n"
+      "    cvtdq2ps %%xmm0,%%xmm1;  # 3 cycles on port 1.\n"
+      ".endr"
+      :
+      : [shuffle] "I"(3)
+      :));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, Cvtsd2ssOverloadingOnPort5) {
+  // Latency.
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsd2ss %%xmm0,%%xmm1\n"
+      "    shufpd %[shuffle],%%xmm2,%%xmm3; # 1 cycle on port 5.\n"
+      ".endr"
+      :
+      : [shuffle] "I"(3)
+      :));
+  // clang-format on
+  LOG(INFO) << result.ToString();
+}
+
+TEST(PerfSubsystemTest, Cvtsd2ssOverloadingOnPort1) {
+  // Latency.
+  PerfResult result;
+  // clang-format off
+  EXEGESIS_RUN_UNDER_PERF(&result, kIter, asm volatile(
+      ".rept 1000\n"
+      "    cvtsd2ss %%xmm0,%%xmm1\n"
+      "    cvtdq2ps %%xmm2,%%xmm3;  # 3 cycles on port 1.\n"
+      ".endr"
+      :
+      : [shuffle] "I"(3)
+      :));
   // clang-format on
   LOG(INFO) << result.ToString();
 }

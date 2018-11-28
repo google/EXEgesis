@@ -9,7 +9,7 @@ cc_library(
     srcs = ["inverse_throughput.cc"],
     hdrs = ["inverse_throughput.h"],
     visibility = [
-        "//llvm_sim/x86:__pkg__",
+        "//visibility:public",
     ],
     deps = [
         "//llvm_sim/framework:context",

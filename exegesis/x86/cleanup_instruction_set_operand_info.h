@@ -26,6 +26,13 @@ namespace x86 {
 
 using ::exegesis::util::Status;
 
+// Adds more implicit info about VMX instructions.
+Status AddVmxOperandInfo(InstructionSetProto* instruction_set);
+
+// VMFUNC uses EAX as input register but this info is not parseable by current
+// heuristics. This transform manually defines it.
+Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set);
+
 // Adds detailed information about operands to the vendor syntax section.
 // Assumes that this section already has operand names in the format used by the
 // Intel manual, and so is the encoding scheme of the instruction proto. This
@@ -49,6 +56,13 @@ Status AddMissingOperandUsageToVblendInstructions(
 
 // Adds RegisterClass to every operand in vendor_syntax.
 Status AddRegisterClassToOperands(InstructionSetProto* instruction_set);
+
+// Adds VEX operand usage informamtion to instructions where it is missing. This
+// information used to be a part of the instruction encoding specification in
+// the SDM, but it was removed starting with the November 2018 version of the
+// manual. This transform reconstructs the info from the other available
+// information about the instruction.
+Status AddMissingVexVOperandUsage(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

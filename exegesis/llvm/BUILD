@@ -109,9 +109,9 @@ cc_library(
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/types:span",
         "@com_google_protobuf//:protobuf_lite",
         "@llvm_git//:execution_engine",
         "@llvm_git//:ir",
@@ -167,6 +167,7 @@ cc_library(
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
         "@com_google_protobuf//:protobuf_lite",
         "@llvm_git//:analysis",  # buildcleaner: keep
         "@llvm_git//:codegen",

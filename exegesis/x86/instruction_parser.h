@@ -27,7 +27,7 @@
 //  absl::Span<const uint8_t> binary_code = ...;
 //  while (!binary_code.empty()) {
 //    StatusOr<DecodedInstruction> instruction_or_status =
-//        parser.ParseBinaryEncoding(&binary_code);
+//        parser.ConsumeBinaryEncoding(&binary_code);
 //    RETURN_IF_ERROR(instruction_or_status.status());
 //
 //    ...

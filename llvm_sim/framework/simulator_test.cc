@@ -101,7 +101,9 @@ TEST(SimulatorTest, Works) {
   Simulator.AddBuffer(std::move(Buffer2), BufferDescription2);
   std::vector<llvm::MCInst> Instructions;
   const BlockContext BlockContext(Instructions, false);
-  const auto Result = Simulator.Run(BlockContext, 0, 2);
+  constexpr int kMaxNumCycles = 2;
+  const auto Result = Simulator.Run(BlockContext, 0, kMaxNumCycles);
+  EXPECT_THAT(Result->NumCycles, kMaxNumCycles);
   EXPECT_THAT(Result->Lines, ElementsAre(EqLine(0, 0, "TestTag", "A"),
                                          EqLine(1, 0, "TestTag", "B"),
                                          EqLine(1, 1, "TestTag", "D")));
@@ -146,6 +148,10 @@ TEST(SimulatorTest, Iterations) {
   const auto Result =
       Simulator.Run(BlockContext, /*2 iterations*/ 2, /*unlimited cycles*/ 0);
 
+  EXPECT_THAT(Result->NumCycles, 4);
+  for (const auto& Line : Result->Lines) {
+    EXPECT_LT(Line.Cycle, Result->NumCycles);
+  }
   EXPECT_THAT(
       Result->Iterations,
       ElementsAre(Field(&SimulationLog::IterationStats::EndCycle, Eq(1)),

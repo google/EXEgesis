@@ -16,6 +16,7 @@
 
 #include "absl/strings/string_view.h"
 #include "exegesis/base/cleanup_instruction_set.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
 #include "util/task/status.h"
@@ -65,7 +66,7 @@ Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set) {
     flags_affected { content: "" }
     short_description: "Free Floating-Point Register and Pop.")proto";
   for (const InstructionProto& instruction : instruction_set->instructions()) {
-    if (instruction.vendor_syntax().mnemonic() == kFfreepMnemonic) {
+    if (HasMnemonicInVendorSyntax(instruction, kFfreepMnemonic)) {
       return OkStatus();
     }
   }

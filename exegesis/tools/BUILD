@@ -1,7 +1,7 @@
 # Description:
 #   All public tools for the project.
 
-package(default_visibility = ["//visibility:private"])
+package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # Apache 2.0
 
@@ -30,7 +30,6 @@ cc_library(
     name = "architecture_flags",
     srcs = ["architecture_flags.cc"],
     hdrs = ["architecture_flags.h"],
-    visibility = ["//visibility:public"],
     deps = [
         "//base",
         "//exegesis/base:architecture_provider",
@@ -47,9 +46,9 @@ cc_library(
 cc_binary(
     name = "parse_intel_sdm",
     srcs = ["parse_intel_sdm.cc"],
-    visibility = ["//exegesis/data/x86:__pkg__"],
     deps = [
         "//base",
+        "//exegesis/base:architecture",
         "//exegesis/base:cleanup_instruction_set",
         "//exegesis/base:transform_factory",
         "//exegesis/proto:instructions_cc_proto",
@@ -130,6 +129,8 @@ cc_binary(
         "//util/gtl:map_util",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",

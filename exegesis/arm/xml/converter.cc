@@ -22,6 +22,7 @@
 #include "exegesis/arm/xml/parser.pb.h"
 #include "exegesis/proto/instruction_encoding.pb.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
@@ -42,7 +43,7 @@ InstructionFormat ConvertAsmTemplate(const std::string& mnemonic,
     operand->set_description(symbol.explanation());
     // TODO(npaglieri): Infer data type (Register / Immediate / ...)
     // TODO(npaglieri): Infer usage (Read / Write / ReadWrite)
-    // TODO(b/77737137): Preserve important non-pure-operand information, e.g.
+    // TODO(user): Preserve important non-pure-operand information, e.g.
     //                   extra characters in "CAS <Ws>, <Wt>, [<Xn|SP>{,#0}]".
   }
   return format;
@@ -70,7 +71,8 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
   for (const auto& index :
        {xml_database.base_index(), xml_database.fp_simd_index()}) {
     for (const auto& file : index.files()) {
-      InsertOrDie(&known_groups, file.xml_id(), isp->instruction_groups_size());
+      gtl::InsertOrDie(&known_groups, file.xml_id(),
+                       isp->instruction_groups_size());
       auto* group = isp->add_instruction_groups();
       group->set_name(file.heading());
       group->set_short_description(file.description());
@@ -84,7 +86,8 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
                          xml_instruction.docvars().mnemonic()});
 
     // TODO(npaglieri): Decide whether to use the <aliasto> tag to merge groups.
-    const int group_index = FindOrDie(known_groups, xml_instruction.xml_id());
+    const int group_index =
+        gtl::FindOrDie(known_groups, xml_instruction.xml_id());
     auto* group = isp->mutable_instruction_groups(group_index);
     group->set_description(xml_instruction.authored_description());
     if (xml_instruction.docvars().cond_setting() == dv::CondSetting::S) {
@@ -105,7 +108,7 @@ ArchitectureProto ConvertToArchitectureProto(const XmlDatabase& xml_database) {
         const std::string encoding_mnemonic = FirstSetOrEmpty(
             {encoding.docvars().alias_mnemonic(), encoding.docvars().mnemonic(),
              instruction_mnemonic});
-        *instruction->mutable_vendor_syntax() =
+        *GetOrAddUniqueVendorSyntaxOrDie(instruction) =
             ConvertAsmTemplate(encoding_mnemonic, encoding.asm_template());
         // Unfortunately (or not?) ARM is unlikely to provide more features.
         switch (encoding.docvars().feature()) {

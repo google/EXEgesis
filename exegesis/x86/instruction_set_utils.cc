@@ -17,12 +17,12 @@
 namespace exegesis {
 namespace x86 {
 
-const std::unordered_set<std::string>& GetX87FpuInstructionMnemonics() {
+const absl::flat_hash_set<std::string>& GetX87FpuInstructionMnemonics() {
   // NOTE(ondrasej): The list is taken from the Intel SDM, May 2018 version,
   // sections 5.2 X87 FPU Instructions and 5.3 X87 FPU and SIMD State Management
   // Instructions.
-  static const std::unordered_set<std::string>* const kMnemonics =
-      new std::unordered_set<std::string>(
+  static const absl::flat_hash_set<std::string>* const kMnemonics =
+      new absl::flat_hash_set<std::string>(
           {// 5.2.1 x87 FPU Data Transfer Instructions.
            "FBLD", "FBSTP", "FCMOVB", "FCMOVBE", "FCMOVE", "FCMOVNB",
            "FCMOVNBE", "FCMOVNE", "FCMOVNU", "FCMOVU", "FILD", "FIST", "FISTP",

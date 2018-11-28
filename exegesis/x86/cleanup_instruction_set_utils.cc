@@ -16,9 +16,9 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
@@ -69,7 +69,7 @@ void AddPrefixUsageToLegacyInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
 
-  std::unordered_map<uint64_t, std::vector<InstructionProto*>>
+  absl::flat_hash_map<uint64_t, std::vector<InstructionProto*>>
       instructions_by_opcode;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {

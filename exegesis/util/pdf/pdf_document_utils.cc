@@ -17,9 +17,8 @@
 #include <dirent.h>
 #include <algorithm>
 #include <map>
-#include <unordered_map>
-#include <unordered_set>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/util/proto_util.h"
@@ -171,8 +170,8 @@ std::vector<EqualRangeReference> GetMatchingRanges(const Hashes& a,
 // Computes the matching ranges and convert them into a block to block mapping
 // starting by longest matches. We have a higher confidence that the blocks are
 // referring to the same content if the matching length is high.
-std::unordered_map<size_t, size_t> GetBlockMapping(const Hashes& a,
-                                                   const Hashes& b) {
+absl::flat_hash_map<size_t, size_t> GetBlockMapping(const Hashes& a,
+                                                    const Hashes& b) {
   auto matching_ranges = GetMatchingRanges(a, b);
 
   // We order the results to get the longest matches first.
@@ -181,7 +180,7 @@ std::unordered_map<size_t, size_t> GetBlockMapping(const Hashes& a,
               return a.match_length > b.match_length;
             });
 
-  std::unordered_map<size_t, size_t> block_mapping;
+  absl::flat_hash_map<size_t, size_t> block_mapping;
   for (const auto& match : matching_ranges) {
     // If this match is already included in a previous one we skip it.
     if (block_mapping.count(match.a_index) ||
@@ -232,19 +231,19 @@ struct BlockIndex {
           hashes.push_back(hash);
           blocks.push_back(&block);
           const BlockPosition position(page.number(), block.row(), block.col());
-          InsertOrDieNoPrint(&position_to_index, position, index);
-          InsertOrDieNoPrint(&index_to_position, index, position);
+          gtl::InsertOrDieNoPrint(&position_to_index, position, index);
+          gtl::InsertOrDieNoPrint(&index_to_position, index, position);
         }
       }
     }
   }
 
   size_t GetIndex(const BlockPosition position) const {
-    return FindOrDieNoPrint(position_to_index, position);
+    return gtl::FindOrDieNoPrint(position_to_index, position);
   }
 
   BlockPosition GetPosition(size_t index) const {
-    return FindOrDie(index_to_position, index);
+    return gtl::FindOrDie(index_to_position, index);
   }
 
   Hashes hashes;
@@ -256,7 +255,7 @@ struct BlockIndex {
 // Takes a mapping from blocks to blocks and tries to rewrite the input patch
 // for the output document. If the patch is not part of the mapping we don't try
 // to be smart and we simply give up.
-bool RewritePatch(const std::unordered_map<size_t, size_t>& block_mapping,
+bool RewritePatch(const absl::flat_hash_map<size_t, size_t>& block_mapping,
                   const BlockIndex& index_in, const BlockIndex& index_out,
                   const size_t patch_in_page, const PdfPagePatch& patch_in,
                   size_t* patch_out_page, PdfPagePatch* patch_out) {
@@ -264,7 +263,7 @@ bool RewritePatch(const std::unordered_map<size_t, size_t>& block_mapping,
   CHECK(patch_out);
   const BlockPosition in_pos(patch_in_page, patch_in.row(), patch_in.col());
   const size_t in_index = index_in.GetIndex(in_pos);
-  const size_t* out_index = FindOrNull(block_mapping, in_index);
+  const size_t* out_index = gtl::FindOrNull(block_mapping, in_index);
   if (out_index == nullptr) return false;
   const BlockPosition out_pos = index_out.GetPosition(*out_index);
   *patch_out_page = out_pos.page;
@@ -347,14 +346,21 @@ void ApplyPatchOrDie(const PdfPagePatch& patch, PdfPage* page) {
 }
 
 std::vector<const PdfTextTableRow*> GetPageBodyRows(const PdfPage& page,
-                                                    const float margin) {
+                                                    const float margin,
+                                                    const int max_row) {
   const float top_margin = margin;
   const float bottom_margin = page.height() - margin;
   std::vector<const PdfTextTableRow*> result;
+  int row_count = 0;
   for (const auto& row : page.rows()) {
+    if (row_count == max_row) {
+      break;
+    }
     if (row.bounding_box().top() > top_margin &&
-        row.bounding_box().bottom() < bottom_margin)
+        row.bounding_box().bottom() < bottom_margin) {
       result.push_back(&row);
+      ++row_count;
+    }
   }
   return result;
 }

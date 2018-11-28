@@ -31,12 +31,18 @@ TEST(ContextTest, Decomposition) {
 
   // Setup fake InstrInfo.
   auto InstrInfo = llvm::make_unique<llvm::MCInstrInfo>();
-  std::array<llvm::MCInstrDesc, 4> InstrDesc;
+  constexpr char InstrNameData[] = "I0\0I1\0I2\0I3\0I4";
+  constexpr std::array<unsigned, 5> InstrNameIndices = {0, 3, 6, 9, 12};
+  std::array<llvm::MCInstrDesc, 5> InstrDesc;
+  static_assert(InstrDesc.size() == InstrNameIndices.size(),
+                "The number of instruction names does not match the number of "
+                "instructions");
   InstrDesc[1].SchedClass = 1;
   InstrDesc[2].SchedClass = 2;
   InstrDesc[3].SchedClass = 3;
-  InstrInfo->InitMCInstrInfo(InstrDesc.data(), /*InstrNameIndices=*/nullptr,
-                             /*InstrNameData=*/nullptr, InstrDesc.size());
+  InstrDesc[4].SchedClass = 4;
+  InstrInfo->InitMCInstrInfo(InstrDesc.data(), InstrNameIndices.data(),
+                             InstrNameData, InstrDesc.size());
   Context.InstrInfo = std::move(InstrInfo);
 
   llvm::MCSchedModel SchedModel;
@@ -57,7 +63,7 @@ TEST(ContextTest, Decomposition) {
   SchedModel.NumProcResourceKinds = ProcResources.size();
 
   // Setup Sched Classes.
-  std::array<llvm::MCSchedClassDesc, 4> SchedClasses;
+  std::array<llvm::MCSchedClassDesc, 5> SchedClasses;
   // Class 1: 1 cycle on P0, denormalized to {1xP0, 1xP01}.
   SchedClasses[1].NumMicroOps = 1;
   SchedClasses[1].WriteProcResIdx = 1;
@@ -76,13 +82,20 @@ TEST(ContextTest, Decomposition) {
   SchedClasses[3].NumWriteProcResEntries = 3;
   SchedClasses[3].WriteLatencyIdx = 1;
   SchedClasses[3].NumWriteLatencyEntries = 1;
+  // Class 4: 2 cycles on P0, 3 cycles on P1, denormalized to
+  // {2xP0, 3xP1, 5xP01}.
+  SchedClasses[4].NumMicroOps = 5;
+  SchedClasses[4].WriteProcResIdx = 8;
+  SchedClasses[4].NumWriteProcResEntries = 3;
+  SchedClasses[4].WriteLatencyIdx = 1;
+  SchedClasses[4].NumWriteLatencyEntries = 1;
   SchedModel.SchedClassTable = SchedClasses.data();
   SchedModel.NumSchedClasses = SchedClasses.size();
   SchedModel.InstrItineraries = nullptr;
   Context.SchedModel = &SchedModel;
 
   // Setup SubtargetInfo
-  std::array<llvm::MCWriteProcResEntry, 8> WriteProcResEntries;
+  std::array<llvm::MCWriteProcResEntry, 11> WriteProcResEntries;
   // {1xP0, 1xP01}
   WriteProcResEntries[1].ProcResourceIdx = 1;
   WriteProcResEntries[1].Cycles = 1;
@@ -100,6 +113,13 @@ TEST(ContextTest, Decomposition) {
   WriteProcResEntries[6].Cycles = 1;
   WriteProcResEntries[7].ProcResourceIdx = 3;
   WriteProcResEntries[7].Cycles = 3;
+  // {2xP0, 3xP1, 5xP01}
+  WriteProcResEntries[8].ProcResourceIdx = 1;
+  WriteProcResEntries[8].Cycles = 2;
+  WriteProcResEntries[9].ProcResourceIdx = 2;
+  WriteProcResEntries[9].Cycles = 3;
+  WriteProcResEntries[10].ProcResourceIdx = 3;
+  WriteProcResEntries[10].Cycles = 5;
   // Setup write latency tables.
   std::array<llvm::MCWriteLatencyEntry, 2> WriteLatencyEntries;
   // Latency 4 on first def.
@@ -116,6 +136,7 @@ TEST(ContextTest, Decomposition) {
   ASSERT_EQ(Context.GetSchedClassForInstruction(1), &SchedClasses[1]);
   ASSERT_EQ(Context.GetSchedClassForInstruction(2), &SchedClasses[2]);
   ASSERT_EQ(Context.GetSchedClassForInstruction(3), &SchedClasses[3]);
+  ASSERT_EQ(Context.GetSchedClassForInstruction(4), &SchedClasses[4]);
 
   const auto ProcResIdxIs = [](const unsigned ProcResIdx) {
     return Field(&InstrUopDecomposition::Uop::ProcResIdx, Eq(ProcResIdx));
@@ -140,6 +161,16 @@ TEST(ContextTest, Decomposition) {
                 ElementsAre(ProcResIdxIs(1), ProcResIdxIs(1), ProcResIdxIs(2)));
     ASSERT_THAT(Decomposition.Uops,
                 ElementsAre(StartEndCyclesAre(0, 2), StartEndCyclesAre(2, 3),
+                            StartEndCyclesAre(3, 4)));
+  }
+  {
+    const auto& Decomposition = Context.GetInstructionDecomposition(4);
+    ASSERT_THAT(Decomposition.Uops,
+                ElementsAre(ProcResIdxIs(1), ProcResIdxIs(1), ProcResIdxIs(2),
+                            ProcResIdxIs(2), ProcResIdxIs(2)));
+    ASSERT_THAT(Decomposition.Uops,
+                ElementsAre(StartEndCyclesAre(0, 1), StartEndCyclesAre(1, 2),
+                            StartEndCyclesAre(2, 3), StartEndCyclesAre(3, 4),
                             StartEndCyclesAre(3, 4)));
   }
 }

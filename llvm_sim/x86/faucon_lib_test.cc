@@ -71,6 +71,23 @@ TEST_F(FauconUtilTest, ParseAsmCodeFromFile) {
   EXPECT_EQ(Instructions.size(), 7);
 }
 
+TEST_F(FauconUtilTest, ParseAsmCodeFromString) {
+  constexpr char AsmCode[] = R"asm(
+      start:
+        add eax, ecx
+        mov r8d, ecx
+        imul r8d, r8d
+        add edx, r8d
+        add ecx, 0x1
+        cmp edi, ecx
+        jne start
+      )asm";
+  const auto Context = GlobalContext::Create("x86_64", "haswell");
+  const auto Instructions =
+      ParseAsmCodeFromString(*Context, AsmCode, llvm::InlineAsm::AD_Intel);
+  EXPECT_EQ(Instructions.size(), 7);
+}
+
 TEST(TextTableTest, NoHeader) {
   TextTable Table(2, 3, false);
   Table.SetValue(0, 1, "a");
@@ -135,7 +152,7 @@ class TestMCInstPrinter : public llvm::MCInstPrinter {
   void printInst(const llvm::MCInst *MI, llvm::raw_ostream &OS,
                  llvm::StringRef Annot,
                  const llvm::MCSubtargetInfo &STI) override {
-    OS << "inst" << MI->getOpcode();
+    OS << "instruction";
   }
 
   void printRegName(llvm::raw_ostream &OS, unsigned RegNo) const {
@@ -198,7 +215,7 @@ TEST_F(FauconUtilTest, PrintTrace) {
   // clang-format off
   EXPECT_EQ(Out,
             "|it|in|Disassembly                                       :012345678901234567890\n"  // NOLINT
-            "| 0| 0|inst257                                           :          |         |\n"  // NOLINT
+            "| 0| 0|instruction                                       :          |         |\n"  // NOLINT
             "|  |  |      uop 0                                       :   A-deeew-R        |\n"  // NOLINT
            );
   // clang-format on

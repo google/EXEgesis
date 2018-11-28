@@ -107,5 +107,55 @@ TEST(ToPastableHexStringTest, FromArray) {
   EXPECT_EQ(kExpectedString, ToPastableHexString(kBinaryData));
 }
 
+TEST(RemoveAllChars, Simple) {
+  std::string text = "abcdef";
+  RemoveAllChars(&text, "bdf");
+  EXPECT_EQ("ace", text);
+}
+
+TEST(RemoveAllChars, RemoveDuplicateChars) {
+  std::string text = "abcdef";
+  RemoveAllChars(&text, "aaa");
+  EXPECT_EQ("bcdef", text);
+}
+
+TEST(RemoveAllChars, RemoveDuplicateCharInText) {
+  std::string text = "abcabcabc";
+  RemoveAllChars(&text, "ba");
+  EXPECT_EQ("ccc", text);
+}
+
+TEST(RemoveAllChars, RemoveNonExistent) {
+  std::string text = "abc";
+  RemoveAllChars(&text, "d");
+  EXPECT_EQ("abc", text);
+}
+
+TEST(RemoveAllChars, RemoveAll) {
+  std::string text = "abcabc";
+  RemoveAllChars(&text, "abc");
+  EXPECT_EQ("", text);
+}
+
+TEST(RemoveAllChars, RemoveDifferentCase) {
+  std::string text = "abc";
+  RemoveAllChars(&text, "A");
+  EXPECT_EQ("abc", text);
+}
+
+TEST(RemoveWhiteSpaceLF, RemoveWindowNL) {
+  // text contains CR+LF
+  std::string text = "abc\r\nxyz";
+  RemoveSpaceAndLF(&text);
+  EXPECT_EQ("abcxyz", text);
+}
+
+TEST(RemoveWhiteSpaceLF, RemoveLF) {
+  // text contains CR+LF
+  std::string text = "abc\nxyz";
+  RemoveSpaceAndLF(&text);
+  EXPECT_EQ("abcxyz", text);
+}
+
 }  // namespace
 }  // namespace exegesis

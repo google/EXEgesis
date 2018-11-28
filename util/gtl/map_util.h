@@ -16,9 +16,12 @@
 #define UTIL_GTL_MAP_UTIL_H_
 
 #include "glog/logging.h"
+// Required for GOOGLE_CHECK.
+#include "src/google/protobuf/stubs/logging.h"
 #include "src/google/protobuf/stubs/map_util.h"
 
 namespace exegesis {
+namespace gtl {
 
 using ::google::protobuf::ContainsKey;
 using ::google::protobuf::FindCopy;
@@ -40,6 +43,7 @@ const Value& FindOrDie(const Collection& collection, const Key& key) {
   return it->second;
 }
 
+}  // namespace gtl
 }  // namespace exegesis
 
 #endif  // UTIL_GTL_MAP_UTIL_H_

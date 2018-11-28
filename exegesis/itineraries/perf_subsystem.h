@@ -66,7 +66,7 @@ class PerfResult {
       : timings_(std::move(timings)) {}
 
   bool HasTiming(const std::string& name) const {
-    return ContainsKey(timings_, name);
+    return gtl::ContainsKey(timings_, name);
   }
 
   // Returns the scaled value for the given counter name.

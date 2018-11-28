@@ -29,6 +29,14 @@ constexpr const char kUnknown[] = "<UNKNOWN>";
 bool ParseVendorSyntax(std::string content,
                        InstructionFormat* instruction_format);
 
+// This function is used to create a stable id from instruction name found:
+// - at the top of a page describing a new instruction
+// - in the footer of a page for a particular instruction
+// It does so by removing some characters and imposing a limit on the text size.
+// Limiting the size is necessary because when text is too long it gets
+// truncated in different ways.
+std::string NormalizeName(std::string text);
+
 }  // namespace pdf
 }  // namespace x86
 }  // namespace exegesis

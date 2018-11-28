@@ -12,20 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef THIRD_PARTY_EXEGESIS_EXEGESIS_X86_INSTRUCTION_SET_UTILS_H_
-#define THIRD_PARTY_EXEGESIS_EXEGESIS_X86_INSTRUCTION_SET_UTILS_H_
+#ifndef THIRD_PARTY_EXEGESIS_BASE_CASTS_H_
+#define THIRD_PARTY_EXEGESIS_BASE_CASTS_H_
 
-#include <string>
-
-#include "absl/container/flat_hash_set.h"
+#include "src/google/protobuf/stubs/casts.h"
 
 namespace exegesis {
-namespace x86 {
 
-// Returns the set of x87 FPU instruction mnemonics.
-const absl::flat_hash_set<std::string>& GetX87FpuInstructionMnemonics();
+using ::google::protobuf::down_cast;
 
-}  // namespace x86
 }  // namespace exegesis
 
-#endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_X86_INSTRUCTION_SET_UTILS_H_
+#endif  // THIRD_PARTY_EXEGESIS_BASE_CASTS_H_

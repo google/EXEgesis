@@ -19,6 +19,7 @@
 #include <string>
 
 #include "absl/strings/ascii.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 
@@ -31,6 +32,19 @@ int StringCaseCompare(const std::string& left, const std::string& right) {
   return strcasecmp(left.c_str(), right.c_str());
 }
 
+const std::string& GetLexicographicallyFirstMnemonicOrDie(
+    const InstructionProto& instruction) {
+  CHECK_GT(instruction.vendor_syntax_size(), 0);
+  const std::string* first_mnemonic = &instruction.vendor_syntax(0).mnemonic();
+  for (int i = 1; i < instruction.vendor_syntax_size(); ++i) {
+    const std::string& mnemonic = instruction.vendor_syntax(i).mnemonic();
+    if (StringCaseCompare(mnemonic, *first_mnemonic) < 0) {
+      first_mnemonic = &mnemonic;
+    }
+  }
+  return *first_mnemonic;
+}
+
 }  // namespace
 
 void RestrictToMnemonicRange(const std::string& first_mnemonic,
@@ -39,7 +53,8 @@ void RestrictToMnemonicRange(const std::string& first_mnemonic,
   RemoveIf(
       instruction_set->mutable_instructions(),
       [first_mnemonic, last_mnemonic](const InstructionProto* instruction) {
-        const std::string& mnemonic = instruction->vendor_syntax().mnemonic();
+        const std::string& mnemonic =
+            GetLexicographicallyFirstMnemonicOrDie(*instruction);
         return StringCaseCompare(mnemonic, first_mnemonic) < 0 ||
                StringCaseCompare(mnemonic, last_mnemonic) > 0;
       });

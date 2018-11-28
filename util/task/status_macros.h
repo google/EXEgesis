@@ -17,6 +17,9 @@
 
 // Since this header concerns only macros, we do not need any namespace
 // declarations here.
+#define PROTOBUF_PREDICT_FALSE(x) (x)
+#define PROTOBUF_PREDICT_TRUE(x) (x)
+
 #include "src/google/protobuf/stubs/status_macros.h"
 
 #endif  // UTIL_TASK_STATUS_MACROS_H_

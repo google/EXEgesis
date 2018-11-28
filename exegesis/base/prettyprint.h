@@ -19,49 +19,56 @@
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
+#include "src/google/protobuf/repeated_field.h"
 
 namespace exegesis {
 
-class PrettyPrintOptions {
+struct PrettyPrintOptions {
  public:
   PrettyPrintOptions() {}
 
   // If true, print CPU models details. Else just print the model
   // identification information.
   PrettyPrintOptions& WithCpuDetails(bool v) {
-    cpu_details_ = v;
+    cpu_details = v;
     return *this;
   }
 
   // If true, print Intel and AT&T syntaxes.
   PrettyPrintOptions& WithAlternativeSyntax(bool v) {
-    alternative_syntax_ = v;
+    alternative_syntax = v;
     return *this;
   }
 
   // If true, prints itineraries on a single line instead of one per line.
   PrettyPrintOptions& WithItinerariesOnOneLine(bool v) {
-    itineraries_on_one_line_ = v;
+    itineraries_on_one_line = v;
     return *this;
   }
 
   // If false, do not print micro-op latencies.
   PrettyPrintOptions& WithMicroOpLatencies(bool v) {
-    microop_latencies_ = v;
+    microop_latencies = v;
     return *this;
   }
 
   // If false, do not print micro-op dependencies.
   PrettyPrintOptions& WithMicroOpDependencies(bool v) {
-    microop_dependencies_ = v;
+    microop_dependencies = v;
     return *this;
   }
 
-  bool cpu_details_ = false;
-  bool alternative_syntax_ = false;
-  bool itineraries_on_one_line_ = false;
-  bool microop_latencies_ = true;
-  bool microop_dependencies_ = true;
+  PrettyPrintOptions& WithVendorSyntaxesOnOneLine(bool v) {
+    vendor_syntaxes_on_one_line = v;
+    return *this;
+  }
+
+  bool vendor_syntaxes_on_one_line = false;
+  bool cpu_details = false;
+  bool alternative_syntax = false;
+  bool itineraries_on_one_line = false;
+  bool microop_latencies = true;
+  bool microop_dependencies = true;
 };
 
 std::string PrettyPrintInstruction(
@@ -79,8 +86,11 @@ std::string PrettyPrintCpuInfo(
 std::string PrettyPrintMicroArchitecture(
     const MicroArchitecture& microarchitecture,
     const PrettyPrintOptions& options = PrettyPrintOptions());
-std::string PrettyPrintSyntax(
-    const InstructionFormat& syntax,
+
+std::string PrettyPrintSyntax(const InstructionFormat& syntax);
+
+std::string PrettyPrintSyntaxes(
+    const ::google::protobuf::RepeatedPtrField<InstructionFormat>& syntaxes,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
 std::string PrettyPrintMicroOperation(

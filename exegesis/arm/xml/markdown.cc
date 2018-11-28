@@ -17,8 +17,8 @@
 #include <algorithm>
 #include <stack>
 #include <string>
-#include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/util/xml/xml_util.h"
 #include "re2/re2.h"
@@ -57,7 +57,7 @@ enum class TagType {
 // Returns the canonical type of a given tag.
 TagType GetType(const XMLElement& element) {
   static const auto* const kTagTypes =
-      new std::unordered_map<std::string, TagType>({
+      new absl::flat_hash_map<std::string, TagType>({
           {"arch_variant", TagType::ARCHVARIANT},
           {"arm-defined-word", TagType::CODE},
           {"binarynumber", TagType::CODE},
@@ -77,7 +77,8 @@ TagType GetType(const XMLElement& element) {
           {"value", TagType::CODE},
           {"xref", TagType::LINK},
       });
-  return FindWithDefault(*kTagTypes, element.Name(), TagType::UNKNOWN);
+  return ::exegesis::gtl::FindWithDefault(*kTagTypes, element.Name(),
+                                          TagType::UNKNOWN);
 }
 
 // TinyXML Visitor to parse simple HTML as Markdown.

@@ -16,10 +16,10 @@
 #define EXEGESIS_X86_ARCHITECTURE_H_
 
 #include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "exegesis/base/architecture.h"
 #include "exegesis/base/opcode.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -95,7 +95,7 @@ class X86Architecture : public Architecture {
   // "packed" towards the lower bytes, so the prefixes of 0x0F01D5 are 0x0F01
   // and 0x0F.
   bool IsLegacyOpcodePrefix(Opcode prefix) const {
-    return ContainsKey(legacy_opcode_prefixes_, prefix);
+    return legacy_opcode_prefixes_.contains(prefix);
   }
 
  private:
@@ -114,12 +114,12 @@ class X86Architecture : public Architecture {
   // with REX prefix and a version without it).
   // TODO(ondrasej): We should use a version of vector that does not
   // heap-allocate small vectors.
-  std::unordered_map<Opcode, std::vector<InstructionIndex>, Opcode::Hasher>
+  absl::flat_hash_map<Opcode, std::vector<InstructionIndex>, Opcode::Hasher>
       instruction_index_by_opcode_;
 
   // The set of proper prefixes of opcodes of legacy instructions in the
   // database.
-  std::unordered_set<Opcode, Opcode::Hasher> legacy_opcode_prefixes_;
+  absl::flat_hash_set<Opcode, Opcode::Hasher> legacy_opcode_prefixes_;
 };
 
 }  // namespace x86

@@ -15,8 +15,10 @@
 #include "exegesis/x86/cleanup_instruction_set_checks.h"
 
 #include <cstdint>
-#include <unordered_set>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
@@ -25,6 +27,7 @@
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/bits.h"
 #include "exegesis/util/category_util.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/status_util.h"
 #include "exegesis/x86/instruction_set_utils.h"
 #include "glog/logging.h"
@@ -80,11 +83,12 @@ uint8_t UsesDirectAddressingInModRm(const InstructionProto& instruction) {
       << "Instruction does not have ModR/M byte " << instruction.DebugString();
 
   // Check if instruction uses DIRECT_ADDRESSING.
-  for (const InstructionOperand& operand :
-       instruction.vendor_syntax().operands()) {
-    if (operand.encoding() == InstructionOperand::MODRM_RM_ENCODING &&
-        operand.addressing_mode() == InstructionOperand::DIRECT_ADDRESSING) {
-      return true;
+  for (const InstructionFormat& vendor_syntax : instruction.vendor_syntax()) {
+    for (const InstructionOperand& operand : vendor_syntax.operands()) {
+      if (operand.encoding() == InstructionOperand::MODRM_RM_ENCODING &&
+          operand.addressing_mode() == InstructionOperand::DIRECT_ADDRESSING) {
+        return true;
+      }
     }
   }
 
@@ -131,11 +135,12 @@ bool IsSpecialCaseOfInstruction(const InstructionProto& general,
 Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr uint32_t kOpcodeUpperBytesMask = 0xffffff00;
-  const std::unordered_set<uint32_t> kAllowedUpperBytes = {0, 0x0f00, 0x0f3800,
-                                                           0x0f3a00};
+  const absl::flat_hash_set<uint32_t> kAllowedUpperBytes = {0, 0x0f00, 0x0f3800,
+                                                            0x0f3a00};
   // Also check that there are no opcodes that would be a prefix of a longer
   // multi-byte opcode.
-  const std::unordered_set<uint32_t> kForbiddenOpcodes = {0x0f, 0x0f38, 0x0f3a};
+  const absl::flat_hash_set<uint32_t> kForbiddenOpcodes = {0x0f, 0x0f38,
+                                                           0x0f3a};
   Status status = OkStatus();
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     if (!instruction.has_x86_encoding_specification()) {
@@ -148,13 +153,13 @@ Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
         instruction.x86_encoding_specification();
     const uint32_t opcode = encoding_specification.opcode();
     const uint32_t opcode_upper_bytes = opcode & kOpcodeUpperBytesMask;
-    if (!ContainsKey(kAllowedUpperBytes, opcode_upper_bytes)) {
+    if (!kAllowedUpperBytes.contains(opcode_upper_bytes)) {
       LogErrorAndUpdateStatus(
           StringPrintf("Invalid opcode upper bytes: %x", opcode_upper_bytes),
           instruction, &status);
       continue;
     }
-    if (ContainsKey(kForbiddenOpcodes, opcode)) {
+    if (kForbiddenOpcodes.contains(opcode)) {
       LogErrorAndUpdateStatus(StringPrintf("Invalid opcode: %x", opcode),
                               instruction, &status);
       continue;
@@ -186,16 +191,21 @@ bool OperandNameAndTagsAreValid(const InstructionOperand& operand) {
 // Returns true if the instruction is one of the XSAVE or XRSTOR instructions.
 // The instructions are identified by their mnemonics.
 bool IsXsaveOrXrstor(const InstructionProto& instruction) {
-  const std::string& mnemonic = instruction.vendor_syntax().mnemonic();
-  return absl::StartsWith(mnemonic, "XSAVE") ||
-         absl::StartsWith(mnemonic, "XRSTOR");
+  for (const InstructionFormat& vendor_syntax : instruction.vendor_syntax()) {
+    const std::string& mnemonic = vendor_syntax.mnemonic();
+    if (absl::StartsWith(mnemonic, "XSAVE") ||
+        absl::StartsWith(mnemonic, "XRSTOR")) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Returns true if the instruction is an x87 FPU instruction. The FPU
 // instructions are identified by their mnemonics.
 bool IsX87FpuInstruction(const InstructionProto& instruction) {
-  return ContainsKey(GetX87FpuInstructionMnemonics(),
-                     instruction.vendor_syntax().mnemonic());
+  return ContainsVendorSyntaxMnemonic(GetX87FpuInstructionMnemonics(),
+                                      instruction);
 }
 
 Status CheckOperands(const InstructionProto& instruction,
@@ -311,11 +321,13 @@ Status CheckOperandInfo(InstructionSetProto* instruction_set) {
   constexpr char kVendorSyntax[] = "InstructionProto.vendor_syntax";
   Status status;
   for (const InstructionProto& instruction : instruction_set->instructions()) {
-    // TODO(ondrasej): As of 2017-11-02, we fill the detailed fields only in
-    // vendor_syntax. We should extend these checks to other fields as well once
-    // we start populating them.
-    UpdateStatus(&status, CheckOperands(instruction, kVendorSyntax,
-                                        instruction.vendor_syntax()));
+    for (const InstructionFormat& vendor_syntax : instruction.vendor_syntax()) {
+      // TODO(ondrasej): As of 2017-11-02, we fill the detailed fields only in
+      // vendor_syntax. We should extend these checks to other fields as well
+      // once we start populating them.
+      UpdateStatus(&status,
+                   CheckOperands(instruction, kVendorSyntax, vendor_syntax));
+    }
   }
   return status;
 }
@@ -323,7 +335,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(CheckOperandInfo, 10000);
 
 Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  std::unordered_map<uint32_t, std::vector<const InstructionProto*>>
+  absl::node_hash_map<uint32_t, std::vector<const InstructionProto*>>
       instructions_by_opcode;
   Status status = OkStatus();
 
@@ -346,7 +358,7 @@ Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
     const uint32_t opcode = encoding_specification.opcode();
     if (opcode <= 0xff) continue;
     const std::vector<const InstructionProto*>* const candidates =
-        FindOrNull(instructions_by_opcode, opcode >> 8);
+        gtl::FindOrNull(instructions_by_opcode, opcode >> 8);
     if (candidates != nullptr) {
       // Test coverage against all instructions whose opcode is a prefix of this
       // instruciton.
@@ -364,6 +376,19 @@ Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   return status;
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(CheckSpecialCaseInstructions, 10000);
+
+Status CheckHasVendorSyntax(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  Status status;
+  for (const InstructionProto& instruction : instruction_set->instructions()) {
+    if (instruction.vendor_syntax_size() == 0) {
+      LogErrorAndUpdateStatus("Instruction does not have vendor syntax",
+                              instruction, &status);
+    }
+  }
+  return status;
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(CheckHasVendorSyntax, 10000);
 
 }  // namespace x86
 }  // namespace exegesis

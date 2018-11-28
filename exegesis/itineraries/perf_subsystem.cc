@@ -24,6 +24,7 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/synchronization/mutex.h"
 #include "base/stringprintf.h"
 #include "exegesis/base/host_cpu.h"
 #include "exegesis/base/microarchitecture.h"
@@ -44,7 +45,7 @@ double PerfResult::Scale(const TimingInfo& timing) const {
 }
 
 double PerfResult::GetScaledOrDie(const std::string& name) const {
-  return Scale(FindOrDie(timings_, name));
+  return Scale(gtl::FindOrDie(timings_, name));
 }
 
 std::string PerfResult::ToString() const {
@@ -196,12 +197,13 @@ PerfResult PerfSubsystem::ReadCounters() {
   // counters with the call to resize().
   std::map<std::string, TimingInfo> timings;
   for (int i = 0; i < num_fds; ++i) {
-    InsertOrDie(&timings, event_names_[i], timers_[i]);
+    gtl::InsertOrDie(&timings, event_names_[i], timers_[i]);
   }
   return PerfResult(std::move(timings));
 }
 
-absl::Mutex PerfSubsystem::ScopedLibPfmInitialization::  // NOLINT
+ABSL_CONST_INIT absl::Mutex
+    PerfSubsystem::ScopedLibPfmInitialization::  // NOLINT
     refcount_mutex_;
 int PerfSubsystem::ScopedLibPfmInitialization::refcount_ = 0;
 

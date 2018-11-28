@@ -17,15 +17,53 @@
 #include <utility>
 #include <vector>
 
+#include "base/casts.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 
 namespace exegesis {
+namespace {
+
+// This printer ensures instruction_group_index is printed even if it has value
+// of 0.
+class InstructionGroupIndexPrinter
+    : public google::protobuf::TextFormat::FastFieldValuePrinter {
+ public:
+  ~InstructionGroupIndexPrinter() override {}
+
+  void PrintMessageEnd(const google::protobuf::Message& message,
+                       int field_index, int field_count, bool single_line_mode,
+                       google::protobuf::TextFormat::BaseTextGenerator*
+                           generator) const override {
+    if (message.GetDescriptor() == InstructionProto::descriptor() &&
+        down_cast<const InstructionProto&>(message).instruction_group_index() ==
+            0) {
+      generator->Indent();
+      generator->PrintString("instruction_group_index: 0\n");
+      generator->Outdent();
+    }
+
+    google::protobuf::TextFormat::FastFieldValuePrinter::PrintMessageEnd(
+        message, field_index, field_count, single_line_mode, generator);
+  }
+};
+
+}  // namespace
 
 constexpr Architecture::InstructionIndex Architecture::kInvalidInstruction;
 constexpr Architecture::MicroArchitectureIndex
     Architecture::kInvalidMicroArchitecture;
+
+std::unique_ptr<google::protobuf::TextFormat::Printer>
+GetArchitectureProtoTextPrinter() {
+  std::unique_ptr<google::protobuf::TextFormat::Printer> printer =
+      absl::make_unique<google::protobuf::TextFormat::Printer>();
+  printer->SetExpandAny(true);
+  printer->SetPrintMessageFieldsInIndexOrder(true);
+  printer->SetDefaultFieldValuePrinter(new InstructionGroupIndexPrinter());
+  return printer;
+}
 
 Architecture::Architecture(
     std::shared_ptr<const ArchitectureProto> architecture_proto)
@@ -56,21 +94,24 @@ Architecture::Architecture(
 
 Architecture::MicroArchitectureIndex Architecture::GetMicroArchitectureIndex(
     const std::string& microarchitecture_id) const {
-  return FindWithDefault(microarchitectures_by_id_, microarchitecture_id,
-                         kInvalidMicroArchitecture);
+  return ::exegesis::gtl::FindWithDefault(microarchitectures_by_id_,
+                                          microarchitecture_id,
+                                          kInvalidMicroArchitecture);
 }
 
 std::vector<Architecture::InstructionIndex>
 Architecture::GetInstructionsByLLVMMnemonic(
     const std::string& llvm_mnemonic) const {
-  return FindWithDefault(llvm_to_instruction_index_, llvm_mnemonic, {});
+  return ::exegesis::gtl::FindWithDefault(llvm_to_instruction_index_,
+                                          llvm_mnemonic, {});
 }
 
 std::vector<Architecture::InstructionIndex>
 Architecture::GetInstructionIndicesByRawEncodingSpecification(
     const std::string& encoding_specification) const {
-  return FindWithDefault(raw_encoding_specification_to_instruction_index_,
-                         encoding_specification, {});
+  return ::exegesis::gtl::FindWithDefault(
+      raw_encoding_specification_to_instruction_index_, encoding_specification,
+      {});
 }
 
 }  // namespace exegesis

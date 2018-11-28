@@ -26,12 +26,14 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/util/bits.h"
 #include "exegesis/util/category_util.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/x86/encoding_specification.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
@@ -352,7 +354,7 @@ Status ValidateVexRegisterOperandBits(
   // for encoding registers, while the VEX prefix uses only 4 bits, thus the
   // value in this case is different for each prefix.
   const bool operand_is_used =
-      vex_prefix_specification.vex_operand_usage() != NO_VEX_OPERAND_USAGE;
+      vex_prefix_specification.vex_operand_usage() != VEX_OPERAND_IS_NOT_USED;
   const int max_value =
       vex_prefix_specification.prefix_type() == VEX_PREFIX ? 15 : 31;
   const int min_value = operand_is_used ? 0 : max_value;
@@ -468,16 +470,28 @@ const uint32_t k8BitDisplacement = 127;
 // The value of the 32-bit displacement.
 const uint32_t k32BitDisplacement = 0x12345678;
 
-// Helper functions for deciding if 'instruction' uses a certain encoding for
-// one of its operands. The first function is a generic version, the following
-// three check for the presence of an operand in a concrete location.
-inline bool HasOperandWithEncoding(const InstructionProto& instruction,
-                                   InstructionOperand::Encoding encoding) {
-  const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
-  return ::absl::c_any_of(vendor_syntax.operands(),
-                          [encoding](const InstructionOperand& operand) {
-                            return operand.encoding() == encoding;
-                          });
+// Finds an operand of the instruction that has the given encoding. Returns
+// nullptr if no such operand is found.
+const InstructionOperand* GetOperandWithEncoding(
+    const InstructionProto& instruction,
+    InstructionOperand::Encoding encoding) {
+  for (const InstructionFormat& vendor_syntax : instruction.vendor_syntax()) {
+    const auto operand =
+        absl::c_find_if(vendor_syntax.operands(),
+                        [encoding](const InstructionOperand& operand) {
+                          return operand.encoding() == encoding;
+                        });
+    if (operand != vendor_syntax.operands().end()) return &(*operand);
+  }
+  return nullptr;
+}
+
+// The following functions decide whether 'instruction' uses a certain encoding
+// for one of its operands. The first function is a generic version, the
+// following three check for the presence of an operand in a concrete location.
+bool HasOperandWithEncoding(const InstructionProto& instruction,
+                            InstructionOperand::Encoding encoding) {
+  return GetOperandWithEncoding(instruction, encoding) != nullptr;
 }
 
 bool HasModRmRmOperand(const InstructionProto& instruction) {
@@ -596,13 +610,9 @@ std::vector<DecodedInstruction> GenerateModRMEncodingExamples(
     const InstructionProto& instruction,
     DecodedInstruction decoded_instruction_base) {
   // Find the ModR/M operand, to determine which addressing modes are allowed.
-  const auto modrm_operand_it = ::absl::c_find_if(
-      instruction.vendor_syntax().operands(),
-      [](const InstructionOperand& operand) {
-        return operand.encoding() == InstructionOperand::MODRM_RM_ENCODING;
-      });
-  CHECK(modrm_operand_it != instruction.vendor_syntax().operands().end());
-  const InstructionOperand& modrm_operand = *modrm_operand_it;
+  const InstructionOperand* const modrm_operand = GetOperandWithEncoding(
+      instruction, InstructionOperand::MODRM_RM_ENCODING);
+  CHECK(modrm_operand != nullptr);
   constexpr ModRm::AddressingMode kAllowedAddressingModes[] = {
       ModRm::DIRECT, ModRm::INDIRECT_WITH_8_BIT_DISPLACEMENT,
       ModRm::INDIRECT_WITH_32_BIT_DISPLACEMENT, ModRm::INDIRECT};
@@ -613,7 +623,7 @@ std::vector<DecodedInstruction> GenerateModRMEncodingExamples(
   // Get the list of ModR/M addressing modes from the generic categories.
   std::vector<DecodedInstruction> examples;
   std::vector<ModRm::AddressingMode> addressing_modes;
-  switch (modrm_operand.addressing_mode()) {
+  switch (modrm_operand->addressing_mode()) {
     case InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS:
       addressing_modes.assign(std::begin(kAllowedAddressingModes),
                               std::end(kAllowedAddressingModes));
@@ -634,7 +644,7 @@ std::vector<DecodedInstruction> GenerateModRMEncodingExamples(
     default:
       LOG(FATAL) << "Unexpected addressing mode: "
                  << InstructionOperand::AddressingMode_Name(
-                        modrm_operand.addressing_mode());
+                        modrm_operand->addressing_mode());
   }
 
   // Generate examples for all selected addressing modes.
@@ -1237,15 +1247,15 @@ const RegisterIndex kMaxX86RegisterIndex(31);
 
 void AddRegisterBasedOnIndex(
     RegisterIndex index, absl::string_view name_base,
-    std::unordered_map<std::string, RegisterIndex>* register_list) {
+    absl::flat_hash_map<std::string, RegisterIndex>* register_list) {
   CHECK(register_list != nullptr);
   const std::string register_name = absl::StrCat(name_base, index.value());
   (*register_list)[register_name] = index;
 }
 
-std::unordered_map<std::string, RegisterIndex>* MakeRegisterList() {
+absl::flat_hash_map<std::string, RegisterIndex>* MakeRegisterList() {
   auto register_list =
-      absl::make_unique<std::unordered_map<std::string, RegisterIndex>>();
+      absl::make_unique<absl::flat_hash_map<std::string, RegisterIndex>>();
   // Add the regsiters with names based on their index.
   for (RegisterIndex current_register_index(0);
        current_register_index < kMaxX86RegisterIndex;
@@ -1277,14 +1287,15 @@ std::unordered_map<std::string, RegisterIndex>* MakeRegisterList() {
   return register_list.release();
 }
 
-std::unordered_map<std::string, RegisterIndex>* const kX86Registers =
+absl::flat_hash_map<std::string, RegisterIndex>* const kX86Registers =
     MakeRegisterList();
 
 }  // namespace
 
 RegisterIndex GetRegisterIndex(std::string register_name) {
   absl::AsciiStrToLower(&register_name);
-  return FindWithDefault(*kX86Registers, register_name, kInvalidRegisterIndex);
+  return ::exegesis::gtl::FindWithDefault(*kX86Registers, register_name,
+                                          kInvalidRegisterIndex);
 }
 
 namespace {

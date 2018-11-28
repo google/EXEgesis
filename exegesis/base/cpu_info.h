@@ -16,8 +16,8 @@
 #define EXEGESIS_BASE_CPU_INFO_H_
 
 #include <string>
-#include <unordered_set>
 
+#include "absl/container/flat_hash_set.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 
 namespace exegesis {
@@ -39,7 +39,7 @@ class CpuInfo {
   // exegesis.InstructionProto.feature_name for the syntax.
   bool SupportsFeature(const std::string& feature_name) const;
 
-  const std::unordered_set<std::string>& supported_features() const {
+  const absl::flat_hash_set<std::string>& supported_features() const {
     return indexed_features_;
   }
 
@@ -62,7 +62,7 @@ class CpuInfo {
   bool IsFeatureSet(const std::string& name, bool* value) const;
 
   const CpuInfoProto proto_;
-  const std::unordered_set<std::string> indexed_features_;
+  const absl::flat_hash_set<std::string> indexed_features_;
 };
 
 }  // namespace exegesis

@@ -15,26 +15,31 @@
 #include "exegesis/x86/cleanup_instruction_set_removals.h"
 
 #include <algorithm>
+
+#include <map>
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
+namespace {
 
 using ::absl::c_linear_search;
 using ::exegesis::util::InvalidArgumentError;
@@ -43,9 +48,16 @@ using ::exegesis::util::Status;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::util::MessageDifferencer;
 
+std::string MakeKey(absl::string_view group_name,
+                    absl::string_view short_desc) {
+  return absl::StrCat(group_name, "-", short_desc);
+}
+
+}  // namespace
+
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  std::unordered_set<std::string> visited_instructions;
+  absl::flat_hash_set<std::string> visited_instructions;
 
   // A function that keeps track of instruction it has already encountered.
   // Returns true if an instruction was already seen, false otherwise.
@@ -64,6 +76,85 @@ Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructions, 4000);
+
+Status RemoveEmptyInstructionGroups(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+
+  // Map of instruction group name+short_description to the group proto and a
+  // vector of pointers to the instructions in that group.
+  //
+  // We have to use both name and short_description because there are some
+  // groups with the same name, eg
+  // "MOV—Move" vs "MOV—Move to/from Control Registers".
+  std::map<std::string,
+           std::pair<InstructionGroupProto, std::vector<InstructionProto*>>>
+      group_to_instructions;
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    const auto& group = instruction_set->instruction_groups(
+        instruction.instruction_group_index());
+    const std::string key = MakeKey(group.name(), group.short_description());
+    auto& pair = group_to_instructions[key];
+    if (pair.second.empty()) {
+      // We only set the group proto once, to avoid too many copying.
+      pair.first = group;
+    } else {
+      // Check that this instruction has the same instruction_group_index as the
+      // previous one.
+      CHECK_EQ(pair.second.back()->instruction_group_index(),
+               instruction.instruction_group_index())
+          << "Inconsistent group index for instruction "
+          << instruction.feature_name() << ", of group " << key;
+    }
+    pair.second.push_back(&instruction);
+  }
+
+  // Delete all groups and only add back groups that have instructions.
+  instruction_set->clear_instruction_groups();
+  int group_idx = 0;
+  for (auto& it : group_to_instructions) {
+    *instruction_set->add_instruction_groups() = std::move(it.second.first);
+    for (auto* instruction_ptr : it.second.second) {
+      instruction_ptr->set_instruction_group_index(group_idx);
+    }
+    ++group_idx;
+  }
+
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveEmptyInstructionGroups, 8000);
+
+Status RemoveLegacyVersionsOfInstructions(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const absl::flat_hash_set<std::string> kEncodingSpecifications = {"C9",
+                                                                    "E3 cb"};
+  absl::flat_hash_set<std::string> found_legacy_version;
+  absl::flat_hash_set<std::string> found_64bit_version;
+  RepeatedPtrField<InstructionProto> instructions =
+      std::move(*instruction_set->mutable_instructions());
+  for (InstructionProto& instruction : instructions) {
+    if (!kEncodingSpecifications.contains(
+            instruction.raw_encoding_specification())) {
+      *instruction_set->add_instructions() = std::move(instruction);
+    } else if (!instruction.legacy_instruction()) {
+      // The 64-bit version has 'legacy_version' set to false.
+      found_64bit_version.insert(instruction.raw_encoding_specification());
+      *instruction_set->add_instructions() = std::move(instruction);
+    } else {
+      // Legacy (16- or 32-bit) version of the instruction.
+      found_legacy_version.insert(instruction.raw_encoding_specification());
+    }
+  }
+  for (const std::string& encoding : kEncodingSpecifications) {
+    if (found_legacy_version.contains(encoding) &&
+        !found_64bit_version.contains(encoding)) {
+      return InvalidArgumentError(absl::StrCat(
+          "The 64-bit version of the instruction was not found: ", encoding));
+    }
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveLegacyVersionsOfInstructions, 0);
 
 Status RemoveInstructionsWaitingForFpuSync(
     InstructionSetProto* instruction_set) {
@@ -111,7 +202,8 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   const auto uses_rep_or_repne = [](const InstructionProto& instruction) {
-    return absl::StartsWith(instruction.vendor_syntax().mnemonic(), kRepPrefix);
+    return absl::StartsWith(GetUniqueVendorSyntaxOrDie(instruction).mnemonic(),
+                            kRepPrefix);
   };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_rep_or_repne),
@@ -122,8 +214,8 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
 // saying whether the REP/REPE/REPNE prefix is allowed.
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveRepAndRepneInstructions, 0);
 
-const std::unordered_set<std::string>* const kRemovedEncodingSpecifications =
-    new std::unordered_set<std::string>(
+const absl::flat_hash_set<std::string>* const kRemovedEncodingSpecifications =
+    new absl::flat_hash_set<std::string>(
         {// Specializations of the ENTER instruction that create stack frame
          // pointer. There is a more generic encoding scheme C8 iw ib that
          // already covers both of these cases.
@@ -153,8 +245,8 @@ const std::unordered_set<std::string>* const kRemovedEncodingSpecifications =
          "F2 REX 0F 38 F0 /r"});
 // NOTE(ondrasej): XLAT is not recognized by the LLVM assembler (unlike its
 // no-operand version XLATB).
-const std::unordered_set<std::string>* const kRemovedMnemonics =
-    new std::unordered_set<std::string>({"XLAT"});
+const absl::flat_hash_set<std::string>* const kRemovedMnemonics =
+    new absl::flat_hash_set<std::string>({"XLAT"});
 
 Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -162,10 +254,11 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
       instruction_set->mutable_instructions();
   const auto is_special_case_instruction =
       [](const InstructionProto& instruction) {
-        return ContainsKey(*kRemovedEncodingSpecifications,
-                           instruction.raw_encoding_specification()) ||
-               ContainsKey(*kRemovedMnemonics,
-                           instruction.vendor_syntax().mnemonic());
+        if (kRemovedEncodingSpecifications->contains(
+                instruction.raw_encoding_specification())) {
+          return true;
+        }
+        return ContainsVendorSyntaxMnemonic(*kRemovedMnemonics, instruction);
       };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      is_special_case_instruction),
@@ -180,7 +273,7 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
   // NOTE(ondrasej): We need to store a copy of the instruction protos, not
   // pointers those in instruction_set, because the contents of instruction_set
   // is modified by std::remove_if().
-  std::unordered_map<std::string, std::vector<InstructionProto>>
+  absl::node_hash_map<std::string, std::vector<InstructionProto>>
       instructions_by_encoding;
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -197,7 +290,8 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
             instruction.raw_encoding_specification();
         if (!RE2::Consume(&specification, *rex_prefix_parser)) return false;
         const std::vector<InstructionProto>* const other_instructions =
-            FindOrNull(instructions_by_encoding, std::string(specification));
+            gtl::FindOrNull(instructions_by_encoding,
+                            std::string(specification));
         // We remove the instruction only if there is a version without the REX
         // prefix that is equivalent in terms of vendor_syntax. If there is not,
         // we return an error status, and keep the instruction to allow
@@ -216,8 +310,9 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
           return false;
         }
         for (const InstructionProto& other : *other_instructions) {
-          if (MessageDifferencer::Equals(other.vendor_syntax(),
-                                         instruction.vendor_syntax())) {
+          if (MessageDifferencer::Equals(
+                  GetUniqueVendorSyntaxOrDie(other),
+                  GetUniqueVendorSyntaxOrDie(instruction))) {
             return true;
           }
         }
@@ -245,7 +340,8 @@ bool InstructionIsMovFromSRegWithOperand(absl::string_view operand_name,
                                          const InstructionProto& instruction) {
   static constexpr char kMovFromSreg[] = "REX.W + 8C /r";
   if (instruction.raw_encoding_specification() != kMovFromSreg) return false;
-  const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+  const InstructionFormat& vendor_syntax =
+      GetUniqueVendorSyntaxOrDie(instruction);
   if (vendor_syntax.operands_size() != 2) return false;
   return vendor_syntax.operands(0).name() == operand_name;
 }
@@ -286,7 +382,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateMovFromSReg, 0);
 Status RemoveX87InstructionsWithGeneralVersions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> kRemovedEncodingSpecifications = {
+  const absl::flat_hash_set<std::string> kRemovedEncodingSpecifications = {
       "D8 D1", "D8 D9", "DE C9", "DE E9", "D9 C9"};
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -294,8 +390,7 @@ Status RemoveX87InstructionsWithGeneralVersions(
       std::remove_if(instructions->begin(), instructions->end(),
                      [&kRemovedEncodingSpecifications](
                          const InstructionProto& instruction) {
-                       return ContainsKey(
-                           kRemovedEncodingSpecifications,
+                       return kRemovedEncodingSpecifications.contains(
                            instruction.raw_encoding_specification());
                      }),
       instructions->end());

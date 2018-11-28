@@ -116,6 +116,7 @@ std::unique_ptr<SimulationLog> Simulator::Run(const BlockContext& BlockContext,
         Result->Iterations.push_back(Iteration);
         // Stop simulation if the max number of iterations has been reached.
         if (MaxNumIterations > 0 && Instr.Iteration + 1 >= MaxNumIterations) {
+          ++Result->NumCycles;
           return Result;
         }
       }

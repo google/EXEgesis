@@ -17,6 +17,7 @@
 #include "gflags/gflags.h"
 
 #include "absl/strings/str_cat.h"
+#include "exegesis/base/architecture.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/base/transform_factory.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -72,7 +73,8 @@ void Main() {
   const std::string architecture_filename =
       absl::StrCat(FLAGS_exegesis_output_file_base, ".pbtxt");
   LOG(INFO) << "Saving ArchitectureProto as: " << architecture_filename;
-  WriteTextProtoOrDie(architecture_filename, architecture);
+  WriteTextProtoOrDie(architecture_filename, architecture,
+                      *GetArchitectureProtoTextPrinter());
 }
 
 }  // namespace

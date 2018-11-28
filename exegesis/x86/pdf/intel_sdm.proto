@@ -79,6 +79,8 @@ enum OperandEncodingTableType {
   OET_LEGACY = 1;
   OET_WITH_TUPLE_TYPE = 2;  // Starting from July 2017 the Operand Encoding
                             // Table has an additional Tuple Type column.
+  OET_LEAF_SGX = 3;         // Tables for SGX leaf instructions use register
+                            // names as column names.
 }
 
 // The description of a particular instruction table.

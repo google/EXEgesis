@@ -127,7 +127,8 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
                       operand_size_override_prefix: PREFIX_IS_IGNORED
                     }
                   }
-                })proto", "Invalid opcode upper bytes: d800"},
+                })proto",
+        "Invalid opcode upper bytes: d800"},
        {R"proto(instructions {
                   vendor_syntax { mnemonic: "XTEST" }
                   raw_encoding_specification: "NP 0F 01 D6"
@@ -137,7 +138,8 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
                       operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
                     }
                   }
-                })proto", "Invalid opcode upper bytes: f0100"}};
+                })proto",
+        "Invalid opcode upper bytes: f0100"}};
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(
@@ -173,7 +175,8 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                      register_class: GENERAL_PURPOSE_REGISTER_64_BIT
                    }
                  }
-               })proto", IsOk()},
+               })proto",
+       IsOk()},
       {// LOAD_EFFECTIVE_ADDRESS operands do not require value_size_bits.
        R"proto(instructions {
                  vendor_syntax {
@@ -185,7 +188,8 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                      usage: USAGE_READ
                    }
                  }
-               })proto", IsOk()},
+               })proto",
+       IsOk()},
       {// Pseudo-operands do not trigger warnings about an empty name or missing
        // value size bits.
        R"proto(instructions {
@@ -230,7 +234,8 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                    }
                  }
                  raw_encoding_specification: "EVEX.NDS.512.66.0F.W1 C2 /r ib"
-               })proto", IsOk()},
+               })proto",
+       IsOk()},
       {// Missing operand encoding.
        R"proto(instructions {
                  vendor_syntax {
@@ -383,7 +388,8 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
                    }
                  }
                  x86_encoding_specification { opcode: 0xD8E1 }
-               })proto", "Opcode is ambigious: d8e1"},
+               })proto",
+       "Opcode is ambigious: d8e1"},
       {R"proto(instructions {
                  vendor_syntax {
                    operands {
@@ -405,7 +411,8 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
                    }
                  }
                  x86_encoding_specification { opcode: 0xD861 }
-               })proto", "Opcode is ambigious: d861"},
+               })proto",
+       "Opcode is ambigious: d861"},
       {R"proto(instructions {
                  vendor_syntax {
                    operands {
@@ -427,7 +434,8 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
                    }
                  }
                  x86_encoding_specification { opcode: 0xD9D4 }
-               })proto", "Opcode is ambigious: d9d4"},
+               })proto",
+       "Opcode is ambigious: d9d4"},
       {R"proto(instructions {
                  vendor_syntax {
                    operands {
@@ -445,7 +453,8 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
                    }
                  }
                  x86_encoding_specification { opcode: 0xD964 }
-               })proto", "Opcode is ambigious: d964"},
+               })proto",
+       "Opcode is ambigious: d964"},
   };
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =
@@ -575,6 +584,64 @@ TEST(CheckSpecialCaseInstructions, NotCoveredInstructions) {
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(test_case);
     EXPECT_OK(CheckSpecialCaseInstructions(&instruction_set));
+  }
+}
+
+TEST(CheckHasVendorSyntaxTest, CheckSyntax) {
+  const struct {
+    const char* instruction_set;
+    Matcher<Status> status_matcher;
+  } kTestCases[] = {
+      {"", IsOk()},
+      {R"proto(
+         instructions {
+           vendor_syntax {
+             operands {
+               addressing_mode: INDIRECT_ADDRESSING
+               encoding: MODRM_RM_ENCODING
+             }
+           }
+           x86_encoding_specification {
+             opcode: 0xD8
+             modrm_usage: OPCODE_EXTENSION_IN_MODRM
+             modrm_opcode_extension: 0x5
+           }
+         }
+         instructions {
+           vendor_syntax {
+             operands {
+               addressing_mode: INDIRECT_ADDRESSING
+               encoding: MODRM_RM_ENCODING
+             }
+           }
+           x86_encoding_specification { opcode: 0xD361 }
+         }
+       )proto",
+       IsOk()},
+      {R"proto(
+         instructions {
+           vendor_syntax {
+             operands {
+               addressing_mode: INDIRECT_ADDRESSING
+               encoding: MODRM_RM_ENCODING
+             }
+           }
+           x86_encoding_specification {
+             opcode: 0xD8
+             modrm_usage: OPCODE_EXTENSION_IN_MODRM
+             modrm_opcode_extension: 0x5
+           }
+         }
+         instructions { x86_encoding_specification { opcode: 0xD361 } }
+       )proto",
+       StatusIs(INVALID_ARGUMENT)},
+  };
+  for (const auto& test_case : kTestCases) {
+    InstructionSetProto instruction_set =
+        ParseProtoFromStringOrDie<InstructionSetProto>(
+            test_case.instruction_set);
+    EXPECT_THAT(CheckHasVendorSyntax(&instruction_set),
+                test_case.status_matcher);
   }
 }
 

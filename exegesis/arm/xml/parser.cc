@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
@@ -35,7 +36,6 @@
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "tinyxml2.h"
-#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/statusor.h"
 
@@ -453,7 +453,7 @@ Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
 
   for (XMLElement* const expl : FindChildren(explanations, "explanation")) {
     // Explanations may target only a subset of extracted instruction encodings.
-    const std::unordered_set<std::string> affected_encodings = absl::StrSplit(
+    const absl::flat_hash_set<std::string> affected_encodings = absl::StrSplit(
         ReadAttribute(expl, "enclist"), ", ", absl::SkipWhitespace());
 
     // Symbols' links & labels allow linking back to asm templates.
@@ -496,7 +496,7 @@ Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
     // Apply reconstructed explanations to their related asm template operands.
     for (auto& instruction_class : *instruction->mutable_classes()) {
       for (auto& encoding : *instruction_class.mutable_encodings()) {
-        if (!ContainsKey(affected_encodings, encoding.id())) continue;
+        if (!affected_encodings.contains(encoding.id())) continue;
         for (auto& piece : *encoding.mutable_asm_template()->mutable_pieces()) {
           if (!piece.has_symbol()) continue;
           auto* const symbol = piece.mutable_symbol();

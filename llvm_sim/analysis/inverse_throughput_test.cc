@@ -39,6 +39,7 @@ TEST(DispatchPortTest, Works) {
     EXPECT_EQ(Result.Min, std::numeric_limits<unsigned>::max());
     EXPECT_EQ(Result.Max, std::numeric_limits<unsigned>::min());
     EXPECT_EQ(Result.NumIterations, 0);
+    EXPECT_EQ(Result.TotalNumCycles, 0);
   }
   Log.Iterations.push_back({/*EndCycle=*/2});
   {
@@ -47,6 +48,7 @@ TEST(DispatchPortTest, Works) {
     EXPECT_EQ(Result.Min, 2);
     EXPECT_EQ(Result.Max, 2);
     EXPECT_EQ(Result.NumIterations, 1);
+    EXPECT_EQ(Result.TotalNumCycles, 2);
   }
   Log.Iterations.push_back({/*EndCycle=*/15});
   {
@@ -55,6 +57,7 @@ TEST(DispatchPortTest, Works) {
     EXPECT_EQ(Result.Min, 13);  // Skipped first iteration.
     EXPECT_EQ(Result.Max, 13);
     EXPECT_EQ(Result.NumIterations, 1);
+    EXPECT_EQ(Result.TotalNumCycles, 13);
   }
   Log.Iterations.push_back({/*EndCycle=*/42});
   {
@@ -63,6 +66,7 @@ TEST(DispatchPortTest, Works) {
     EXPECT_EQ(Result.Min, 13);  // Skipped first iteration.
     EXPECT_EQ(Result.Max, 27);
     EXPECT_EQ(Result.NumIterations, 2);
+    EXPECT_EQ(Result.TotalNumCycles, 40);
   }
   Log.Iterations.push_back({/*EndCycle=*/44});
   {
@@ -71,6 +75,7 @@ TEST(DispatchPortTest, Works) {
     EXPECT_EQ(Result.Min, 2);  // Skipped first two iterations.
     EXPECT_EQ(Result.Max, 27);
     EXPECT_EQ(Result.NumIterations, 2);
+    EXPECT_EQ(Result.TotalNumCycles, 29);
   }
 }
 

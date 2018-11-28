@@ -19,15 +19,23 @@
 #define EXEGESIS_BASE_ARCHITECTURE_H_
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/memory/memory.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/index_type.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
+#include "src/google/protobuf/text_format.h"
 
 namespace exegesis {
+
+// Returns a unique_ptr to a Printer which prints all fields in index order and
+// which correctly prints instruction_group_index fields even if they have value
+// of 0.
+std::unique_ptr<google::protobuf::TextFormat::Printer>
+GetArchitectureProtoTextPrinter();
 
 // Base class for classes that provide an indexing an lookup API for data stored
 // in an ArchitectureProto. This class contains functionality that is common for
@@ -177,7 +185,7 @@ class Architecture {
   // will contain only a single instruction. Consider using a data structure
   // optimized for this use case.
   using InstructionsByString =
-      std::unordered_map<std::string, std::vector<InstructionIndex>>;
+      absl::flat_hash_map<std::string, std::vector<InstructionIndex>>;
 
   // The architecture proto that contains the instruction data served by this
   // class.
@@ -192,7 +200,7 @@ class Architecture {
   InstructionsByString raw_encoding_specification_to_instruction_index_;
 
   // The list of microarchitecture indices, indexed by their IDs.
-  std::unordered_map<std::string, MicroArchitectureIndex>
+  absl::flat_hash_map<std::string, MicroArchitectureIndex>
       microarchitectures_by_id_;
 };
 

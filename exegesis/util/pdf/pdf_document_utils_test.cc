@@ -29,6 +29,7 @@ namespace pdf {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
+using ::testing::Eq;
 using ::testing::Pointee;
 
 PdfPage GetFakeDocument() {
@@ -90,18 +91,18 @@ TEST(PdfDocumentExtractorTest, GetCellTextOrEmpty) {
 TEST(PdfDocumentExtractorTest, MutateCellOrNull) {
   PdfPage page = GetFakeDocument();
   // Access regular cells.
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, 0, 0)), "0, 0");
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, 0, 1)), "0, 1");
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, 1, 0)), "1, 0");
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, 1, 1)), "1, 1");
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, 0, 0), Pointee(Eq("0, 0")));
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, 0, 1), Pointee(Eq("0, 1")));
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, 1, 0), Pointee(Eq("1, 0")));
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, 1, 1), Pointee(Eq("1, 1")));
 
   // -1 for col or row means the last one.
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, 0, -1)), "0, 1");
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, -1, 0)), "1, 0");
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, -1, -1)), "1, 1");
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, 0, -1), Pointee(Eq("0, 1")));
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, -1, 0), Pointee(Eq("1, 0")));
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, -1, -1), Pointee(Eq("1, 1")));
 
   // -2 would be the one before the last, aka 0 in our case.
-  EXPECT_EQ(*CHECK_NOTNULL(GetMutableCellTextOrNull(&page, -2, -2)), "0, 0");
+  EXPECT_THAT(GetMutableCellTextOrNull(&page, -2, -2), Pointee(Eq("0, 0")));
 
   // Access inexistent cell.
   EXPECT_EQ(GetMutableCellTextOrNull(&page, 0, 5), nullptr);

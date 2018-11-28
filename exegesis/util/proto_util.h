@@ -19,6 +19,7 @@
 
 #include "absl/strings/string_view.h"
 #include "src/google/protobuf/message.h"
+#include "src/google/protobuf/text_format.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
@@ -77,7 +78,9 @@ Proto ParseProtoFromStringOrDie(absl::string_view text) {
 
 // Writes a proto in text format to a file.
 void WriteTextProtoOrDie(const std::string& filename,
-                         const google::protobuf::Message& message);
+                         const google::protobuf::Message& message,
+                         const google::protobuf::TextFormat::Printer& printer =
+                             google::protobuf::TextFormat::Printer());
 
 // Writes a proto in binary format to a file.
 void WriteBinaryProtoOrDie(const std::string& filename,

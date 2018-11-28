@@ -19,10 +19,10 @@
 #include <cmath>
 #include <map>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
@@ -205,13 +205,14 @@ class Segments {
            const PdfTextSegments* segments)
       : segments_(segments) {
     for (size_t i = 0; i < segments->size(); ++i) {
-      InsertOrDie(&first_char_index_to_segment_index_, GetFirstCharIndex(i), i);
-      InsertIfNotPresent(&text_to_index_, segments->Get(i).text(), i);
+      gtl::InsertOrDie(&first_char_index_to_segment_index_,
+                       GetFirstCharIndex(i), i);
+      gtl::InsertIfNotPresent(&text_to_index_, segments->Get(i).text(), i);
     }
     for (const auto& prevent_binding : prevent_bindings) {
       const std::string key =
           CreateKey(prevent_binding.first(), prevent_binding.second());
-      if (!InsertIfNotPresent(&prevent_bindings_, key)) {
+      if (!gtl::InsertIfNotPresent(&prevent_bindings_, key)) {
         LOG(FATAL) << "Duplicated prevent_segment_bindings '" << key
                    << "' in config file";
       }
@@ -234,18 +235,19 @@ class Segments {
   size_t GetFollowingSegment(size_t index) const {
     const size_t last_char_index = GetLastCharIndex(index);
     const size_t following_char_index = last_char_index + 1;
-    return FindWithDefault(first_char_index_to_segment_index_,
-                           following_char_index, index);
+    return ::exegesis::gtl::FindWithDefault(first_char_index_to_segment_index_,
+                                            following_char_index, index);
   }
 
   size_t GetIndexFor(absl::string_view text) const {
-    return FindWithDefault(text_to_index_, text, absl::string_view::npos);
+    return ::exegesis::gtl::FindWithDefault(text_to_index_, text,
+                                            absl::string_view::npos);
   }
 
   bool ConsumePreventSegmentBinding(const PdfTextSegment& a,
                                     const PdfTextSegment& b) {
     const std::string key = CreateKey(a.text(), b.text());
-    const bool prevent = ContainsKey(prevent_bindings_, key);
+    const bool prevent = prevent_bindings_.contains(key);
     if (prevent) {
       LOG(INFO) << "Preventing segment binding between '" << key << "'";
       prevent_bindings_.erase(key);
@@ -269,10 +271,10 @@ class Segments {
   }
 
   const PdfTextSegments* segments_;
-  std::unordered_map<size_t, size_t> first_char_index_to_segment_index_;
+  absl::flat_hash_map<size_t, size_t> first_char_index_to_segment_index_;
   // ok to store absl::string_view we own the data.
-  std::map<absl::string_view, size_t> text_to_index_;
-  std::unordered_set<std::string> prevent_bindings_;
+  absl::flat_hash_map<absl::string_view, size_t> text_to_index_;
+  absl::flat_hash_set<std::string> prevent_bindings_;
 };
 
 // Clusters the consecutive segments and link them together into PdfTextBlocks.

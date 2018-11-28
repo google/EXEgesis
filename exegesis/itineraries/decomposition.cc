@@ -20,10 +20,10 @@
 #include <iterator>
 #include <numeric>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
@@ -70,12 +70,13 @@ DecompositionSolver::DecompositionSolver(
                            MPSolver::GLPK_MIXED_INTEGER_PROGRAMMING)) {}
 
 Status DecompositionSolver::Run(const ObservationVector& observations) {
-  std::unordered_map<std::string, double> key_val;
+  absl::flat_hash_map<std::string, double> key_val;
   for (const auto& observation : observations.observations()) {
     key_val[observation.event_name()] = observation.measurement();
   }
   // TODO(bdb): Only consider user-time measurements with the :u modifier.
-  const double uops_retired = FindWithDefault(key_val, "uops_retired:all", 0.0);
+  const double uops_retired =
+      ::exegesis::gtl::FindWithDefault(key_val, "uops_retired:all", 0.0);
   std::vector<double> measurements(num_execution_ports_, 0.0);
   for (int port = 0; port < num_execution_ports_; ++port) {
     // We use 0.0 if the data does not exist. This may happen if the CPU
@@ -85,7 +86,7 @@ Status DecompositionSolver::Run(const ObservationVector& observations) {
     // TODO(bdb): Add execution port information for architectures other than
     // Haswell.
     // TODO(bdb): Only consider user-time measurements with the :u modifier.
-    measurements[port] = FindWithDefault(
+    measurements[port] = ::exegesis::gtl::FindWithDefault(
         key_val, absl::StrCat("uops_executed_port:port_", port), 0.0);
   }
   return Run(measurements, uops_retired);

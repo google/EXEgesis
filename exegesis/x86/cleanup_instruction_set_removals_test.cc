@@ -89,7 +89,7 @@ TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
                 kExpectedInstructionSetProto);
 }
 
-TEST(RemoveDuplicateVPCmpEqQTest, NoRemoval) {
+TEST(RemoveDuplicateInstructionsTest, NoRemoval) {
   constexpr char kInstructionSetProto[] = R"proto(
     instructions {
       vendor_syntax {
@@ -109,26 +109,210 @@ TEST(RemoveDuplicateVPCmpEqQTest, NoRemoval) {
       }
       raw_encoding_specification: 'VEX.NDS.128.66.0F38.WIG 29 /r'
     })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+  TestTransform(RemoveDuplicateInstructions, kInstructionSetProto,
+                kInstructionSetProto);
+}
+
+TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroups) {
+  constexpr char kInstructionSetProto[] = R"proto(
     instructions {
-      vendor_syntax {
-        mnemonic: 'VPCMPEQQ'
-        operands { name: 'ymm1' }
-        operands { name: 'ymm2' }
-        operands { name: 'ymm3/m256' }
-      }
-      raw_encoding_specification: 'VEX.NDS.256.66.0F38.WIG 29 /r'
+      vendor_syntax { mnemonic: 'AAA' }
+      instruction_group_index: 2
     }
     instructions {
-      vendor_syntax {
-        mnemonic: 'VPCMPEQQ'
-        operands { name: 'xmm1' }
-        operands { name: 'xmm2' }
-        operands { name: 'xmm3/m128' }
+      vendor_syntax { mnemonic: 'AAD' }
+      instruction_group_index: 3
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAM' }
+      instruction_group_index: 2
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADD' }
+      instruction_group_index: 0
+    }
+    instruction_groups { name: 'GROUP_D' description: 'Non-empty, should be 2' }
+    instruction_groups { name: 'GROUP_C' description: 'No instructions' }
+    instruction_groups { name: 'GROUP_B' description: 'Non-empty, should be 1' }
+    instruction_groups { name: 'GROUP_A' description: 'Non-empty, should be 0' }
+  )proto";
+
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'AAA' }
+      instruction_group_index: 1
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAD' }
+      instruction_group_index: 0
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAM' }
+      instruction_group_index: 1
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADD' }
+      instruction_group_index: 2
+    }
+    instruction_groups { name: 'GROUP_A' description: 'Non-empty, should be 0' }
+    instruction_groups { name: 'GROUP_B' description: 'Non-empty, should be 1' }
+    instruction_groups { name: 'GROUP_D' description: 'Non-empty, should be 2' }
+  )proto";
+
+  TestTransform(RemoveEmptyInstructionGroups, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroupsSameName) {
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'AAA' }
+      instruction_group_index: 2
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAD' }
+      instruction_group_index: 3
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAM' }
+      instruction_group_index: 2
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADD' }
+      instruction_group_index: 0
+    }
+    instruction_groups {
+      name: 'GROUP'
+      short_description: 'Non-empty, should be 2'
+    }
+    instruction_groups { name: 'GROUP' short_description: 'No instructions' }
+    instruction_groups {
+      name: 'GROUP'
+      short_description: 'Non-empty, should be 1'
+    }
+    instruction_groups {
+      name: 'GROUP'
+      short_description: 'Non-empty, should be 0'
+    }
+  )proto";
+
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'AAA' }
+      instruction_group_index: 1
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAD' }
+      instruction_group_index: 0
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAM' }
+      instruction_group_index: 1
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADD' }
+      instruction_group_index: 2
+    }
+    instruction_groups {
+      name: 'GROUP'
+      short_description: 'Non-empty, should be 0'
+    }
+    instruction_groups {
+      name: 'GROUP'
+      short_description: 'Non-empty, should be 1'
+    }
+    instruction_groups {
+      name: 'GROUP'
+      short_description: 'Non-empty, should be 2'
+    }
+  )proto";
+
+  TestTransform(RemoveEmptyInstructionGroups, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(RemoveEmptyInstructionGroupsTest, NoRemoval) {
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: 'AAA' }
+      instruction_group_index: 2
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAD' }
+      instruction_group_index: 1
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'AAM' }
+      instruction_group_index: 2
+    }
+    instructions {
+      vendor_syntax { mnemonic: 'ADD' }
+      instruction_group_index: 0
+    }
+    instruction_groups { name: 'GROUP_0' description: 'Has some instructions' }
+    instruction_groups { name: 'GROUP_1' description: 'Has some instructions' }
+    instruction_groups { name: 'GROUP_2' description: 'Has some instructions' }
+  )proto";
+
+  TestTransform(RemoveEmptyInstructionGroups, kInstructionSetProto,
+                kInstructionSetProto);
+}
+
+TEST(RemoveLegacyVersionsOfInstructionsTest, RemoveSomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: "LEAVE" }
+      syntax { mnemonic: "leave" }
+      att_syntax { mnemonic: "leave" }
+      available_in_64_bit: true
+      legacy_instruction: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "C9"
+      protection_mode: -1
+      x86_encoding_specification {
+        opcode: 201
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
       }
-      raw_encoding_specification: 'VEX.NDS.128.66.0F38.WIG 29 /r'
-    })proto";
-  TestTransform(RemoveDuplicateInstructions, kInstructionSetProto,
+    }
+    instructions {
+      vendor_syntax { mnemonic: "LEAVE" }
+      syntax { mnemonic: "leave" }
+      att_syntax { mnemonic: "leave" }
+      available_in_64_bit: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "C9"
+      protection_mode: -1
+      x86_encoding_specification {
+        opcode: 201
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
+    }
+  )proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: "LEAVE" }
+      syntax { mnemonic: "leave" }
+      att_syntax { mnemonic: "leave" }
+      available_in_64_bit: true
+      encoding_scheme: "ZO"
+      raw_encoding_specification: "C9"
+      protection_mode: -1
+      x86_encoding_specification {
+        opcode: 201
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
+    }
+  )proto";
+  TestTransform(RemoveLegacyVersionsOfInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 

@@ -31,6 +31,9 @@ struct InverseThroughputAnalysis {
   // The estimation is based on the last `NumIterations` iterations. This
   // gives a more precise result by allowing to reach steady state.
   unsigned NumIterations = 0;
+  // The total number of cycles used by the simulation over all iterations. This
+  // gives a better idea of the average inverse throughput than the min/max.
+  unsigned TotalNumCycles = 0;
 };
 
 // Computes the inverse throughput.

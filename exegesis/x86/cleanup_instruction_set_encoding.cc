@@ -16,15 +16,16 @@
 
 #include <algorithm>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/status_util.h"
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
 #include "exegesis/x86/encoding_specification.h"
@@ -48,14 +49,14 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
   constexpr char kAddressSizeOverridePrefix[] = "67 ";
   constexpr char k32BitImmediateValueSuffix[] = " id";
   constexpr char k64BitImmediateValueSuffix[] = " io";
-  const std::unordered_set<std::string> kEncodingSpecifications = {
+  const absl::flat_hash_set<std::string> kEncodingSpecifications = {
       "A0", "REX.W + A0", "A1", "REX.W + A1",
       "A2", "REX.W + A2", "A3", "REX.W + A3"};
   std::vector<InstructionProto> new_instructions;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     const std::string& specification = instruction.raw_encoding_specification();
-    if (ContainsKey(kEncodingSpecifications, specification)) {
+    if (kEncodingSpecifications.contains(specification)) {
       new_instructions.push_back(instruction);
       InstructionProto& new_instruction = new_instructions.back();
       new_instruction.set_raw_encoding_specification(
@@ -102,16 +103,17 @@ Status FixEncodingSpecificationOfPopFsAndGs(
   constexpr char kPopInstruction[] = "POP";
   constexpr char k16Bits[] = "16 bits";
   constexpr char k64Bits[] = "64 bits";
-  const std::unordered_set<std::string> kFsAndGsOperands = {"FS", "GS"};
+  const absl::flat_hash_set<std::string> kFsAndGsOperands = {"FS", "GS"};
 
   // First find all occurences of the POP FS and GS instructions.
   std::vector<InstructionProto*> pop_instructions;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+    const InstructionFormat& vendor_syntax =
+        GetUniqueVendorSyntaxOrDie(instruction);
     if (vendor_syntax.operands_size() == 1 &&
         vendor_syntax.mnemonic() == kPopInstruction &&
-        ContainsKey(kFsAndGsOperands, vendor_syntax.operands(0).name())) {
+        kFsAndGsOperands.contains(vendor_syntax.operands(0).name())) {
       pop_instructions.push_back(&instruction);
     }
   }
@@ -144,7 +146,7 @@ Status FixEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kPushInstruction[] = "PUSH";
-  const std::unordered_set<std::string> kFsAndGsOperands = {"FS", "GS"};
+  const absl::flat_hash_set<std::string> kFsAndGsOperands = {"FS", "GS"};
 
   // Find the existing PUSH instructions for FS and GS, and create the remaining
   // versions of the instructions. Note that we can't add the new versions
@@ -152,10 +154,11 @@ Status FixEncodingSpecificationOfPushFsAndGs(
   // used in the for loop.
   std::vector<InstructionProto> new_push_instructions;
   for (const InstructionProto& instruction : instruction_set->instructions()) {
-    const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+    const InstructionFormat& vendor_syntax =
+        GetUniqueVendorSyntaxOrDie(instruction);
     if (vendor_syntax.operands_size() == 1 &&
         vendor_syntax.mnemonic() == kPushInstruction &&
-        ContainsKey(kFsAndGsOperands, vendor_syntax.operands(0).name())) {
+        kFsAndGsOperands.contains(vendor_syntax.operands(0).name())) {
       // There is only one version of each of the instruction. Keep this as the
       // base version (64-bit), and add a 16-bit version and a 64-bit version
       // with a REX.W prefix. Note that this way we miss the 32-bit version, but
@@ -181,8 +184,8 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
       "0F 95", "0F 96", "0F 97", "0F 98", "0F 99", "0F 9A",
       "0F 9B", "0F 9C", "0F 9D", "0F 9E", "0F 9F",
   };
-  std::unordered_set<std::string> replaced_specifications;
-  std::unordered_set<std::string> removed_specifications;
+  absl::flat_hash_set<std::string> replaced_specifications;
+  absl::flat_hash_set<std::string> removed_specifications;
   for (const char* const specification : kEncodingSpecifications) {
     replaced_specifications.insert(specification);
     removed_specifications.insert(absl::StrCat("REX + ", specification));
@@ -196,15 +199,15 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
       std::remove_if(
           instructions->begin(), instructions->end(),
           [&removed_specifications](const InstructionProto& instruction) {
-            return ContainsKey(removed_specifications,
-                               instruction.raw_encoding_specification());
+            return removed_specifications.contains(
+                instruction.raw_encoding_specification());
           }),
       instructions->end());
 
   // Fix the binary encoding of the non-REX versions.
   for (InstructionProto& instruction : *instructions) {
     const std::string& specification = instruction.raw_encoding_specification();
-    if (ContainsKey(replaced_specifications, specification)) {
+    if (replaced_specifications.contains(specification)) {
       instruction.set_raw_encoding_specification(
           absl::StrCat(specification, " /0"));
     }
@@ -218,7 +221,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(
 Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kXBeginEncodingSpecification[] = "C7 F8";
-  const std::unordered_map<std::string, std::string>
+  const absl::flat_hash_map<std::string, std::string>
       kOperandToEncodingSpecification = {{"rel16", "66 C7 F8 cw"},
                                          {"rel32", "C7 F8 cd"}};
   Status status = OkStatus();
@@ -226,16 +229,17 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
        *instruction_set->mutable_instructions()) {
     if (instruction.raw_encoding_specification() ==
         kXBeginEncodingSpecification) {
-      const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+      const InstructionFormat& vendor_syntax =
+          GetUniqueVendorSyntaxOrDie(instruction);
       if (vendor_syntax.operands_size() != 1) {
         status = util::InvalidArgumentError(
             "Unexpected number of arguments of a XBEGIN instruction: ");
         LOG(ERROR) << status;
         continue;
       }
-      if (!FindCopy(kOperandToEncodingSpecification,
-                    vendor_syntax.operands(0).name(),
-                    instruction.mutable_raw_encoding_specification())) {
+      if (!gtl::FindCopy(kOperandToEncodingSpecification,
+                         vendor_syntax.operands(0).name(),
+                         instruction.mutable_raw_encoding_specification())) {
         status = InvalidArgumentError(
             absl::StrCat("Unexpected argument of a XBEGIN instruction: ",
                          vendor_syntax.operands(0).name()));
@@ -267,33 +271,32 @@ Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kFullModRmSuffix[] = "/r";
-  const std::unordered_set<std::string> kMissingModRMInstructionMnemonics = {
+  const absl::flat_hash_set<std::string> kMissingModRMInstructionMnemonics = {
       "CVTDQ2PD", "VMOVD"};
   constexpr char kImmediateByteSuffix[] = "ib";
-  const std::unordered_set<std::string> kMissingImmediateInstructionMnemonics =
+  const absl::flat_hash_set<std::string> kMissingImmediateInstructionMnemonics =
       {
           "KSHIFTLB", "KSHIFTLW", "KSHIFTLD",  "KSHIFTLQ",    "KSHIFTRB",
           "KSHIFTRW", "KSHIFTRD", "KSHIFTRQ",  "VFIXUPIMMPS", "VFPCLASSSS",
           "VRANGESD", "VRANGESS", "VREDUCESD",
       };
   constexpr char kVSibSuffix[] = "/vsib";
-  const std::unordered_set<std::string> kMissingVSibInstructionMnemonics = {
+  const absl::flat_hash_set<std::string> kMissingVSibInstructionMnemonics = {
       "VGATHERDPD", "VGATHERQPD", "VGATHERDPS", "VGATHERQPS",
       "VPGATHERDD", "VPGATHERDQ", "VPGATHERQD", "VPGATHERQQ",
   };
 
   // Fixes instruction encodings for instructions matching the given mnemonics
   // by adding the given suffix if need be.
-  const auto maybe_fix = [](const std::unordered_set<std::string>& mnemonics,
+  const auto maybe_fix = [](const absl::flat_hash_set<std::string>& mnemonics,
                             const absl::string_view suffix,
                             InstructionProto* instruction) {
-    const std::string& mnemonic = instruction->vendor_syntax().mnemonic();
     Status status = OkStatus();
-    if (ContainsKey(mnemonics, mnemonic)) {
+    if (ContainsVendorSyntaxMnemonic(mnemonics, *instruction)) {
       if (instruction->raw_encoding_specification().empty()) {
         status = InvalidArgumentError(absl::StrCat(
             "The instruction does not have binary encoding specification: ",
-            mnemonic));
+            instruction->DebugString()));
       }
 
       if (!absl::EndsWith(instruction->raw_encoding_specification(), suffix)) {
@@ -320,7 +323,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingModRmAndImmediateSpecification,
 
 Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_map<std::string, std::string> kReplacements = {
+  const absl::flat_hash_map<std::string, std::string> kReplacements = {
       {"REX + 0F B2 /r", "REX.W + 0F B2 /r"},
       {"REX + 0F B4 /r", "REX.W + 0F B4 /r"},
       {"REX + 0F B5 /r", "REX.W + 0F B5 /r"},
@@ -328,7 +331,8 @@ Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     const std::string* const replacement_raw_encoding_specification =
-        FindOrNull(kReplacements, instruction.raw_encoding_specification());
+        gtl::FindOrNull(kReplacements,
+                        instruction.raw_encoding_specification());
     if (replacement_raw_encoding_specification == nullptr) continue;
     instruction.set_raw_encoding_specification(
         *replacement_raw_encoding_specification);
@@ -362,7 +366,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(ParseEncodingSpecifications, 1010);
 Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_map<std::string, std::string> kReplacements = {
+  const absl::flat_hash_map<std::string, std::string> kReplacements = {
       {"D8 C0+i", "D8 /0"},  // FADD store to ST(0)
       {"DC C0+i", "DC /0"},  // FADD store to ST(i)
       {"DE C0+i", "DE /0"},  // FADDP
@@ -406,7 +410,8 @@ Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     const std::string* const replacement_raw_encoding_specification =
-        FindOrNull(kReplacements, instruction.raw_encoding_specification());
+        gtl::FindOrNull(kReplacements,
+                        instruction.raw_encoding_specification());
     if (replacement_raw_encoding_specification == nullptr) continue;
     instruction.set_raw_encoding_specification(
         *replacement_raw_encoding_specification);

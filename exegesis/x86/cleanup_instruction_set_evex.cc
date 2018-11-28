@@ -18,11 +18,13 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/container/node_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/category_util.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
@@ -55,7 +57,8 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
 
     // Check for operands that broadcast a single value from a memory location
     // to all slots in a vector register.
-    const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+    const InstructionFormat& vendor_syntax =
+        GetVendorSyntaxWithMostOperandsOrDie(instruction);
     for (const InstructionOperand& operand : vendor_syntax.operands()) {
       if (absl::StrContains(operand.name(), kBroadcast32Bit)) {
         vex_prefix->add_evex_b_interpretations(EVEX_B_ENABLES_32_BIT_BROADCAST);
@@ -90,7 +93,7 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
   // The list of instructions that do not allow using k0 as opmask. This
   // behavior is specified only in the free-text description of the instruction,
   // so we had to list them explicitly by their mnemonic.
-  const std::unordered_set<std::string> kOpmaskRequiredMnemonics = {
+  const absl::node_hash_set<std::string> kOpmaskRequiredMnemonics = {
       "VGATHERDPS",  "VGATHERDPD",  "VGATHERQPS",  "VGATHERQPD",
       "VPGATHERDD",  "VPGATHERDQ",  "VPGATHERQD",  "VPGATHERQQ",
       "VPSCATTERDD", "VPSCATTERDQ", "VPSCATTERQD", "VPSCATTERQQ",
@@ -110,7 +113,8 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
     // VEX-only instructions can't use opmasks.
     if (vex_prefix->prefix_type() != EVEX_PREFIX) continue;
 
-    const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+    const InstructionFormat& vendor_syntax =
+        GetVendorSyntaxWithMostOperandsOrDie(instruction);
     bool supports_opmask = false;
     bool supports_zeroing = false;
     for (const InstructionOperand& operand : vendor_syntax.operands()) {
@@ -133,7 +137,7 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
       continue;
     }
     const bool requires_opmask =
-        ContainsKey(kOpmaskRequiredMnemonics, vendor_syntax.mnemonic());
+        gtl::ContainsKey(kOpmaskRequiredMnemonics, vendor_syntax.mnemonic());
     vex_prefix->set_opmask_usage(requires_opmask ? EVEX_OPMASK_IS_REQUIRED
                                                  : EVEX_OPMASK_IS_OPTIONAL);
     vex_prefix->set_masking_operation(supports_zeroing
@@ -148,8 +152,8 @@ namespace {
 
 inline bool IsPseudoOperandTag(const InstructionOperand::Tag& tag) {
   static const auto* const kPseudoOperandTags =
-      new std::unordered_set<std::string>({"er", "sae"});
-  return ContainsKey(*kPseudoOperandTags, tag.name());
+      new absl::node_hash_set<std::string>({"er", "sae"});
+  return gtl::ContainsKey(*kPseudoOperandTags, tag.name());
 }
 
 bool OperandHasPseudoOperandTag(const InstructionOperand& operand) {
@@ -187,7 +191,7 @@ Status AddEvexPseudoOperands(InstructionSetProto* instruction_set) {
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     if (!InstructionHasPseudoOperandTag(*vendor_syntax)) continue;
 
     RepeatedPtrField<InstructionOperand> updated_operands;

@@ -81,6 +81,7 @@ TEST_F(HaswellTest, Test3) { RunTestCase("test3.s"); }
 TEST_F(HaswellTest, Test4) { RunTestCase("test4.s"); }
 TEST_F(HaswellTest, Test5) { RunTestCase("test5.s"); }
 TEST_F(HaswellTest, Test6) { RunTestCase("test6.s"); }
+TEST_F(HaswellTest, Test9) { RunTestCase("test9.s"); }
 
 }  // namespace
 }  // namespace simulator

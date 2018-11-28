@@ -14,12 +14,14 @@
 
 #include "exegesis/x86/pdf/vendor_syntax.h"
 
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "exegesis/util/strings.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
@@ -28,6 +30,8 @@ namespace exegesis {
 namespace x86 {
 namespace pdf {
 namespace {
+
+constexpr const size_t kMaxInstructionIdSize = 60;
 
 // The list of operand names from the Intel encoding specification that are
 // accepted by the converter.
@@ -267,7 +271,7 @@ std::string FixOperandName(const std::string& operand_name) {
   // only used to fix obvious typos and formatting errors in the manual.
   // Systematic inconsistencies are fixed by the transforms library.
   static const auto* const kOperandNameSubstitutions =
-      new std::unordered_map<std::string, std::string>({
+      new absl::flat_hash_map<std::string, std::string>({
           {"imm8/r", "imm8"},
           {"r32/m161", "r32/m16"},
           {"r32/m32", "r/m32"},
@@ -278,8 +282,8 @@ std::string FixOperandName(const std::string& operand_name) {
           {"ymm3 /m256", "ymm3/m256"},
           {"zmm3 /m512", "zmm3/m512"},
       });
-  return FindWithDefault(*kOperandNameSubstitutions, operand_name,
-                         operand_name);
+  return ::exegesis::gtl::FindWithDefault(*kOperandNameSubstitutions,
+                                          operand_name, operand_name);
 }
 
 // The vendor syntax has always the format [prefix] mnemonic op1, op2[, op3].
@@ -293,8 +297,8 @@ const LazyRE2 kOperandRegexp = {
 bool ParseVendorSyntax(std::string content,
                        InstructionFormat* instruction_format) {
   static const auto* const kValidIntelOperandTypes =
-      new std::unordered_set<std::string>(std::begin(kValidOperandTypes),
-                                          std::end(kValidOperandTypes));
+      new absl::flat_hash_set<std::string>(std::begin(kValidOperandTypes),
+                                           std::end(kValidOperandTypes));
   // Remove any asterisks (typically artifacts from notes).
   content.erase(std::remove(content.begin(), content.end(), '*'),
                 content.end());
@@ -316,7 +320,7 @@ bool ParseVendorSyntax(std::string content,
     absl::StripAsciiWhitespace(&tag1);
     absl::StripAsciiWhitespace(&tag2);
     operand_name = FixOperandName(operand_name);
-    if (!ContainsKey(*kValidIntelOperandTypes, operand_name)) {
+    if (!kValidIntelOperandTypes->contains(operand_name)) {
       LOG(ERROR) << "Unknown operand '" << operand_name << "' while parsing '"
                  << content << "'";
       operand_name = kUnknown;
@@ -337,6 +341,16 @@ bool ParseVendorSyntax(std::string content,
     return false;
   }
   return true;
+}
+
+std::string NormalizeName(std::string text) {
+  static constexpr absl::string_view kRemovedChars = "\n ∗*";
+  RemoveAllChars(&text, kRemovedChars);
+
+  if (text.size() > kMaxInstructionIdSize) {
+    text.resize(kMaxInstructionIdSize);
+  }
+  return text;
 }
 
 }  // namespace pdf

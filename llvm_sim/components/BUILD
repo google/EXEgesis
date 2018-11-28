@@ -1,11 +1,10 @@
 licenses(["notice"])  # Apache 2.0
 
-package(default_visibility = ["//visibility:private"])
+package(default_visibility = ["//:internal_users"])
 
 cc_library(
     name = "buffer",
     hdrs = ["buffer.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",
@@ -38,7 +37,6 @@ cc_library(
     name = "decoder",
     srcs = ["decoder.cc"],
     hdrs = ["decoder.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",
@@ -63,7 +61,6 @@ cc_test(
 cc_library(
     name = "dispatch_port",
     hdrs = ["dispatch_port.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [":buffer"],
 )
 
@@ -82,7 +79,6 @@ cc_test(
 cc_library(
     name = "execution_unit",
     hdrs = ["execution_unit.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",
@@ -106,7 +102,6 @@ cc_library(
     name = "fetcher",
     srcs = ["fetcher.cc"],
     hdrs = ["fetcher.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":buffer",
         "//llvm_sim/framework:component",
@@ -130,7 +125,6 @@ cc_library(
     name = "issue_policy",
     srcs = ["issue_policy.cc"],
     hdrs = ["issue_policy.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         "@llvm_git//:support",
     ],
@@ -149,7 +143,6 @@ cc_library(
     name = "parser",
     srcs = ["parser.cc"],
     hdrs = ["parser.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",
@@ -172,7 +165,6 @@ cc_test(
 cc_library(
     name = "port",
     hdrs = ["port.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":buffer",
         ":common",
@@ -197,7 +189,6 @@ cc_library(
     name = "register_renamer",
     srcs = ["register_renamer.cc"],
     hdrs = ["register_renamer.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",
@@ -231,11 +222,11 @@ cc_library(
     name = "reorder_buffer",
     srcs = ["reorder_buffer.cc"],
     hdrs = ["reorder_buffer.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         ":issue_policy",
         "//llvm_sim/framework:component",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@llvm_git//:support",
     ],
 )
@@ -255,7 +246,6 @@ cc_test(
 cc_library(
     name = "retirer",
     hdrs = ["retirer.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",
@@ -278,7 +268,6 @@ cc_test(
 cc_library(
     name = "simplified_execution_units",
     hdrs = ["simplified_execution_units.h"],
-    visibility = ["//llvm_sim/x86:__pkg__"],
     deps = [
         ":common",
         "//llvm_sim/framework:component",

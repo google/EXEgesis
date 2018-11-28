@@ -77,6 +77,18 @@ absl::string_view ToStringView(const StringType& text) {
   return absl::string_view(text.data(), text.size());
 }
 
+// Converts a string-like data type to ::google::protobuf::StringPiece
+template <typename StringType>
+::google::protobuf::StringPiece ToStringPiece(const StringType& text) {
+  return {text.data(), text.size()};
+}
+
+// Removes all chars in `chars` from `text`.
+void RemoveAllChars(std::string* text, absl::string_view chars);
+
+// Removes all space and line-feed characters from `text`.
+void RemoveSpaceAndLF(std::string* text);
+
 }  // namespace exegesis
 
 #endif  // EXEGESIS_UTIL_STRINGS_H_

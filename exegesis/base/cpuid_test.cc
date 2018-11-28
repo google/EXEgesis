@@ -112,10 +112,10 @@ TEST(CpuInfoFromCpuIdDumpTest, X86) {
         })proto");
   constexpr char kExpectedCpuId[] = "intel:06_5E";
   constexpr const char* const kExpectedFeatures[] = {
-      "ADX",     "AES",   "AVX",     "AVX2",  "BMI1", "BMI2",     "CLFLUSHOPT",
-      "CLFSH",   "CLMUL", "FMA",     "F16C",  "FPU",  "FSGSBASE", "HLE",
-      "INVPCID", "LZCNT", "MMX",     "MOVBE", "MPX",  "PRFCHW",   "RDRAND",
-      "RDSEED",  "RTM",   "SMAP",    "SSE",   "SSE2", "SSE3",     "SSE4_1",
+      "ADX",     "AES",   "AVX",     "AVX2",  "BMI1", "BMI2",      "CLFLUSHOPT",
+      "CLFSH",   "CLMUL", "FMA",     "F16C",  "FPU",  "FSGSBASE",  "HLE",
+      "INVPCID", "LZCNT", "MMX",     "MOVBE", "MPX",  "PREFETCHW", "RDRAND",
+      "RDSEED",  "RTM",   "SMAP",    "SSE",   "SSE2", "SSE3",      "SSE4_1",
       "SSE4_2",  "SSSE3", "XSAVEOPT"};
   const CpuInfo cpu_info = CpuInfoFromCpuIdDump(kDump);
   EXPECT_EQ(cpu_info.cpu_model_id(), kExpectedCpuId);

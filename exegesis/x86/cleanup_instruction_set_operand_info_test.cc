@@ -62,6 +62,7 @@ TEST(AddOperandInfoTest, AddInfo) {
           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
           map_select: MAP_SELECT_0F
           vex_w_usage: VEX_W_IS_ZERO
+          vex_operand_usage: VEX_OPERAND_IS_NOT_USED
         }
         modrm_usage: FULL_MODRM
       }
@@ -129,6 +130,7 @@ TEST(AddOperandInfoTest, AddInfo) {
           mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
           map_select: MAP_SELECT_0F
           vex_w_usage: VEX_W_IS_ZERO
+          vex_operand_usage: VEX_OPERAND_IS_NOT_USED
         }
         modrm_usage: FULL_MODRM
       }
@@ -169,6 +171,385 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
         instruction_set_proto, &instruction_set));
     EXPECT_THAT(AddOperandInfo(&instruction_set), StatusIs(INVALID_ARGUMENT));
   }
+}
+
+TEST(AddVmxOperandInfoTest, NoArgs) {
+  constexpr const char* const kInstructionSetProtos[] = {
+      R"proto(
+        instructions {
+          vendor_syntax { mnemonic: "VMCALL" }
+          syntax { mnemonic: "vmcall" }
+          att_syntax { mnemonic: "vmcall" }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "0F 01 C1"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 983489
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_IGNORED
+            }
+          }
+          instruction_group_index: 3
+        }
+      )proto",
+      R"proto(
+        instructions {
+          vendor_syntax { mnemonic: "VMXOFF" }
+          syntax { mnemonic: "vmxoff" }
+          att_syntax { mnemonic: "vmxoff" }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "0F 01 C4"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 983492
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_IGNORED
+            }
+          }
+          instruction_group_index: 10
+        })proto"};
+
+  for (const char* const instruction_set_proto : kInstructionSetProtos) {
+    // The transform should not modify these because they are no-arg.
+    TestTransform(AddVmxOperandInfo, instruction_set_proto,
+                  instruction_set_proto);
+  }
+}
+
+TEST(AddVmxOperandInfoTest, ArgsWithSuffix) {
+  constexpr const char* const kInstructionSetProtos[] = {
+      R"proto(
+        instructions {
+          vendor_syntax {
+            mnemonic: "VMCLEAR"
+            operands {
+              name: "m64"
+              addressing_mode: INDIRECT_ADDRESSING
+              encoding: MODRM_RM_ENCODING
+              value_size_bits: 64
+              usage: USAGE_READ_WRITE
+            }
+          }
+          syntax {
+            mnemonic: "vmclear"
+            operands { name: "qword ptr [rsi]" }
+          }
+          att_syntax {
+            mnemonic: "vmclear"
+            operands { name: "(%rsi)" }
+          }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "66 0F C7 /r"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 4039
+            modrm_usage: OPCODE_EXTENSION_IN_MODRM
+            modrm_opcode_extension: 6
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_REQUIRED
+            }
+          }
+          instruction_group_index: 4
+        }
+      )proto",
+      R"proto(
+        instructions {
+          vendor_syntax {
+            mnemonic: "VMPTRLD"
+            operands {
+              name: "m64"
+              addressing_mode: INDIRECT_ADDRESSING
+              encoding: MODRM_RM_ENCODING
+              value_size_bits: 64
+              usage: USAGE_READ_WRITE
+            }
+          }
+          syntax {
+            mnemonic: "vmptrld"
+            operands { name: "qword ptr [rsi]" }
+          }
+          att_syntax {
+            mnemonic: "vmptrld"
+            operands { name: "(%rsi)" }
+          }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "NP 0F C7 /6"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 4039
+            modrm_usage: OPCODE_EXTENSION_IN_MODRM
+            modrm_opcode_extension: 6
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+            }
+          }
+          instruction_group_index: 6
+        })proto"};
+
+  for (const char* const instruction_set_proto : kInstructionSetProtos) {
+    // The transform should not modify these because they have /6 suffix.
+    TestTransform(AddVmxOperandInfo, instruction_set_proto,
+                  instruction_set_proto);
+  }
+}
+
+TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
+  constexpr int kLength = 2;
+  constexpr const char* const kInstructionSetProtos[kLength] = {
+      R"proto(
+        instructions {
+          vendor_syntax {
+            mnemonic: "INVEPT"
+            operands {
+              name: "r64"
+              addressing_mode: DIRECT_ADDRESSING
+              encoding: X86_REGISTER_ENCODING
+              value_size_bits: 64
+              usage: USAGE_READ_WRITE
+              register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+            }
+            operands {
+              name: "m128"
+              addressing_mode: INDIRECT_ADDRESSING
+              encoding: MODRM_RM_ENCODING
+              value_size_bits: 128
+              usage: USAGE_READ_WRITE
+            }
+          }
+          syntax {
+            mnemonic: "invept"
+            operands { name: "r10" }
+            operands { name: "xmmword ptr [rsi]" }
+          }
+          att_syntax {
+            mnemonic: "invept"
+            operands { name: "(%rsi)" }
+            operands { name: "%r10" }
+          }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "66 0F 38 80"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 997504
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_REQUIRED
+            }
+          }
+          instruction_group_index: 1
+        }
+      )proto",
+      R"proto(
+        instructions {
+          vendor_syntax {
+            mnemonic: "INVVPID"
+            operands {
+              name: "r64"
+              addressing_mode: DIRECT_ADDRESSING
+              encoding: X86_REGISTER_ENCODING
+              value_size_bits: 64
+              usage: USAGE_READ_WRITE
+              register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+            }
+            operands {
+              name: "m128"
+              addressing_mode: INDIRECT_ADDRESSING
+              encoding: MODRM_RM_ENCODING
+              value_size_bits: 128
+              usage: USAGE_READ_WRITE
+            }
+          }
+          syntax {
+            mnemonic: "invvpid"
+            operands { name: "r10" }
+            operands { name: "xmmword ptr [rsi]" }
+          }
+          att_syntax {
+            mnemonic: "invvpid"
+            operands { name: "(%rsi)" }
+            operands { name: "%r10" }
+          }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "66 0F 38 81"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 997505
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_REQUIRED
+            }
+          }
+          instruction_group_index: 2
+        }
+      )proto"};
+
+  constexpr const char* const kExpectedInstructionSetProtos[kLength] = {
+      R"proto(
+        instructions {
+          vendor_syntax {
+            mnemonic: "INVEPT"
+            operands {
+              name: "r64"
+              addressing_mode: DIRECT_ADDRESSING
+              encoding: X86_REGISTER_ENCODING
+              value_size_bits: 64
+              usage: USAGE_READ_WRITE
+              register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+            }
+            operands {
+              name: "m128"
+              addressing_mode: INDIRECT_ADDRESSING
+              encoding: MODRM_RM_ENCODING
+              value_size_bits: 128
+              usage: USAGE_READ_WRITE
+            }
+          }
+          syntax {
+            mnemonic: "invept"
+            operands { name: "r10" }
+            operands { name: "xmmword ptr [rsi]" }
+          }
+          att_syntax {
+            mnemonic: "invept"
+            operands { name: "(%rsi)" }
+            operands { name: "%r10" }
+          }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "66 0F 38 80 /r"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 997504
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_REQUIRED
+            }
+          }
+          instruction_group_index: 1
+        }
+      )proto",
+      R"proto(
+        instructions {
+          vendor_syntax {
+            mnemonic: "INVVPID"
+            operands {
+              name: "r64"
+              addressing_mode: DIRECT_ADDRESSING
+              encoding: X86_REGISTER_ENCODING
+              value_size_bits: 64
+              usage: USAGE_READ_WRITE
+              register_class: GENERAL_PURPOSE_REGISTER_64_BIT
+            }
+            operands {
+              name: "m128"
+              addressing_mode: INDIRECT_ADDRESSING
+              encoding: MODRM_RM_ENCODING
+              value_size_bits: 128
+              usage: USAGE_READ_WRITE
+            }
+          }
+          syntax {
+            mnemonic: "invvpid"
+            operands { name: "r10" }
+            operands { name: "xmmword ptr [rsi]" }
+          }
+          att_syntax {
+            mnemonic: "invvpid"
+            operands { name: "(%rsi)" }
+            operands { name: "%r10" }
+          }
+          available_in_64_bit: true
+          protection_mode: -1
+          raw_encoding_specification: "66 0F 38 81 /r"
+          feature_name: "VMX"
+          x86_encoding_specification {
+            opcode: 997505
+            legacy_prefixes {
+              rex_w_prefix: PREFIX_IS_IGNORED
+              operand_size_override_prefix: PREFIX_IS_REQUIRED
+            }
+          }
+          instruction_group_index: 2
+        }
+      )proto"};
+
+  for (int i = 0; i < kLength; ++i) {
+    const char* const instruction_set_proto = kInstructionSetProtos[i];
+    const char* const expected_instruction_set_proto =
+        kExpectedInstructionSetProtos[i];
+    TestTransform(AddVmxOperandInfo, instruction_set_proto,
+                  expected_instruction_set_proto);
+  }
+}
+
+TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
+  constexpr const char kVmCallProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: "VMCALL" }
+      syntax { mnemonic: "vmcall" }
+      att_syntax { mnemonic: "vmcall" }
+      available_in_64_bit: true
+      protection_mode: -1
+      raw_encoding_specification: "0F 01 C1"
+      feature_name: "VMX"
+      x86_encoding_specification {
+        opcode: 983489
+        legacy_prefixes {
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
+        }
+      }
+      instruction_group_index: 3
+    }
+  )proto";
+  constexpr const char kVmFuncProto[] = R"proto(
+    instructions {
+      description: "Invoke VMfunction specified in EAX."
+      vendor_syntax { mnemonic: "VMFUNC" }
+      feature_name: "VMX"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "NP 0F 01 D4"
+      instruction_group_index: 4
+    }
+  )proto";
+  constexpr const char kExpectedTransformedVmFuncProto[] = R"proto(
+    instructions {
+      description: "Invoke VMfunction specified in EAX."
+      vendor_syntax {
+        mnemonic: "VMFUNC"
+        operands {
+          addressing_mode: ANY_ADDRESSING_WITH_FIXED_REGISTERS
+          encoding: X86_REGISTER_EAX
+          name: "EAX"
+          usage: USAGE_READ
+          description: "VM Function to be invoked."
+        }
+      }
+      feature_name: "VMX"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "NP 0F 01 D4"
+      instruction_group_index: 4
+    }
+  )proto";
+
+  // Functions other than VMFUNC should not be changed.
+  TestTransform(FixVmFuncOperandInfo, kVmCallProto, kVmCallProto);
+
+  // VMFUNC should be fixed.
+  TestTransform(FixVmFuncOperandInfo, kVmFuncProto,
+                kExpectedTransformedVmFuncProto);
 }
 
 TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
@@ -456,6 +837,261 @@ TEST(AddRegisterClassToOperandsTest, AddRegisterClassToOperands) {
       }
     })proto";
   TestTransform(AddRegisterClassToOperands, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(AddMissingVexVOperandUsageTest, AddMissingVexOperandUsage) {
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "VMULPS"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 128
+          name: "xmm1"
+          usage: USAGE_WRITE
+        }
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 128
+          name: "xmm2"
+          usage: USAGE_READ
+        }
+        operands {
+          addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 128
+          name: "xmm3/m128"
+          usage: USAGE_READ
+        }
+      }
+      feature_name: "AVX"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "VEX.128.0F.WIG 59 /r"
+      x86_encoding_specification {
+        opcode: 3929
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          map_select: MAP_SELECT_0F
+        }
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "BLSI"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 32
+          name: "r32"
+          usage: USAGE_WRITE
+          register_class: GENERAL_PURPOSE_REGISTER_32_BIT
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 32
+          name: "m32"
+          usage: USAGE_READ
+        }
+      }
+      feature_name: "BMI1"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "VEX.NDD.LZ.0F38.W0 F3 /3"
+      x86_encoding_specification {
+        opcode: 997619
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 3
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
+        }
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "V4FMADDPS"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 512
+          name: "zmm1"
+          tags { name: "k1" }
+          tags { name: "z" }
+          usage: USAGE_READ_WRITE
+          register_class: VECTOR_REGISTER_512_BIT
+        }
+        operands {
+          addressing_mode: BLOCK_DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 2048
+          name: "zmm2+3"
+          usage: USAGE_READ
+          register_class: REGISTER_BLOCK_512_BIT
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 128
+          name: "m128"
+          usage: USAGE_READ
+        }
+      }
+      feature_name: "AVX512_4FMAPS"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "EVEX.DDS.512.F2.0F38.W0 9A /r"
+      x86_encoding_specification {
+        opcode: 997530
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: EVEX_PREFIX
+          vector_size: VEX_VECTOR_SIZE_512_BIT
+          mandatory_prefix: MANDATORY_PREFIX_REPNE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
+          opmask_usage: EVEX_OPMASK_IS_OPTIONAL
+          masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
+        }
+      }
+    }
+  )proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "VMULPS"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 128
+          name: "xmm1"
+          usage: USAGE_WRITE
+        }
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 128
+          name: "xmm2"
+          usage: USAGE_READ
+        }
+        operands {
+          addressing_mode: ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 128
+          name: "xmm3/m128"
+          usage: USAGE_READ
+        }
+      }
+      feature_name: "AVX"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "VEX.128.0F.WIG 59 /r"
+      x86_encoding_specification {
+        opcode: 3929
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vector_size: VEX_VECTOR_SIZE_128_BIT
+          map_select: MAP_SELECT_0F
+          vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
+        }
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "BLSI"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 32
+          name: "r32"
+          usage: USAGE_WRITE
+          register_class: GENERAL_PURPOSE_REGISTER_32_BIT
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 32
+          name: "m32"
+          usage: USAGE_READ
+        }
+      }
+      feature_name: "BMI1"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "VEX.NDD.LZ.0F38.W0 F3 /3"
+      x86_encoding_specification {
+        opcode: 997619
+        modrm_usage: OPCODE_EXTENSION_IN_MODRM
+        modrm_opcode_extension: 3
+        vex_prefix {
+          prefix_type: VEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
+          vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
+        }
+      }
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "V4FMADDPS"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 512
+          name: "zmm1"
+          tags { name: "k1" }
+          tags { name: "z" }
+          usage: USAGE_READ_WRITE
+          register_class: VECTOR_REGISTER_512_BIT
+        }
+        operands {
+          addressing_mode: BLOCK_DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 2048
+          name: "zmm2+3"
+          usage: USAGE_READ
+          register_class: REGISTER_BLOCK_512_BIT
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 128
+          name: "m128"
+          usage: USAGE_READ
+        }
+      }
+      feature_name: "AVX512_4FMAPS"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "EVEX.DDS.512.F2.0F38.W0 9A /r"
+      x86_encoding_specification {
+        opcode: 997530
+        modrm_usage: FULL_MODRM
+        vex_prefix {
+          prefix_type: EVEX_PREFIX
+          vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
+          vector_size: VEX_VECTOR_SIZE_512_BIT
+          mandatory_prefix: MANDATORY_PREFIX_REPNE
+          map_select: MAP_SELECT_0F38
+          vex_w_usage: VEX_W_IS_ZERO
+          opmask_usage: EVEX_OPMASK_IS_OPTIONAL
+          masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
+        }
+      }
+    }
+  )proto";
+
+  TestTransform(AddMissingVexVOperandUsage, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 

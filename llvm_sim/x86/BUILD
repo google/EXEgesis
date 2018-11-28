@@ -1,7 +1,7 @@
 licenses(["notice"])  # Apache 2.0
 
 package(
-    default_visibility = ["//visibility:private"],
+    default_visibility = ["//visibility:public"],
     features = [
         # TODO(courbet): Bazel rules prevent us from accessing X86InstrInfo.h but in
         # cmake we should be good.
@@ -46,6 +46,7 @@ cc_test(
         "//llvm_sim/x86/testdata:test4.s",
         "//llvm_sim/x86/testdata:test5.s",
         "//llvm_sim/x86/testdata:test6.s",
+        "//llvm_sim/x86/testdata:test9.s",
     ],
     deps = [
         ":faucon_lib",
@@ -71,11 +72,12 @@ cc_library(
     hdrs = ["faucon_lib.h"],
     deps = [
         ":constants",
-        "//llvm_sim/framework:component",
         "//llvm_sim/framework:context",
         "//llvm_sim/framework:log",
+        "@llvm_git//:ir",
         "@llvm_git//:machine_code",
         "@llvm_git//:machine_code_disassembler",
+        "@llvm_git//:machine_code_parser",
         "@llvm_git//:object",
         "@llvm_git//:support",
     ],

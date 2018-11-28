@@ -15,9 +15,9 @@
 #include "exegesis/arm/xml/docvars.h"
 
 #include <string>
-#include <unordered_map>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/arm/xml/docvars.pb.h"
@@ -53,7 +53,7 @@ using KeyString = std::string;
 using KeyProtoId = int;
 using ValueString = std::string;
 using ValueEnum = int;
-using ValueStringToEnumMapping = std::unordered_map<ValueString, ValueEnum>;
+using ValueStringToEnumMapping = absl::flat_hash_map<ValueString, ValueEnum>;
 
 // Extracts all key/value pairs from a given <docvars> XML node into a multimap.
 std::unordered_multimap<KeyString, ValueString> ReadDocVars(XMLNode* node) {
@@ -72,10 +72,10 @@ std::unordered_multimap<KeyString, ValueString> ReadDocVars(XMLNode* node) {
 }
 
 // Returns the mapping of DocVars key/value pairs to safe proto enum values.
-const std::unordered_map<KeyString,
-                         std::pair<KeyProtoId, ValueStringToEnumMapping>>&
+const absl::flat_hash_map<KeyString,
+                          std::pair<KeyProtoId, ValueStringToEnumMapping>>&
 GetDocVarsEnumMapping() {
-  static const auto* const kDocVarsEnumMapping = new std::unordered_map<
+  static const auto* const kDocVarsEnumMapping = new absl::flat_hash_map<
       KeyString, std::pair<KeyProtoId, ValueStringToEnumMapping>>({
       {"address-form",
        {DocVars::kAddressFormFieldNumber,
@@ -644,12 +644,12 @@ StatusOr<DocVars> ParseDocVars(XMLNode* node) {
     }
 
     // Now handle regular DocVar enum values using reflection.
-    const auto* mapping = FindOrNull(GetDocVarsEnumMapping(), key);
+    const auto* mapping = gtl::FindOrNull(GetDocVarsEnumMapping(), key);
     if (!mapping) {
       return UnimplementedError(absl::StrCat("Unknown docvar key '", key, "'"));
     }
     const auto* desc = DocVars::descriptor()->FindFieldByNumber(mapping->first);
-    const auto* enum_value = FindOrNull(mapping->second, value);
+    const auto* enum_value = gtl::FindOrNull(mapping->second, value);
     if (!enum_value) {
       const auto& type = reflection->GetEnum(result, desc)->type()->name();
       return UnimplementedError(

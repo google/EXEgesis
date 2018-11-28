@@ -34,22 +34,30 @@ http_archive(
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "6bfd537802d752df663e40ada736e7079776bbd81040ded6164c651443b0d02c",
-    strip_prefix = "protobuf-35119e39a07f426f3c48a1bfb41d862994223742",
+    sha256 = "9e51a8d5bf24bfc095965538666c34103fbf5b759fc1e8769580e7416ce7f0cd",
+    strip_prefix = "protobuf-9313cdc442c22bc62694742597ce7c543d195a73",
     urls = [
-        "https://mirror.bazel.build/github.com/google/protobuf/archive/35119e39a07f426f3c48a1bfb41d862994223742.tar.gz",
-        "https://github.com/google/protobuf/archive/35119e39a07f426f3c48a1bfb41d862994223742.tar.gz",
+        "https://mirror.bazel.build/github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
+        "https://github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
     ],
 )
 
 http_archive(
     name = "com_google_protobuf_cc",
-    sha256 = "6bfd537802d752df663e40ada736e7079776bbd81040ded6164c651443b0d02c",
-    strip_prefix = "protobuf-35119e39a07f426f3c48a1bfb41d862994223742",
+    sha256 = "9e51a8d5bf24bfc095965538666c34103fbf5b759fc1e8769580e7416ce7f0cd",
+    strip_prefix = "protobuf-9313cdc442c22bc62694742597ce7c543d195a73",
     urls = [
-        "https://mirror.bazel.build/github.com/google/protobuf/archive/35119e39a07f426f3c48a1bfb41d862994223742.tar.gz",
-        "https://github.com/google/protobuf/archive/35119e39a07f426f3c48a1bfb41d862994223742.tar.gz",
+        "https://mirror.bazel.build/github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
+        "https://github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
     ],
+)
+
+# Required by protobuf.
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
+    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
+    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
 )
 
 # ===== googletest =====
@@ -140,11 +148,11 @@ new_git_repository(
 new_http_archive(
     name = "tinyxml2_git",  # zlib license
     build_file = "tinyxml2.BUILD",
-    sha256 = "14b38ef25cc136d71339ceeafb4856bb638d486614103453eccd323849267f20",
-    strip_prefix = "tinyxml2-4.0.1",
+    sha256 = "cdf0c2179ae7a7931dba52463741cf59024198bbf9673bf08415bcb46344110f",
+    strip_prefix = "tinyxml2-6.2.0",
     urls = [
-        "https://mirror.bazel.build/github.com/leethomason/tinyxml2/archive/4.0.1.tar.gz",
-        "https://github.com/leethomason/tinyxml2/archive/4.0.1.tar.gz",
+        "https://mirror.bazel.build/github.com/leethomason/tinyxml2/archive/6.2.0.tar.gz",
+        "https://github.com/leethomason/tinyxml2/archive/6.2.0.tar.gz",
     ],
 )
 
@@ -165,14 +173,14 @@ http_archive(
 new_http_archive(
     name = "llvm_git",
     build_file = "llvm.BUILD",
-    sha256 = "7b3d193923b927c4a13bfbb333a745691ed91016356fa87aa6acc83a4a25b237",
-    strip_prefix = "llvm-2dfeba53c3dee5dad9ae60afdc8a038b4153d12f",
+    sha256 = "543e4980893f102de903588be5af724f09d7fdc94c0aeda9bc4ce756aa90213a",
+    strip_prefix = "llvm-2bb2152d87d309941baa588cac323a4cbb8b18d7",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/2dfeba53c3dee5dad9ae60afdc8a038b4153d12f.tar.gz",
-        "https://github.com/llvm-mirror/llvm/archive/2dfeba53c3dee5dad9ae60afdc8a038b4153d12f.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/2bb2152d87d309941baa588cac323a4cbb8b18d7.tar.gz",
+        "https://github.com/llvm-mirror/llvm/archive/2bb2152d87d309941baa588cac323a4cbb8b18d7.tar.gz",
     ],
 )
 
@@ -180,7 +188,7 @@ new_http_archive(
 
 http_file(
     name = "intel_sdm_pdf",
-    sha256 = "d1e056c9df6e02fe8ef7b7f886a6da48527f8cd76000012a483d0680c3a89811",
+    sha256 = "3ba44a3fe3ce564ca5d7ef3d9a4cb6320d9f69c5440e11103f02278c8c5e6da0",
     url = "https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf",
 )
 

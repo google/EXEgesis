@@ -36,9 +36,14 @@ namespace simulator {
 std::vector<llvm::MCInst> ParseIACAMarkedCodeFromFile(
     const GlobalContext& Context, const std::string& FileName);
 
-// Parses the asm code in the given text file.Returns an empty vector on error.
+// Parses the asm code in the given text file. Returns an empty vector on error.
 std::vector<llvm::MCInst> ParseAsmCodeFromFile(
     const GlobalContext& Context, const std::string& FileName,
+    llvm::InlineAsm::AsmDialect Dialect);
+
+// Parses the asm code from a string. Returns an empty vector on error.
+std::vector<llvm::MCInst> ParseAsmCodeFromString(
+    const GlobalContext& Context, const std::string& Assembly,
     llvm::InlineAsm::AsmDialect Dialect);
 
 // Returns the code in between IACA markers. Returns an empty vector on error.

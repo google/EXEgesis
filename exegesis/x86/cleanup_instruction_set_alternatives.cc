@@ -16,14 +16,15 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
@@ -50,7 +51,7 @@ struct OperandAlternative {
   uint32_t value_size;
 };
 using OperandAlternativeMap =
-    std::unordered_map<std::string, std::vector<OperandAlternative>>;
+    absl::flat_hash_map<std::string, std::vector<OperandAlternative>>;
 
 // Returns the list of operand alternatives indexed by the name of the operand.
 // TODO(ondrasej): Re-enable broadcasted arguments when we have a way to
@@ -247,9 +248,9 @@ const OperandAlternativeMap& GetOperandAlternativesByName() {
 // name encountered by AddAlternatives must be defined either in
 // GetOperandAlternativesByName(), or in GetUnmodifiedOperandNames(), so that we
 // can catch new operand names whenever a new version of the SDM is released.
-const std::unordered_set<std::string> GetUnmodifiedOperandNames() {
+const absl::flat_hash_set<std::string> GetUnmodifiedOperandNames() {
   static const auto* const kFallThroughOperandNames =
-      new std::unordered_set<std::string>(
+      new absl::flat_hash_set<std::string>(
           {// Concrete operands.
            "AL", "AX", "EAX", "RAX", "CL", "CR0-CR7", "DR0-DR7", "DX", "FS",
            "GS", "ST(0)",
@@ -289,21 +290,21 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
   Status status = OkStatus();
   const OperandAlternativeMap& alternatives_by_name =
       GetOperandAlternativesByName();
-  const std::unordered_set<std::string>& unmodified_operand_names =
+  const absl::flat_hash_set<std::string>& unmodified_operand_names =
       GetUnmodifiedOperandNames();
   std::vector<InstructionProto> new_instructions;
   std::set<std::string> unknown_operand_names;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     for (int operand_index = 0; operand_index < vendor_syntax->operands_size();
          ++operand_index) {
       InstructionOperand* const operand =
           vendor_syntax->mutable_operands(operand_index);
-      if (ContainsKey(unmodified_operand_names, operand->name())) continue;
+      if (unmodified_operand_names.contains(operand->name())) continue;
       const std::vector<OperandAlternative>* const alternatives =
-          FindOrNull(alternatives_by_name, operand->name());
+          gtl::FindOrNull(alternatives_by_name, operand->name());
       if (alternatives == nullptr) {
         unknown_operand_names.insert(operand->name());
         continue;
@@ -331,9 +332,10 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
       for (int i = 1; i < alternatives->size(); ++i) {
         const OperandAlternative& alternative = (*alternatives)[i];
         new_instructions.push_back(instruction);
+        InstructionFormat* const new_instruction_vendor_syntax =
+            GetOrAddUniqueVendorSyntaxOrDie(&new_instructions.back());
         InstructionOperand* const new_instruction_operand =
-            new_instructions.back().mutable_vendor_syntax()->mutable_operands(
-                operand_index);
+            new_instruction_vendor_syntax->mutable_operands(operand_index);
         new_instruction_operand->set_name(alternative.operand_name);
         new_instruction_operand->set_addressing_mode(
             alternative.addressing_mode);

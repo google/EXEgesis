@@ -20,6 +20,8 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/container/node_hash_set.h"
+
 namespace exegesis {
 
 // Represents an opcode of an instruction set architecture. Based on the
@@ -32,8 +34,8 @@ namespace exegesis {
 // the opcodes.
 class Opcode {
  public:
-  // A hasher that allows using the Opcode in std::unordered_map and
-  // std::unordered_set.
+  // A hasher that allows using the Opcode in hash-tables (such as,
+  // std::unordered_map, std::unordered_set, or absl::flat_hash_map).
   //
   // Example usage:
   // using OpcodeSet = std::unordered_set<Opcode, Opcode::Hasher>;
@@ -94,7 +96,7 @@ class Opcode {
   uint32_t value_;
 };
 
-using OpcodeSet = std::unordered_set<Opcode, Opcode::Hasher>;
+using OpcodeSet = absl::node_hash_set<Opcode, Opcode::Hasher>;
 
 std::ostream& operator<<(std::ostream& os, const exegesis::Opcode& opcode);
 

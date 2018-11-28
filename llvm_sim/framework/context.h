@@ -19,9 +19,10 @@
 #ifndef EXEGESIS_LLVM_SIM_FRAMEWORK_CONTEXT_H_
 #define EXEGESIS_LLVM_SIM_FRAMEWORK_CONTEXT_H_
 
-#include <unordered_map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/CodeGen/TargetSchedule.h"
 #include "llvm/MC/MCContext.h"
@@ -109,7 +110,7 @@ class GlobalContext {
       llvm::SmallVectorImpl<InstrUopDecomposition::Uop>* Uops) const;
 
   // A cache for GetResourceUnitsForUop.
-  mutable std::unordered_map<unsigned, std::unique_ptr<InstrUopDecomposition>>
+  mutable absl::flat_hash_map<unsigned, std::unique_ptr<InstrUopDecomposition>>
       DecompositionCache_;
 
   // Mutable because lazily initialized.
@@ -119,8 +120,7 @@ class GlobalContext {
 // This is the block context which is valid for a single basic block simulation.
 class BlockContext {
  public:
-  explicit BlockContext(const std::vector<llvm::MCInst>& Instructions,
-                        bool IsLoop);
+  BlockContext(llvm::ArrayRef<llvm::MCInst> Instructions, bool IsLoop);
 
   // Returns the number of instructions in the basic block.
   size_t GetNumBasicBlockInstructions() const { return Instructions_.size(); }
@@ -135,7 +135,7 @@ class BlockContext {
   }
 
  private:
-  const std::vector<llvm::MCInst>& Instructions_;
+  const llvm::ArrayRef<llvm::MCInst> Instructions_;
   const bool IsLoop_;
 };
 

@@ -215,10 +215,11 @@ int Simulate() {
     return 0;
   }
 
-  const auto InvThrougput = ComputeInverseThroughput(BlockContext, *Log);
-  std::cout << "Block Inverse Throughput (last " << InvThrougput.NumIterations
-            << " iterations): [" << InvThrougput.Min << "-" << InvThrougput.Max
-            << "] cycles per iteration\n";
+  const auto InvThroughput = ComputeInverseThroughput(BlockContext, *Log);
+  std::cout << "Block Inverse Throughput (last " << InvThroughput.NumIterations
+            << " iterations): [" << InvThroughput.Min << "-"
+            << InvThroughput.Max << "] cycles per iteration, "
+            << InvThroughput.TotalNumCycles << " cycles total\n";
 
   PrintPortPressures(*Context, BlockContext, *Log, *AsmPrinter);
 

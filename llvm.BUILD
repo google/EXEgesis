@@ -55,6 +55,7 @@ genrule(
 #define CONFIG_H
 #include "llvm/Config/llvm-config.h"
 #define ENABLE_BACKTRACES 0
+#define LLVM_ENABLE_CRASH_DUMPS 0
 #define HAVE_DIRENT_H 1
 #define HAVE_DLFCN_H 1
 #define HAVE_DLOPEN 1
@@ -367,8 +368,11 @@ cc_library(
 
 cc_library(
     name = "demangle",
-    srcs = glob(["lib/Demangle/*.cpp"]),
-    hdrs = ["include/llvm/Demangle/Demangle.h"],
+    srcs = glob([
+        "lib/Demangle/*.cpp",
+        "lib/Demangle/*.h",
+    ]),
+    hdrs = glob(["include/llvm/Demangle/*.h"]),
     visibility = ["//visibility:public"],
     deps = [":config"],
     includes = ["include"],
@@ -661,6 +665,7 @@ cc_library(
         "lib/MC/MCParser/*.h",
     ]),
     hdrs = glob(["include/llvm/MC/MCParser/*.h"]),
+    visibility = ["//visibility:public"],
     deps = [
         ":config",
         ":machine_code",
@@ -815,6 +820,7 @@ cc_library(
         "lib/Transforms/AggressiveInstCombine/*.h",
     ]),
     hdrs = [
+        "include/llvm-c/Transforms/AggressiveInstCombine.h",
         "include/llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h",
     ],
     deps = [

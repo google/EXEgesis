@@ -16,6 +16,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
+#include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/task/canonical_errors.h"
 
@@ -36,6 +37,20 @@ StatusOr<std::vector<uint8_t>> ParseHexString(absl::string_view hex_string) {
         absl::StrCat("Could not parse: ", hex_string));
   }
   return bytes;
+}
+
+void RemoveAllChars(std::string* text, absl::string_view chars) {
+  DCHECK(text != nullptr) << "Input `text` cannot be nullptr";
+  text->erase(std::remove_if(text->begin(), text->end(),
+                             [chars](const char c) {
+                               return chars.find(c) != absl::string_view::npos;
+                             }),
+              text->end());
+}
+
+void RemoveSpaceAndLF(std::string* text) {
+  static constexpr absl::string_view kRemovedChars = "\n\r ";
+  RemoveAllChars(text, kRemovedChars);
 }
 
 }  // namespace exegesis

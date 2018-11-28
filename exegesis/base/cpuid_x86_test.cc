@@ -101,7 +101,7 @@ TEST(CpuIdDumpTest, FromHost) {
   for (const auto& entry : dump_proto.x86_cpuid_dump().entries()) {
     const std::pair<uint32_t, uint32_t> leaf_and_subleaf =
         std::make_pair(entry.input().leaf(), entry.input().subleaf());
-    EXPECT_TRUE(InsertIfNotPresent(&leafs_and_subleafs, leaf_and_subleaf));
+    EXPECT_TRUE(gtl::InsertIfNotPresent(&leafs_and_subleafs, leaf_and_subleaf));
   }
 }
 #endif  // __x86_64__
@@ -256,11 +256,12 @@ TEST(CpuIdDumpTest, ToCpuInfo_Skylake) {
       CPUID 0000000D: 00000040-00000400-00000000-00000000
       CPUID 80000001: 00000000-00000000-00000121-2C100000)",
       "intel:06_5E",
-      {"ADX",     "AES",   "AVX",     "AVX2",  "BMI1", "BMI2",     "CLFLUSHOPT",
-       "CLFSH",   "CLMUL", "FMA",     "F16C",  "FPU",  "FSGSBASE", "HLE",
-       "INVPCID", "LZCNT", "MMX",     "MOVBE", "MPX",  "PRFCHW",   "RDRAND",
-       "RDSEED",  "RTM",   "SMAP",    "SSE",   "SSE2", "SSE3",     "SSE4_1",
-       "SSE4_2",  "SSSE3", "XSAVEOPT"});
+      {"ADX",        "AES",       "AVX",     "AVX2",   "BMI1",   "BMI2",
+       "CLFLUSHOPT", "CLFSH",     "CLMUL",   "FMA",    "F16C",   "FPU",
+       "FSGSBASE",   "HLE",       "INVPCID", "LZCNT",  "MMX",    "MOVBE",
+       "MPX",        "PREFETCHW", "RDRAND",  "RDSEED", "RTM",    "SMAP",
+       "SSE",        "SSE2",      "SSE3",    "SSE4_1", "SSE4_2", "SSSE3",
+       "XSAVEOPT"});
 }
 
 TEST(CpuIdDumpTest, ToString) {

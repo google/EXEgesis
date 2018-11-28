@@ -14,9 +14,9 @@
 
 #include "exegesis/base/microarchitecture.h"
 
-#include <unordered_map>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
@@ -73,18 +73,18 @@ bool MicroArchitecture::IsProtectedMode(int protection_mode) const {
 
 namespace {
 
-std::unordered_map<std::string, std::string>*
+absl::flat_hash_map<std::string, std::string>*
 MicroArchitectureIdByCpuModelId() {
   static auto* const result =
-      new std::unordered_map<std::string, std::string>();
+      new absl::flat_hash_map<std::string, std::string>();
   return result;
 }
 
-std::unordered_map<std::string, std::unique_ptr<const MicroArchitecture>>*
+absl::flat_hash_map<std::string, std::unique_ptr<const MicroArchitecture>>*
 MicroArchitecturesById() {
   static auto* const result =
-      new std::unordered_map<std::string,
-                             std::unique_ptr<const MicroArchitecture>>();
+      new absl::flat_hash_map<std::string,
+                              std::unique_ptr<const MicroArchitecture>>();
   return result;
 }
 
@@ -93,7 +93,7 @@ MicroArchitecturesById() {
 StatusOr<std::string> GetMicroArchitectureForCpuModelId(
     const std::string& cpu_model_id) {
   const std::string* const microarchitecture_id =
-      FindOrNull(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
+      gtl::FindOrNull(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
   if (microarchitecture_id == nullptr) {
     return NotFoundError(
         absl::StrCat("The CPU model ID was not found: ", cpu_model_id));
@@ -103,7 +103,7 @@ StatusOr<std::string> GetMicroArchitectureForCpuModelId(
 
 const std::string& GetMicroArchitectureIdForCpuModelOrDie(
     const std::string& cpu_model_id) {
-  return FindOrDie(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
+  return gtl::FindOrDie(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
 }
 
 namespace internal {
@@ -117,8 +117,8 @@ void RegisterMicroArchitectures::RegisterFromProto(
        microarchitectures.microarchitectures()) {
     const std::string& microarchitecture_id = microarchitecture_proto.id();
     for (const std::string& model_id : microarchitecture_proto.model_ids()) {
-      InsertOrDie(microarchitecture_id_by_cpumodel_id, model_id,
-                  microarchitecture_id);
+      gtl::InsertOrDie(microarchitecture_id_by_cpumodel_id, model_id,
+                       microarchitecture_id);
     }
     const auto insert_result = microarchitectures_by_id->emplace(
         microarchitecture_id,
@@ -134,13 +134,15 @@ void RegisterMicroArchitectures::RegisterFromProto(
 const MicroArchitecture* MicroArchitecture::FromId(
     const std::string& microarchitecture_id) {
   const std::unique_ptr<const MicroArchitecture>* const result =
-      FindOrNull(*MicroArchitecturesById(), microarchitecture_id);
+      gtl::FindOrNull(*MicroArchitecturesById(), microarchitecture_id);
   return result ? result->get() : nullptr;
 }
 
 const MicroArchitecture& MicroArchitecture::FromIdOrDie(
     const std::string& microarchitecture_id) {
-  return *CHECK_NOTNULL(FromId(microarchitecture_id));
+  auto to_return = FromId(microarchitecture_id);
+  CHECK(to_return != nullptr);
+  return *to_return;
 }
 
 StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroArchitectureId(

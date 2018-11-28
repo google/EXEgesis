@@ -221,8 +221,116 @@ TEST(SortByVendorSyntaxTest, Sort) {
       }
       encoding_scheme: 'NP'
       raw_encoding_specification: '6D'
+    }
+    instructions {
+      vendor_syntax { mnemonic: "ENCLS" }
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "NP 0F 01 CF"
+      leaf_instructions {
+        vendor_syntax {
+          mnemonic: "EAUG"
+          operands {
+            encoding: X86_REGISTER_EAX
+            name: "EAX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "EAUG (In)"
+            value: "\r"
+          }
+          operands {
+            encoding: X86_REGISTER_RBX
+            name: "RBX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of a SECINFO (In)"
+          }
+          operands {
+            encoding: X86_REGISTER_RCX
+            name: "RCX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of the destination EPC page (In)"
+          }
+        }
+      }
+      leaf_instructions {
+        vendor_syntax {
+          mnemonic: "EADD"
+          operands {
+            encoding: X86_REGISTER_EAX
+            name: "EAX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "EADD (In)"
+            value: "\001"
+          }
+          operands {
+            encoding: X86_REGISTER_RBX
+            name: "RBX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of a PAGEINFO (In)"
+          }
+          operands {
+            encoding: X86_REGISTER_RCX
+            name: "RCX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of the destination EPC page (In)"
+          }
+        }
+      }
     })proto";
   constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax { mnemonic: "ENCLS" }
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "NP 0F 01 CF"
+      leaf_instructions {
+        vendor_syntax {
+          mnemonic: "EADD"
+          operands {
+            encoding: X86_REGISTER_EAX
+            name: "EAX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "EADD (In)"
+            value: "\001"
+          }
+          operands {
+            encoding: X86_REGISTER_RBX
+            name: "RBX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of a PAGEINFO (In)"
+          }
+          operands {
+            encoding: X86_REGISTER_RCX
+            name: "RCX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of the destination EPC page (In)"
+          }
+        }
+      }
+      leaf_instructions {
+        vendor_syntax {
+          mnemonic: "EAUG"
+          operands {
+            encoding: X86_REGISTER_EAX
+            name: "EAX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "EAUG (In)"
+            value: "\r"
+          }
+          operands {
+            encoding: X86_REGISTER_RBX
+            name: "RBX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of a SECINFO (In)"
+          }
+          operands {
+            encoding: X86_REGISTER_RCX
+            name: "RCX"
+            data_type { kind: INTEGER bit_width: 64 }
+            description: "Address of the destination EPC page (In)"
+          }
+        }
+      }
+    }
     instructions {
       vendor_syntax {
         mnemonic: 'INS'

@@ -16,9 +16,9 @@
 
 #include <algorithm>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -59,7 +59,7 @@ TEST(GetRegisterSetTest, IsNotEmpty) {
 
 TEST(GetRegisterSetTest, RegisterNamesAreUnique) {
   const RegisterSetProto& registers = GetRegisterSet();
-  std::unordered_set<std::string> register_names;
+  absl::flat_hash_set<std::string> register_names;
   for (const RegisterGroupProto& group : registers.register_groups()) {
     for (const RegisterProto& reg : group.registers()) {
       SCOPED_TRACE(absl::StrCat("reg.name = ", reg.name()));

@@ -13,6 +13,7 @@ exports_files([
     "test4.s",
     "test5.s",
     "test6.s",
+    "test9.s",
 ])
 
 cc_binary(

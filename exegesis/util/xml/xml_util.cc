@@ -47,9 +47,8 @@ Status GetStatus(const XMLError& status) {
   if (status == XMLError::XML_SUCCESS) return OkStatus();
   // Use a dummy document to print a user-friendly error string.
   XMLDocument dummy;
-  dummy.SetError(status, "", "");
   return InternalError(
-      absl::StrCat("XML Error ", status, ": ", dummy.ErrorName()));
+      absl::StrCat("XML Error ", status, ": ", dummy.ErrorIDToName(status)));
 }
 
 std::string DebugString(const XMLNode* node) {
@@ -110,7 +109,8 @@ std::string ReadHtmlText(const XMLElement* element) {
   CHECK(element != nullptr);
   XMLPrinter printer(nullptr, /* compact = */ true, /* depth = */ 0);
   element->Accept(&printer);
-  return std::string(CHECK_NOTNULL(printer.CStr()));
+  CHECK(printer.CStr() != nullptr);
+  return std::string(printer.CStr());
 }
 
 }  // namespace xml

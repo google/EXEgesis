@@ -15,10 +15,11 @@
 #include "exegesis/x86/operand_translator.h"
 
 #include <string>
-#include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "base/stringprintf.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
@@ -40,8 +41,8 @@ namespace {
 // Returns an example of operand value for a given operand specification,
 // e.g. '0x11' for 'imm8', or 'xmm5' for 'xmm'.
 std::string TranslateOperand(const std::string& operand) {
-  static const std::unordered_map<std::string, std::string>* const
-      kOperandTranslation = new std::unordered_map<std::string, std::string>({
+  static const absl::flat_hash_map<std::string, std::string>* const
+      kOperandTranslation = new absl::flat_hash_map<std::string, std::string>({
           {"CR0-CR7", "CR0"},
           {"DR0-DR7", "DR0"},
           {"<XMM0>", ""},
@@ -106,7 +107,8 @@ std::string TranslateOperand(const std::string& operand) {
           {"vm64y", "[rsp + 8* ymm12]"},
           {"vm64z", "[rsp + 8* zmm13]"},
       });
-  return FindWithDefault(*kOperandTranslation, operand, operand);
+  return ::exegesis::gtl::FindWithDefault(*kOperandTranslation, operand,
+                                          operand);
 }
 
 #undef LABEL_OPERAND
@@ -115,27 +117,29 @@ std::string TranslateOperand(const std::string& operand) {
 
 std::string TranslateGPR(const std::string& operand) {
   // Note: keep in sync with clobbered registers in AddItineraries.
-  static const std::unordered_map<std::string, std::string>* const
-      kGPRLegacyTranslation = new std::unordered_map<std::string, std::string>({
-          {"r8", "ch"},
-          {"r16", "cx"},
-          {"r32", "ecx"},
-          {"r32a", "eax"},
-          {"r32b", "ebx"},
-          {"r64", "rcx"},
-          {"r64a", "rax"},
-          {"r64b", "rbx"},
-          // Warning: valid for r64 and r32
-          {"reg", "rdx"},
-      });
+  static const absl::flat_hash_map<std::string, std::string>* const
+      kGPRLegacyTranslation =
+          new absl::flat_hash_map<std::string, std::string>({
+              {"r8", "ch"},
+              {"r16", "cx"},
+              {"r32", "ecx"},
+              {"r32a", "eax"},
+              {"r32b", "ebx"},
+              {"r64", "rcx"},
+              {"r64a", "rax"},
+              {"r64b", "rbx"},
+              // Warning: valid for r64 and r32
+              {"reg", "rdx"},
+          });
 
-  return FindWithDefault(*kGPRLegacyTranslation, operand, operand);
+  return ::exegesis::gtl::FindWithDefault(*kGPRLegacyTranslation, operand,
+                                          operand);
 }
 
 std::string TranslateREX(const std::string& operand) {
   // Note: keep in sync with clobbered registers in AddItineraries.
-  static const std::unordered_map<std::string, std::string>* const
-      kGPRREXTranslation = new std::unordered_map<std::string, std::string>({
+  static const absl::flat_hash_map<std::string, std::string>* const
+      kGPRREXTranslation = new absl::flat_hash_map<std::string, std::string>({
           {"r8", "r8b"},
           {"r16", "r10w"},
           {"r32", "r10d"},
@@ -147,15 +151,17 @@ std::string TranslateREX(const std::string& operand) {
           // Warning: valid for r64 and r32
           {"reg", "r11"},
       });
-  return FindWithDefault(*kGPRREXTranslation, operand, operand);
+  return ::exegesis::gtl::FindWithDefault(*kGPRREXTranslation, operand,
+                                          operand);
 }
 
 InstructionOperand::Tag TranslateOperandTag(
     const InstructionOperand::Tag& tag) {
   static const auto* const kTagTranslation =
-      new std::unordered_map<std::string, std::string>({{"er", "rn-sae"}});
+      new absl::flat_hash_map<std::string, std::string>({{"er", "rn-sae"}});
   InstructionOperand::Tag code_tag;
-  code_tag.set_name(FindWithDefault(*kTagTranslation, tag.name(), tag.name()));
+  code_tag.set_name(::exegesis::gtl::FindWithDefault(*kTagTranslation,
+                                                     tag.name(), tag.name()));
   return code_tag;
 }
 
@@ -164,7 +170,8 @@ InstructionOperand::Tag TranslateOperandTag(
 InstructionFormat InstantiateOperands(const InstructionProto& instruction) {
   InstructionFormat result;
   // Deal with the fact that the LLVM assembler cannot assemble MOV r64,imm64.
-  const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+  const InstructionFormat& vendor_syntax =
+      GetVendorSyntaxWithMostOperandsOrDie(instruction);
   const bool is_movabs = vendor_syntax.mnemonic() == "MOV" &&
                          vendor_syntax.operands(1).name() == "imm64";
   result.set_mnemonic(is_movabs ? "MOVABS" : vendor_syntax.mnemonic());

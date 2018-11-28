@@ -15,11 +15,11 @@
 // A tool to compute itineraries for an instruction set.
 
 #include <functional>
-#include <unordered_set>
 #include <utility>
 
 #include "gflags/gflags.h"
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_split.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/itineraries/compute_itineraries.h"
@@ -53,15 +53,15 @@ void Main() {
       microarchitecture_data.itineraries();
 
   if (!FLAGS_exegesis_only_llvm_mnemonics.empty()) {
-    const std::unordered_set<std::string> mnemonics = absl::StrSplit(
+    const absl::flat_hash_set<std::string> mnemonics = absl::StrSplit(
         FLAGS_exegesis_only_llvm_mnemonics, ',', absl::SkipWhitespace());
     RemoveIf(instruction_set.mutable_instructions(),
              [&mnemonics](const InstructionProto* instruction) {
-               return !ContainsKey(mnemonics, instruction->llvm_mnemonic());
+               return !mnemonics.contains(instruction->llvm_mnemonic());
              });
     RemoveIf(itineraries.mutable_itineraries(),
              [&mnemonics](const ItineraryProto* itinerary) {
-               return !ContainsKey(mnemonics, itinerary->llvm_mnemonic());
+               return !mnemonics.contains(itinerary->llvm_mnemonic());
              });
   }
   LOG(ERROR) << itineraries::ComputeItineraries(instruction_set, &itineraries);

@@ -35,6 +35,9 @@ message InstructionOperand {
   // in Markdown format.
   string description = 9;
 
+  // Concrete value to be set for this operand, if applicable.
+  bytes value = 10;
+
   // Defines the possible addressing modes of an operand.
   // clang-format off
   enum AddressingMode {
@@ -66,8 +69,8 @@ message InstructionOperand {
           // The memory is addressed using a base register.
           INDIRECT_ADDRESSING_WITH_BASE = 0x221;
 
-          // The memory is addressed using only a displacement (the address of the
-          // memory location is hard-coded in the instruction).
+          // The memory is addressed using only a displacement (the address of
+          // the memory location is hard-coded in the instruction).
           INDIRECT_ADDRESSING_WITH_DISPLACEMENT = 0x222;
 
           // The memory is addressed using a base register and a displacement.
@@ -111,8 +114,8 @@ message InstructionOperand {
   // Defines the possible ways of encoding an operand.
   // clang-format off
   enum Encoding {
-    // The operand can be using any encoding. This value must not never be used
-    // in practice.
+    // The operand can be using any encoding. This value should never be used in
+    // practice.
     /* ABSTRACT */ ANY_ENCODING = 0;
       // The operand is a register operand of an x86-64 instruction.
       /* ABSTRACT */ X86_REGISTER_ENCODING = 0x1;
@@ -149,6 +152,13 @@ message InstructionOperand {
 
       // The operand is an implicit operand of the instruction.
       IMPLICIT_ENCODING = 0x2;
+
+          X86_REGISTER_EAX = 0x21;
+          X86_REGISTER_EBX = 0x22;
+          X86_REGISTER_RAX = 0x23;
+          X86_REGISTER_RBX = 0x24;
+          X86_REGISTER_RCX = 0x25;
+          X86_REGISTER_RDX = 0x26;
 
       // The operand is an immediate value. Its value is stored as a part of the
       // instruction encoding.
@@ -271,7 +281,7 @@ message InstructionFormat {
 }
 
 // Contains information about a single instruction.
-// Next index to use: 33
+// Next index to use: 34
 message InstructionProto {
   // A human-readable description of what the instruction actually does.
   // See the abovementioned Intel document, sections 3.1 and later.
@@ -287,7 +297,12 @@ message InstructionProto {
   // this field serves as a documentation/comment rather than for practical use,
   // and it might not compile with LLVM. To emit this instruction with LLVM, use
   // the data from 'syntax' instead.
-  InstructionFormat vendor_syntax = 3;
+  // There may be more than one instance of vendor syntax in case of
+  // instructions that have multiple mnemonics. The most notable example in the
+  // x86-64 world are the conditional instructions, where "different" conditions
+  // are tested using the same flag. For example, "not equal" and "not zero"
+  // boil down to the same condition "zero flag == 0".
+  repeated InstructionFormat vendor_syntax = 3;
 
   // The instruction in the LLVM variant of the assembly syntax used by the
   // chip vendor.
@@ -320,7 +335,7 @@ message InstructionProto {
   // mentioned Intel manual, section 2.1.5.
   string encoding_scheme = 20;
 
-  // The minimum  protected mode. The exact meaning depends on the
+  // The minimum protected mode. The exact meaning depends on the
   // architecture (e.g. x86-64 has 4 levels [0-3] and ARM has 8). The default is
   // to assume the least privileged mode.
   int32 protection_mode = 29;
@@ -352,6 +367,10 @@ message InstructionProto {
 
   // The index of the instruction group this instruction belongs to.
   uint32 instruction_group_index = 32;
+
+  // The leaf functions of this instruction. Only meaningful for SGX
+  // instructions, specifically, ENCLU, ENCLV, ENCLS.
+  repeated InstructionProto leaf_instructions = 33;
 }
 
 // Contains information about a group of instructions. (e.g. for Intel, this

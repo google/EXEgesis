@@ -188,15 +188,17 @@ class ConnectedComponentsFinder {
   // Returns true iff both nodes are in the same connected component.
   // Returns false if either node has not been already added with AddNode.
   bool Connected(T node1, T node2) {
-    return delegate_.Connected(exegesis::FindWithDefault(index_, node1, -1),
-                               exegesis::FindWithDefault(index_, node2, -1));
+    return delegate_.Connected(
+        ::exegesis::gtl::FindWithDefault(index_, node1, -1),
+        ::exegesis::gtl::FindWithDefault(index_, node2, -1));
   }
 
   // Finds the connected component containing a node, and returns the
   // total number of nodes in that component.  Returns zero iff the
   // node has not been already added with AddNode.
   int GetSize(T node) {
-    return delegate_.GetSize(exegesis::FindWithDefault(index_, node, -1));
+    return delegate_.GetSize(
+        ::exegesis::gtl::FindWithDefault(index_, node, -1));
   }
 
   // Finds all the connected components and assigns them to components.

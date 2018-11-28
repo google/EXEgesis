@@ -40,6 +40,38 @@ TEST(PrettyPrintTest, CpuModel) {
             "  P237");
 }
 
+TEST(PrettyPrintSyntaxTest, Avx512) {
+  const InstructionFormat proto =
+      ParseProtoFromStringOrDie<InstructionFormat>(R"proto(
+        mnemonic: "V4FMADDPS"
+        operands {
+          addressing_mode: DIRECT_ADDRESSING
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 512
+          name: "zmm1"
+          tags { name: "k1" }
+          tags { name: "z" }
+          usage: USAGE_READ_WRITE
+          register_class: VECTOR_REGISTER_512_BIT
+        }
+        operands {
+          addressing_mode: BLOCK_DIRECT_ADDRESSING
+          encoding: VEX_V_ENCODING
+          value_size_bits: 2048
+          name: "zmm2+3"
+          usage: USAGE_READ
+          register_class: REGISTER_BLOCK_512_BIT
+        }
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 128
+          name: "m128"
+          usage: USAGE_READ
+        })proto");
+  EXPECT_EQ(PrettyPrintSyntax(proto), "V4FMADDPS zmm1 {k1} {z}, zmm2+3, m128");
+}
+
 TEST(PrettyPrintTest, Instruction) {
   const InstructionProto proto =
       ParseProtoFromStringOrDie<InstructionProto>(R"proto(
@@ -87,8 +119,7 @@ TEST(PrettyPrintTest, Instruction) {
             map_select: MAP_SELECT_0F38
             vex_w_usage: VEX_W_IS_ZERO
           }
-        }
-      )proto");
+        })proto");
   EXPECT_EQ(PrettyPrintInstruction(proto, PrettyPrintOptions()),
             "VBROADCASTF128 ymm1, m128\n"
             "llvm: VBROADCASTF128");
@@ -98,6 +129,60 @@ TEST(PrettyPrintTest, Instruction) {
             "llvm: VBROADCASTF128\n"
             "intel: vbroadcastf128 ymm1, xmmword ptr [rsi]\n"
             "att: vbroadcastf128 (%rsi), %ymm1");
+}
+
+TEST(PrettyPrintTest, MultipleSyntaxes) {
+  const InstructionProto proto =
+      ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+        vendor_syntax {
+          mnemonic: "JZ"
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 32
+            name: "rel32"
+            usage: USAGE_READ
+          }
+        }
+        vendor_syntax {
+          mnemonic: "JE"
+          operands {
+            addressing_mode: NO_ADDRESSING
+            encoding: IMMEDIATE_VALUE_ENCODING
+            value_size_bits: 32
+            name: "rel32"
+            usage: USAGE_READ
+          }
+        }
+        syntax {
+          mnemonic: "je"
+          operands { name: "0x10000" }
+        }
+        att_syntax {
+          mnemonic: "je"
+          operands { name: "0x10000" }
+        }
+        available_in_64_bit: true
+        legacy_instruction: true
+        raw_encoding_specification: "0F 84 cd"
+        x86_encoding_specification {
+          opcode: 3972
+          legacy_prefixes {
+            rex_w_prefix: PREFIX_IS_IGNORED
+            operand_size_override_prefix: PREFIX_IS_IGNORED
+          }
+          code_offset_bytes: 4
+        })proto");
+  EXPECT_EQ(PrettyPrintSyntaxes(proto.vendor_syntax()), "JZ rel32\nJE rel32");
+  EXPECT_EQ(PrettyPrintInstruction(
+                proto, PrettyPrintOptions().WithAlternativeSyntax(true)),
+            "JZ rel32\n"
+            "JE rel32\n"
+            "intel: je 0x10000\n"
+            "att: je 0x10000");
+  EXPECT_EQ(PrettyPrintInstruction(
+                proto, PrettyPrintOptions().WithVendorSyntaxesOnOneLine(true)),
+            "JZ rel32; JE rel32");
 }
 
 TEST(PrettyPrintTest, Itinerary) {

@@ -15,8 +15,8 @@
 #include "exegesis/base/architecture_provider.h"
 
 #include <tuple>
-#include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/util/proto_util.h"
@@ -35,10 +35,10 @@ using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
 
 // Returns the registered providers.
-std::unordered_map<std::string,
-                   std::unique_ptr<const ArchitectureProtoProvider>>*
+absl::flat_hash_map<std::string,
+                    std::unique_ptr<const ArchitectureProtoProvider>>*
 GetProviders() {
-  static auto* const registry = new std::unordered_map<
+  static auto* const registry = new absl::flat_hash_map<
       std::string, std::unique_ptr<const ArchitectureProtoProvider>>();
   return registry;
 }
@@ -69,7 +69,7 @@ StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
   } else if (source == kPbSource) {
     return GetArchitectureProtoFromFile<ReadBinaryProto>(id);
   } else if (source == kRegisteredSource) {
-    const auto* provider = FindOrNull(*GetProviders(), id);
+    const auto* provider = gtl::FindOrNull(*GetProviders(), id);
     if (provider == nullptr) {
       return NotFoundError(
           absl::StrCat("No ArchitectureProtoProvider registered for id '", id,

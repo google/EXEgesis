@@ -33,6 +33,17 @@ using ::exegesis::util::Status;
 // cases are so unlikely in our data set that we can safely ignore them.
 Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set);
 
+// Removes instruction groups which don't contain any instruction.
+Status RemoveEmptyInstructionGroups(InstructionSetProto* instruction_set);
+
+// Removes legacy versions of instructions that have the same syntax and
+// encoding in 16, 32 and 64 bits and that are listed in the SDM as three
+// different instructions. As of 2018-08, there are two such instructions in the
+// SDM: LEAVE, and JCXZ/JECXZ/JZCXZ; the 64-bit versions are marked as
+// 'available in 64-bits', and not 'legacy instruction'. We remove the versions
+// that are marked as legacy.
+Status RemoveLegacyVersionsOfInstructions(InstructionSetProto* instruction_set);
+
 // Removes all instructions that use the pseudo-prefix "9B" (wait for pending
 // FPU exceptions). The byte "9B" actually is a stand-alone instruction, and
 // the disassembler treats it as such.

@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/CodeGen/MachineInstr.h"
 #include "llvm/CodeGen/MachineMemOperand.h"
@@ -101,6 +102,13 @@ std::vector<std::string> GetLLVMMnemonicListOrDie();
 template <typename StringType>
 llvm::StringRef MakeStringRef(const StringType& source) {
   return llvm::StringRef(source.data(), source.size());
+}
+
+// Converts an absl::Span<const T> to llvm::ArrayRef<T> pointing to the same
+// data.
+template <typename ValueType>
+llvm::ArrayRef<ValueType> MakeArrayRef(absl::Span<const ValueType> span) {
+  return llvm::ArrayRef<ValueType>(span.data(), span.size());
 }
 
 // Parses the asm dialect from a human-readable string representation. Accepted

@@ -112,6 +112,11 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "ADD"
+        operands { name: "m8" }
+        operands { name: "r8" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'MR'
@@ -125,6 +130,11 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "AL" }
+        operands { name: "imm8" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'I'
@@ -139,6 +149,11 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "RAX" }
+        operands { name: "imm32" }
+      }
       available_in_64_bit: true
       legacy_instruction: false
       encoding_scheme: 'I'
@@ -153,6 +168,11 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "AX" }
+        operands { name: "imm16" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'I'
@@ -167,6 +187,11 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "ADC"
+        operands { name: "EAX" }
+        operands { name: "imm32" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'I'
@@ -181,6 +206,10 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "JB"
+        operands { name: "rel8" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'D'
@@ -195,6 +224,10 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "NOT"
+        operands { name: "m8" }
+      }
       available_in_64_bit: true
       legacy_instruction: false
       encoding_scheme: 'M'
@@ -204,12 +237,16 @@ constexpr char kArchitectureProto[] = R"proto(
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         modrm_opcode_extension: 2
         legacy_prefixes {
-          rex_w_prefix: PREFIX_IS_REQUIRED
-          operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+          rex_w_prefix: PREFIX_IS_IGNORED
+          operand_size_override_prefix: PREFIX_IS_IGNORED
         }
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "VERR"
+        operands { name: "m16" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'M'
@@ -225,6 +262,12 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "VUNPCKHPD"
+        operands { name: "ymm1" }
+        operands { name: "ymm2" }
+        operands { name: "m256" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'RVM'
@@ -242,6 +285,16 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "VADDPD"
+        operands {
+          name: "xmm1"
+          tags { name: "k1" }
+          tags { name: "z" }
+        }
+        operands { name: "xmm2" }
+        operands { name: "m128" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'FV-RVM'
@@ -263,6 +316,16 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "VPADDD"
+        operands {
+          name: "xmm1"
+          tags { name: "k1" }
+          tags { name: "z" }
+        }
+        operands { name: "xmm2" }
+        operands { name: "m128" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'FV'
@@ -284,6 +347,12 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "VPADDD"
+        operands { name: "ymm1" }
+        operands { name: "ymm2" }
+        operands { name: "m256" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'RVM'
@@ -301,6 +370,12 @@ constexpr char kArchitectureProto[] = R"proto(
       }
     }
     instructions {
+      vendor_syntax {
+        mnemonic: "VPADDD"
+        operands { name: "xmm1" }
+        operands { name: "xmm2" }
+        operands { name: "m128" }
+      }
       available_in_64_bit: true
       legacy_instruction: true
       encoding_scheme: 'RVM'
@@ -383,7 +458,7 @@ TEST_F(X86ArchitectureTest, GetOpcodesReturnsAllOpcodes) {
     const EncodingSpecification& encoding_specification =
         architecture_->encoding_specification(i);
     const Opcode opcode = Opcode(encoding_specification.opcode());
-    EXPECT_TRUE(ContainsKey(opcodes, opcode))
+    EXPECT_TRUE(gtl::ContainsKey(opcodes, opcode))
         << "Opcode was missing: " << opcode;
   }
 }
@@ -430,10 +505,12 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
       {"opcode: 148", "90+rd", "90+rd"},
       {"opcode: 22", nullptr, nullptr},
       {R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
-               opcode: 0x15)proto", "66 15 iw", "66 15 iw"},
+               opcode: 0x15)proto",
+       "66 15 iw", "66 15 iw"},
       {R"proto(
          legacy_prefixes { rex { w: true } }
-         opcode: 0x15)proto", "REX.W + 15 id", "REX.W + 15 id"},
+         opcode: 0x15)proto",
+       "REX.W + 15 id", "REX.W + 15 id"},
       {R"proto(vex_prefix {
                  not_b: true
                  not_r: true
@@ -443,7 +520,8 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
                }
                opcode: 0x0f38f3
                modrm { register_operand: 2 addressing_mode: DIRECT }
-       )proto", "VEX.NDD.LZ.0F38.W1 F3 /2", "VEX.NDD.LZ.0F38.W1 F3 /2"},
+       )proto",
+       "VEX.NDD.LZ.0F38.W1 F3 /2", "VEX.NDD.LZ.0F38.W1 F3 /2"},
       {R"proto(vex_prefix {
                  not_b: true
                  not_r: true
@@ -452,41 +530,42 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
                  map_select: MAP_SELECT_0F38
                }
                opcode: 0x0f38f3
-               modrm { register_operand: 7 })proto", nullptr,
-       "VEX.NDD.LZ.0F38.W1 F3 /2"},
+               modrm { register_operand: 7 })proto",
+       nullptr, "VEX.NDD.LZ.0F38.W1 F3 /2"},
       // The opcode 0x14 always uses 8-bit values. Prefixes affecting the size
       // of the instruction are ignored.
       {R"proto(legacy_prefixes { rex { w: true } }
-               opcode: 0x14)proto", "14 ib", "14 ib"},
+               opcode: 0x14)proto",
+       "14 ib", "14 ib"},
       {R"proto(vex_prefix {
                  mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                  map_select: MAP_SELECT_0F
                  use_256_bit_vector_length: true
                }
-               opcode: 0x0ffe)proto", "VEX.NDS.256.66.0F.WIG FE /r",
-       "VEX.NDS.256.66.0F.WIG FE /r"},
+               opcode: 0x0ffe)proto",
+       "VEX.NDS.256.66.0F.WIG FE /r", "VEX.NDS.256.66.0F.WIG FE /r"},
       {R"proto(vex_prefix {
                  mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                  map_select: MAP_SELECT_0F
                  use_256_bit_vector_length: true
                  w: true
                }
-               opcode: 0x0ffe)proto", "VEX.NDS.256.66.0F.WIG FE /r",
-       "VEX.NDS.256.66.0F.WIG FE /r"},
+               opcode: 0x0ffe)proto",
+       "VEX.NDS.256.66.0F.WIG FE /r", "VEX.NDS.256.66.0F.WIG FE /r"},
       {R"proto(vex_prefix {
                  mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                  map_select: MAP_SELECT_0F
                }
-               opcode: 0x0ffe)proto", "VEX.NDS.128.66.0F.WIG FE /r",
-       "VEX.NDS.128.66.0F.WIG FE /r"},
+               opcode: 0x0ffe)proto",
+       "VEX.NDS.128.66.0F.WIG FE /r", "VEX.NDS.128.66.0F.WIG FE /r"},
       {R"proto(evex_prefix {
                  mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
                  map_select: MAP_SELECT_0F
                  w: true
                  vector_length_or_rounding: 0
                }
-               opcode: 0x0f58)proto", "EVEX.NDS.128.66.0F.W1 58 /r",
-       "EVEX.NDS.128.66.0F.W1 58 /r"}};
+               opcode: 0x0f58)proto",
+       "EVEX.NDS.128.66.0F.W1 58 /r", "EVEX.NDS.128.66.0F.W1 58 /r"}};
   for (const auto test_case : kTestCases) {
     SCOPED_TRACE(absl::StrCat("test_case.encoded_instruction_proto:\n",
                               test_case.encoded_instruction_proto));

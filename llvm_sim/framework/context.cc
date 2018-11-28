@@ -277,6 +277,18 @@ void GlobalContext::ComputeUopLatencies(
     const int Latency =
         (MaxDefLatency + (RemainingUops - 1)) / RemainingUops;  // Round up.
     Uop.EndCycle = Uop.StartCycle + Latency;
+    // NOTE(ondrasej): All uops must have latency at least 1, otherwise the
+    // simulator will crash later. If an instruction has more uops than overall
+    // latency, this loop will assign zero latency to at least one uop. We fix
+    // this by making its latency one and preserving the end cycle, so that the
+    // overall latency of the instruction is respected.
+    if (Uop.EndCycle == Uop.StartCycle) {
+      llvm::errs() << InstrInfo->getName(Opcode) << ": uop "
+                   << (Uops->size() - RemainingUops)
+                   << " has zero latency, fixing it to one.";
+      assert(Uop.StartCycle > 0);
+      Uop.StartCycle = Uop.EndCycle - 1;
+    }
     MaxDefLatency -= Latency;
     --RemainingUops;
     PrevEndCycle = Uop.EndCycle;
@@ -301,7 +313,7 @@ const InstrUopDecomposition& GlobalContext::GetInstructionDecomposition(
   return *Result;
 }
 
-BlockContext::BlockContext(const std::vector<llvm::MCInst>& Instructions,
+BlockContext::BlockContext(llvm::ArrayRef<llvm::MCInst> Instructions,
                            bool IsLoop)
     : Instructions_(Instructions), IsLoop_(IsLoop) {}
 

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "exegesis/util/instruction_syntax.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/descriptor.h"
@@ -105,7 +106,7 @@ RegisterInstructionSetTransform::RegisterInstructionSetTransform(
     InstructionSetTransformRawFunction transform) {
   InstructionSetTransformsByName& transforms_by_name =
       *GetMutableTransformsByName();
-  CHECK(!ContainsKey(transforms_by_name, transform_name))
+  CHECK(!gtl::ContainsKey(transforms_by_name, transform_name))
       << "Transform name '" << transform_name << "' is already used!";
   InstructionSetTransform transform_wrapper =
       [transform_name, transform](InstructionSetProto* instruction_set) {
@@ -257,8 +258,12 @@ int CompareOperandTags(const InstructionFormat& vendor_syntax_a,
 
 bool LessThan(const InstructionProto& instruction_a,
               const InstructionProto& instruction_b) {
-  const InstructionFormat& vendor_syntax_a = instruction_a.vendor_syntax();
-  const InstructionFormat& vendor_syntax_b = instruction_b.vendor_syntax();
+  // TODO(ondrasej): Implement proper sorting of vendor syntaxes, or reuse the
+  // sorting from the instruction set diff tool.
+  const InstructionFormat& vendor_syntax_a =
+      GetAnyVendorSyntaxOrDie(instruction_a);
+  const InstructionFormat& vendor_syntax_b =
+      GetAnyVendorSyntaxOrDie(instruction_b);
 
   int comparison =
       vendor_syntax_a.mnemonic().compare(vendor_syntax_b.mnemonic());
@@ -286,6 +291,12 @@ Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   std::stable_sort(instructions->begin(), instructions->end(), LessThan);
+  for (InstructionProto& instruction : *instructions) {
+    google::protobuf::RepeatedPtrField<InstructionProto>* const
+        leaf_instructions = instruction.mutable_leaf_instructions();
+    std::stable_sort(leaf_instructions->begin(), leaf_instructions->end(),
+                     LessThan);
+  }
   return OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(SortByVendorSyntax, 7000);

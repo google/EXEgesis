@@ -21,17 +21,26 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "exegesis/proto/instructions.pb.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
+#include "exegesis/util/strings.h"
 #include "exegesis/util/text_processing.h"
 #include "exegesis/x86/pdf/vendor_syntax.h"
 #include "glog/logging.h"
+#include "net/proto2/util/public/repeated_field_util.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
 
@@ -48,6 +57,286 @@ using exegesis::pdf::PdfTextTableRow;
 
 // The top/bottom page margin, in pixels.
 constexpr const float kPageMargin = 50.0f;
+
+// We categorise instructions into four classes:
+//  VMX: VMX instructions.
+//  SGX: Encalve instructions, including ENCLS, ENCLU and ENCLV.
+//  LEAF_SGX: Leaf functions available with ENCLS, ENCLU or ENCLV.
+//  REGULAR: Other instructions in the manual.
+enum InstructionType { REGULAR = 0, VMX = 1, SGX = 2, LEAF_SGX = 3 };
+constexpr absl::string_view kInstructionTypeText[] = {"REGULAR", "VMX", "SGX",
+                                                      "LEAF_SGX"};
+absl::string_view ToString(const InstructionType& instruction_type) {
+  return kInstructionTypeText[instruction_type];
+}
+
+// Names of SGX instructions. Note that the order of these strings must match
+// the order of elements in ParseContext::sgx_instructions_set.
+constexpr absl::string_view kSgxInstructionMnemonics[] = {"ENCLS", "ENCLU",
+                                                          "ENCLV"};
+
+// Number of SGX main instructions.
+constexpr int kSgxInstructionsCount = 3;
+
+int GetSgxIndexByName(absl::string_view mnemonic) {
+  for (int i = 0; i < kSgxInstructionsCount; ++i) {
+    if (kSgxInstructionMnemonics[i] == mnemonic) return i;
+  }
+  LOG(FATAL) << "Unknown mnemonic " << mnemonic;
+  return -1;
+}
+
+// Class to support statshing additional information as we parse the pages.
+//
+// Some fields which correlate to the current InstructionProto are resettable
+// for each InstructionProto that we parse, and some fields are kept around to
+// the end of the parse phase.
+class ParseContext {
+ public:
+  void Reset() {
+    section_index_ = 0;
+    instruction_index_ = 0;
+    main_sgx_index_ = -1;
+    registers_.clear();
+    instruction_type_ = InstructionType::REGULAR;
+  }
+
+  // ---------- Getters and Setters ---------------
+  const InstructionType& instruction_type() const { return instruction_type_; }
+  void set_instruction_type(InstructionType type) { instruction_type_ = type; }
+
+  int section_index() const { return section_index_; }
+  void set_section_index(int index) { section_index_ = index; }
+
+  int instruction_index() const { return instruction_index_; }
+  void set_instruction_index(int index) { instruction_index_ = index; }
+
+  int GetRegistersCount() { return registers_.size(); }
+  absl::string_view GetRegister(int index) const { return registers_[index]; }
+  void AddRegister(std::string register_name) {
+    registers_.push_back(std::move(register_name));
+  }
+
+  // Registers the main SGX instruction. This will fail if we have already
+  // registered an instruction with this same mnemonic but which is different
+  // than this instruction.
+  void AddMainSgxInstruction(absl::string_view main_mnemonic,
+                             InstructionProto* instruction);
+
+  // Adds the InstructionProto to the set of leaf instructions.
+  // main_mnemonic: the mnemonic of the SGX main instruction that this leaf
+  //                belongs to.
+  // leaf: the pointer to the leaf instruction in the SdmDocument.
+  void AddLeafSgxInstruction(absl::string_view main_mnemonic,
+                             InstructionProto* leaf);
+
+  // Adds a the given register and its concreate value as a new
+  // InstructionOperand to the given leaf_sgx instruction.
+  void AddRegisterOperandValue(InstructionProto* leaf_sgx,
+                               std::string register_name, std::string value);
+
+  // Adds a the given register and description as a new
+  // InstructionOperand to the given leaf_sgx instruction.
+  void AddRegisterOperandDescription(InstructionProto* leaf_sgx,
+                                     absl::string_view register_name,
+                                     absl::string_view description);
+
+  // ---------- Helper methods ---------------
+  // Returns true IFF the current instruction is a leaf SGX function.
+  bool IsLeafSgx() const {
+    return instruction_type_ == InstructionType::LEAF_SGX;
+  }
+
+  // Returns true IFF the current instruction is a VMX intruction.
+  bool IsVmx() const { return instruction_type_ == InstructionType::VMX; }
+
+  // Returns the string reperensentation of the current instruction's type.
+  absl::string_view GetInstructionTypeAsString() const {
+    return ToString(instruction_type_);
+  }
+
+  // Adds the leaf SGX instructions into their main InstructionProto and removes
+  // them from the SdmDocument.
+  void RelocateSgxLeafInstructions(SdmDocument* sdm_document);
+
+ private:
+  // Returns the implicit-register Encoding corresponding to the given name.
+  static InstructionOperand::Encoding GetRegisterEncodingByName(
+      absl::string_view name);
+
+  // Adds a new register operand for the given leaf_sgx and returns the mutable
+  // InstructionOperand.
+  InstructionOperand* AddRegisterOperand(InstructionProto* leaf_sgx,
+                                         std::string register_name);
+
+  // ---------- Resettable fields ---------------
+  // Type of the current instruction.
+  InstructionType instruction_type_;
+  // Current section index.
+  int section_index_;
+  // Current instruction index.
+  int instruction_index_;
+  // The index corresponding to the main SGX instruction. Only applicable if
+  // the current instruction is a leaf SGX instruction.
+  int main_sgx_index_ = -1;
+  // Vector of registers in the operand-encoding table. Only applicable if the
+  // current instruction is a leaf SGX instruction.
+  std::vector<std::string> registers_;
+
+  // ------------ Persistent fields -----------
+
+  // Represents an SGX instruction (ENCLU, ENCLS or ENCLUV) and its leaf
+  // instructions.
+  struct SgxInstructionsSet {
+    // Pointer to InstructionProto of the main instruction in the SdmDocument.
+    InstructionProto* main_instruction = nullptr;
+
+    // Set of pointers to SGX leaf-instructions in the SdmDocument.
+    absl::flat_hash_set<InstructionProto*> leaf_instructions;
+
+    // Set of section_index of the InstructionProto in leaf_instructions.
+    //
+    // We use these to quickly locate them in the SdmDocument and remove them
+    // after they have been moved into their main InstructionProto's.
+    absl::flat_hash_set<int> section_indices;
+  };
+  // Array of SgxInstructionsSet objects, each of which corresponds to a set of
+  // SGX-leaf instructions with a common main instruction.
+  SgxInstructionsSet sgx_instructions_set_[kSgxInstructionsCount];
+};
+
+// ------------- Start ParseContext definition----------------------------------
+void ParseContext::AddMainSgxInstruction(absl::string_view main_mnemonic,
+                                         InstructionProto* instruction) {
+  CHECK(instruction != nullptr);
+  const int index = GetSgxIndexByName(main_mnemonic);
+  if (sgx_instructions_set_[index].main_instruction != nullptr) {
+    CHECK_EQ(sgx_instructions_set_[index].main_instruction, instruction)
+        << "InstructionProto pointer was set to a different value for "
+        << main_mnemonic << ": "
+        << sgx_instructions_set_[index].main_instruction->DebugString()
+        << " VS " << instruction->DebugString();
+  } else {
+    sgx_instructions_set_[index].main_instruction = instruction;
+  }
+}
+
+// Adds the InstructionProto to the set of leaf instructions.
+// main_mnemonic: the mnemonic of the SGX main instruction that this leaf
+//                belongs to.
+// leaf: the pointer to the leaf instruction in the SdmDocument.
+void ParseContext::AddLeafSgxInstruction(absl::string_view main_mnemonic,
+                                         InstructionProto* leaf) {
+  CHECK(leaf != nullptr);
+  const int main_sgx_index = GetSgxIndexByName(main_mnemonic);
+  CHECK(main_sgx_index_ == -1 || main_sgx_index_ == main_sgx_index)
+      << "Inconsistent state. Seeing a different main-instruction index: "
+      << main_sgx_index_ << " vs " << main_sgx_index;
+  main_sgx_index_ = main_sgx_index;
+  sgx_instructions_set_[main_sgx_index_].leaf_instructions.insert(leaf);
+  sgx_instructions_set_[main_sgx_index_].section_indices.insert(section_index_);
+}
+
+void ParseContext::AddRegisterOperandValue(InstructionProto* leaf_sgx,
+                                           std::string register_name,
+                                           std::string value) {
+  CHECK(main_sgx_index_ >= 0) << "Unknown main SGX instruction.";
+  AddRegisterOperand(leaf_sgx, std::move(register_name))
+      ->set_value(absl::HexStringToBytes(value));
+}
+
+void ParseContext::AddRegisterOperandDescription(
+    InstructionProto* leaf_sgx, absl::string_view register_name,
+    absl::string_view description) {
+  CHECK(main_sgx_index_ >= 0) << "Unknown main SGX instruction.";
+  CHECK(leaf_sgx != nullptr);
+
+  // We must've added an operand for EAX already.
+  CHECK_EQ(1, leaf_sgx->vendor_syntax_size()) << leaf_sgx->DebugString();
+  CHECK(leaf_sgx->vendor_syntax(0).operands_size() >= 1)
+      << leaf_sgx->DebugString();
+  CHECK_EQ("EAX", leaf_sgx->vendor_syntax(0).operands(0).name())
+      << leaf_sgx->DebugString();
+
+  if ("EAX" == register_name) {
+    *leaf_sgx->mutable_vendor_syntax(0)
+         ->mutable_operands(0)
+         ->mutable_description() = std::string(description);
+  } else {
+    *AddRegisterOperand(leaf_sgx, std::string(register_name))
+         ->mutable_description() = std::string(description);
+  }
+}
+
+void ParseContext::RelocateSgxLeafInstructions(SdmDocument* sdm_document) {
+  DLOG(INFO) << "*** Relocating leaf instructions.";
+  DCHECK(sdm_document != nullptr);
+  for (auto& sgx_instructions : sgx_instructions_set_) {
+    if (sgx_instructions.main_instruction == nullptr) {
+      continue;
+    }
+
+    // Move all the leaves into the main InstructionProto.
+    for (auto& leaf : sgx_instructions.leaf_instructions) {
+      // TODO(user): Not sure if std::move() on a proto's field is valid???
+      // If it is, should move here rather than copying.
+      *sgx_instructions.main_instruction->add_leaf_instructions() =
+          std::move(*leaf);
+    }
+
+    // Remove the leaf instructions as stand-alone instructions from the
+    // SdmDocument.
+    for (const auto section_index : sgx_instructions.section_indices) {
+      auto* const instructions =
+          sdm_document->mutable_instruction_sections(section_index)
+              ->mutable_instruction_table()
+              ->mutable_instructions();
+      instructions->erase(
+          std::remove_if(instructions->begin(), instructions->end(),
+                         [&sgx_instructions](const InstructionProto& t) {
+                           return gtl::ContainsKey(
+                               sgx_instructions.leaf_instructions, &t);
+                         }),
+          instructions->end());
+    }
+  }
+}
+
+InstructionOperand::Encoding ParseContext::GetRegisterEncodingByName(
+    absl::string_view name) {
+  static const absl::flat_hash_map<std::string, InstructionOperand::Encoding>
+      encodings = {{"EAX", InstructionOperand_Encoding_X86_REGISTER_EAX},
+                   {"EBX", InstructionOperand_Encoding_X86_REGISTER_EBX},
+                   {"RAX", InstructionOperand_Encoding_X86_REGISTER_RAX},
+                   {"RBX", InstructionOperand_Encoding_X86_REGISTER_RBX},
+                   {"RCX", InstructionOperand_Encoding_X86_REGISTER_RCX},
+                   {"RDX", InstructionOperand_Encoding_X86_REGISTER_RDX}};
+
+  return gtl::FindOrDie(encodings, std::string(name));
+}
+
+InstructionOperand* ParseContext::AddRegisterOperand(
+    InstructionProto* leaf_sgx, std::string register_name) {
+  CHECK(!register_name.empty());
+  auto* const vendor_syntax = leaf_sgx->vendor_syntax_size() == 0
+                                  ? leaf_sgx->add_vendor_syntax()
+                                  : leaf_sgx->mutable_vendor_syntax(0);
+  if (vendor_syntax->mnemonic().empty()) {
+    *vendor_syntax->mutable_mnemonic() = leaf_sgx->llvm_mnemonic();
+  } else {
+    CHECK_EQ(vendor_syntax->mnemonic(), leaf_sgx->llvm_mnemonic());
+  }
+
+  auto* const operand = vendor_syntax->add_operands();
+  operand->mutable_data_type()->set_kind(
+      InstructionOperand_DataType_Kind_INTEGER);
+  operand->mutable_data_type()->set_bit_width(64);
+  operand->set_encoding(GetRegisterEncodingByName(register_name));
+  *operand->mutable_name() = std::move(register_name);
+  return operand;
+}
+
+// ------------- End ParseContext definition------------------------------------
 
 // Returns the value associated to the first matching regexp. If there is a
 // match, the function returns the first matching RE2 object from 'matchers';
@@ -85,30 +374,9 @@ typedef std::vector<const PdfPage*> Pages;
 typedef std::vector<const PdfTextTableRow*> Rows;
 typedef google::protobuf::RepeatedField<InstructionTable::Column> Columns;
 
-void RemoveAllChars(std::string* text, absl::string_view chars) {
-  text->erase(std::remove_if(text->begin(), text->end(),
-                             [chars](const char c) {
-                               return chars.find(c) != absl::string_view::npos;
-                             }),
-              text->end());
-}
-
-void RemoveSpaceAndLF(std::string* text) { RemoveAllChars(text, "\n "); }
-
-constexpr const size_t kMaxInstructionIdSize = 60;
 constexpr const char kInstructionSetRef[] = "INSTRUCTION SET REFERENCE";
-
-// This function is used to create a stable id from instruction name found:
-// - at the top of a page describing a new instruction
-// - in the footer of a page for a particular instruction
-// It does so by removing some characters and imposing a limit on the text size.
-// Limiting the size is necessary because when text is too long it gets
-// truncated in different ways.
-std::string Normalize(std::string text) {
-  RemoveAllChars(&text, "\n ∗*");
-  if (text.size() > kMaxInstructionIdSize) text.resize(kMaxInstructionIdSize);
-  return text;
-}
+constexpr const char kVmxInstructionRef[] = "VMX INSTRUCTION REFERENCE";
+constexpr const char kSgxInstructionRef[] = "SGX INSTRUCTION REFERENCE";
 
 // If page number is even, returns the rightmost string in the footer, else the
 // leftmost string.
@@ -117,47 +385,15 @@ const std::string& GetFooterSectionName(const PdfPage& page) {
                                 : GetCellTextOrEmpty(page, -1, 0);
 }
 
-// If 'page' is the first page of an instruction, returns a unique identifier
-// for this instruction. Otherwise return empty string.
-std::string GetInstructionGroupId(const PdfPage& page) {
-  static constexpr float kMaxGroupNameVerticalPosition = 500.0f;
-  if (!absl::StartsWith(GetCellTextOrEmpty(page, 0, 0), kInstructionSetRef))
-    return {};
-  // We require that the name of the instruction group is in the top part of the
-  // page. This prevents the parser from recognizing pages with too few elements
-  // on them as instruction sections. This was the case for example with the
-  // December 2017 version of the SDM on page 581 of the combined volumes PDF.
-  const PdfTextBlock* const name_cell = GetCellOrNull(page, 1, 0);
-  if (name_cell == nullptr ||
-      name_cell->bounding_box().top() > kMaxGroupNameVerticalPosition) {
-    return {};
-  }
-  const std::string maybe_instruction = Normalize(name_cell->text());
-  const std::string& footer_section_name = GetFooterSectionName(page);
-  if (maybe_instruction == Normalize(footer_section_name)) {
-    return footer_section_name;
-  }
-  return {};
+// True if the lhs and rhs are the same instruction
+bool SameInstructionName(const std::string& lhs, const std::string& rhs) {
+  return NormalizeName(lhs) == NormalizeName(rhs);
 }
 
 // True if page footer's corresponds to the same instruction_id.
 bool IsPageInstruction(const PdfPage& page,
                        const std::string& instruction_group_id) {
-  return Normalize(GetFooterSectionName(page)) ==
-         Normalize(instruction_group_id);
-}
-
-// Returns the list of pages an instruction spans.
-std::vector<const PdfPage*> GetInstructionsPages(
-    const PdfDocument& document, const int first_page,
-    const std::string& instruction_group_id) {
-  std::vector<const PdfPage*> result;
-  for (int i = first_page; i < document.pages_size(); ++i) {
-    const auto& page = document.pages(i);
-    if (!IsPageInstruction(page, instruction_group_id)) break;
-    result.push_back(&page);
-  }
-  return result;
+  return SameInstructionName(GetFooterSectionName(page), instruction_group_id);
 }
 
 constexpr const float kMinSubSectionTitleFontSize = 9.5f;
@@ -253,18 +489,21 @@ GetInstructionModeMatchers() {
 
 const std::set<absl::string_view>& GetValidFeatureSet() {
   static const auto* kValidFeatures = new std::set<absl::string_view>{
-      "3DNOW",       "ADX",      "AES",           "AVX",
-      "AVX2",        "AVX512BW", "AVX512CD",      "AVX512DQ",
-      "AVX512ER",    "AVX512F",  "AVX512_4FMAPS", "AVX512_4VNNIW",
-      "AVX512_IFMA", "AVX512PF", "AVX512_VBMI",   "AVX512VL",
-      "BMI1",        "BMI2",     "CLMUL",         "CLWB",
-      "F16C",        "FMA",      "FPU",           "FSGSBASE",
-      "HLE",         "INVPCID",  "LZCNT",         "MMX",
-      "MPX",         "OSPKE",    "PRFCHW",        "RDPID",
-      "RDRAND",      "RDSEED",   "RTM",           "SHA",
-      "SMAP",        "SSE",      "SSE2",          "SSE3",
-      "SSE4_1",      "SSE4_2",   "SSSE3",         "XSAVE",
-      "XSAVEC",      "XSS",      "XSAVEOPT"};
+      "3DNOW",         "ADX",         "AES",           "AVX",
+      "AVX2",          "AVX512BW",    "AVX512CD",      "AVX512DQ",
+      "AVX512ER",      "AVX512F",     "AVX512_4FMAPS", "AVX512_4VNNIW",
+      "AVX512_BITALG", "AVX512_IFMA", "AVX512PF",      "AVX512_VBMI",
+      "AVX512_VNNI",   "AVX512F",     "AVX512VL",      "BMI1",
+      "BMI2",          "CLDEMOTE",    "CLMUL",         "CLWB",
+      "F16C",          "FMA",         "FPU",           "FSGSBASE",
+      "GFNI",          "HLE",         "INVPCID",       "LZCNT",
+      "MMX",           "MOVDIRI",     "MOVDIR64B",     "MPX",
+      "OSPKE",         "PREFETCHW",   "RDPID",         "RDRAND",
+      "RDSEED",        "RTM",         "SHA",           "SMAP",
+      "SSE",           "SSE2",        "SSE3",          "SSE4_1",
+      "SSE4_2",        "SSSE3",       "XSAVE",         "XSAVEC",
+      "XSS",           "XSAVEOPT",    "SGX1",          "SGX2",
+      "VAES",          "VPCLMULQDQ"};
   return *kValidFeatures;
 }
 
@@ -327,8 +566,9 @@ std::string FixFeature(std::string feature) {
   absl::StripAsciiWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
   const char kAvxRegex[] =
-      "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_IFMA|AVX512PF|"
-      "AVX512_VBMI|AVX512VL)+";
+      "(AVX|AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_BITALG|AVX512_"
+      "IFMA|AVX512_VNNI|AVX512PF|AVX512_VBMI|AVX512F|AVX512VL|GFNI|VAES|"
+      "VPCLMULQDQ)+";
   if (RE2::FullMatch(feature, kAvxRegex)) {
     absl::string_view remainder(feature);
     absl::string_view piece;
@@ -344,6 +584,10 @@ std::string FixFeature(std::string feature) {
   if (feature == "PCLMULQDQ") return "CLMUL";
   if (feature == "PREFETCHWT1") return "3DNOW";
   if (feature == "HLE1") return "HLE";
+  // NOTE(ondrasej): PRFCHW was renamed to PREFETCHW in the November 2018
+  // version of the SDM. We always use the new name, but we wait to remain
+  // compatible with previous versions of the SDM.
+  if (feature == "PRFCHW") return "PREFETCHW";
   return feature;
 }
 
@@ -368,8 +612,52 @@ std::string FixEncodingSpecification(std::string feature) {
 
 const LazyRE2 kInstructionRegexp = {R"(\n([A-Z][0-9A-Z]+))"};
 
+void ParseLeafSgxOpcodeInstructionCell(absl::string_view text,
+                                       ParseContext* parse_context,
+                                       InstructionProto* instruction) {
+  static const LazyRE2 regex = {
+      R"(EAX = ([A-F0-9]+)H\s*(ENCL[SUV])\[([A-Z]+)\])"};
+  std::string eax_value;
+  std::string main_instruction;
+  std::string leaf_instruction;
+
+  CHECK(RE2::FullMatch(text, *regex, &eax_value, &main_instruction,
+                       &leaf_instruction))
+      << "Unexpected text for OpCode/Instruction cell in SGX section: " << text;
+
+  *instruction->mutable_llvm_mnemonic() = leaf_instruction;
+  parse_context->AddLeafSgxInstruction(main_instruction, instruction);
+  parse_context->AddRegisterOperandValue(instruction, "EAX",
+                                         std::move(eax_value));
+}
+
+void ParseOpCodeInstructionCell(absl::string_view text,
+                                bool save_instruction_ptr,
+                                ParseContext* parse_context,
+                                InstructionProto* instruction) {
+  std::string mnemonic;
+  if (RE2::PartialMatch(text, *kInstructionRegexp, &mnemonic)) {
+    const size_t index_of_mnemonic = text.find(mnemonic);
+    CHECK_NE(index_of_mnemonic, absl::string_view::npos);
+    std::string opcode_text = std::string(text.substr(0, index_of_mnemonic));
+    std::string instruction_text = std::string(text.substr(index_of_mnemonic));
+    ParseVendorSyntax(std::move(instruction_text),
+                      GetOrAddUniqueVendorSyntaxOrDie(instruction));
+    instruction->set_raw_encoding_specification(
+        FixEncodingSpecification(std::move(opcode_text)));
+  } else {
+    LOG(ERROR) << "Unable to separate opcode from instruction in " << text
+               << ", setting to " << kUnknown;
+    instruction->set_raw_encoding_specification(kUnknown);
+  }
+
+  if (save_instruction_ptr) {
+    parse_context->AddMainSgxInstruction(mnemonic, instruction);
+  }
+}
+
 void ParseCell(const InstructionTable::Column column, std::string text,
-               InstructionProto* instruction) {
+               ParseContext* parse_context, InstructionProto* instruction) {
   absl::StripAsciiWhitespace(&text);
   switch (column) {
     case InstructionTable::IT_OPCODE:
@@ -377,23 +665,43 @@ void ParseCell(const InstructionTable::Column column, std::string text,
           FixEncodingSpecification(text));
       break;
     case InstructionTable::IT_INSTRUCTION:
-      ParseVendorSyntax(text, instruction->mutable_vendor_syntax());
+      ParseVendorSyntax(text, GetOrAddUniqueVendorSyntaxOrDie(instruction));
+      // NOTE(user): All VMX instructions support 64-bit mode. And because it's
+      // unlikely that this will change in the future, we will explicitly mark
+      // VMX instructions as available_in_64.
+      if (parse_context->IsVmx()) {
+        bool available_in_64 = true;
+        for (auto& operand :
+             instruction->vendor_syntax(instruction->vendor_syntax_size() - 1)
+                 .operands()) {
+          // The table contains both 32-bit and 64-bit versions of the
+          // instruction. The 32-bit ones are denoted with r32 or m32. We will
+          // not mark these as available_in_64.
+          if (absl::StrContains(operand.name(), "32")) {
+            available_in_64 = false;
+          }
+        }
+        instruction->set_available_in_64_bit(available_in_64);
+        instruction->set_legacy_instruction(true);
+        *instruction->mutable_feature_name() = "VMX";
+      }
       break;
     case InstructionTable::IT_OPCODE_INSTRUCTION: {
-      std::string mnemonic;
-      if (RE2::PartialMatch(text, *kInstructionRegexp, &mnemonic)) {
-        const size_t index_of_mnemonic = text.find(mnemonic);
-        CHECK_NE(index_of_mnemonic, absl::string_view::npos);
-        const std::string opcode_text = text.substr(0, index_of_mnemonic);
-        const std::string instruction_text = text.substr(index_of_mnemonic);
-        ParseVendorSyntax(instruction_text,
-                          instruction->mutable_vendor_syntax());
-        instruction->set_raw_encoding_specification(
-            FixEncodingSpecification(opcode_text));
-      } else {
-        LOG(ERROR) << "Unable to separate opcode from instruction in " << text
-                   << ", setting to " << kUnknown;
-        instruction->set_raw_encoding_specification(kUnknown);
+      switch (parse_context->instruction_type()) {
+        case InstructionType::LEAF_SGX:
+          ParseLeafSgxOpcodeInstructionCell(text, parse_context, instruction);
+          break;
+        case InstructionType::SGX:
+          ParseOpCodeInstructionCell(text, /*save_instruction_ptr=*/true,
+                                     parse_context, instruction);
+          break;
+        case InstructionType::REGULAR:
+          ParseOpCodeInstructionCell(text, /*save_instruction_ptr=*/false,
+                                     parse_context, instruction);
+          break;
+        default:
+          LOG(ERROR) << "Unknown instruction type "
+                     << parse_context->GetInstructionTypeAsString();
       }
       break;
     }
@@ -429,9 +737,11 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       for (const absl::string_view piece : absl::StrSplit(cleaned, ' ')) {
         if (!feature_name->empty()) feature_name->append(" ");
         const bool is_logic_operator = piece == "&&" || piece == "||";
-        if (is_logic_operator || ContainsKey(GetValidFeatureSet(), piece)) {
+        if (is_logic_operator ||
+            gtl::ContainsKey(GetValidFeatureSet(), piece)) {
           absl::StrAppend(feature_name, piece);
         } else {
+          DLOG(ERROR) << "Raw feature text: [" << text << "]";
           feature_name->append(kUnknown);
           LOG(ERROR) << "Invalid Feature : " << piece
                      << " when parsing : " << cleaned
@@ -446,6 +756,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
 }
 
 void ParseInstructionTable(const SubSection& sub_section,
+                           ParseContext* parse_context,
                            InstructionTable* table) {
   CHECK(sub_section.rows_size()) << "sub_section must have rows";
   // First we collect the content of the table and get rid of redundant header
@@ -490,8 +801,8 @@ void ParseInstructionTable(const SubSection& sub_section,
     }
   }
   const auto& columns = table->columns();
-  if (columns.size() <= 3) {
-    LOG(ERROR) << "Discarding Instruction Table with less than 4 columns.";
+  if (columns.size() < 3) {
+    LOG(ERROR) << "Discarding Instruction Table with less than 3 columns.";
     return;
   }
   // Sometimes for IT_OPCODE_INSTRUCTION columns, the instruction is on a
@@ -520,26 +831,62 @@ void ParseInstructionTable(const SubSection& sub_section,
     // number of blocks would stop the parsing here, discarding that instruction
     // and all instructions below it.
     if (row.blocks_size() < columns.size()) break;  // end of the table
+    parse_context->set_instruction_index(table->instructions_size());
     auto* instruction = table->add_instructions();
     int i = 0;
     for (const auto& block : row.blocks()) {
-      ParseCell(table->columns(i++), block.text(), instruction);
+      ParseCell(table->columns(i++), block.text(), parse_context, instruction);
     }
   }
 }
 
+std::string GetRowText(const PdfTextTableRow& row) {
+  return absl::StrJoin(row.blocks(), " ",
+                       [](std::string* out, const PdfTextBlock& block) {
+                         absl::StrAppend(out, block.text());
+                       });
+}
+
+// Parses the given header row and returns the right OperandEncodingTableType.
 OperandEncodingTableType GetOperandEncodingTableHeaderType(
-    const PdfTextTableRow& row) {
+    const PdfTextTableRow& row, ParseContext* parse_context) {
+  static const LazyRE2 kHeaderRegex = {
+      R"(Op/En|Operand[1234]|Tuple(Type)?|ImplicitRegisterOperands)"};
+  static const LazyRE2 kLeafSgxHeaderRegex = {
+      R"((Op/En|EAX|EBX|RAX|RBX|RCX|RDX))"};
+
+  CHECK(parse_context != nullptr);
   bool has_tuple_type_column = false;
   for (const auto& block : row.blocks()) {
     std::string text = block.text();
     RemoveSpaceAndLF(&text);
-    if (text == "TupleType" || text == "Tuple") {
-      has_tuple_type_column = true;
+    switch (parse_context->instruction_type()) {
+      case InstructionType::LEAF_SGX: {
+        std::string column_name;
+        if (!RE2::FullMatch(text, *kLeafSgxHeaderRegex, &column_name)) {
+          DLOG(ERROR) << "**** not matching on text: [" << text
+                      << "] against sgx header regex";
+
+          return OET_INVALID;
+        }
+        if ("Op/En" != column_name) {
+          parse_context->AddRegister(std::move(column_name));
+        }
+      } break;
+      default:
+        if (text == "TupleType" || text == "Tuple") {
+          has_tuple_type_column = true;
+        }
+        if (!RE2::FullMatch(text, *kHeaderRegex)) {
+          DLOG(ERROR) << "**** not matching on text: [" << text
+                      << "] against regular header regex";
+          return OET_INVALID;
+        }
     }
-    if (!RE2::FullMatch(text, R"(Op/En|Operand[1234]|Tuple(Type)?)")) {
-      return OET_INVALID;
-    }
+  }
+
+  if (parse_context->IsLeafSgx()) {
+    return OET_LEAF_SGX;
   }
   return has_tuple_type_column ? OET_WITH_TUPLE_TYPE : OET_LEGACY;
 }
@@ -574,10 +921,45 @@ void ParseOperandEncodingTableRow(const OperandEncodingTableType table_type,
   }
 }
 
+void ParseSgxOperandEncodingTableRow(const PdfTextTableRow& row,
+                                     InstructionTable* table,
+                                     ParseContext* parse_context) {
+  // Op/En | EAX (| <other_reg>)*
+  const int columns_count = row.blocks_size();
+  int second_operand_index = -1;
+  std::string eax_description;
+  if (parse_context->GetRegistersCount() == columns_count - 1) {
+    second_operand_index = 2;
+    eax_description = row.blocks(1).text();
+  } else if (parse_context->GetRegistersCount() == columns_count - 2) {
+    // Sometimes the description for EAX column is split into two.
+    second_operand_index = 3;
+    row.blocks(1).AppendToString(&eax_description);
+    absl::StrAppend(&eax_description, " | ");
+    row.blocks(2).AppendToString(&eax_description);
+  } else {
+    LOG(FATAL) << "Unexpected columns count of " << columns_count
+               << " in row: " << GetRowText(row);
+  }
+
+  for (auto& leaf_sgx : *table->mutable_instructions()) {
+    parse_context->AddRegisterOperandDescription(&leaf_sgx, "EAX",
+                                                 eax_description);
+    for (int index = second_operand_index; index < columns_count; ++index) {
+      // `index - 1` because the table has more one more column than the number
+      // of registers
+      parse_context->AddRegisterOperandDescription(
+          &leaf_sgx, parse_context->GetRegister(index - 1),
+          row.blocks(index).text());
+    }
+  }
+}
+
 // Extracts information from the Operand Encoding Table.
 // For each row in the table we create an operand_encoding containing a
 // crossreference_name and a list of operand_encoding_specs.
 void ParseOperandEncodingTable(const SubSection& sub_section,
+                               ParseContext* parse_context,
                                InstructionTable* table) {
   size_t column_count = 0;
   OperandEncodingTableType table_type = OET_INVALID;
@@ -586,17 +968,28 @@ void ParseOperandEncodingTable(const SubSection& sub_section,
       // Parsing the operand encoding table header, we just make sure the text
       // is valid but don't store any informations.
       column_count = row.blocks_size();
-      table_type = GetOperandEncodingTableHeaderType(row);
+      table_type = GetOperandEncodingTableHeaderType(row, parse_context);
       CHECK_NE(table_type, OET_INVALID)
-          << "Invalid operand header " << row.DebugString();
+          << "Invalid operand header for instruction type "
+          << parse_context->GetInstructionTypeAsString() << ": "
+          << row.DebugString();
     } else {
       // Skipping redundant header.
-      if (GetOperandEncodingTableHeaderType(row) == table_type) {
+      if (GetOperandEncodingTableHeaderType(row, parse_context) == table_type) {
         continue;
       }
       // Stop parsing if we're out of the table.
       if (row.blocks_size() != column_count) {
         break;
+      }
+      if (table_type == OET_LEAF_SGX) {
+        // Sanity check.
+        if (!parse_context->IsLeafSgx()) {
+          LOG(WARNING)
+              << "See SGX-style operand encoding table in non-SGX chapters";
+        }
+        ParseSgxOperandEncodingTableRow(row, table, parse_context);
+        return;
       }
       // Parsing a operand encoding table row.
       ParseOperandEncodingTableRow(table_type, row, table);
@@ -640,19 +1033,34 @@ std::vector<SubSection> ExtractSubSectionRows(const Pages& pages) {
 // This function sets the proper encoding for each instruction by looking it up
 // in the Operand Encoding Table. Duplicated identifiers in the Operand Encoding
 // Table are discarded and encoding is set to ANY_ENCODING.
-void PairOperandEncodings(InstructionSection* section) {
+void PairOperandEncodings(ParseContext* parse_context,
+                          InstructionSection* section) {
   auto* table = section->mutable_instruction_table();
   std::map<std::string, const InstructionTable::OperandEncodingCrossref*>
       mapping;
   std::set<std::string> duplicated_crossreference;
   for (const auto& operand_encoding : table->operand_encoding_crossrefs()) {
     const std::string& cross_reference = operand_encoding.crossreference_name();
-    if (!InsertIfNotPresent(&mapping, cross_reference, &operand_encoding)) {
+    if (!gtl::InsertIfNotPresent(&mapping, cross_reference,
+                                 &operand_encoding)) {
       LOG(ERROR) << "Duplicated Operand Encoding Scheme for " << section->id()
                  << ", this will result in UNKNOWN operand encoding sheme";
-      InsertIfNotPresent(&duplicated_crossreference, cross_reference);
+      gtl::InsertIfNotPresent(&duplicated_crossreference, cross_reference);
     }
   }
+
+  // VMX instructions don't have encoding table.
+  if (mapping.empty() && parse_context->IsVmx()) {
+    for (auto& instruction : *table->mutable_instructions()) {
+      auto* const vendor_syntax = GetOrAddUniqueVendorSyntaxOrDie(&instruction);
+      for (int i = 0; i < vendor_syntax->operands_size(); ++i) {
+        auto* const operand = vendor_syntax->mutable_operands(i);
+        operand->set_usage(InstructionOperand::USAGE_READ_WRITE);
+      }
+    }
+    return;
+  }
+
   // Removing duplicated reference, they will be encoded as ANY_ENCODING.
   for (const std::string& duplicated : duplicated_crossreference) {
     mapping[duplicated] = nullptr;
@@ -664,13 +1072,14 @@ void PairOperandEncodings(InstructionSection* section) {
     if (encoding_scheme.empty()) {
       continue;
     }
-    if (!ContainsKey(mapping, encoding_scheme)) {
+    if (!gtl::ContainsKey(mapping, encoding_scheme)) {
       LOG(ERROR) << "Unable to find crossreference " << encoding_scheme
                  << " in Operand Encoding Table";
       continue;
     }
-    const auto* encoding = FindOrDie(mapping, encoding_scheme);
-    auto* vendor_syntax = instruction.mutable_vendor_syntax();
+    const auto* encoding = gtl::FindOrDie(mapping, encoding_scheme);
+    auto* const vendor_syntax = GetOrAddUniqueVendorSyntaxOrDie(&instruction);
+
     for (int i = 0; i < vendor_syntax->operands_size(); ++i) {
       auto* operand = vendor_syntax->mutable_operands(i);
       const auto spec = encoding == nullptr
@@ -743,6 +1152,7 @@ void PairOperandEncodings(InstructionSection* section) {
 
 // Process the sub sections of the instructions and extract relevant data.
 void ProcessSubSections(std::vector<SubSection> sub_sections,
+                        ParseContext* parse_context,
                         InstructionSection* section) {
   for (SubSection& sub_section : sub_sections) {
     // Discard empty sections.
@@ -753,17 +1163,18 @@ void ProcessSubSections(std::vector<SubSection> sub_sections,
     auto* instruction_table = section->mutable_instruction_table();
     switch (sub_section.type()) {
       case SubSection::INSTRUCTION_TABLE:
-        ParseInstructionTable(sub_section, instruction_table);
+        ParseInstructionTable(sub_section, parse_context, instruction_table);
         break;
       case SubSection::INSTRUCTION_OPERAND_ENCODING:
-        ParseOperandEncodingTable(sub_section, instruction_table);
+        ParseOperandEncodingTable(sub_section, parse_context,
+                                  instruction_table);
         break;
       default:
         break;
     }
     sub_section.Swap(section->add_sub_sections());
   }
-  PairOperandEncodings(section);
+  PairOperandEncodings(parse_context, section);
 }
 
 // Outputs a row to a string separating cells by tabulations.
@@ -827,6 +1238,353 @@ void FillGroupProto(const InstructionSection& section,
   }
 }
 
+// Returns true if the rows match the pattern of the first page of a VMX
+// instruction group section.
+// rows: vector containing the first three rows of the page.
+// instruction_name: name of the first instruction in this group.
+bool MatchesVmxFirstPage(const std::vector<const PdfTextTableRow*>& rows,
+                         absl::string_view instruction_name) {
+  static constexpr int kTableHeaderRow = 1;
+  static constexpr int kFirstTableRow = 2;
+  static constexpr int kOpCodeColumn = 0;
+  static constexpr int kInstructionColumn = 1;
+  static constexpr int kDescriptionColumn = 2;
+
+  DCHECK_EQ(3, rows.size());
+
+  // title: <ID><DASH><TEXT>
+  // table-header:   Opcode      Instruction   Description
+  // row_0:          XX( XX)*    <ID>( <OP>)*   <TEXT>
+  return rows[kTableHeaderRow]->blocks_size() == 3 &&
+         rows[kFirstTableRow]->blocks_size() == 3 &&
+         rows[kTableHeaderRow]->blocks(kOpCodeColumn).text() == "Opcode" &&
+         rows[kTableHeaderRow]->blocks(kInstructionColumn).text() ==
+             "Instruction" &&
+         rows[kTableHeaderRow]->blocks(kDescriptionColumn).text() ==
+             "Description" &&
+         // check that the instruction in the table matches the title
+         absl::StartsWith(
+             rows[kFirstTableRow]->blocks(kInstructionColumn).text(),
+             instruction_name);
+}
+
+bool MatchesSgxInstruction(absl::string_view cell_text,
+                           absl::string_view instruction_name, bool* is_leaf) {
+  DCHECK(is_leaf != nullptr);
+  return absl::EndsWith(cell_text, instruction_name) ||
+         (*is_leaf = absl::EndsWith(cell_text,
+                                    absl::StrCat("[", instruction_name, "]")));
+}
+
+// Returns true if the rows match the pattern of the first page of an SGX
+// instruction group section.
+// rows: vector containing the first three rows of the page.
+// instruction_name: name of the first instruction in this group.
+bool MatchesSgxFirstPage(const std::vector<const PdfTextTableRow*>& rows,
+                         absl::string_view instruction_name, bool* is_leaf) {
+  static constexpr int kTableHeaderRow = 1;
+  static constexpr int kFirstTableRow = 2;
+  static constexpr int kOpCodeColumn = 0;
+  static constexpr int kOpEnColumn = 1;
+  static constexpr int kDescriptionColumn = 4;
+
+  DCHECK(is_leaf != nullptr);
+  DCHECK_EQ(3, rows.size());
+
+  // title: <ID><DASH><TEXT>
+  // table-header:   Opcode/Instruction  Op/En  64/32   CPUID   Description
+  // row_0:          XX XX XX XX          XX     X/X      XX    <TEXT>
+  //                 <ID>
+  return rows[kTableHeaderRow]->blocks_size() == 5 &&
+         rows[kFirstTableRow]->blocks_size() == 5 &&
+         absl::StartsWith(rows[kTableHeaderRow]->blocks(kOpCodeColumn).text(),
+                          "Opcode/") &&
+         absl::StartsWith(rows[kTableHeaderRow]->blocks(kOpEnColumn).text(),
+                          "Op/En") &&
+         absl::StartsWith(
+             rows[kTableHeaderRow]->blocks(kDescriptionColumn).text(),
+             "Description") &&
+         // Checks that the instruction in the table matches the title.
+         MatchesSgxInstruction(
+             rows[kFirstTableRow]->blocks(kOpCodeColumn).text(),
+             instruction_name, is_leaf);
+}
+
+// Returns the first instruction in this group. If the group only contains one
+// instruction, then the group name is the same as the first-instruction's name.
+// If the group contains more than one instruction, then the group name will
+// consist of all the instructions' name, separated by  a slash '/'.
+//
+// Eg., "VMLAUNCH/VMRESUME—Launch/ResumeVirtual Machine" in V3-Chapter30.
+//       This function will return "VMLAUNCH"
+absl::string_view GetFirstInstructionInGroup(absl::string_view group_name) {
+  return group_name.substr(0, group_name.find_first_of('/'));
+}
+
+// If this page matches the pattern of the first page for an instruction
+// in the VMX INSTRUCTION REFERENCE or SGX INSTRUCTION REFERENCE section in
+// the SDM, returns true and puts the instruction's name into the output
+// parameter instruction_name.
+bool MatchesFirstPagePattern(const PdfPage& page, const bool is_sgx,
+                             bool* is_leaf,
+                             std::string* const instruction_group_name) {
+  const PdfTextBlock* const name_cell = GetCellOrNull(page, 1, 0);
+  if (name_cell == nullptr) {
+    return false;
+  }
+  auto dash_pos = name_cell->text().find_first_of('-');
+  if (dash_pos == std::string::npos) {
+    return false;
+  }
+  const auto rows = GetPageBodyRows(page, kPageMargin, 3);
+  if (rows.size() != 3) {
+    return false;
+  }
+  std::string group_name = name_cell->text().substr(0, dash_pos);
+  const absl::string_view first_instruction_name =
+      GetFirstInstructionInGroup(group_name);
+  if ((is_sgx && MatchesSgxFirstPage(rows, first_instruction_name, is_leaf)) ||
+      (!is_sgx && MatchesVmxFirstPage(rows, first_instruction_name))) {
+    *instruction_group_name = std::move(group_name);
+    return true;
+  }
+  return false;
+}
+
+// Returns true if we the given page matches the pattern of the first page in
+// a section.
+bool SeesNewSection(const PdfPage& page,
+                    absl::string_view section_number_prefix,
+                    absl::string_view section_name_prefix) {
+  const PdfTextBlock* const section_number = GetCellOrNull(page, 1, 0);
+
+  if (section_number == nullptr) {
+    return false;
+  }
+  if (absl::StartsWith(section_number->text(), section_number_prefix)) {
+    const PdfTextBlock* const section_name = GetCellOrNull(page, 1, 1);
+    if (section_name == nullptr) {
+      return false;
+    }
+    return absl::StartsWith(section_name->text(), section_name_prefix);
+  }
+  return false;
+}
+
+// Adds the value vector into the map if the vector is not empty,
+// also warns if there's an existing entry with the same key
+void AddAndWarn(
+    absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>* const
+        id_to_pages,
+    const std::string& name, InstructionType type, Pages value) {
+  if (!value.empty()) {
+    if (id_to_pages->count(name) != 0) {
+      // TODO(user): could this happen? should we just append to it then?
+      LOG(WARNING) << "Overwriting existing instruction pages for [" << name
+                   << "].";
+    }
+
+    (*id_to_pages)[name] = std::make_pair(type, std::move(value));
+  }
+}
+
+// Starting at page_idx, collects all pages for the current
+// instruction, if there is any.
+//
+// Pre-condition: page_idx is pointing at a page in the VMX instruction
+// reference or SGX instruction reference chapers.
+// Returns: page index of the next instruction's first page
+int CollectVmxOrSgxInstructions(
+    const exegesis::pdf::PdfDocument& pdf, int page_idx, bool is_sgx,
+    absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>* const
+        id_to_pages) {
+  const auto& first_page = pdf.pages(page_idx);
+  std::string instruction_name;
+  bool is_leaf;
+  if (MatchesFirstPagePattern(first_page, is_sgx, &is_leaf,
+                              &instruction_name)) {
+    const InstructionType type =
+        !is_sgx ? InstructionType::VMX
+                : is_leaf ? InstructionType::LEAF_SGX : InstructionType::SGX;
+    Pages result;
+    result.push_back(&first_page);
+    ++page_idx;
+
+    for (; page_idx < pdf.pages_size(); ++page_idx) {
+      std::string new_name;
+      const auto& cur_page = pdf.pages(page_idx);
+      // We can't tell when a section ends. We can only determine that by
+      // looking ahead for the start of the next thing (either the next
+      // instruction or a new section entirely).
+      bool next_leaf;
+      if (MatchesFirstPagePattern(cur_page, is_sgx, &next_leaf, &new_name)) {
+        break;
+      } else if (SeesNewSection(cur_page, is_sgx ? "40." : "30.",
+                                is_sgx ? "INTEL® SGX" : "VM INSTRUCTION")) {
+        break;
+      }
+      result.push_back(&cur_page);
+    }
+    AddAndWarn(id_to_pages, instruction_name, type, std::move(result));
+    return page_idx;
+  }
+  // If didn't see anything useful, move past this page.
+  return page_idx + 1;
+}
+
+// Returns true if this page matches the pattern of the first page for an
+// instruction section in the Instruction-Set-Extension document.
+// page: the current page.
+// group_name: the output parameter - if this page is the first page, the
+// group name will be returned via this.
+bool MatchesFirstPageInExtension(const PdfPage& page,
+                                 std::string* const group_name) {
+  static constexpr int kTableHeaderRow = 1;
+  static constexpr int kFirstTableRow = 2;
+  static constexpr int kOpCodeColumn = 0;
+  static constexpr int kOpEnColumn = 1;
+  static constexpr int kDescriptionColumn = 4;
+
+  CHECK(group_name != nullptr);
+  const PdfTextBlock* const name_cell =
+      GetCellOrNull(page, /*row=*/1, /*col=*/0);
+  if (name_cell == nullptr) {
+    return false;
+  }
+  const int dash_pos = name_cell->text().find_first_of('-');
+  if (dash_pos == std::string::npos) {
+    // Did not get expected data - skipping this page.
+    return false;
+  }
+
+  const std::vector<const PdfTextTableRow*> first_three_rows =
+      GetPageBodyRows(page, kPageMargin, 3);
+  if (first_three_rows.size() != 3) {
+    // Did not get expected data - skipping this page.
+    return false;
+  }
+  std::string group_name_string = name_cell->text().substr(0, dash_pos);
+  const absl::string_view first_instruction_name =
+      GetFirstInstructionInGroup(group_name_string);
+
+  // title: <ID><DASH><TEXT>
+  // table-header: |Opcode/     |Op/ |64/32 bit    |CPUID feature |Description
+  //               |Instruction |En  |Mode Support |Flag          |
+  //               -------------------------------------------------------------
+  // row_0:         *first_instruction*
+  const auto* const header_row = first_three_rows[kTableHeaderRow];
+  const auto* const first_table_row = first_three_rows[kFirstTableRow];
+  if (header_row->blocks_size() == 5 && first_table_row->blocks_size() == 5 &&
+      absl::StartsWith(header_row->blocks(kOpCodeColumn).text(), "Opcode/") &&
+      absl::StartsWith(header_row->blocks(kOpEnColumn).text(), "Op/") &&
+      absl::StartsWith(header_row->blocks(kDescriptionColumn).text(),
+                       "Description") &&
+      absl::StrContains(first_table_row->blocks(kOpCodeColumn).text(),
+                        first_instruction_name)) {
+    *group_name = std::move(group_name_string);
+    return true;
+  }
+  return false;
+}
+
+int CollectFromInstructionSetExtension(
+    const PdfDocument& pdf, int page_idx,
+    absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>* const
+        id_to_pages) {
+  CHECK(id_to_pages != nullptr);
+  std::string group_name;
+  const PdfPage& first_page = pdf.pages(page_idx);
+  if (MatchesFirstPageInExtension(first_page, &group_name)) {
+    Pages result = {&first_page};
+    ++page_idx;
+    for (; page_idx < pdf.pages_size(); ++page_idx) {
+      std::string next_group;
+      const auto& cur_page = pdf.pages(page_idx);
+      const std::string first_line =
+          GetCellTextOrEmpty(pdf.pages(page_idx), 0, 0);
+      // If we are no longer in Instruction-Set-Reference or if we see the
+      // start of a new instruction, then break.
+      if (!absl::StartsWith(first_line, kInstructionSetRef) ||
+          !MatchesFirstPageInExtension(cur_page, &next_group)) {
+        break;
+      }
+      result.push_back(&cur_page);
+    }
+    AddAndWarn(id_to_pages, group_name, InstructionType::REGULAR,
+               std::move(result));
+    return page_idx;
+  }
+  // If we didn't see expected data, skip this page.
+  return page_idx + 1;
+}
+
+// Starting at page_idx, collect all pages for the current instruction, if any
+// page.
+//
+// Pre-condition: page_idx is pointing at a page probably in V2 or the
+// extension manual.
+// Returns: page index of the next instruction
+int CollectFromTheRest(
+    const PdfDocument& pdf, int page_idx,
+    absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>* const
+        id_to_pages) {
+  static constexpr float kMaxGroupNameVerticalPosition = 500.0f;
+
+  const auto& page = pdf.pages(page_idx);
+  const PdfTextBlock* const name_cell = GetCellOrNull(page, 1, 0);
+  if (name_cell != nullptr &&
+      name_cell->bounding_box().top() <= kMaxGroupNameVerticalPosition) {
+    const std::string& footer_section_name = GetFooterSectionName(page);
+    if (SameInstructionName(name_cell->text(), footer_section_name)) {
+      Pages result;
+      for (; page_idx < pdf.pages_size(); ++page_idx) {
+        const auto& page = pdf.pages(page_idx);
+        if (!IsPageInstruction(page, footer_section_name)) break;
+        result.push_back(&page);
+      }
+
+      AddAndWarn(id_to_pages, footer_section_name, InstructionType::REGULAR,
+                 std::move(result));
+      return page_idx;
+    } else if (absl::StartsWith(footer_section_name, "Ref. #")) {
+      // In V2, sll instruction-reference pages have a footer matching the
+      // title, but in the Instruction Set Extension, the footer only contains
+      // text like "Ref. #..."
+      // Therefore, we distinguish V2 and the extension by having different
+      // expections for the footer.
+      return CollectFromInstructionSetExtension(pdf, page_idx, id_to_pages);
+    }
+  }
+  // If didn't see anything, move past this page.
+  return page_idx + 1;
+}
+
+// Returns a map of instruction-name to a vector of pairs of a bool flag and
+// pages for it. The flag is true IFF the pages are for SGX instructions.
+absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>
+CollectInstructionPages(const exegesis::pdf::PdfDocument& pdf) {
+  absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>
+      instruction_group_id_to_pages;
+  int i = 0;
+  while (i < pdf.pages_size()) {
+    const std::string first_line = GetCellTextOrEmpty(pdf.pages(i), 0, 0);
+    if (absl::StartsWith(first_line, kVmxInstructionRef)) {
+      i = CollectVmxOrSgxInstructions(pdf, i, /*is_sgx=*/false,
+                                      &instruction_group_id_to_pages);
+    } else if (absl::StartsWith(first_line, kSgxInstructionRef)) {
+      i = CollectVmxOrSgxInstructions(pdf, i, /*is_sgx=*/true,
+                                      &instruction_group_id_to_pages);
+    } else if (absl::StartsWith(first_line, kInstructionSetRef)) {
+      // Volume 2
+      i = CollectFromTheRest(pdf, i, &instruction_group_id_to_pages);
+    } else {
+      // Found nothing on this page, move to the next.
+      ++i;
+    }
+  }
+  return instruction_group_id_to_pages;
+}
+
 }  // namespace
 
 OperandEncoding ParseOperandEncodingTableCell(const std::string& content) {
@@ -886,29 +1644,30 @@ SdmDocument ConvertPdfDocumentToSdmDocument(
     const exegesis::pdf::PdfDocument& pdf) {
   // Find all instruction pages.
   SdmDocument sdm_document;
-  std::map<std::string, Pages> instruction_group_id_to_pages;
-  for (int i = 0; i < pdf.pages_size(); ++i) {
-    const std::string instruction_group_id =
-        GetInstructionGroupId(pdf.pages(i));
-    if (instruction_group_id.empty()) continue;
-    instruction_group_id_to_pages[instruction_group_id] =
-        GetInstructionsPages(pdf, i, instruction_group_id);
-  }
+  absl::node_hash_map<std::string, std::pair<InstructionType, Pages>>
+      instruction_group_id_to_pages = CollectInstructionPages(pdf);
+
+  ParseContext parse_context;
   // Now processing instruction pages
   for (const auto& id_pages_pair : instruction_group_id_to_pages) {
+    parse_context.Reset();
+    parse_context.set_instruction_type(id_pages_pair.second.first);
+    parse_context.set_section_index(sdm_document.instruction_sections_size());
     InstructionSection section;
     const auto& group_id = id_pages_pair.first;
-    const auto& pages = id_pages_pair.second;
+    const auto& pages = id_pages_pair.second.second;
     LOG(INFO) << "Processing section id " << group_id << " pages "
               << pages.front()->number() << "-" << pages.back()->number();
     section.set_id(group_id);
-    ProcessSubSections(ExtractSubSectionRows(pages), &section);
+    ProcessSubSections(ExtractSubSectionRows(pages), &parse_context, &section);
     if (section.instruction_table().instructions_size() == 0) {
       LOG(WARNING) << "Empty instruction table, skipping the section";
       continue;
     }
     section.Swap(sdm_document.add_instruction_sections());
   }
+
+  parse_context.RelocateSgxLeafInstructions(&sdm_document);
   return sdm_document;
 }
 

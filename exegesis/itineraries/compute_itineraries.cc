@@ -26,6 +26,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -67,8 +69,8 @@ using ::exegesis::util::OkStatus;
 using ::exegesis::util::Status;
 using ::exegesis::util::StatusOr;
 
-const std::unordered_set<std::string>* const kExcludedInstructions =
-    new std::unordered_set<std::string>({
+const absl::flat_hash_set<std::string>* const kExcludedInstructions =
+    new absl::flat_hash_set<std::string>({
         // Before execution, "DX:AX" == 0x00010001 and
         // "word ptr[RSI]" == 0x0001, so 0x00010001/0x0001 == 0x00010001
         // overflows, resulting in #DE.
@@ -221,7 +223,7 @@ ObservationVector CreateObservationVector(const PerfResult& perf_result) {
   return observations;
 }
 
-using PortMaskCount = std::unordered_map<PortMask, int, PortMask::Hash>;
+using PortMaskCount = absl::flat_hash_map<PortMask, int, PortMask::Hash>;
 
 // A helper to compute itineraries. Every instruction is measured by generating
 // example code for the instruction, which is essentially the instruction
@@ -524,10 +526,10 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
     Stats* const stats) const {
   // The following registers are excluded because they can't be accessed in user
   // mode.
-  static const std::unordered_set<std::string>* const kExcludedMovOperands =
-      new std::unordered_set<std::string>({"CR0-CR7", "DR0-DR7"});
+  static const absl::flat_hash_set<std::string>* const kExcludedMovOperands =
+      new absl::flat_hash_set<std::string>({"CR0-CR7", "DR0-DR7"});
 
-  const InstructionFormat& vendor_syntax = instruction.vendor_syntax();
+  const InstructionFormat& vendor_syntax = GetAnyVendorSyntaxOrDie(instruction);
   LOG(INFO) << "Processing " << PrettyPrintInstruction(instruction);
   const std::string& mnemonic = vendor_syntax.mnemonic();
   if (!instruction.feature_name().empty() &&
@@ -547,14 +549,14 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
               << " requiring lower protection mode";
     return OkStatus();
   }
-  if (ContainsKey(*kExcludedInstructions, mnemonic)) {
+  if (kExcludedInstructions->contains(mnemonic)) {
     LOG(INFO) << "Ignoring blacklisted instruction "
               << ConvertToCodeString(vendor_syntax);
     return OkStatus();
   }
   if (mnemonic == "MOV" &&
-      (ContainsKey(*kExcludedMovOperands, vendor_syntax.operands(0).name()) ||
-       ContainsKey(*kExcludedMovOperands, vendor_syntax.operands(1).name()) ||
+      (kExcludedMovOperands->contains(vendor_syntax.operands(0).name()) ||
+       kExcludedMovOperands->contains(vendor_syntax.operands(1).name()) ||
        vendor_syntax.operands(0).name() == "Sreg")) {
     LOG(INFO) << "Ignoring instruction with unsupported operands "
               << ConvertToCodeString(vendor_syntax);

@@ -21,9 +21,9 @@
 #include <functional>
 #include <limits>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"
@@ -42,7 +42,7 @@ using InstructionSetTransform = std::function<Status(InstructionSetProto*)>;
 
 // The list of instruction database transforms indexed by their names.
 using InstructionSetTransformsByName =
-    std::unordered_map<std::string, InstructionSetTransform>;
+    absl::flat_hash_map<std::string, InstructionSetTransform>;
 
 // Returns the list of all available transforms, indexed by their names.
 const InstructionSetTransformsByName& GetTransformsByName();

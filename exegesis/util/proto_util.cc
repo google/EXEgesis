@@ -79,13 +79,14 @@ void ParseProtoFromStringOrDie(absl::string_view text,
 }
 
 void WriteTextProtoOrDie(const std::string& filename,
-                         const google::protobuf::Message& message) {
+                         const google::protobuf::Message& message,
+                         const google::protobuf::TextFormat::Printer& printer) {
   CHECK(!filename.empty());
   FILE* const output_file = fopen(filename.c_str(), "wb");
   CHECK(output_file) << "Could not open '" << filename << "'";
   {
     google::protobuf::io::FileOutputStream output_stream(fileno(output_file));
-    CHECK(google::protobuf::TextFormat::Print(message, &output_stream));
+    CHECK(printer.Print(message, &output_stream));
   }
   fclose(output_file);
 }

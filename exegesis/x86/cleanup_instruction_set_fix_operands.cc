@@ -17,12 +17,14 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
+#include "absl/container/node_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
+#include "exegesis/util/instruction_syntax.h"
 #include "exegesis/x86/cleanup_instruction_set_utils.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
@@ -56,19 +58,19 @@ const char* kRDIIndexes[] = {"BYTE PTR [RDI]", "WORD PTR [RDI]",
 
 Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> kMnemonics = {"CMPS", "MOVS"};
-  const std::unordered_set<std::string> kSourceOperands(
+  const absl::flat_hash_set<std::string> kMnemonics = {"CMPS", "MOVS"};
+  const absl::flat_hash_set<std::string> kSourceOperands(
       std::begin(kRSIIndexes), std::begin(kRSIIndexes));
-  const std::unordered_set<std::string> kDestinationOperands(
+  const absl::flat_hash_set<std::string> kDestinationOperands(
       std::begin(kRDIIndexes), std::begin(kRDIIndexes));
-  const std::unordered_map<std::string, std::string> operand_to_pointer_size(
+  const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
-    if (!ContainsKey(kMnemonics, vendor_syntax->mnemonic())) {
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
+    if (!kMnemonics.contains(vendor_syntax->mnemonic())) {
       continue;
     }
 
@@ -79,10 +81,10 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
       continue;
     }
     std::string pointer_size;
-    if (!FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
-                  &pointer_size) &&
-        !ContainsKey(kSourceOperands, vendor_syntax->operands(0).name()) &&
-        !ContainsKey(kDestinationOperands, vendor_syntax->operands(0).name())) {
+    if (!gtl::FindCopy(operand_to_pointer_size,
+                       vendor_syntax->operands(0).name(), &pointer_size) &&
+        !kSourceOperands.contains(vendor_syntax->operands(0).name()) &&
+        !kDestinationOperands.contains(vendor_syntax->operands(0).name())) {
       status = InvalidArgumentError(
           absl::StrCat("Unexpected operand of a CMPS/MOVS instruction: ",
                        vendor_syntax->operands(0).name()));
@@ -114,13 +116,13 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfCmpsAndMovs, 2000);
 Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
   constexpr char kIns[] = "INS";
   constexpr char kOuts[] = "OUTS";
-  const std::unordered_map<std::string, std::string> operand_to_pointer_size(
+  const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     const bool is_ins = vendor_syntax->mnemonic() == kIns;
     const bool is_outs = vendor_syntax->mnemonic() == kOuts;
     if (!is_ins && !is_outs) {
@@ -134,10 +136,10 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
       continue;
     }
     std::string pointer_size;
-    if (!FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
-                  &pointer_size) &&
-        !FindCopy(operand_to_pointer_size, vendor_syntax->operands(1).name(),
-                  &pointer_size)) {
+    if (!gtl::FindCopy(operand_to_pointer_size,
+                       vendor_syntax->operands(0).name(), &pointer_size) &&
+        !gtl::FindCopy(operand_to_pointer_size,
+                       vendor_syntax->operands(1).name(), &pointer_size)) {
       status = InvalidArgumentError(
           absl::StrCat("Unexpected operands of an INS/OUTS instruction: ",
                        vendor_syntax->operands(0).name(), ", ",
@@ -177,7 +179,7 @@ Status FixOperandsOfLddqu(InstructionSetProto* instruction_set) {
        *instruction_set->mutable_instructions()) {
     if (instruction.raw_encoding_specification() != kLddquEncoding) continue;
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
       if (operand.name() == kMemOperand) {
         operand.set_name(kM128Operand);
@@ -195,15 +197,15 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
   constexpr char kLods[] = "LODS";
   constexpr char kScas[] = "SCAS";
   constexpr char kStos[] = "STOS";
-  const std::unordered_map<std::string, std::string> operand_to_pointer_size(
+  const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  const std::unordered_map<std::string, std::string> kOperandToRegister = {
+  const absl::node_hash_map<std::string, std::string> kOperandToRegister = {
       {"m8", "AL"}, {"m16", "AX"}, {"m32", "EAX"}, {"m64", "RAX"}};
   Status status = OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     const bool is_lods = vendor_syntax->mnemonic() == kLods;
     const bool is_stos = vendor_syntax->mnemonic() == kStos;
     const bool is_scas = vendor_syntax->mnemonic() == kScas;
@@ -219,10 +221,10 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
     }
     std::string register_operand;
     std::string pointer_size;
-    if (!FindCopy(kOperandToRegister, vendor_syntax->operands(0).name(),
-                  &register_operand) ||
-        !FindCopy(operand_to_pointer_size, vendor_syntax->operands(0).name(),
-                  &pointer_size)) {
+    if (!gtl::FindCopy(kOperandToRegister, vendor_syntax->operands(0).name(),
+                       &register_operand) ||
+        !gtl::FindCopy(operand_to_pointer_size,
+                       vendor_syntax->operands(0).name(), &pointer_size)) {
       status = InvalidArgumentError(
           absl::StrCat("Unexpected operand of a LODS/STOS instruction: ",
                        vendor_syntax->operands(0).name()));
@@ -259,14 +261,14 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLodsScasAndStos, 2000);
 
 Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_set<std::string> kEncodings = {"0F 01 /0", "0F 01 /1"};
+  const absl::flat_hash_set<std::string> kEncodings = {"0F 01 /0", "0F 01 /1"};
   constexpr char kMemoryOperandName[] = "m";
   constexpr char kUpdatedMemoryOperandName[] = "m16&64";
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    if (ContainsKey(kEncodings, instruction.raw_encoding_specification())) {
+    if (kEncodings.contains(instruction.raw_encoding_specification())) {
       InstructionFormat* const vendor_syntax =
-          instruction.mutable_vendor_syntax();
+          GetOrAddUniqueVendorSyntaxOrDie(&instruction);
       for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
         if (operand.name() == kMemoryOperandName) {
           operand.set_name(kUpdatedMemoryOperandName);
@@ -288,7 +290,7 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
     if (instruction.raw_encoding_specification() != kVMovQEncoding) continue;
 
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     if (vendor_syntax->operands_size() != 2) {
       return InvalidArgumentError(
           absl::StrCat("Unexpected number of operands of a VMOVQ instruction: ",
@@ -308,11 +310,11 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
   constexpr char kR64Operand[] = "r64";
   constexpr char kRegOperand[] = "reg";
   // The mnemonics for which we add new entries.
-  const std::unordered_set<std::string> kExpandToAllSizes = {"LAR"};
+  const absl::flat_hash_set<std::string> kExpandToAllSizes = {"LAR"};
   // The mnemonics for which we just replace reg with r8/r16/r32.
-  const std::unordered_set<std::string> kRenameToReg8 = {"VPBROADCASTB"};
-  const std::unordered_set<std::string> kRenameToReg16 = {"VPBROADCASTW"};
-  const std::unordered_set<std::string> kRenameToReg32 = {
+  const absl::flat_hash_set<std::string> kRenameToReg8 = {"VPBROADCASTB"};
+  const absl::flat_hash_set<std::string> kRenameToReg16 = {"VPBROADCASTW"};
+  const absl::flat_hash_set<std::string> kRenameToReg32 = {
       "EXTRACTPS", "MOVMSKPD",  "MOVMSKPS", "PEXTRB",  "PEXTRW",   "PMOVMSKB",
       "VMOVMSKPD", "VMOVMSKPS", "VPEXTRB",  "VPEXTRW", "VPMOVMSKB"};
   // We can't safely add new entries to 'instructions' while we iterate over it.
@@ -324,11 +326,11 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
   Status status = OkStatus();
   for (InstructionProto& instruction : *instructions) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     const std::string& mnemonic = vendor_syntax->mnemonic();
     for (auto& operand : *vendor_syntax->mutable_operands()) {
       if (operand.name() == kRegOperand) {
-        if (ContainsKey(kExpandToAllSizes, mnemonic)) {
+        if (kExpandToAllSizes.contains(mnemonic)) {
           // This is a bit hacky. To avoid complicated matching of registers, we
           // just override the existing entry in the instruction set proto, add
           // the modified proto to new_instruction_protos except for the last
@@ -341,11 +343,11 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
           operand.set_name(kR64Operand);
           instruction.set_raw_encoding_specification(
               "REX.W + " + instruction.raw_encoding_specification());
-        } else if (ContainsKey(kRenameToReg8, mnemonic)) {
+        } else if (kRenameToReg8.contains(mnemonic)) {
           operand.set_name(kR8Operand);
-        } else if (ContainsKey(kRenameToReg16, mnemonic)) {
+        } else if (kRenameToReg16.contains(mnemonic)) {
           operand.set_name(kR16Operand);
-        } else if (ContainsKey(kRenameToReg32, mnemonic)) {
+        } else if (kRenameToReg32.contains(mnemonic)) {
           operand.set_name(kR32Operand);
         } else {
           status = InvalidArgumentError(
@@ -365,7 +367,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixRegOperands, 2000);
 
 Status RenameOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const std::unordered_map<std::string, std::string> kOperandRenaming = {
+  const absl::node_hash_map<std::string, std::string> kOperandRenaming = {
       // Synonyms (different names used for the same type in different parts of
       // the manual).
       {"m80dec", "m80bcd"},
@@ -381,10 +383,10 @@ Status RenameOperands(InstructionSetProto* instruction_set) {
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
-        instruction.mutable_vendor_syntax();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     for (auto& operand : *vendor_syntax->mutable_operands()) {
       const std::string* renaming =
-          FindOrNull(kOperandRenaming, operand.name());
+          gtl::FindOrNull(kOperandRenaming, operand.name());
       if (renaming != nullptr) {
         operand.set_name(*renaming);
       }
@@ -397,19 +399,19 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(RenameOperands, 2000);
 Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr char kImplicitST0Operand[] = "ST(0)";
-  const std::unordered_set<std::string> kUpdatedInstructionEncodings = {
+  const absl::flat_hash_set<std::string> kUpdatedInstructionEncodings = {
       "D8 C0+i", "D8 C8+i", "D8 E0+i", "D8 E8+i", "D8 F0+i", "D8 F8+i",
       "DB E8+i", "DB F0+i", "DE C0+i", "DE C8+i", "DE E0+i", "DE E8+i",
       "DE F0+i", "DE F8+i", "DF E8+i", "DF F0+i",
   };
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    if (!ContainsKey(kUpdatedInstructionEncodings,
-                     instruction.raw_encoding_specification())) {
+    if (!kUpdatedInstructionEncodings.contains(
+            instruction.raw_encoding_specification())) {
       continue;
     }
     RepeatedPtrField<InstructionOperand>* const operands =
-        instruction.mutable_vendor_syntax()->mutable_operands();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction)->mutable_operands();
     operands->erase(std::remove_if(operands->begin(), operands->end(),
                                    [](const InstructionOperand& operand) {
                                      return operand.name() ==
@@ -427,7 +429,7 @@ Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     RepeatedPtrField<InstructionOperand>* const operands =
-        instruction.mutable_vendor_syntax()->mutable_operands();
+        GetOrAddUniqueVendorSyntaxOrDie(&instruction)->mutable_operands();
     operands->erase(std::remove_if(operands->begin(), operands->end(),
                                    [](const InstructionOperand& operand) {
                                      return operand.name() ==

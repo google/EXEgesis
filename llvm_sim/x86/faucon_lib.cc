@@ -159,18 +159,11 @@ class MCInstStreamer : public llvm::MCStreamer {
   std::vector<llvm::MCInst>* const Result_;
 };
 
-}  // namespace
-
-std::vector<llvm::MCInst> ParseAsmCodeFromFile(
-    const GlobalContext& Context, const std::string& FileName,
+std::vector<llvm::MCInst> ParseAsmCodeFromMemoryBuffer(
+    const GlobalContext& Context, std::unique_ptr<llvm::MemoryBuffer> MemBuf,
     const llvm::InlineAsm::AsmDialect Dialect) {
-  auto MemBuf = llvm::MemoryBuffer::getFileOrSTDIN(FileName);
-  if (!MemBuf) {
-    std::cerr << "could not open asm file\n";
-    return {};
-  }
   llvm::SourceMgr SM;
-  SM.AddNewSourceBuffer(std::move(MemBuf.get()), llvm::SMLoc());
+  SM.AddNewSourceBuffer(std::move(MemBuf), llvm::SMLoc());
 
   std::vector<llvm::MCInst> Result;
 
@@ -195,6 +188,27 @@ std::vector<llvm::MCInst> ParseAsmCodeFromFile(
     return {};
   }
   return Result;
+}
+
+}  // namespace
+
+std::vector<llvm::MCInst> ParseAsmCodeFromFile(
+    const GlobalContext& Context, const std::string& FileName,
+    const llvm::InlineAsm::AsmDialect Dialect) {
+  auto MemBuf = llvm::MemoryBuffer::getFileOrSTDIN(FileName);
+  if (!MemBuf) {
+    std::cerr << "could not open asm file\n";
+    return {};
+  }
+  return ParseAsmCodeFromMemoryBuffer(Context, std::move(MemBuf.get()),
+                                      Dialect);
+}
+
+std::vector<llvm::MCInst> ParseAsmCodeFromString(
+    const GlobalContext& Context, const std::string& Assembly,
+    const llvm::InlineAsm::AsmDialect Dialect) {
+  auto MemBuf = llvm::MemoryBuffer::getMemBuffer(Assembly);
+  return ParseAsmCodeFromMemoryBuffer(Context, std::move(MemBuf), Dialect);
 }
 
 void TextTable::Render(llvm::raw_ostream& OS) const {
