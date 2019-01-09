@@ -1,3 +1,6 @@
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+
 # ===== Abseil =====
 
 http_archive(
@@ -74,9 +77,9 @@ http_archive(
 
 # ===== benchmark =====
 
-new_http_archive(
+http_archive(
     name = "com_google_benchmark",
-    build_file = "benchmark.BUILD",
+    build_file = "@//:benchmark.BUILD",
     sha256 = "e7334dd254434c6668e33a54c8f839194c7c61840d52f4b6258eee28e9f3b20e",
     strip_prefix = "benchmark-1.1.0",
     urls = [
@@ -87,9 +90,9 @@ new_http_archive(
 
 # ===== utf =====
 
-new_http_archive(
+http_archive(
     name = "utf_archive",
-    build_file = "utf.BUILD",
+    build_file = "@//:utf.BUILD",
     sha256 = "262a902f622dcd28e05b8a4be10da0aa3899050d0be8f4a71780eed6b2ea65ca",
     urls = [
         "https://mirror.bazel.build/9fans.github.io/plan9port/unix/libutf.tgz",
@@ -111,9 +114,9 @@ http_archive(
 
 # ===== glog =====
 
-new_http_archive(
+http_archive(
     name = "com_github_glog_glog",
-    build_file = "glog.BUILD",
+    build_file = "@//:glog.BUILD",
     sha256 = "7580e408a2c0b5a89ca214739978ce6ff480b5e7d8d7698a2aa92fadc484d1e0",
     strip_prefix = "glog-0.3.5",
     urls = [
@@ -124,9 +127,9 @@ new_http_archive(
 
 # ===== xpdf =====
 
-new_http_archive(
+http_archive(
     name = "xpdf_archive",  # GPLv2
-    build_file = "xpdf.BUILD",
+    build_file = "@//:xpdf.BUILD",
     sha256 = "11390c74733abcb262aaca4db68710f13ffffd42bfe2a0861a5dfc912b2977e5",
     urls = [
         "https://mirror.bazel.build/download.openpkg.org/components/cache/xpdf/xpdf-3.04.tar.gz",
@@ -136,18 +139,19 @@ new_http_archive(
 
 # ===== libpfm4 =====
 
-new_git_repository(
+http_archive(
     name = "libpfm4_git",
-    build_file = "libpfm4.BUILD",
-    remote = "git://git.code.sf.net/p/perfmon2/libpfm4",
-    tag = "v4.8.0",
+    build_file = "@//:libpfm4.BUILD",
+    sha256 = "9193787a73201b4254e3669243fd71d15a9550486920861912090a09f366cf68",
+    strip_prefix = "libpfm-4.8.0",
+    urls = ["https://iweb.dl.sourceforge.net/project/perfmon2/libpfm4/libpfm-4.8.0.tar.gz"],
 )
 
 # ===== tinyxml2 =====
 
-new_http_archive(
+http_archive(
     name = "tinyxml2_git",  # zlib license
-    build_file = "tinyxml2.BUILD",
+    build_file = "@//:tinyxml2.BUILD",
     sha256 = "cdf0c2179ae7a7931dba52463741cf59024198bbf9673bf08415bcb46344110f",
     strip_prefix = "tinyxml2-6.2.0",
     urls = [
@@ -170,9 +174,9 @@ http_archive(
 
 # ===== LLVM =====
 
-new_http_archive(
+http_archive(
     name = "llvm_git",
-    build_file = "llvm.BUILD",
+    build_file = "@//:llvm.BUILD",
     sha256 = "543e4980893f102de903588be5af724f09d7fdc94c0aeda9bc4ce756aa90213a",
     strip_prefix = "llvm-2bb2152d87d309941baa588cac323a4cbb8b18d7",
     urls = [
@@ -189,7 +193,7 @@ new_http_archive(
 http_file(
     name = "intel_sdm_pdf",
     sha256 = "3ba44a3fe3ce564ca5d7ef3d9a4cb6320d9f69c5440e11103f02278c8c5e6da0",
-    url = "https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf",
+    urls = ["https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf"],
 )
 
 # ==============================================================================
@@ -197,7 +201,7 @@ http_file(
 # See https://bazel.build/versions/master/docs/external.html#transitive-dependencies
 # ==============================================================================
 
-new_http_archive(
+http_archive(
     name = "glpk",  # GPLv3
     build_file = "@or_tools_git//bazel:glpk.BUILD",
     sha256 = "9a5dab356268b4f177c33e00ddf8164496dc2434e83bd1114147024df983a3bb",
