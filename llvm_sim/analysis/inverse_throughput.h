@@ -16,6 +16,7 @@
 #define EXEGESIS_LLVM_SIM_ANALYSIS_INVERSE_THROUGHPUT_H_
 
 #include <limits>
+#include <vector>
 
 #include "llvm_sim/framework/context.h"
 #include "llvm_sim/framework/log.h"
@@ -38,6 +39,13 @@ struct InverseThroughputAnalysis {
 
 // Computes the inverse throughput.
 InverseThroughputAnalysis ComputeInverseThroughput(
+    const BlockContext& BlockContext, const SimulationLog& Log);
+
+// Extracts the number of cycles that each iteration of the basic block has
+// taken. Drops a small number of iterations at the beginning of the simulation
+// so that only iterations where the pipeline was properly warmed up are
+// considered.
+std::vector<unsigned> ComputeInverseThroughputs(
     const BlockContext& BlockContext, const SimulationLog& Log);
 
 }  // namespace simulator

@@ -14,7 +14,6 @@ cc_library(
     deps = [
         "//llvm_sim/framework:context",
         "//llvm_sim/framework:log",
-        "@llvm_git//:support",
     ],
 )
 

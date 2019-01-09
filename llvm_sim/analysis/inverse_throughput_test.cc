@@ -79,6 +79,35 @@ TEST(DispatchPortTest, Works) {
   }
 }
 
+TEST(ComputeInverseThroughputsTest, SanityCheck) {
+  std::vector<llvm::MCInst> Instructions;
+  const BlockContext BlockContext(Instructions, true);
+
+  std::vector<BufferDescription> BufferDescriptions(4);
+  SimulationLog Log(BufferDescriptions);
+  Log.Iterations = {{/*EndCycle=*/4}, {/*EndCycle=*/5},  {/*EndCycle=*/7},
+                    {/*EndCycle=*/9}, {/*EndCycle=*/11}, {/*EndCycle=*/13}};
+  const std::vector<unsigned> Throughputs =
+      ComputeInverseThroughputs(BlockContext, Log);
+  EXPECT_THAT(Throughputs, ::testing::ElementsAre(2, 2, 2));
+}
+
+// Checks that at most 5 items are skipped when enough data is available.
+TEST(ComputeInverseThroughputsTest, SkippedItems) {
+  std::vector<llvm::MCInst> Instructions;
+  const BlockContext BlockContext(Instructions, true);
+
+  std::vector<BufferDescription> BufferDescriptions(4);
+  SimulationLog Log(BufferDescriptions);
+  Log.Iterations = {{/*EndCycle=*/4},  {/*EndCycle=*/5},  {/*EndCycle=*/7},
+                    {/*EndCycle=*/9},  {/*EndCycle=*/11}, {/*EndCycle=*/13},
+                    {/*EndCycle=*/17}, {/*EndCycle=*/19}, {/*EndCycle=*/22},
+                    {/*EndCycle=*/23}, {/*EndCycle=*/25}, {/*EndCycle=*/28}};
+  const std::vector<unsigned> Throughputs =
+      ComputeInverseThroughputs(BlockContext, Log);
+  EXPECT_THAT(Throughputs, ::testing::ElementsAre(2, 4, 2, 3, 1, 2, 3));
+}
+
 }  // namespace
 }  // namespace simulator
 }  // namespace exegesis
