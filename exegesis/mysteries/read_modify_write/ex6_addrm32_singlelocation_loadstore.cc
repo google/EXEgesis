@@ -16,7 +16,7 @@ int main() {
           .endr
         )"
         :
-        : [address] "r"(memory)
+        : [ address ] "r"(memory)
         : "%rsi", "%ebx");
   }
   return 0;
