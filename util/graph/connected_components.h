@@ -31,10 +31,10 @@
 #include <memory>
 #include <set>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
 #include "absl/memory/memory.h"
 #include "absl/meta/type_traits.h"
@@ -131,8 +131,8 @@ struct ConnectedComponentsTypeHelper {
   struct SelectContainer<
       U, absl::enable_if_t<std::is_integral<decltype(
              std::declval<const U&>()(std::declval<const T&>()))>::value>> {
-    using Set = std::unordered_set<T, CompareOrHashT>;
-    using Map = std::unordered_map<T, int, CompareOrHashT>;
+    using Set = absl::flat_hash_set<T, CompareOrHashT>;
+    using Map = absl::flat_hash_map<T, int, CompareOrHashT>;
   };
 
   using Set = typename SelectContainer<CompareOrHashT>::Set;
@@ -153,6 +153,15 @@ struct ConnectedComponentsTypeHelper {
 //   cc.FindConnectedComponents(&components);
 // Each entry in components now contains all the nodes in a single
 // connected component.
+//
+// Usage with flat_hash_set:
+//   using ConnectedComponentType = flat_hash_set<MyNodeType>;
+//   ConnectedComponentsFinder<ConnectedComponentType::key_type,
+//                             ConnectedComponentType::hasher>
+//   cc;
+//   ...
+//   vector<ConnectedComponentType> components;
+//   cc.FindConnectedComponents(&components);
 //
 // If you want to, you can continue adding nodes and edges after calling
 // FindConnectedComponents, then call it again later.
