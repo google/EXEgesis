@@ -12,9 +12,9 @@ cc_library(
     hdrs = ["assembler_disassembler.h"],
     deps = [
         ":assembler_disassembler_cc_proto",
+        ":disassembler",
+        ":inline_asm",
         "//base",
-        "//exegesis/llvm:disassembler",
-        "//exegesis/llvm:inline_asm",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/util:instruction_syntax",
         "//exegesis/util:strings",
@@ -35,13 +35,9 @@ cc_test(
     deps = [
         ":assembler_disassembler",
         ":assembler_disassembler_cc_proto",
-        "//base",
         "//exegesis/testing:test_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -66,8 +62,8 @@ cc_library(
     srcs = ["disassembler.cc"],
     hdrs = ["disassembler.h"],
     deps = [
+        ":llvm_utils",
         "//base",
-        "//exegesis/llvm:llvm_utils",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/base:core_headers",
@@ -87,12 +83,8 @@ cc_test(
     srcs = ["disassembler_test.cc"],
     deps = [
         ":disassembler",
-        "//base",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -102,8 +94,8 @@ cc_library(
     srcs = ["inline_asm.cc"],
     hdrs = ["inline_asm.h"],
     deps = [
+        ":llvm_utils",
         "//base",
-        "//exegesis/llvm:llvm_utils",
         "//util/gtl:map_util",
         "//util/task:status",
         "//util/task:statusor",
@@ -126,8 +118,8 @@ cc_test(
     srcs = ["inline_asm_test.cc"],
     deps = [
         ":inline_asm",
+        ":llvm_utils",
         "//base",
-        "//exegesis/llvm:llvm_utils",
         "//exegesis/testing:test_util",
         "//exegesis/util:strings",
         "@com_github_gflags_gflags//:gflags",
@@ -135,8 +127,6 @@ cc_test(
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
-        "@llvm_git//:ir",
-        "@llvm_git//:support",
     ],
 )
 
@@ -160,8 +150,8 @@ cc_library(
     srcs = ["llvm_utils.cc"],
     hdrs = ["llvm_utils.h"],
     deps = [
+        ":llvm_targets",
         "//base",
-        "//exegesis/llvm:llvm_targets",
         "//util/task:status",
         "//util/task:statusor",
         "@com_github_gflags_gflags//:gflags",

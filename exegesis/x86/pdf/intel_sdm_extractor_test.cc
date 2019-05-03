@@ -139,6 +139,20 @@ TEST(IntelSdmExtractorTest, ParseOperandEncodingTableCell) {
                   "BaseReg (R): VSIB:base,\nVectorReg(R): VSIB:index"),
               EqualsProto("spec: OE_VSIB usage: USAGE_READ"));
 }
+
+TEST(IntelSdmExtractorTest, FixFeature) {
+  static constexpr struct {
+    absl::string_view feature;
+    absl::string_view expected_feature;
+  } kTestCases[] = {{"X87", "X87"},
+                    {"AVX512F", "AVX512F"},
+                    {"AVX512VL\nAVX512F", "AVX512VL && AVX512F"}};
+  for (const auto& test_case : kTestCases) {
+    EXPECT_EQ(FixFeature(std::string(test_case.feature)),
+              test_case.expected_feature);
+  }
+}
+
 }  // namespace
 }  // namespace pdf
 }  // namespace x86

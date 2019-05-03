@@ -76,7 +76,7 @@ std::string PrettyPrintInstruction(
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
 std::string PrettyPrintItinerary(
-    const ItineraryProto& instruction,
+    const ItineraryProto& itineraries,
     const PrettyPrintOptions& options = PrettyPrintOptions());
 
 std::string PrettyPrintCpuInfo(

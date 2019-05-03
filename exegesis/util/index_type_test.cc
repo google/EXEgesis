@@ -27,7 +27,7 @@ class IndexTypeTest : public ::testing::Test {
 };
 
 using ValueTypes = ::testing::Types<int, int64_t, uint64_t>;
-TYPED_TEST_CASE(IndexTypeTest, ValueTypes);
+TYPED_TEST_SUITE(IndexTypeTest, ValueTypes);
 
 TYPED_TEST(IndexTypeTest, DefaultConstructor) {
   typename TestFixture::MyIndex index;

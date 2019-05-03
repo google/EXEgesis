@@ -15,6 +15,7 @@
 #include "exegesis/llvm/llvm_utils.h"
 
 #include <stdint.h>
+
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -46,14 +47,19 @@ DEFINE_string(exegesis_extra_llvm_args, "",
               "Additional command-line parameters to pass to LLVM.");
 
 namespace exegesis {
+namespace {
 
 using ::google::ProgramUsage;
 
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::StatusOr;
 
-void EnsureLLVMWasInitialized() {
-  static const bool dummy = []() {
+void OptionallyInitializeLLVMOnce(bool skip_initialization) {
+  // Note that the variable is static, i.e. it is initialized only during the
+  // first call to the function. When skip_initialization == true on the first
+  // call, the lambda is not evaluated and it will also never be evaluated later
+  // because of static variable semantics.
+  static const bool dummy = skip_initialization || []() {
     LLVMInitializeX86Target();
     LLVMInitializeX86TargetInfo();
     LLVMInitializeX86TargetMC();
@@ -90,6 +96,12 @@ void EnsureLLVMWasInitialized() {
   }();
   CHECK(dummy);  // Silence unused variable warning.
 }
+
+}  // namespace
+
+void EnsureLLVMWasInitialized() { OptionallyInitializeLLVMOnce(false); }
+
+void MarkLLVMInitialized() { OptionallyInitializeLLVMOnce(true); }
 
 StatusOr<const llvm::Target*> GetLLVMTarget() {
   llvm::Triple triple(GetNormalizedLLVMTripleName());

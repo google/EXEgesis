@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "exegesis/testing/test_util.h"
+
 #include "gtest/gtest.h"
 
 namespace exegesis {

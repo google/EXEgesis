@@ -30,14 +30,13 @@
 #include <unordered_set>
 #include <vector>
 
-#include "gflags/gflags.h"
-
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"

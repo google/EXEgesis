@@ -29,17 +29,13 @@ cc_test(
     srcs = ["architecture_test.cc"],
     deps = [
         ":architecture",
-        "//base",
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -70,17 +66,13 @@ cc_test(
     srcs = ["architecture_provider_test.cc"],
     deps = [
         ":architecture_provider",
-        "//base",
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
         "//util/task:status",
         "//util/task:statusor",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -313,13 +305,9 @@ cc_test(
     srcs = ["opcode_test.cc"],
     deps = [
         ":opcode",
-        "//base",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -364,15 +352,11 @@ cc_library(
         ":cpu_info",
         ":microarchitecture",
         ":port_mask",
-        "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/proto:microarchitecture_cc_proto",
         "//exegesis/util:instruction_syntax",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -415,13 +399,9 @@ cc_test(
     srcs = ["registers_test.cc"],
     deps = [
         ":registers",
-        "//base",
         "//exegesis/testing:test_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 

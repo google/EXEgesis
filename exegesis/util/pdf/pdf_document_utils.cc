@@ -15,6 +15,7 @@
 #include "exegesis/util/pdf/pdf_document_utils.h"
 
 #include <dirent.h>
+
 #include <algorithm>
 #include <map>
 

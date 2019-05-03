@@ -14,6 +14,7 @@ exports_files([
     "test5.s",
     "test6.s",
     "test9.s",
+    "test10.s",
 ])
 
 cc_binary(

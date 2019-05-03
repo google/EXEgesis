@@ -46,6 +46,11 @@ using ::exegesis::util::StatusOr;
 // TODO(ondrasej): Pass some command-line flags to LLVM?
 void EnsureLLVMWasInitialized();
 
+// Calling this method before EnsureLLVMWasInitialized() turns it into a no-op.
+// This is useful in binaries that do custom LLVM initialization and/or depend
+// on LLVM parsing the command-line flags.
+void MarkLLVMInitialized();
+
 // Looks up the LLVM target based on the command-line flags passed to the
 // program or the default LLVM target for the current architecture; the target
 // is the target for the triple returned by GetNormalizedLLVMTripleName. The

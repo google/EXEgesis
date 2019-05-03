@@ -94,7 +94,6 @@ cc_test(
         "//exegesis/util/pdf:pdf_document_parser",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -124,7 +123,6 @@ cc_library(
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
     ],

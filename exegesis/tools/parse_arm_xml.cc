@@ -14,13 +14,12 @@
 
 #include <stdlib.h>
 
-#include "gflags/gflags.h"
-
 #include "exegesis/arm/xml/converter.h"
 #include "exegesis/arm/xml/parser.h"
 #include "exegesis/arm/xml/parser.pb.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 
 DEFINE_string(exegesis_arm_xml_path, "",

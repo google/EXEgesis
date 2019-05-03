@@ -21,11 +21,10 @@
 
 #include <string>
 
-#include "gflags/gflags.h"
-
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "util/task/status.h"
 

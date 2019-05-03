@@ -579,6 +579,80 @@ TEST(CheckSpecialCaseInstructions, NotCoveredInstructions) {
                     }
                     x86_encoding_specification { opcode: 0xD964 }
                   })proto",
+          R"proto(instructions {
+                    vendor_syntax { mnemonic: "MFENCE" }
+                    raw_encoding_specification: "NP 0F AE F0"
+                    x86_encoding_specification {
+                      opcode: 1027824
+                      legacy_prefixes {
+                        rex_w_prefix: PREFIX_IS_IGNORED
+                        operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+                      }
+                    }
+                  }
+                  instructions {
+                    vendor_syntax {
+                      mnemonic: "TPAUSE"
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                      }
+                    }
+                    raw_encoding_specification: "66 0F AE /6"
+                    x86_encoding_specification {
+                      opcode: 4014
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 6
+                      legacy_prefixes {
+                        rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+                        operand_size_override_prefix: PREFIX_IS_REQUIRED
+                      }
+                    }
+                  })proto",
+          R"proto(instructions {
+                    vendor_syntax {
+                      mnemonic: "UMWAIT"
+                      operands {
+                        addressing_mode: DIRECT_ADDRESSING
+                        encoding: MODRM_RM_ENCODING
+                        value_size_bits: 32
+                        name: "r32"
+                        usage: USAGE_READ
+                        register_class: GENERAL_PURPOSE_REGISTER_32_BIT
+                      }
+                    }
+                    feature_name: "WAITPKG"
+                    available_in_64_bit: true
+                    legacy_instruction: true
+                    encoding_scheme: "A"
+                    raw_encoding_specification: "F2 0F AE /6"
+                    protection_mode: -1
+                    x86_encoding_specification {
+                      opcode: 4014
+                      modrm_usage: OPCODE_EXTENSION_IN_MODRM
+                      modrm_opcode_extension: 6
+                      legacy_prefixes {
+                        has_mandatory_repne_prefix: true
+                        rex_w_prefix: PREFIX_IS_NOT_PERMITTED
+                        operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+                      }
+                    }
+                  }
+                  instructions {
+                    vendor_syntax { mnemonic: "MFENCE" }
+                    available_in_64_bit: true
+                    legacy_instruction: true
+                    encoding_scheme: "ZO"
+                    raw_encoding_specification: "NP 0F AE F0"
+                    protection_mode: -1
+                    x86_encoding_specification {
+                      opcode: 1027824
+                      legacy_prefixes {
+                        rex_w_prefix: PREFIX_IS_IGNORED
+                        operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
+                      }
+                    }
+                  })proto",
       };
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =

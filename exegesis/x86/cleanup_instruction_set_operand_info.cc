@@ -1142,6 +1142,69 @@ Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixVmFuncOperandInfo, 998);
 
+Status AddMovdir64BOperandInfo(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  constexpr absl::string_view kMovdir64B = "66 0F 38 F8 /r";
+  constexpr int kExpectedNumOperands = 2;
+  constexpr absl::string_view kDestinationOperandName = "r16/r32/r64";
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    if (instruction.raw_encoding_specification() != kMovdir64B) continue;
+    InstructionFormat& vendor_syntax =
+        *GetOrAddUniqueVendorSyntaxOrDie(&instruction);
+    if (vendor_syntax.operands_size() != kExpectedNumOperands) {
+      return InvalidArgumentError(
+          absl::StrCat("Unexpected number of operands of MOVDIR64B: ",
+                       vendor_syntax.operands_size()));
+    }
+    InstructionOperand& destination_operand =
+        *vendor_syntax.mutable_operands(0);
+    if (destination_operand.name() != kDestinationOperandName) {
+      return InvalidArgumentError(
+          absl::StrCat("Unexpected MOVDIR64B destination operand name: ",
+                       destination_operand.name()));
+    }
+    destination_operand.set_name("m64");
+    destination_operand.set_addressing_mode(
+        InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE);
+    destination_operand.set_value_size_bits(512);
+    destination_operand.set_register_class(
+        RegisterProto::INVALID_REGISTER_CLASS);
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddMovdir64BOperandInfo, 999);
+
+Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  constexpr absl::string_view kUmonitor = "F3 0F AE /6";
+  constexpr int kExpectedNumOperands = 1;
+  constexpr absl::string_view kOperandName = "r16/r32/r64";
+  for (auto& instruction : *instruction_set->mutable_instructions()) {
+    if (instruction.raw_encoding_specification() != kUmonitor) continue;
+    InstructionFormat& vendor_syntax =
+        *GetOrAddUniqueVendorSyntaxOrDie(&instruction);
+    if (vendor_syntax.operands_size() != kExpectedNumOperands) {
+      return InvalidArgumentError(
+          absl::StrCat("Unexpected number of operands of UMONITOR: ",
+                       vendor_syntax.operands_size()));
+    }
+    InstructionOperand& destination_operand =
+        *vendor_syntax.mutable_operands(0);
+    if (destination_operand.name() != kOperandName) {
+      return InvalidArgumentError(absl::StrCat(
+          "Unexpected UMONITOR operand name: ", destination_operand.name()));
+    }
+    destination_operand.set_name("mem");
+    destination_operand.set_addressing_mode(
+        InstructionOperand::INDIRECT_ADDRESSING_WITH_BASE);
+    destination_operand.set_value_size_bits(8);
+    destination_operand.set_register_class(
+        RegisterProto::INVALID_REGISTER_CLASS);
+  }
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(AddUmonitorOperandInfo, 999);
+
 Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const RegisterClassMap register_class_map(std::begin(kRegisterClassMap),

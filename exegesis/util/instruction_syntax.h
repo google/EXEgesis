@@ -32,7 +32,7 @@ InstructionFormat ParseAssemblyStringOrDie(const std::string& code);
 
 // Returns an assembler-ready string corresponding to the InstructionFormat
 // passed as argument.
-std::string ConvertToCodeString(const InstructionFormat& proto);
+std::string ConvertToCodeString(const InstructionFormat& instruction);
 
 // NOTE(user): These functions were added in preparation for the support
 // for multiple syntaxes. The comments are already written for the case with

@@ -135,9 +135,9 @@ class MCInstStreamer : public llvm::MCStreamer {
 
   // Implementation of the llvm::MCStreamer interface. We only care about
   // instructions.
-  void EmitInstruction(const llvm::MCInst& instruction,
-                       const llvm::MCSubtargetInfo& mc_subtarget_info,
-                       bool PrintSchedInfo) override {
+  void EmitInstruction(
+      const llvm::MCInst& instruction,
+      const llvm::MCSubtargetInfo& mc_subtarget_info) override {
     Result_->push_back(instruction);
   }
 

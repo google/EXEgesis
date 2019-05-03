@@ -16,6 +16,7 @@
 #define EXEGESIS_LLVM_DISASM_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>

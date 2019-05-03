@@ -209,6 +209,7 @@ cc_library(
         ":codegen",
         ":config",
         ":debug_info_codeview",
+        ":debug_info_dwarf",
         ":ir",
         ":machine_code",
         ":machine_code_parser",
@@ -342,10 +343,20 @@ cc_library(
         ":config",
         ":ir",
         ":machine_code",
+        ":remarks",
         ":support",
         ":target_base",
         ":transform_utils",
         ":scalar_transforms",
+    ],
+)
+
+cc_library(
+    name = "debug_info",
+    hdrs = glob(["include/llvm/DebugInfo/*.h"]),
+    deps = [
+        ":object",
+        ":support",
     ],
 )
 
@@ -364,6 +375,21 @@ cc_library(
         ":support",
     ],
     includes = ["include/llvm/DebugInfo/CodeView"],
+)
+
+cc_library(
+    name = "debug_info_dwarf",
+    srcs = glob([
+        "lib/DebugInfo/DWARF/*.cpp",
+        "lib/DebugInfo/DWARF/*.h",
+    ]),
+    hdrs = glob(["include/llvm/DebugInfo/DWARF/*.h"]),
+    deps = [
+        ":binary_format",
+        ":debug_info",
+        ":object",
+        ":support",
+    ],
 )
 
 cc_library(
@@ -943,6 +969,23 @@ cc_library(
         ":support",
         ":target_base",
         ":transform_utils",
+    ],
+)
+
+cc_library(
+    name = "remarks",
+    srcs = glob([
+        "lib/Remarks/*.cpp",
+        "lib/Remarks/*.h",
+    ]),
+    hdrs = glob([
+        "include/llvm/Remarks/*.h",
+    ]) + [
+        "include/llvm-c/Remarks.h",
+    ],
+    linkopts = ["-ldl"],
+    deps = [
+        ":support",
     ],
 )
 

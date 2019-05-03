@@ -23,14 +23,13 @@
 #include <string>
 #include <vector>
 
-#include "gflags/gflags.h"
-
 #include "exegesis/base/cpuid.h"
 #include "exegesis/base/cpuid_x86.h"
 #include "exegesis/proto/cpuid.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "exegesis/util/file_util.h"
 #include "exegesis/util/proto_util.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "util/task/status.h"

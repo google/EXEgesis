@@ -34,6 +34,9 @@ InstructionSetProto ProcessIntelSdmDocument(const SdmDocument& sdm_document);
 InstructionTable::OperandEncodingCrossref::OperandEncoding
 ParseOperandEncodingTableCell(const std::string& content);
 
+// Cleans up and normalizes a CPU feature string from the SDM.
+std::string FixFeature(std::string feature);
+
 }  // namespace pdf
 }  // namespace x86
 }  // namespace exegesis

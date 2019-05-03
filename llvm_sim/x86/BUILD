@@ -41,6 +41,7 @@ cc_test(
     srcs = ["haswell_test.cc"],
     data = [
         "//llvm_sim/x86/testdata:test1.s",
+        "//llvm_sim/x86/testdata:test10.s",
         "//llvm_sim/x86/testdata:test2.s",
         "//llvm_sim/x86/testdata:test3.s",
         "//llvm_sim/x86/testdata:test4.s",

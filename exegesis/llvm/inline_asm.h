@@ -16,6 +16,7 @@
 #define EXEGESIS_LLVM_INLINE_ASM_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>

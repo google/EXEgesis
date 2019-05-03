@@ -15,6 +15,7 @@
 #include "exegesis/itineraries/compute_itineraries.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <functional>

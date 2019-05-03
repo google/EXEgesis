@@ -25,6 +25,7 @@
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/registers.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
+#include "exegesis/proto/x86/instruction_encoding.pb.h"
 #include "exegesis/util/bits.h"
 #include "exegesis/util/category_util.h"
 #include "exegesis/util/instruction_syntax.h"
@@ -95,14 +96,37 @@ uint8_t UsesDirectAddressingInModRm(const InstructionProto& instruction) {
   return false;
 }
 
+bool PrefixUsageIsMutuallyExclusive(LegacyEncoding::PrefixUsage left,
+                                    LegacyEncoding::PrefixUsage right) {
+  return (left == LegacyEncoding::PREFIX_IS_NOT_PERMITTED &&
+          right == LegacyEncoding::PREFIX_IS_REQUIRED) ||
+         (left == LegacyEncoding::PREFIX_IS_REQUIRED &&
+          right == LegacyEncoding::PREFIX_IS_NOT_PERMITTED);
+}
+
+bool HasMandatoryPrefix(const LegacyPrefixEncodingSpecification& prefixes) {
+  return prefixes.has_mandatory_address_size_override_prefix() ||
+         prefixes.has_mandatory_repe_prefix() ||
+         prefixes.has_mandatory_repne_prefix();
+}
+
+bool AllowsNoLegacyPrefixes(const InstructionProto& instruction) {
+  return !instruction.has_x86_encoding_specification() ||
+         !instruction.x86_encoding_specification().has_legacy_prefixes() ||
+         instruction.raw_encoding_specification().find("NP") !=
+             absl::string_view::npos;
+}
+
 bool IsSpecialCaseOfInstruction(const InstructionProto& general,
-                                const EncodingSpecification& special_case) {
+                                const InstructionProto& special) {
   const EncodingSpecification& general_encoding =
       general.x86_encoding_specification();
+  const EncodingSpecification& special_encoding =
+      special.x86_encoding_specification();
 
   // If general's opcode is not a prefix of the special case's opcode, it cannot
   // be a special case.
-  if (general_encoding.opcode() != (special_case.opcode() >> 8)) {
+  if (general_encoding.opcode() != (special_encoding.opcode() >> 8)) {
     return false;
   }
   // If general doesn't use ModR/M encoding, then there is definitely ambiguity.
@@ -113,7 +137,7 @@ bool IsSpecialCaseOfInstruction(const InstructionProto& general,
   const bool general_uses_direct_addressing =
       UsesDirectAddressingInModRm(general);
   const bool special_uses_direct_addressing =
-      GetModRmModBits(special_case.opcode()) == kModRmDirectAddressing;
+      GetModRmModBits(special_encoding.opcode()) == kModRmDirectAddressing;
   // Make sure they both have same addressing type, direct or indirect.
   if (general_uses_direct_addressing != special_uses_direct_addressing) {
     return false;
@@ -123,8 +147,31 @@ bool IsSpecialCaseOfInstruction(const InstructionProto& general,
   if (general_encoding.modrm_usage() ==
           EncodingSpecification::OPCODE_EXTENSION_IN_MODRM &&
       general_encoding.modrm_opcode_extension() !=
-          GetModRmRegBits(special_case.opcode())) {
+          GetModRmRegBits(special_encoding.opcode())) {
     return false;
+  }
+  // If one instruction allows has a mandatory operand size override prefix and
+  // the other disallows it, they are not a special case.
+  if (general_encoding.has_legacy_prefixes() &&
+      special_encoding.has_legacy_prefixes()) {
+    const LegacyPrefixEncodingSpecification& general_prefixes =
+        general_encoding.legacy_prefixes();
+    const LegacyPrefixEncodingSpecification& special_prefixes =
+        special_encoding.legacy_prefixes();
+    // NOTE(ondrasej): The checks below are sufficient for the January 2019
+    // version of the SDM. Additional checks might need to be added for future
+    // versions.
+    if (PrefixUsageIsMutuallyExclusive(
+            special_prefixes.operand_size_override_prefix(),
+            general_prefixes.operand_size_override_prefix())) {
+      return false;
+    }
+    if ((AllowsNoLegacyPrefixes(general) &&
+         HasMandatoryPrefix(special_prefixes)) ||
+        (AllowsNoLegacyPrefixes(special) &&
+         HasMandatoryPrefix(general_prefixes))) {
+      return false;
+    }
   }
 
   return true;
@@ -363,8 +410,7 @@ Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
       // Test coverage against all instructions whose opcode is a prefix of this
       // instruciton.
       for (const InstructionProto* candidate : *candidates) {
-        if (IsSpecialCaseOfInstruction(
-                *candidate, instruction.x86_encoding_specification())) {
+        if (IsSpecialCaseOfInstruction(*candidate, instruction)) {
           LogErrorAndUpdateStatus(
               StringPrintf("Opcode is ambigious: %x\n%s", opcode,
                            candidate->DebugString().c_str()),

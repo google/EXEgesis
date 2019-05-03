@@ -503,7 +503,7 @@ const std::set<absl::string_view>& GetValidFeatureSet() {
       "SSE",           "SSE2",        "SSE3",          "SSE4_1",
       "SSE4_2",        "SSSE3",       "XSAVE",         "XSAVEC",
       "XSS",           "XSAVEOPT",    "SGX1",          "SGX2",
-      "VAES",          "VPCLMULQDQ"};
+      "VAES",          "VPCLMULQDQ",  "WAITPKG"};
   return *kValidFeatures;
 }
 
@@ -559,21 +559,34 @@ bool IsValidMode(const std::string& text) {
   return false;
 }
 
+}  // namespace
+
+// We use a macro to avoid repeating the regex definition in FixFeature. We use
+// the string constant to initialize LazyRE2 (which expects a const char*), so
+// sadly we can't use a regular constexpr const char* constant.
+#define EXEGESIS_AVX_REGEX_SOURCE                                      \
+  "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_BITALG|AVX512_" \
+  "IFMA|AVX512_VNNI|AVX512PF|AVX512_VBMI|AVX512F|AVX512VL|GFNI|VAES|"  \
+  "VPCLMULQDQ)"
+
 // We want to normalize features to the set defined by GetValidFeatureSet or
 // logical composition of them (several features separated by '&&' or '||')
 // TODO(gchatelet): Move this to configuration file.
 std::string FixFeature(std::string feature) {
   absl::StripAsciiWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
-  const char kAvxRegex[] =
-      "(AVX|AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_BITALG|AVX512_"
-      "IFMA|AVX512_VNNI|AVX512PF|AVX512_VBMI|AVX512F|AVX512VL|GFNI|VAES|"
-      "VPCLMULQDQ)+";
-  if (RE2::FullMatch(feature, kAvxRegex)) {
+  // Matches a sequence of feature names with no separation between them.
+  static const LazyRE2 kAvxRepeatedRegex = {EXEGESIS_AVX_REGEX_SOURCE "+"};
+  // Matches a single feature name from the list above. The regexp is created by
+  // droping the 'repeat once or more' operator from kAvxRepeatedRegex. Using
+  // the regexp with repetition in RE2::Consume would lead to all but one
+  // feature name being dropped.
+  static const LazyRE2 kAvxRegex = {EXEGESIS_AVX_REGEX_SOURCE};
+  if (RE2::FullMatch(feature, *kAvxRepeatedRegex)) {
     absl::string_view remainder(feature);
     absl::string_view piece;
     std::vector<absl::string_view> pieces;
-    while (RE2::Consume(&remainder, kAvxRegex, &piece)) {
+    while (RE2::Consume(&remainder, *kAvxRegex, &piece)) {
       pieces.push_back(piece);
     }
     return absl::StrJoin(pieces, " && ");
@@ -585,11 +598,15 @@ std::string FixFeature(std::string feature) {
   if (feature == "PREFETCHWT1") return "3DNOW";
   if (feature == "HLE1") return "HLE";
   // NOTE(ondrasej): PRFCHW was renamed to PREFETCHW in the November 2018
-  // version of the SDM. We always use the new name, but we wait to remain
+  // version of the SDM. We always use the new name, but we want to remain
   // compatible with previous versions of the SDM.
   if (feature == "PRFCHW") return "PREFETCHW";
   return feature;
 }
+
+#undef EXEGESIS_AVX_REGEX_SOURCE
+
+namespace {
 
 // Applies transformations to normalize binary encoding.
 // TODO(gchatelet): Move this to document specific configuration.
@@ -730,7 +747,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       instruction->set_encoding_scheme(text);
       break;
     case InstructionTable::IT_FEATURE_FLAG: {
-      // Feature flags are not always consitent. FixFeature makes sure cleaned
+      // Feature flags are not always consistent. FixFeature makes sure cleaned
       // is one of the valid feature values.
       const std::string cleaned = FixFeature(text);
       std::string* feature_name = instruction->mutable_feature_name();

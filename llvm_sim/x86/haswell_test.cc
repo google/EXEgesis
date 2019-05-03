@@ -16,6 +16,8 @@
 // target. For unit tests, see
 // `llvm_sim/framework:simulator_test` and
 // `llvm_sim/components/...`.
+#include "llvm_sim/x86/haswell.h"
+
 #include <memory>
 
 #include "gmock/gmock.h"
@@ -35,7 +37,6 @@
 #include "llvm_sim/analysis/port_pressure.h"
 #include "llvm_sim/framework/log_levels.h"
 #include "llvm_sim/x86/faucon_lib.h"
-#include "llvm_sim/x86/haswell.h"
 
 namespace exegesis {
 namespace simulator {
@@ -50,10 +51,10 @@ class HaswellTest : public ::testing::Test {
     LLVMInitializeX86AsmParser();
   }
 
-  void RunTestCase(const std::string& TestCase);
+  void RunTestCase(const std::string& TestCase, int MaxNumCycles = 1000);
 };
 
-void HaswellTest::RunTestCase(const std::string& TestCase) {
+void HaswellTest::RunTestCase(const std::string& TestCase, int MaxNumCycles) {
   const auto Context = GlobalContext::Create("x86_64", "haswell");
   const auto Simulator = CreateHaswellSimulator(*Context);
 
@@ -66,8 +67,8 @@ void HaswellTest::RunTestCase(const std::string& TestCase) {
   ASSERT_TRUE(!Instructions.empty());
 
   const BlockContext BlockContext(Instructions, true);
-  const auto Log = Simulator->Run(BlockContext, /*MaxNumIterations=*/100,
-                                  /*MaxNumCycles=*/1000);
+  const auto Log =
+      Simulator->Run(BlockContext, /*MaxNumIterations=*/100, MaxNumCycles);
 
   llvm::outs() << Log->DebugString();
   for (const auto& Line : Log->Lines) {
@@ -82,6 +83,7 @@ TEST_F(HaswellTest, Test4) { RunTestCase("test4.s"); }
 TEST_F(HaswellTest, Test5) { RunTestCase("test5.s"); }
 TEST_F(HaswellTest, Test6) { RunTestCase("test6.s"); }
 TEST_F(HaswellTest, Test9) { RunTestCase("test9.s"); }
+TEST_F(HaswellTest, DISABLED_Test10) { RunTestCase("test10.s", 0); }
 
 }  // namespace
 }  // namespace simulator

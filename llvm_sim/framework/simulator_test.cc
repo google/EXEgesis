@@ -13,10 +13,10 @@
 // limitations under the License.
 
 #include "llvm_sim/framework/simulator.h"
-#include "llvm_sim/framework/component.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "llvm_sim/framework/component.h"
 
 namespace exegesis {
 namespace simulator {

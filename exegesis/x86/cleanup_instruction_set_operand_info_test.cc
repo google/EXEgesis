@@ -552,6 +552,87 @@ TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
                 kExpectedTransformedVmFuncProto);
 }
 
+TEST(AddMovdir64BOperandInfoTest, AddInfo) {
+  constexpr const char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOVDIR64B"
+        operands {
+          encoding: MODRM_REG_ENCODING
+          name: "r16/r32/r64"
+          usage: USAGE_WRITE
+        }
+        operands { encoding: MODRM_RM_ENCODING name: "m512" usage: USAGE_READ }
+      }
+      raw_encoding_specification: "66 0F 38 F8 /r"
+    }
+    instructions {
+      description: "Invoke VMfunction specified in EAX."
+      vendor_syntax { mnemonic: "VMFUNC" }
+      feature_name: "VMX"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "NP 0F 01 D4"
+      instruction_group_index: 4
+    })proto";
+  constexpr const char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOVDIR64B"
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
+          encoding: MODRM_REG_ENCODING
+          value_size_bits: 512
+          name: "m64"
+          usage: USAGE_WRITE
+        }
+        operands { encoding: MODRM_RM_ENCODING name: "m512" usage: USAGE_READ }
+      }
+      raw_encoding_specification: "66 0F 38 F8 /r"
+    }
+    instructions {
+      description: "Invoke VMfunction specified in EAX."
+      vendor_syntax { mnemonic: "VMFUNC" }
+      feature_name: "VMX"
+      available_in_64_bit: true
+      legacy_instruction: true
+      raw_encoding_specification: "NP 0F 01 D4"
+      instruction_group_index: 4
+    })proto";
+
+  TestTransform(AddMovdir64BOperandInfo, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(AddUmonitorOperandInfoTest, AddInfo) {
+  constexpr const char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        operands {
+          encoding: MODRM_RM_ENCODING
+          name: "r16/r32/r64"
+          usage: USAGE_READ
+        }
+      }
+      raw_encoding_specification: "F3 0F AE /6"
+    })proto";
+  constexpr const char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        operands {
+          addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
+          encoding: MODRM_RM_ENCODING
+          value_size_bits: 8
+          name: "mem"
+          usage: USAGE_READ
+        }
+      }
+      raw_encoding_specification: "F3 0F AE /6"
+    })proto";
+  TestTransform(AddUmonitorOperandInfo, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
 TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
   constexpr char kInstructionSetProto[] = R"proto(
     instructions {

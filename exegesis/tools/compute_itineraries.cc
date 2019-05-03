@@ -14,18 +14,18 @@
 
 // A tool to compute itineraries for an instruction set.
 
+#include "exegesis/itineraries/compute_itineraries.h"
+
 #include <functional>
 #include <utility>
-
-#include "gflags/gflags.h"
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_split.h"
 #include "exegesis/base/microarchitecture.h"
-#include "exegesis/itineraries/compute_itineraries.h"
 #include "exegesis/tools/architecture_flags.h"
 #include "exegesis/util/proto_util.h"
 #include "exegesis/util/system.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "util/gtl/map_util.h"

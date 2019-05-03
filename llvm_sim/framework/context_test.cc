@@ -128,8 +128,8 @@ TEST(ContextTest, Decomposition) {
   Context.SubtargetInfo = llvm::make_unique<llvm::MCSubtargetInfo>(
       llvm::Triple(), /*CPU=*/"", /*FeatureString=*/"",
       llvm::ArrayRef<llvm::SubtargetFeatureKV>(),
-      llvm::ArrayRef<llvm::SubtargetFeatureKV>(), /*ProcSchedModels=*/nullptr,
-      WriteProcResEntries.data(), WriteLatencyEntries.data(),
+      llvm::ArrayRef<llvm::SubtargetSubTypeKV>(), WriteProcResEntries.data(),
+      WriteLatencyEntries.data(),
       /*ReadAdvanceEntries=*/nullptr, /*InstrStages=*/nullptr,
       /*OperandCycles=*/nullptr, /*ForwardingPaths=*/nullptr);
 

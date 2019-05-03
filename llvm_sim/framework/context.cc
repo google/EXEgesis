@@ -89,7 +89,7 @@ std::unique_ptr<const GlobalContext> GlobalContext::Create(
     const llvm::StringRef TripleName, const llvm::StringRef CpuName) {
   std::string ErrorMsg;
   const auto* const Target =
-      llvm::TargetRegistry::lookupTarget("x86_64", ErrorMsg);
+      llvm::TargetRegistry::lookupTarget(TripleName, ErrorMsg);
   if (!Target) {
     llvm::errs() << "cannot create target for triple '" << TripleName
                  << "': " << ErrorMsg << "\n";

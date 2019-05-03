@@ -200,9 +200,9 @@ TEST(DisassemblerTest, MovsAndMovsd) {
 
 TEST(DisassemblerTest, FpComparisonInstructions) {
   Disassembler disasm("");
-  EXPECT_EQ("00000000; DFF3; fcompi st(3); fcompi %st(3); COM_FIPr",
+  EXPECT_EQ("00000000; DFF3; fcompi st, st(3); fcompi %st(3), %st; COM_FIPr",
             disasm.DisassembleHexString("DFF3"));
-  EXPECT_EQ("00000000; DFEB; fucompi st(3); fucompi %st(3); UCOM_FIPr",
+  EXPECT_EQ("00000000; DFEB; fucompi st, st(3); fucompi %st(3), %st; UCOM_FIPr",
             disasm.DisassembleHexString("DFEB"));
 }
 

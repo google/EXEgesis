@@ -15,7 +15,6 @@
 #include "exegesis/x86/cleanup_instruction_set_removals.h"
 
 #include <algorithm>
-
 #include <map>
 #include <string>
 #include <vector>

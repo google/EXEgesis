@@ -24,15 +24,11 @@ cc_library(
     hdrs = ["converter.h"],
     deps = [
         ":parser_cc_proto",
-        "//base",
         "//exegesis/proto:instruction_encoding_cc_proto",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/util:instruction_syntax",
         "//util/gtl:map_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 
@@ -82,7 +78,6 @@ cc_test(
         ":docvars",
         ":parser_cc_proto",
         "//exegesis/testing:test_util",
-        "//util/task:status",
         "@com_google_googletest//:gtest_main",
         "@tinyxml2_git//:tinyxml2",
     ],
@@ -93,14 +88,10 @@ cc_library(
     srcs = ["markdown.cc"],
     hdrs = ["markdown.h"],
     deps = [
-        "//base",
         "//exegesis/util/xml:xml_util",
         "//util/gtl:map_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protobuf_lite",
         "@com_googlesource_code_re2//:re2",
         "@tinyxml2_git//:tinyxml2",
     ],
@@ -154,7 +145,6 @@ cc_test(
     deps = [
         ":parser",
         "//exegesis/testing:test_util",
-        "//util/task:status",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

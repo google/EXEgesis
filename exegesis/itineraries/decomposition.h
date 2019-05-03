@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/base/port_mask.h"
 #include "exegesis/proto/instructions.pb.h"

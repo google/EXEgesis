@@ -37,21 +37,24 @@ http_archive(
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "9e51a8d5bf24bfc095965538666c34103fbf5b759fc1e8769580e7416ce7f0cd",
-    strip_prefix = "protobuf-9313cdc442c22bc62694742597ce7c543d195a73",
+    sha256 = "2ddbc2f0c30e8f9ee7cc8281707859827c143a1dc088f74d38aca66fe6b664a2",
+    strip_prefix = "protobuf-93a18cf2be6d590d23f34757a32133306e290ca9",
     urls = [
-        "https://mirror.bazel.build/github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
-        "https://github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
+        "https://mirror.bazel.build/github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
+        "https://github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
     ],
 )
 
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+protobuf_deps()
+
 http_archive(
     name = "com_google_protobuf_cc",
-    sha256 = "9e51a8d5bf24bfc095965538666c34103fbf5b759fc1e8769580e7416ce7f0cd",
-    strip_prefix = "protobuf-9313cdc442c22bc62694742597ce7c543d195a73",
+    sha256 = "2ddbc2f0c30e8f9ee7cc8281707859827c143a1dc088f74d38aca66fe6b664a2",
+    strip_prefix = "protobuf-93a18cf2be6d590d23f34757a32133306e290ca9",
     urls = [
-        "https://mirror.bazel.build/github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
-        "https://github.com/google/protobuf/archive/9313cdc442c22bc62694742597ce7c543d195a73.tar.gz",
+        "https://mirror.bazel.build/github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
+        "https://github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
     ],
 )
 
@@ -67,11 +70,11 @@ http_archive(
 
 http_archive(
     name = "com_google_googletest",
-    sha256 = "cc77dce3612bc79c75f39250bce1b92cf34a0fa102437a31906c7527937c559a",
-    strip_prefix = "googletest-dccc2d67547a5a3a97e4f211f39df931c6fbd5d5",
+    sha256 = "774f5499dee0f9d2b583ce7fff62e575acce432b67a8396e86f3a87c90d2987e",
+    strip_prefix = "googletest-604ba376c3a407c6a40e39fbd0d5055c545f9898",
     urls = [
-        "https://mirror.bazel.build/github.com/google/googletest/archive/dccc2d67547a5a3a97e4f211f39df931c6fbd5d5.tar.gz",
-        "https://github.com/google/googletest/archive/dccc2d67547a5a3a97e4f211f39df931c6fbd5d5.tar.gz",
+        "https://mirror.bazel.build/github.com/google/googletest/archive/604ba376c3a407c6a40e39fbd0d5055c545f9898.tar.gz",
+        "https://github.com/google/googletest/archive/604ba376c3a407c6a40e39fbd0d5055c545f9898.tar.gz",
     ],
 )
 
@@ -177,14 +180,14 @@ http_archive(
 http_archive(
     name = "llvm_git",
     build_file = "@//:llvm.BUILD",
-    sha256 = "543e4980893f102de903588be5af724f09d7fdc94c0aeda9bc4ce756aa90213a",
-    strip_prefix = "llvm-2bb2152d87d309941baa588cac323a4cbb8b18d7",
+    sha256 = "5e59b94b47a9c6542a13d51eb406938c8a6c9c1c033a23e703fb9327b010d54e",
+    strip_prefix = "llvm-677f061542a6eb05369e0f032224ceae456a0580",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/2bb2152d87d309941baa588cac323a4cbb8b18d7.tar.gz",
-        "https://github.com/llvm-mirror/llvm/archive/2bb2152d87d309941baa588cac323a4cbb8b18d7.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/677f061542a6eb05369e0f032224ceae456a0580.tar.gz",
+        "https://github.com/llvm-mirror/llvm/archive/677f061542a6eb05369e0f032224ceae456a0580.tar.gz",
     ],
 )
 
@@ -192,7 +195,7 @@ http_archive(
 
 http_file(
     name = "intel_sdm_pdf",
-    sha256 = "3ba44a3fe3ce564ca5d7ef3d9a4cb6320d9f69c5440e11103f02278c8c5e6da0",
+    sha256 = "40f85ccb09a539808e26b676370fea39f52b7747650c318039e9819320fb79e9",
     urls = ["https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf"],
 )
 

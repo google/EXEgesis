@@ -66,7 +66,7 @@ TEST(ParseHexStringTest, TestIntelManualWithCommas) {
 }
 
 TEST(ParseHexStringTest, TestNonHexString) {
-  CheckError("I'm not a hex std::string", "I'm not a hex std::string");
+  CheckError("I'm not a hex string", "I'm not a hex string");
 }
 
 TEST(ParseHexStringTest, TestValidPrefix) {

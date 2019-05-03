@@ -14,8 +14,6 @@
 
 #include <string>
 
-#include "gflags/gflags.h"
-
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/architecture.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -23,6 +21,7 @@
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
 #include "exegesis/x86/pdf/parse_sdm.h"
+#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "util/task/status.h"
 

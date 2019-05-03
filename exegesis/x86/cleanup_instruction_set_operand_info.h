@@ -33,6 +33,15 @@ Status AddVmxOperandInfo(InstructionSetProto* instruction_set);
 // heuristics. This transform manually defines it.
 Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set);
 
+// Directly sets properties of the first operand of the MOVDIR64B instruction.
+// The first (modrm.reg-encoded) operand is a general purpose register, but it
+// is interpreted as an address.
+Status AddMovdir64BOperandInfo(InstructionSetProto* instruction_set);
+
+// Directly sets properties of the first operand of the UMONITOR instruction.
+// The instruction accepts a single register
+Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set);
+
 // Adds detailed information about operands to the vendor syntax section.
 // Assumes that this section already has operand names in the format used by the
 // Intel manual, and so is the encoding scheme of the instruction proto. This
@@ -44,7 +53,7 @@ Status AddOperandInfo(InstructionSetProto* instruction_set);
 
 // Applies heuristics to determine the usage patterns of operands with unknown
 // usage patterns. For example, VEX.vvvv are implicitly read from except when
-// specified. This tranforms explictly sets usage to USAGE_READ. Also, implicit
+// specified. This transforms explictly sets usage to USAGE_READ. Also, implicit
 // registers (e.g. in ADD AL, imm8) are usually missing usage in the SDM.
 Status AddMissingOperandUsage(InstructionSetProto* instruction_set);
 

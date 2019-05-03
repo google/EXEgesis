@@ -28,6 +28,7 @@ namespace exegesis {
 namespace simulator {
 namespace {
 
+using llvm::X86::AL;
 using llvm::X86::CH;
 using llvm::X86::CL;
 using llvm::X86::CX;
@@ -149,7 +150,8 @@ TEST_F(RegisterRenamerTest, Renames) {
       MCInstBuilder(llvm::X86::MOV32ri).addReg(ECX).addImm(44));
   Instructions.push_back(
       MCInstBuilder(llvm::X86::ADD32rr).addReg(EAX).addReg(EAX).addReg(EDX));
-  Instructions.push_back(MCInstBuilder(llvm::X86::SETNOr).addReg(DL));
+  Instructions.push_back(
+      MCInstBuilder(llvm::X86::MOV8rr).addReg(DL).addReg(AL));
   Instructions.push_back(
       MCInstBuilder(llvm::X86::MOV32rr).addReg(ECX).addReg(EAX));
   Instructions.push_back(
@@ -227,9 +229,9 @@ TEST_F(RegisterRenamerTest, Renames) {
 
   size_t RenamedDL;
   {
-    // SETNOr (EFLAGS) -> DL
+    // MOV8rr AL -> DL
     const RenamedUopId::Type RenamedUop0 = Sink.Buffer_[0];
-    ASSERT_THAT(RenamedUop0.Uses, ElementsAre(RenamedEFLAGS));
+    ASSERT_THAT(RenamedUop0.Uses, testing::SizeIs(1));
     ASSERT_EQ(RenamedUop0.Defs.size(), 1);
     RenamedDL = RenamedUop0.Defs[0];
     EXPECT_GT(RenamedDL, RenamedEFLAGS);

@@ -55,7 +55,7 @@ std::string DebugString(const XMLNode* node) {
   CHECK(node != nullptr);
   XMLPrinter printer;
   node->Accept(&printer);
-  return std::string(printer.CStr());
+  return printer.CStr();
 }
 
 StatusOr<XMLElement*> FindChild(XMLNode* node, const char* name) {
@@ -80,7 +80,7 @@ std::string ReadAttribute(const XMLElement* element, const char* name) {
   CHECK(element != nullptr);
   CHECK(name != nullptr);
   const char* value = element->Attribute(name);
-  return value ? std::string(value) : "";
+  return value ? value : "";
 }
 
 StatusOr<int> ReadIntAttribute(const XMLElement* element, const char* name) {
@@ -102,7 +102,7 @@ int ReadIntAttributeOrDefault(const XMLElement* element, const char* name,
 std::string ReadSimpleText(const XMLElement* element) {
   CHECK(element != nullptr);
   const char* text = element->GetText();
-  return text ? std::string(text) : "";
+  return text ? text : "";
 }
 
 std::string ReadHtmlText(const XMLElement* element) {
@@ -110,7 +110,7 @@ std::string ReadHtmlText(const XMLElement* element) {
   XMLPrinter printer(nullptr, /* compact = */ true, /* depth = */ 0);
   element->Accept(&printer);
   CHECK(printer.CStr() != nullptr);
-  return std::string(printer.CStr());
+  return printer.CStr();
 }
 
 }  // namespace xml

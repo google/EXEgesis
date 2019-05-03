@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "llvm_sim/analysis/inverse_throughput.h"
+
 #include <algorithm>
 
 namespace exegesis {

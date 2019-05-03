@@ -37,7 +37,6 @@ cc_library(
         "//exegesis/proto:instructions_cc_proto",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
-        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
     ],
 )

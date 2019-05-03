@@ -52,11 +52,10 @@ std::string PrettyPrintSyntaxes(
     const PrettyPrintOptions& options) {
   const absl::string_view separator =
       options.vendor_syntaxes_on_one_line ? "; " : "\n";
-  return absl::StrJoin(
-      syntaxes, separator,
-      [options](std::string* out, const InstructionFormat& syntax) {
-        out->append(PrettyPrintSyntax(syntax));
-      });
+  return absl::StrJoin(syntaxes, separator,
+                       [](std::string* out, const InstructionFormat& syntax) {
+                         out->append(PrettyPrintSyntax(syntax));
+                       });
 }
 
 std::string PrettyPrintMicroOperation(const MicroOperationProto& uop,

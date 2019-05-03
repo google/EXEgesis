@@ -128,16 +128,12 @@ cc_test(
     deps = [
         ":instruction_syntax",
         ":proto_util",
-        "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/container:node_hash_map",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
-        "@com_google_protobuf//:protobuf_lite",
     ],
 )
 

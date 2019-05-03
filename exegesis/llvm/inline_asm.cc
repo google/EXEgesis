@@ -86,7 +86,7 @@ void JitCompiler::Init() {
   memory_manager_ = memory_manager.get();
   execution_engine_.reset(
       llvm::EngineBuilder(std::unique_ptr<llvm::Module>(module_))
-          .setMCPU(MakeStringRef(mcpu_))
+          .setMCPU(mcpu_)
           .setMCJITMemoryManager(std::move(memory_manager))
           .create());
 
