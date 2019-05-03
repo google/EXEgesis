@@ -15,11 +15,10 @@
 #ifndef UTIL_TASK_STATUS_MACROS_H_
 #define UTIL_TASK_STATUS_MACROS_H_
 
-// Since this header concerns only macros, we do not need any namespace
-// declarations here.
-#define PROTOBUF_PREDICT_FALSE(x) (x)
-#define PROTOBUF_PREDICT_TRUE(x) (x)
-
-#include "src/google/protobuf/stubs/status_macros.h"
+#define RETURN_IF_ERROR(expr)                       \
+  do {                                              \
+    const ::exegesis::util::Status status = (expr); \
+    if (!status.ok()) return status;                \
+  } while (false)
 
 #endif  // UTIL_TASK_STATUS_MACROS_H_
