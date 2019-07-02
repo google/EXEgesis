@@ -27,30 +27,33 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/flags/flag.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "exegesis/base/init_main.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_string(exegesis_proto_input_file, "",
-              "Path to the binary proto representation of the PDF file.");
-DEFINE_string(exegesis_match_expression, "",
-              "The regular expression to match cells to patch.");
-DEFINE_string(exegesis_page_numbers, "",
-              "A list of page numbers to process, all pages if not set.");
+ABSL_FLAG(std::string, exegesis_proto_input_file, "",
+          "Path to the binary proto representation of the PDF file.");
+ABSL_FLAG(std::string, exegesis_match_expression, "",
+          "The regular expression to match cells to patch.");
+ABSL_FLAG(std::string, exegesis_page_numbers, "",
+          "A list of page numbers to process, all pages if not set.");
 
 namespace exegesis {
 namespace pdf {
 namespace {
 
 bool ShouldProcessTextBlock(const PdfTextBlock& block) {
-  if (FLAGS_exegesis_match_expression.empty()) return true;
-  return RE2::PartialMatch(block.text(), FLAGS_exegesis_match_expression);
+  static const std::string* const match_expression =
+      new std::string(absl::GetFlag(FLAGS_exegesis_match_expression));
+  if (match_expression->empty()) return true;
+  return RE2::PartialMatch(block.text(), *match_expression);
 }
 
 bool ShouldProcessPage(const absl::flat_hash_set<size_t>& allowed_pages,
@@ -61,7 +64,8 @@ bool ShouldProcessPage(const absl::flat_hash_set<size_t>& allowed_pages,
 absl::flat_hash_set<size_t> ParsePageNumbers() {
   absl::flat_hash_set<size_t> pages;
   int page_number = 0;
-  absl::string_view input(FLAGS_exegesis_page_numbers);
+  const std::string input_value = absl::GetFlag(FLAGS_exegesis_page_numbers);
+  absl::string_view input(input_value);
   while (RE2::Consume(&input, "(\\d+),?", &page_number)) {
     pages.insert(page_number);
   }
@@ -70,13 +74,15 @@ absl::flat_hash_set<size_t> ParsePageNumbers() {
 }
 
 void Main() {
-  CHECK(!FLAGS_exegesis_proto_input_file.empty())
+  const std::string exegesis_proto_input_file =
+      absl::GetFlag(FLAGS_exegesis_proto_input_file);
+  CHECK(!exegesis_proto_input_file.empty())
       << "missing --exegesis_proto_input_file";
-  CHECK(!FLAGS_exegesis_match_expression.empty())
+  CHECK(!absl::GetFlag(FLAGS_exegesis_match_expression).empty())
       << "missing --exegesis_match_expression";
 
   const auto pdf_document =
-      ReadBinaryProtoOrDie<PdfDocument>(FLAGS_exegesis_proto_input_file);
+      ReadBinaryProtoOrDie<PdfDocument>(exegesis_proto_input_file);
 
   // Prepare patches.
   const auto pages = ParsePageNumbers();
@@ -120,7 +126,7 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  exegesis::InitMain(argc, argv);
   ::exegesis::pdf::Main();
   return 0;
 }

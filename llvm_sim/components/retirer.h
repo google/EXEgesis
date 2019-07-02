@@ -58,7 +58,7 @@ class Retirer : public Component {
       }
       const auto Uop = GetOpId_(*Elem);
       const auto& Decomposition = Context.GetInstructionDecomposition(
-          BlockContext->GetInstruction(Uop.InstrIndex.BBIndex).getOpcode());
+          BlockContext->GetInstruction(Uop.InstrIndex.BBIndex));
       if (Uop.UopIndex + 1 == Decomposition.Uops.size()) {
         // This is the last uop in the instruction.
         const bool Pushed = RetiredInstructionsSink_->Push(Uop.InstrIndex);

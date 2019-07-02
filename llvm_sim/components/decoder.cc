@@ -33,7 +33,7 @@ void InstructionDecoder::Tick(const BlockContext* BlockContext) {
   while (RemainingInstructions > 0 && Source_->Peek()) {
     const auto InstrIndex = *Source_->Peek();
     const auto& Decomposition = Context.GetInstructionDecomposition(
-        BlockContext->GetInstruction(InstrIndex.BBIndex).getOpcode());
+        BlockContext->GetInstruction(InstrIndex.BBIndex));
     const auto NumUops = Decomposition.Uops.size();
     std::vector<UopId::Type> UopIds(NumUops);
     for (size_t I = 0; I < NumUops; ++I) {

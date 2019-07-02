@@ -14,6 +14,7 @@
 
 #include "exegesis/base/transform_factory.h"
 
+#include "absl/flags/flag.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -30,18 +31,18 @@ Status TestTransform2(InstructionSetProto*) { return OkStatus(); }
 REGISTER_INSTRUCTION_SET_TRANSFORM(TestTransform2, kNotInDefaultPipeline);
 
 TEST(TransformFactoryTest, GetTransformsFromCommandLineFlags) {
-  FLAGS_exegesis_transforms = "";
+  absl::SetFlag(&FLAGS_exegesis_transforms, "");
   EXPECT_EQ(GetTransformsFromCommandLineFlags().size(), 0);
-  FLAGS_exegesis_transforms = "TestTransform1";
+  absl::SetFlag(&FLAGS_exegesis_transforms, "TestTransform1");
   EXPECT_EQ(GetTransformsFromCommandLineFlags().size(), 1);
-  FLAGS_exegesis_transforms = "TestTransform2";
+  absl::SetFlag(&FLAGS_exegesis_transforms, "TestTransform2");
   EXPECT_EQ(GetTransformsFromCommandLineFlags().size(), 1);
-  FLAGS_exegesis_transforms = "TestTransform1,TestTransform2";
+  absl::SetFlag(&FLAGS_exegesis_transforms, "TestTransform1,TestTransform2");
   EXPECT_EQ(GetTransformsFromCommandLineFlags().size(), 2);
 }
 
 TEST(TransformFactoryDeathTest, GetTransformsFromCommandLineFlagsDoesNotExist) {
-  FLAGS_exegesis_transforms = "DoesNotExist";
+  absl::SetFlag(&FLAGS_exegesis_transforms, "DoesNotExist");
   EXPECT_DEATH(GetTransformsFromCommandLineFlags().size(), "");
 }
 

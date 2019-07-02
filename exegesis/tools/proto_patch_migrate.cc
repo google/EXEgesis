@@ -30,28 +30,29 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/flags/flag.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "exegesis/base/init_main.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/pdf_document_utils.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_string(exegesis_from_proto_file, "",
-              "The path to the original PDF data in the format produced by "
-              "//exegesis/tools:pdf2proto.");
-DEFINE_string(exegesis_to_proto_file,
-              "The path to the modified PDF data in the format produced by "
-              "//exegesis/tools:pdf2proto.",
-              "");
-DEFINE_string(exegesis_output_file_base,
-              "The base path for the files produced by the tool.", "");
-DEFINE_string(
-    exegesis_patches_directory, "exegesis/x86/pdf/sdm_patches/",
+ABSL_FLAG(std::string, exegesis_from_proto_file, "",
+          "The path to the original PDF data in the format produced by "
+          "//exegesis/tools:pdf2proto.");
+ABSL_FLAG(std::string, exegesis_to_proto_file,
+          "The path to the modified PDF data in the format produced by "
+          "//exegesis/tools:pdf2proto.",
+          "");
+ABSL_FLAG(std::string, exegesis_output_file_base,
+          "The base path for the files produced by the tool.", "");
+ABSL_FLAG(
+    std::string, exegesis_patches_directory, "exegesis/x86/pdf/sdm_patches/",
     "A folder containing a set of patches to apply to original documents");
 
 namespace exegesis {
@@ -59,7 +60,8 @@ namespace pdf {
 namespace {
 
 std::string GetFilename(const std::string& name) {
-  return absl::StrCat(FLAGS_exegesis_output_file_base, "_", name, ".pb.txt");
+  return absl::StrCat(absl::GetFlag(FLAGS_exegesis_output_file_base), "_", name,
+                      ".pb.txt");
 }
 
 void WritePatchesOrDie(const std::string& name,
@@ -106,27 +108,32 @@ void CheckPatchesOrDie(const PdfDocument& document,
 }
 
 void Main() {
-  CHECK(!FLAGS_exegesis_from_proto_file.empty())
+  const std::string exegesis_from_proto_file =
+      absl::GetFlag(FLAGS_exegesis_from_proto_file);
+  const std::string exegesis_to_proto_file =
+      absl::GetFlag(FLAGS_exegesis_to_proto_file);
+  const std::string exegesis_patches_directory =
+      absl::GetFlag(FLAGS_exegesis_patches_directory);
+  CHECK(!exegesis_from_proto_file.empty())
       << "missing --exegesis_from_proto_file";
-  CHECK(!FLAGS_exegesis_to_proto_file.empty())
-      << "missing --exegesis_to_proto_file";
-  CHECK(!FLAGS_exegesis_patches_directory.empty())
+  CHECK(!exegesis_to_proto_file.empty()) << "missing --exegesis_to_proto_file";
+  CHECK(!exegesis_patches_directory.empty())
       << "missing --exegesis_patches_directory";
-  CHECK(!FLAGS_exegesis_output_file_base.empty())
+  CHECK(!absl::GetFlag(FLAGS_exegesis_output_file_base).empty())
       << "missing --exegesis_output_file_base";
 
-  LOG(INFO) << "Opening original document " << FLAGS_exegesis_from_proto_file;
+  LOG(INFO) << "Opening original document " << exegesis_from_proto_file;
   const auto from_document =
-      ReadBinaryProtoOrDie<PdfDocument>(FLAGS_exegesis_from_proto_file);
-  LOG(INFO) << "Opening patches from " << FLAGS_exegesis_patches_directory;
-  const auto patch_sets = LoadConfigurations(FLAGS_exegesis_patches_directory);
+      ReadBinaryProtoOrDie<PdfDocument>(exegesis_from_proto_file);
+  LOG(INFO) << "Opening patches from " << exegesis_patches_directory;
+  const auto patch_sets = LoadConfigurations(exegesis_patches_directory);
   LOG(INFO) << "Finding original patches";
   const auto& changes = FindPatchesOrDie(from_document, patch_sets);
   LOG(INFO) << "Checking patches";
   CheckPatchesOrDie(from_document, changes);
-  LOG(INFO) << "Opening destination document " << FLAGS_exegesis_to_proto_file;
+  LOG(INFO) << "Opening destination document " << exegesis_to_proto_file;
   const auto to_document =
-      ReadBinaryProtoOrDie<PdfDocument>(FLAGS_exegesis_to_proto_file);
+      ReadBinaryProtoOrDie<PdfDocument>(exegesis_to_proto_file);
 
   PdfDocumentChanges successful_patches;
   PdfDocumentChanges failed_patches;
@@ -142,7 +149,7 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  exegesis::InitMain(argc, argv);
   ::exegesis::pdf::Main();
   return 0;
 }

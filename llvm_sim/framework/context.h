@@ -30,6 +30,29 @@
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/Support/TargetRegistry.h"
 
+namespace llvm {
+
+template <typename H>
+H AbslHashValue(H State, const MCInst& A) {
+  State = H::combine(std::move(State), A.getOpcode(), A.getFlags(),
+                     A.getNumOperands());
+  for (int I = 0; I < A.getNumOperands(); ++I) {
+    const auto& Op = A.getOperand(I);
+    if (Op.isReg()) {
+      State = H::combine(std::move(State), 'R', Op.getReg());
+    }
+    if (Op.isImm()) {
+      State = H::combine(std::move(State), 'I', Op.getImm());
+    }
+    if (Op.isFPImm()) {
+      State = H::combine(std::move(State), 'F', Op.getFPImm());
+    }
+  }
+  return State;
+}
+
+}  // namespace llvm
+
 namespace exegesis {
 namespace simulator {
 
@@ -73,12 +96,12 @@ class GlobalContext {
   virtual ~GlobalContext();
 
   virtual const llvm::MCSchedClassDesc* GetSchedClassForInstruction(
-      unsigned Opcode) const;
+      const llvm::MCInst& Inst) const;
 
   // Returns the decomposition of an instruction in uops. The decomposition is
   // computed lazily and cached until the context is destroyed.
   virtual const InstrUopDecomposition& GetInstructionDecomposition(
-      unsigned Opcode) const;
+      const llvm::MCInst& Inst) const;
 
   llvm::Triple Triple;
   const llvm::Target* Target = nullptr;
@@ -94,23 +117,29 @@ class GlobalContext {
 
   // For tests.
   void SetInstructionDecomposition(
-      unsigned Opcode,
+      const llvm::MCInst& Inst,
       std::unique_ptr<InstrUopDecomposition> Decomposition) const {
-    DecompositionCache_[Opcode] = std::move(Decomposition);
+    DecompositionCache_[Inst] = std::move(Decomposition);
   }
+
+  struct MCInstEq {
+    bool operator()(const llvm::MCInst& A, const llvm::MCInst& B) const;
+  };
 
  private:
   class ResourceHierarchy;
 
   void ComputeInstructionUops(
-      const unsigned Opcode,
+      const llvm::MCInst& Inst,
       llvm::SmallVectorImpl<InstrUopDecomposition::Uop>* Uops) const;
   void ComputeUopLatencies(
-      const unsigned Opcode,
+      const llvm::MCInst& Inst,
       llvm::SmallVectorImpl<InstrUopDecomposition::Uop>* Uops) const;
 
   // A cache for GetResourceUnitsForUop.
-  mutable absl::flat_hash_map<unsigned, std::unique_ptr<InstrUopDecomposition>>
+  mutable absl::flat_hash_map<llvm::MCInst,
+                              std::unique_ptr<InstrUopDecomposition>,
+                              absl::Hash<llvm::MCInst>, MCInstEq>
       DecompositionCache_;
 
   // Mutable because lazily initialized.

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "util/task/canonical_errors.h"
+
 #include "util/task/status.h"
 
 namespace exegesis {

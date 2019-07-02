@@ -270,7 +270,7 @@ void ParseContext::AddRegisterOperandDescription(
 
 void ParseContext::RelocateSgxLeafInstructions(SdmDocument* sdm_document) {
   DLOG(INFO) << "*** Relocating leaf instructions.";
-  DCHECK(sdm_document != nullptr);
+  CHECK(sdm_document != nullptr);
   for (auto& sgx_instructions : sgx_instructions_set_) {
     if (sgx_instructions.main_instruction == nullptr) {
       continue;
@@ -683,25 +683,6 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       break;
     case InstructionTable::IT_INSTRUCTION:
       ParseVendorSyntax(text, GetOrAddUniqueVendorSyntaxOrDie(instruction));
-      // NOTE(user): All VMX instructions support 64-bit mode. And because it's
-      // unlikely that this will change in the future, we will explicitly mark
-      // VMX instructions as available_in_64.
-      if (parse_context->IsVmx()) {
-        bool available_in_64 = true;
-        for (auto& operand :
-             instruction->vendor_syntax(instruction->vendor_syntax_size() - 1)
-                 .operands()) {
-          // The table contains both 32-bit and 64-bit versions of the
-          // instruction. The 32-bit ones are denoted with r32 or m32. We will
-          // not mark these as available_in_64.
-          if (absl::StrContains(operand.name(), "32")) {
-            available_in_64 = false;
-          }
-        }
-        instruction->set_available_in_64_bit(available_in_64);
-        instruction->set_legacy_instruction(true);
-        *instruction->mutable_feature_name() = "VMX";
-      }
       break;
     case InstructionTable::IT_OPCODE_INSTRUCTION: {
       switch (parse_context->instruction_type()) {
@@ -712,6 +693,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
           ParseOpCodeInstructionCell(text, /*save_instruction_ptr=*/true,
                                      parse_context, instruction);
           break;
+        case InstructionType::VMX:
         case InstructionType::REGULAR:
           ParseOpCodeInstructionCell(text, /*save_instruction_ptr=*/false,
                                      parse_context, instruction);
@@ -769,6 +751,25 @@ void ParseCell(const InstructionTable::Column column, std::string text,
     }
     default:
       LOG(ERROR) << "Don't know how to handle cell '" << text << "'";
+  }
+}
+
+// Fixes the legacy mode/64-bit mode availability of VMX instructions. As of May
+// 2019, the availability is not stored in the table. Instead, they are
+// available in both modes, unless specified otherwise in the description.
+void FixVmxInstructionAvailability(const ParseContext& parse_context,
+                                   InstructionProto* instruction) {
+  static constexpr char kIn64BitMode[] = "in 64-bit mode";
+  static constexpr char kOutside64BitMode[] = "outside 64-bit mode";
+  CHECK(instruction->feature_name().empty()) << instruction->DebugString();
+  instruction->set_feature_name("VMX");
+  instruction->set_available_in_64_bit(true);
+  instruction->set_legacy_instruction(true);
+  if (instruction->description().find(kIn64BitMode) != std::string::npos) {
+    instruction->set_legacy_instruction(false);
+  } else if (instruction->description().find(kOutside64BitMode) !=
+             std::string::npos) {
+    instruction->set_available_in_64_bit(false);
   }
 }
 
@@ -853,6 +854,10 @@ void ParseInstructionTable(const SubSection& sub_section,
     int i = 0;
     for (const auto& block : row.blocks()) {
       ParseCell(table->columns(i++), block.text(), parse_context, instruction);
+    }
+
+    if (parse_context->IsVmx()) {
+      FixVmxInstructionAvailability(*parse_context, instruction);
     }
   }
 }
@@ -1256,38 +1261,78 @@ void FillGroupProto(const InstructionSection& section,
 }
 
 // Returns true if the rows match the pattern of the first page of a VMX
-// instruction group section.
-// rows: vector containing the first three rows of the page.
-// instruction_name: name of the first instruction in this group.
-bool MatchesVmxFirstPage(const std::vector<const PdfTextTableRow*>& rows,
-                         absl::string_view instruction_name) {
+// instruction group section in the layout from before May 2019.
+bool MatchesVmxFirstPageBeforeMay2019(
+    const std::vector<const PdfTextTableRow*>& rows,
+    absl::string_view instruction_name) {
   static constexpr int kTableHeaderRow = 1;
   static constexpr int kFirstTableRow = 2;
   static constexpr int kOpCodeColumn = 0;
   static constexpr int kInstructionColumn = 1;
   static constexpr int kDescriptionColumn = 2;
 
-  DCHECK_EQ(3, rows.size());
+  CHECK_EQ(3, rows.size());
 
   // title: <ID><DASH><TEXT>
   // table-header:   Opcode      Instruction   Description
   // row_0:          XX( XX)*    <ID>( <OP>)*   <TEXT>
-  return rows[kTableHeaderRow]->blocks_size() == 3 &&
+  const auto& header_blocks = rows[kTableHeaderRow]->blocks();
+  return header_blocks.size() == 3 &&
          rows[kFirstTableRow]->blocks_size() == 3 &&
-         rows[kTableHeaderRow]->blocks(kOpCodeColumn).text() == "Opcode" &&
-         rows[kTableHeaderRow]->blocks(kInstructionColumn).text() ==
-             "Instruction" &&
-         rows[kTableHeaderRow]->blocks(kDescriptionColumn).text() ==
-             "Description" &&
+         header_blocks[kOpCodeColumn].text() == "Opcode" &&
+         header_blocks[kInstructionColumn].text() == "Instruction" &&
+         header_blocks[kDescriptionColumn].text() == "Description" &&
          // check that the instruction in the table matches the title
          absl::StartsWith(
              rows[kFirstTableRow]->blocks(kInstructionColumn).text(),
              instruction_name);
 }
 
+// Returns true if the rows match the pattern of the first page of a VMX
+// instruction group section in the layout from since May 2019.
+bool MatchesVmxFirstPageSinceMay2019(
+    const std::vector<const PdfTextTableRow*>& rows,
+    absl::string_view instruction_name) {
+  static constexpr int kTableHeaderRow = 1;
+  static constexpr int kFirstTableRow = 2;
+  static constexpr int kOpCodeColumn = 0;
+  static constexpr int kOpEnColumn = 1;
+  static constexpr int kDescriptionColumn = 2;
+
+  CHECK_EQ(3, rows.size());
+
+  // title: <ID><DASH><TEXT>
+  // table-header: | Opcode/      | Op/En | Description
+  //               | Instruction  |       |
+  //               -----------------------------------------------
+  // row_0:          *first instruction*
+  const auto& header_blocks = rows[kTableHeaderRow]->blocks();
+  return header_blocks.size() == 3 &&
+         rows[kFirstTableRow]->blocks_size() == 3 &&
+         (header_blocks[kOpCodeColumn].text() == "Opcode/ \nInstruction" ||
+          header_blocks[kOpCodeColumn].text() == "Opcode/\nInstruction") &&
+         header_blocks[kOpEnColumn].text() == "Op/En" &&
+         header_blocks[kDescriptionColumn].text() == "Description";
+}
+
+// Returns true if the rows match the pattern of the first page of a VMX
+// instruction group section.
+//
+// NOTE(ondrasej): With the May 2019 version of the SDM, the layout of the VMX
+// instruction page changed and resembles more the layout of instructions in the
+// main section of the SDM.
+//
+// rows: vector containing the first three rows of the page.
+// instruction_name: name of the first instruction in this group.
+bool MatchesVmxFirstPage(const std::vector<const PdfTextTableRow*>& rows,
+                         absl::string_view instruction_name) {
+  return MatchesVmxFirstPageBeforeMay2019(rows, instruction_name) ||
+         MatchesVmxFirstPageSinceMay2019(rows, instruction_name);
+}
+
 bool MatchesSgxInstruction(absl::string_view cell_text,
                            absl::string_view instruction_name, bool* is_leaf) {
-  DCHECK(is_leaf != nullptr);
+  CHECK(is_leaf != nullptr);
   return absl::EndsWith(cell_text, instruction_name) ||
          (*is_leaf = absl::EndsWith(cell_text,
                                     absl::StrCat("[", instruction_name, "]")));
@@ -1305,8 +1350,8 @@ bool MatchesSgxFirstPage(const std::vector<const PdfTextTableRow*>& rows,
   static constexpr int kOpEnColumn = 1;
   static constexpr int kDescriptionColumn = 4;
 
-  DCHECK(is_leaf != nullptr);
-  DCHECK_EQ(3, rows.size());
+  CHECK(is_leaf != nullptr);
+  CHECK_EQ(3, rows.size());
 
   // title: <ID><DASH><TEXT>
   // table-header:   Opcode/Instruction  Op/En  64/32   CPUID   Description

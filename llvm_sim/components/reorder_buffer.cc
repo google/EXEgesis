@@ -282,11 +282,10 @@ void ReorderBuffer::ReadNewUops(const BlockContext* BlockContext) {
 void ReorderBuffer::SetPossiblePortsAndLatencies(
     const BlockContext* BlockContext, ROBEntry* const Entry) const {
   const auto InstrIndex = Entry->ROBUop.Uop.InstrIndex;
-  const auto& Uop =
-      Context
-          .GetInstructionDecomposition(
-              BlockContext->GetInstruction(InstrIndex.BBIndex).getOpcode())
-          .Uops[Entry->ROBUop.Uop.UopIndex];
+  const auto& Uop = Context
+                        .GetInstructionDecomposition(
+                            BlockContext->GetInstruction(InstrIndex.BBIndex))
+                        .Uops[Entry->ROBUop.Uop.UopIndex];
 
   Entry->ROBUop.Latency = Uop.GetLatency();
   if (Uop.ProcResIdx == 0) {

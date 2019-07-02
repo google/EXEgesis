@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2019 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file contains utilities to create transforms from flags.
-
-#ifndef EXEGESIS_BASE_TRANSFORM_FACTORY_H_
-#define EXEGESIS_BASE_TRANSFORM_FACTORY_H_
-
-#include <string>
-#include <vector>
-
-#include "absl/flags/declare.h"
-#include "exegesis/base/cleanup_instruction_set.h"
-
-ABSL_DECLARE_FLAG(std::string, exegesis_transforms);
+#ifndef THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_INIT_MAIN_H_
+#define THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_INIT_MAIN_H_
 
 namespace exegesis {
 
-// Returns a vector of transforms corresponding to transformations given in
-// --exegesis_transforms.
-std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags();
+// This function should be called at the beginning of each main() function to
+// parse command-line flags and perform any other necessary initialization.
+void InitMain(int argc, char* argv[]);
 
 }  // namespace exegesis
 
-#endif  // EXEGESIS_BASE_TRANSFORM_FACTORY_H_
+#endif  // THIRD_PARTY_EXEGESIS_EXEGESIS_BASE_INIT_MAIN_H_

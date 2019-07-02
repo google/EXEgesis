@@ -21,49 +21,58 @@
 
 #include <string>
 
+#include "absl/flags/flag.h"
+#include "exegesis/base/init_main.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "util/task/status.h"
 
-DEFINE_string(exegesis_pdf_input_file, "",
-              "filename or filename:start-end e.g. "
-              "'file1.pdf' or 'file2.pdf:83-86'. "
-              "Ranges are 1-based and inclusive. The upper bound can be 0 to "
-              "process all the pages to the end. If no range is provided, "
-              "the entire PDF is processed.");
-DEFINE_string(exegesis_pdf_output_file, "", "Where to dump instructions.");
-DEFINE_string(exegesis_pdf_patch_sets_file, "",
-              "A set of patches to original documents.");
-DEFINE_string(exegesis_pdf_input_request, "",
-              "The input pdf specification as a PdfParseRequest text proto.");
+ABSL_FLAG(std::string, exegesis_pdf_input_file, "",
+          "filename or filename:start-end e.g. "
+          "'file1.pdf' or 'file2.pdf:83-86'. "
+          "Ranges are 1-based and inclusive. The upper bound can be 0 to "
+          "process all the pages to the end. If no range is provided, "
+          "the entire PDF is processed.");
+ABSL_FLAG(std::string, exegesis_pdf_output_file, "",
+          "Where to dump instructions.");
+ABSL_FLAG(std::string, exegesis_pdf_patch_sets_file, "",
+          "A set of patches to original documents.");
+ABSL_FLAG(std::string, exegesis_pdf_input_request, "",
+          "The input pdf specification as a PdfParseRequest text proto.");
 
 namespace exegesis {
 namespace pdf {
 namespace {
 
 void Main() {
-  const bool is_file = !FLAGS_exegesis_pdf_input_file.empty();
-  const bool is_request = !FLAGS_exegesis_pdf_input_request.empty();
+  const std::string exegesis_pdf_input_file =
+      absl::GetFlag(FLAGS_exegesis_pdf_input_file);
+  const std::string exegesis_pdf_input_request =
+      absl::GetFlag(FLAGS_exegesis_pdf_input_request);
+  const std::string exegesis_pdf_output_file =
+      absl::GetFlag(FLAGS_exegesis_pdf_output_file);
+  const bool is_file = !exegesis_pdf_input_file.empty();
+  const bool is_request = !exegesis_pdf_input_request.empty();
   CHECK(is_file != is_request)
       << ", specify one of --exegesis_pdf_input_file or "
          "--exegesis_pdf_input_request";
-  CHECK(!FLAGS_exegesis_pdf_output_file.empty())
+  CHECK(!absl::GetFlag(FLAGS_exegesis_pdf_output_file).empty())
       << "missing --exegesis_pdf_output_file";
 
   PdfDocumentsChanges patch_sets;
-  if (!FLAGS_exegesis_pdf_patch_sets_file.empty()) {
-    CHECK_OK(ReadTextProto(FLAGS_exegesis_pdf_patch_sets_file, &patch_sets));
+  if (!absl::GetFlag(FLAGS_exegesis_pdf_patch_sets_file).empty()) {
+    CHECK_OK(ReadTextProto(absl::GetFlag(FLAGS_exegesis_pdf_patch_sets_file),
+                           &patch_sets));
   }
 
-  const auto pdf_request =
-      is_request ? ParseProtoFromStringOrDie<PdfParseRequest>(
-                       FLAGS_exegesis_pdf_input_request)
-                 : ParseRequestOrDie(FLAGS_exegesis_pdf_input_file);
+  const auto pdf_request = is_request
+                               ? ParseProtoFromStringOrDie<PdfParseRequest>(
+                                     exegesis_pdf_input_request)
+                               : ParseRequestOrDie(exegesis_pdf_input_file);
 
-  WriteBinaryProtoOrDie(FLAGS_exegesis_pdf_output_file,
+  WriteBinaryProtoOrDie(exegesis_pdf_output_file,
                         ParseOrDie(pdf_request, patch_sets));
 }
 
@@ -72,7 +81,7 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  exegesis::InitMain(argc, argv);
   ::exegesis::pdf::Main();
   return 0;
 }

@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
 #include "exegesis/util/instruction_syntax.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/descriptor.h"
 #include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -31,12 +31,12 @@
 #include "util/task/status_macros.h"
 #include "util/task/statusor.h"
 
-DEFINE_bool(exegesis_print_transform_names_to_log, true,
-            "Print the names of the transforms executed by the transform "
-            "pipeline to the log.");
-DEFINE_bool(exegesis_print_transform_diffs_to_log, false,
-            "Print the names and the diffs of the instruction set before and "
-            "after running each transform to the log.");
+ABSL_FLAG(bool, exegesis_print_transform_names_to_log, true,
+          "Print the names of the transforms executed by the transform "
+          "pipeline to the log.");
+ABSL_FLAG(bool, exegesis_print_transform_diffs_to_log, false,
+          "Print the names and the diffs of the instruction set before and "
+          "after running each transform to the log.");
 
 namespace exegesis {
 
@@ -71,12 +71,12 @@ Status RunSingleTransform(
     InstructionSetProto* instruction_set) {
   CHECK(transform_function != nullptr);
   CHECK(instruction_set != nullptr);
-  if (FLAGS_exegesis_print_transform_names_to_log ||
-      FLAGS_exegesis_print_transform_diffs_to_log) {
+  if (absl::GetFlag(FLAGS_exegesis_print_transform_names_to_log) ||
+      absl::GetFlag(FLAGS_exegesis_print_transform_diffs_to_log)) {
     LOG(INFO) << "Running: " << transform_name;
   }
   Status transform_status = OkStatus();
-  if (FLAGS_exegesis_print_transform_diffs_to_log) {
+  if (absl::GetFlag(FLAGS_exegesis_print_transform_diffs_to_log)) {
     const StatusOr<std::string> diff_or_status =
         RunTransformWithDiff(transform_function, instruction_set);
     if (diff_or_status.ok()) {
@@ -91,8 +91,8 @@ Status RunSingleTransform(
   } else {
     transform_status = transform_function(instruction_set);
   }
-  if (FLAGS_exegesis_print_transform_names_to_log ||
-      FLAGS_exegesis_print_transform_diffs_to_log) {
+  if (absl::GetFlag(FLAGS_exegesis_print_transform_names_to_log) ||
+      absl::GetFlag(FLAGS_exegesis_print_transform_diffs_to_log)) {
     const char* const status = transform_status.ok() ? "Success: " : "Failed: ";
     LOG(INFO) << status << transform_name;
   }

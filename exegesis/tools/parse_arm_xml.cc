@@ -14,39 +14,46 @@
 
 #include <stdlib.h>
 
+#include <string>
+
+#include "absl/flags/flag.h"
 #include "exegesis/arm/xml/converter.h"
 #include "exegesis/arm/xml/parser.h"
 #include "exegesis/arm/xml/parser.pb.h"
+#include "exegesis/base/init_main.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 
-DEFINE_string(exegesis_arm_xml_path, "",
-              "The directory containing the ARM documentation in XML format. "
-              "Required.");
-DEFINE_string(exegesis_xml_database_output_file, "",
-              "Where to dump the parsed XML database. Optional.");
-DEFINE_string(exegesis_isa_output_file, "",
-              "Where to dump the Instruction Set Architecture. Optional.");
+ABSL_FLAG(std::string, exegesis_arm_xml_path, "",
+          "The directory containing the ARM documentation in XML format. "
+          "Required.");
+ABSL_FLAG(std::string, exegesis_xml_database_output_file, "",
+          "Where to dump the parsed XML database. Optional.");
+ABSL_FLAG(std::string, exegesis_isa_output_file, "",
+          "Where to dump the Instruction Set Architecture. Optional.");
 
 namespace exegesis {
 namespace {
 
 void Main() {
-  CHECK(!FLAGS_exegesis_arm_xml_path.empty())
+  CHECK(!absl::GetFlag(FLAGS_exegesis_arm_xml_path).empty())
       << "missing --exegesis_arm_xml_path";
 
-  const arm::xml::XmlDatabase xml_database =
-      arm::xml::ParseXmlDatabaseOrDie(FLAGS_exegesis_arm_xml_path);
-  if (!FLAGS_exegesis_xml_database_output_file.empty()) {
-    WriteTextProtoOrDie(FLAGS_exegesis_xml_database_output_file, xml_database);
+  const arm::xml::XmlDatabase xml_database = arm::xml::ParseXmlDatabaseOrDie(
+      absl::GetFlag(FLAGS_exegesis_arm_xml_path));
+  const std::string exegesis_xml_database_output_file =
+      absl::GetFlag(FLAGS_exegesis_xml_database_output_file);
+  if (!exegesis_xml_database_output_file.empty()) {
+    WriteTextProtoOrDie(exegesis_xml_database_output_file, xml_database);
   }
 
   const ArchitectureProto architecture_proto =
       arm::xml::ConvertToArchitectureProto(xml_database);
-  if (!FLAGS_exegesis_isa_output_file.empty()) {
-    WriteTextProtoOrDie(FLAGS_exegesis_isa_output_file, architecture_proto);
+  const std::string exegesis_isa_output_file =
+      absl::GetFlag(FLAGS_exegesis_isa_output_file);
+  if (!exegesis_isa_output_file.empty()) {
+    WriteTextProtoOrDie(exegesis_isa_output_file, architecture_proto);
   }
 }
 
@@ -54,7 +61,7 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char* argv[]) {
-  google::ParseCommandLineFlags(&argc, &argv, /* remove_flags = */ true);
+  exegesis::InitMain(argc, argv);
   ::exegesis::Main();
   return EXIT_SUCCESS;
 }

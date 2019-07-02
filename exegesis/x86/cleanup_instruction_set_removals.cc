@@ -33,6 +33,7 @@
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
+#include "util/gtl/map_util.h"
 #include "util/task/canonical_errors.h"
 #include "util/task/status.h"
 
@@ -105,6 +106,14 @@ Status RemoveEmptyInstructionGroups(InstructionSetProto* instruction_set) {
           << instruction.feature_name() << ", of group " << key;
     }
     pair.second.push_back(&instruction);
+  }
+
+  // Report removed instruction groups.
+  for (const auto& group : instruction_set->instruction_groups()) {
+    const std::string key = MakeKey(group.name(), group.short_description());
+    if (!gtl::ContainsKey(group_to_instructions, key)) {
+      LOG(INFO) << "Removed empty instruction group " << key;
+    }
   }
 
   // Delete all groups and only add back groups that have instructions.

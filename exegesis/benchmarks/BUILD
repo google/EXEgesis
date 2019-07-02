@@ -12,7 +12,6 @@ cc_test(
     linkstatic = 1,
     deps = [
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_benchmark//:benchmark",
         "@com_google_googletest//:gtest",

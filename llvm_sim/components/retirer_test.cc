@@ -53,13 +53,13 @@ TEST(IdentityComponentTest, Works) {
     //  2 uops for instr 1.
     auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
     Decomposition->Uops.resize(2);
-    Context.SetInstructionDecomposition(1, std::move(Decomposition));
+    Context.SetInstructionDecomposition(Inst1, std::move(Decomposition));
   }
   {
     //  1 uop for instr 2.
     auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
     Decomposition->Uops.resize(1);
-    Context.SetInstructionDecomposition(2, std::move(Decomposition));
+    Context.SetInstructionDecomposition(Inst2, std::move(Decomposition));
   }
 
   TestSource<TestRetirerTag> Source;

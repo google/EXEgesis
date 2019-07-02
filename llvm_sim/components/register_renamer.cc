@@ -137,7 +137,7 @@ bool RegisterRenamer::PopulateUop(const BlockContext* BlockContext,
   }
 
   const auto& Decomposition = Context.GetInstructionDecomposition(
-      BlockContext->GetInstruction(Uop.InstrIndex.BBIndex).getOpcode());
+      BlockContext->GetInstruction(Uop.InstrIndex.BBIndex));
   assert(!Decomposition.Uops.empty());
   if (Uop.UopIndex == Decomposition.Uops.size() - 1) {
     return HandleLastUop(BlockContext);

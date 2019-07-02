@@ -47,7 +47,7 @@ using testing::UnorderedElementsAre;
 
 class RegisterRenamerTest : public ::testing::Test {
  protected:
-  static void SetUpTestCase() {
+  static void SetUpTestSuite() {
     LLVMInitializeX86Target();
     LLVMInitializeX86TargetInfo();
     LLVMInitializeX86TargetMC();
@@ -58,11 +58,13 @@ class RegisterRenamerTest : public ::testing::Test {
       auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(1);
       Decomposition->Uops[0].ProcResIdx = 0;
-      Context_->SetInstructionDecomposition(I, std::move(Decomposition));
+      llvm::MCInst Inst;
+      Inst.setOpcode(I);
+      Context_->SetInstructionDecomposition(Inst, std::move(Decomposition));
     }
   }
 
-  static void TearDownTestCase() { Context_.reset(); }
+  static void TearDownTestSuite() { Context_.reset(); }
 
   static std::unique_ptr<const GlobalContext> Context_;
 };

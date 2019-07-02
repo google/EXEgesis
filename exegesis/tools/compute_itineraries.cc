@@ -17,32 +17,34 @@
 #include "exegesis/itineraries/compute_itineraries.h"
 
 #include <functional>
+#include <string>
 #include <utility>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/flags/flag.h"
 #include "absl/strings/str_split.h"
+#include "exegesis/base/init_main.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/tools/architecture_flags.h"
 #include "exegesis/util/proto_util.h"
 #include "exegesis/util/system.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_string(exegesis_only_llvm_mnemonics, "",
-              "If provided, only compute the itineraries for these "
-              "instructions (comma-separated list).");
-DEFINE_string(exegesis_output_itineraries, "",
-              "File where to store the computed itineraries in Proto format.");
-DEFINE_int32(exegesis_pin_to_core, 0,
-             "Pin the process to the given core. This helps for getting more "
-             "reliable results.");
+ABSL_FLAG(std::string, exegesis_only_llvm_mnemonics, "",
+          "If provided, only compute the itineraries for these "
+          "instructions (comma-separated list).");
+ABSL_FLAG(std::string, exegesis_output_itineraries, "",
+          "File where to store the computed itineraries in Proto format.");
+ABSL_FLAG(int, exegesis_pin_to_core, 0,
+          "Pin the process to the given core. This helps for getting more "
+          "reliable results.");
 
 namespace exegesis {
 
 void Main() {
-  SetCoreAffinity(FLAGS_exegesis_pin_to_core);
+  SetCoreAffinity(absl::GetFlag(FLAGS_exegesis_pin_to_core));
 
   const auto microarchitecture_data =
       GetMicroArchitectureDataFromCommandLineFlags();
@@ -52,9 +54,11 @@ void Main() {
   InstructionSetItinerariesProto itineraries =
       microarchitecture_data.itineraries();
 
-  if (!FLAGS_exegesis_only_llvm_mnemonics.empty()) {
+  const std::string exegesis_only_llvm_mnemonics =
+      absl::GetFlag(FLAGS_exegesis_only_llvm_mnemonics);
+  if (!exegesis_only_llvm_mnemonics.empty()) {
     const absl::flat_hash_set<std::string> mnemonics = absl::StrSplit(
-        FLAGS_exegesis_only_llvm_mnemonics, ',', absl::SkipWhitespace());
+        exegesis_only_llvm_mnemonics, ',', absl::SkipWhitespace());
     RemoveIf(instruction_set.mutable_instructions(),
              [&mnemonics](const InstructionProto* instruction) {
                return !mnemonics.contains(instruction->llvm_mnemonic());
@@ -66,14 +70,15 @@ void Main() {
   }
   LOG(ERROR) << itineraries::ComputeItineraries(instruction_set, &itineraries);
 
-  WriteTextProtoOrDie(FLAGS_exegesis_output_itineraries, itineraries);
+  WriteTextProtoOrDie(absl::GetFlag(FLAGS_exegesis_output_itineraries),
+                      itineraries);
 }
 
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
-  CHECK(!FLAGS_exegesis_output_itineraries.empty())
+  exegesis::InitMain(argc, argv);
+  CHECK(!absl::GetFlag(FLAGS_exegesis_output_itineraries).empty())
       << "Please specify the output.";
   exegesis::Main();
   return 0;

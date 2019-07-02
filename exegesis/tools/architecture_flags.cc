@@ -15,29 +15,29 @@
 #include "exegesis/tools/architecture_flags.h"
 
 #include <cstdlib>
+#include <string>
 
+#include "absl/flags/flag.h"
 #include "exegesis/base/architecture_provider.h"
 #include "exegesis/base/microarchitecture.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 
-DEFINE_bool(exegesis_list_architectures, false,
-            "Print the list of registered architectures.");
-DEFINE_string(exegesis_architecture, "",
-              "The name of the architecture for which the code is optimized."
-              "If 'intel', then the raw parsed output (stright out of SDM) is"
-              "returned."
-              "If this is not one of the known sources, we'll try to interpret "
-              "this as a file.");
+ABSL_FLAG(bool, exegesis_list_architectures, false,
+          "Print the list of registered architectures.");
+ABSL_FLAG(std::string, exegesis_architecture, "",
+          "The name of the architecture for which the code is optimized."
+          "If 'intel', then the raw parsed output (stright out of SDM) is"
+          "returned."
+          "If this is not one of the known sources, we'll try to interpret "
+          "this as a file.");
 
-DEFINE_string(
-    exegesis_microarchitecture, "hsw",
-    "The id of the microarchitecture for which the code is optimized.");
+ABSL_FLAG(std::string, exegesis_microarchitecture, "hsw",
+          "The id of the microarchitecture for which the code is optimized.");
 
 namespace exegesis {
 
 void ListRegisteredArchitecturesAndExitIfRequested() {
-  if (FLAGS_exegesis_list_architectures) {
+  if (absl::GetFlag(FLAGS_exegesis_list_architectures)) {
     const std::vector<std::string> registered_architectures =
         GetRegisteredArchitectureIds();
     printf("Registered architectures:\n");
@@ -49,21 +49,22 @@ void ListRegisteredArchitecturesAndExitIfRequested() {
 }
 
 void CheckArchitectureFlag() {
-  CHECK(!FLAGS_exegesis_architecture.empty())
+  CHECK(!absl::GetFlag(FLAGS_exegesis_architecture).empty())
       << "Please provide an architecture (e.g. 'pbtxt:/path/to/file.pb.txt')";
 }
 
 std::shared_ptr<const ArchitectureProto>
 GetArchitectureFromCommandLineFlagsOrDie() {
   CheckArchitectureFlag();
-  return GetArchitectureProtoOrDie(FLAGS_exegesis_architecture);
+  return GetArchitectureProtoOrDie(absl::GetFlag(FLAGS_exegesis_architecture));
 }
 
 MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
   CheckArchitectureFlag();
   return MicroArchitectureData::ForMicroArchitectureId(
-             GetArchitectureProtoOrDie(FLAGS_exegesis_architecture),
-             FLAGS_exegesis_microarchitecture)
+             GetArchitectureProtoOrDie(
+                 absl::GetFlag(FLAGS_exegesis_architecture)),
+             absl::GetFlag(FLAGS_exegesis_microarchitecture))
       .ValueOrDie();
 }
 

@@ -21,11 +21,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "base/stringprintf.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/CodeGen/CommandFlags.inc"
@@ -39,17 +39,15 @@
 #include "llvm/Support/raw_ostream.h"
 #include "util/task/canonical_errors.h"
 
-DEFINE_string(exegesis_llvm_arch, "",
-              "The architecture, for which the code is compiled.");
-DEFINE_string(exegesis_llvm_triple, "",
-              "The LLVM triple, for which the code is compiled.");
-DEFINE_string(exegesis_extra_llvm_args, "",
-              "Additional command-line parameters to pass to LLVM.");
+ABSL_FLAG(std::string, exegesis_llvm_arch, "",
+          "The architecture, for which the code is compiled.");
+ABSL_FLAG(std::string, exegesis_llvm_triple, "",
+          "The LLVM triple, for which the code is compiled.");
+ABSL_FLAG(std::string, exegesis_extra_llvm_args, "",
+          "Additional command-line parameters to pass to LLVM.");
 
 namespace exegesis {
 namespace {
-
-using ::google::ProgramUsage;
 
 using ::exegesis::util::InvalidArgumentError;
 using ::exegesis::util::StatusOr;
@@ -71,26 +69,18 @@ void OptionallyInitializeLLVMOnce(bool skip_initialization) {
     LLVMInitializeX86AsmParser();
     LLVMInitializeX86Disassembler();
 
-    std::vector<std::string> exegesis_extra_llvm_args;
-    for (const auto& arg :
-         absl::StrSplit(FLAGS_exegesis_extra_llvm_args, ',')) {
-      if (!arg.empty()) {
-        LOG(INFO) << "Adding extra LLVM flag '" << arg << "'";
-        exegesis_extra_llvm_args.emplace_back(arg);
-      }
+    const std::vector<std::string> exegesis_extra_llvm_args = absl::StrSplit(
+        absl::GetFlag(FLAGS_exegesis_extra_llvm_args), ',', absl::SkipEmpty());
+    for (const std::string& arg : exegesis_extra_llvm_args) {
+      LOG(INFO) << "Adding extra LLVM flag '" << arg << "'";
     }
-    // Create (fake) command-line options for LLVM. We use this to inject our
-    // own dumping instruction scheduler without modifying too much LLVM code.
-    // TODO(ondrasej): Remove this hack (will need either re-writing a big part
-    // of the codegen path we are using, or patching LLVM sources to support
-    // "true" dependency injection).
-    std::vector<const char*> argv = {
-        ProgramUsage() /*, "--pre-RA-sched=dumper"*/
-    };
+    // TODO(ondrasej): Find a way to inject the actual usage information or
+    // argv[0] from Abseil.
+    std::vector<const char*> argv = {""};
     for (const auto& arg : exegesis_extra_llvm_args) {
       argv.push_back(arg.c_str());
     }
-    llvm::cl::ParseCommandLineOptions(argv.size(), argv.data(), ProgramUsage());
+    llvm::cl::ParseCommandLineOptions(argv.size(), argv.data(), "");
     VLOG(1) << "LLVM was initialized";
     return true;
   }();
@@ -108,7 +98,7 @@ StatusOr<const llvm::Target*> GetLLVMTarget() {
 
   std::string error_message;
   const llvm::Target* const target = llvm::TargetRegistry::lookupTarget(
-      FLAGS_exegesis_llvm_arch, triple, error_message);
+      absl::GetFlag(FLAGS_exegesis_llvm_arch), triple, error_message);
   if (target == nullptr) {
     return InvalidArgumentError(error_message);
   }
@@ -117,9 +107,11 @@ StatusOr<const llvm::Target*> GetLLVMTarget() {
 }
 
 std::string GetNormalizedLLVMTripleName() {
-  const std::string triple_name = FLAGS_exegesis_llvm_triple.empty()
-                                      ? llvm::sys::getDefaultTargetTriple()
-                                      : std::string(FLAGS_exegesis_llvm_triple);
+  const std::string triple_from_flags =
+      absl::GetFlag(FLAGS_exegesis_llvm_triple);
+  const std::string& triple_name = triple_from_flags.empty()
+                                       ? llvm::sys::getDefaultTargetTriple()
+                                       : triple_from_flags;
   return llvm::Triple::normalize(triple_name);
 }
 

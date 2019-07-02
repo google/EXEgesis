@@ -46,12 +46,12 @@ class DecoderTest : public ::testing::Test {
     {
       auto Decomposition1 = llvm::make_unique<InstrUopDecomposition>();
       Decomposition1->Uops.resize(2);
-      Context_.SetInstructionDecomposition(1, std::move(Decomposition1));
+      Context_.SetInstructionDecomposition(Inst1, std::move(Decomposition1));
     }
     {
       auto Decomposition2 = llvm::make_unique<InstrUopDecomposition>();
       Decomposition2->Uops.resize(1);
-      Context_.SetInstructionDecomposition(2, std::move(Decomposition2));
+      Context_.SetInstructionDecomposition(Inst2, std::move(Decomposition2));
     }
   }
 

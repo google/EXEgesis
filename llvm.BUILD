@@ -318,8 +318,6 @@ cc_library(
         exclude = [
             "lib/CodeGen/AsmPrinter/*.cpp",
             "lib/CodeGen/AsmPrinter/*.h",
-            "lib/CodeGen/SelectionDAG/*.cpp",
-            "lib/CodeGen/SelectionDAG/*.h",
         ],
     ),
     hdrs = glob(
@@ -331,7 +329,6 @@ cc_library(
         ],
         exclude = [
             "include/llvm/CodeGen/AsmPrinter.h",
-            "include/llvm/CodeGen/SelectionDAG*.h",
         ],
     ),
     visibility = ["//visibility:public"],
@@ -606,6 +603,7 @@ cc_library(
         ":config",
         ":intrinsic_enums_gen",
         ":intrinsics_impl_gen",
+        ":remarks",
         ":support",
     ],
 )
@@ -732,23 +730,6 @@ cc_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        ":ir",
-        ":support",
-    ],
-)
-
-cc_library(
-    name = "selection_dag",
-    srcs = glob([
-        "lib/CodeGen/SelectionDAG/*.cpp",
-        "lib/CodeGen/SelectionDAG/*.h",
-    ]),
-    hdrs = glob(["include/llvm/CodeGen/SelectionDAG*.h"]),
-    deps = [
-        ":analysis",
-        ":asm_printer",
-        ":codegen",
-        ":config",
         ":ir",
         ":support",
     ],
@@ -952,6 +933,7 @@ cc_library(
         ":transform_base",
         ":transform_utils",
         ":instrumentation_transforms",
+        ":vectorize_transforms",
     ],
 )
 
@@ -1090,6 +1072,7 @@ llvm_target_list = [
         ],
         hdrs = [
             "lib/Target/" + target["name"] + "/MCTargetDesc/" + target["name"] + "MCTargetDesc.h",
+            "lib/Target/" + target["name"] + "/TargetInfo/" + target["name"] + "TargetInfo.h",
         ],
         copts = ["-Ilib/Target/" + target["name"]],
         visibility = ["//visibility:public"],
@@ -1167,7 +1150,6 @@ llvm_target_list = [
             ":ir",
             ":machine_code",
             ":scalar_transforms",
-            ":selection_dag",
             ":support",
             ":target_base",
             ":vectorize_transforms",

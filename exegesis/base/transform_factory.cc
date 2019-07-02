@@ -14,13 +14,15 @@
 
 #include "exegesis/base/transform_factory.h"
 
+#include <string>
+
+#include "absl/flags/flag.h"
 #include "absl/strings/str_split.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_string(
-    exegesis_transforms, "",
+ABSL_FLAG(
+    std::string, exegesis_transforms, "",
     "The list of transformations applied to the instruction "
     "database. This can be a (possibly empty) list of names or "
     "'default' to apply the default list of transforms for the architecture.");
@@ -32,7 +34,7 @@ std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags() {
   const auto& transforms_by_name = GetTransformsByName();
   std::vector<InstructionSetTransform> transforms;
   const std::vector<std::string> transform_names =
-      absl::StrSplit(FLAGS_exegesis_transforms, ",",  // NOLINT
+      absl::StrSplit(absl::GetFlag(FLAGS_exegesis_transforms), ",",  // NOLINT
                      absl::SkipEmpty());
   for (const std::string& transform_name : transform_names) {
     if (transform_name == kDefaultSet) {

@@ -757,8 +757,12 @@ TEST_F(InstructionParserTest, ParseThreeByteOpcode) {
   // CRC32 EAX, AX
   ParseInstructionAndCheckResult({0x0f, 0x38, 0xf1, 0xc0}, "0F 38 F1 /r",
                                  R"proto(
-    opcode: 0x0f38f1
-    modrm { addressing_mode: DIRECT register_operand: 0 rm_operand: 0 })proto");
+                                   opcode: 0x0f38f1
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     register_operand: 0
+                                     rm_operand: 0
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseRexPrefix) {
@@ -784,9 +788,14 @@ TEST_F(InstructionParserTest, ParseModRmWithBaseOnly) {
   // Note that there are two ways how to encode this instruction this test
   // executes only the first of them. The next is executed by
   // InstructionParserTest.ParseModRmAndSibWithBaseOnly.
-  ParseInstructionAndCheckResult({0x8b, 0x0b}, "8B /r", R"proto(
-    opcode: 0x8b
-    modrm { addressing_mode: INDIRECT rm_operand: 3 register_operand: 1 })proto");
+  ParseInstructionAndCheckResult({0x8b, 0x0b}, "8B /r",
+                                 R"proto(
+                                   opcode: 0x8b
+                                   modrm {
+                                     addressing_mode: INDIRECT
+                                     rm_operand: 3
+                                     register_operand: 1
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSibWithBaseOnly) {
@@ -832,15 +841,16 @@ TEST_F(InstructionParserTest, ParseModRmWith32BitDisplacement) {
   // MOV ECX, DWORD PTR [RAX + 0xFF]
   // Note that since the displacement is a signed integer, 0xFF must be encoded
   // using the 32-bit displacement.
-  ParseInstructionAndCheckResult({0x8b, 0x88, 0xff, 0x00, 0x00, 0x00}, "8B /r",
-                                 R"proto(
-    opcode: 0x8b
-    modrm {
-      addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-      rm_operand: 0
-      register_operand: 1
-      address_displacement: 0xff
-    })proto");
+  ParseInstructionAndCheckResult(
+      {0x8b, 0x88, 0xff, 0x00, 0x00, 0x00}, "8B /r",
+      R"proto(
+        opcode: 0x8b
+        modrm {
+          addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+          rm_operand: 0
+          register_operand: 1
+          address_displacement: 0xff
+        })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmWithNegative8BitDisplacement) {
@@ -857,15 +867,16 @@ TEST_F(InstructionParserTest, ParseModRmWithNegative8BitDisplacement) {
 
 TEST_F(InstructionParserTest, ParseModRmWithNegative32BitDisplacement) {
   // MOV ECX, DWORD PTR [RAX - 0x1234567890]
-  ParseInstructionAndCheckResult({0x8b, 0x88, 0x88, 0xa9, 0xcb, 0xed}, "8B /r",
-                                 R"proto(
-    opcode: 0x8b
-    modrm {
-      addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
-      rm_operand: 0
-      register_operand: 1
-      address_displacement: -0x12345678
-    })proto");
+  ParseInstructionAndCheckResult(
+      {0x8b, 0x88, 0x88, 0xa9, 0xcb, 0xed}, "8B /r",
+      R"proto(
+        opcode: 0x8b
+        modrm {
+          addressing_mode: INDIRECT_WITH_32_BIT_DISPLACEMENT
+          rm_operand: 0
+          register_operand: 1
+          address_displacement: -0x12345678
+        })proto");
 }
 
 TEST_F(InstructionParserTest, ParseModRmAndSib) {
@@ -934,33 +945,44 @@ TEST_F(InstructionParserTest, ParseModRmAndSibWith32BitDisplacementOnly) {
 TEST_F(InstructionParserTest, ParseThreeByteVexPrefixWithNonDefaultMapSelect) {
   // ANDN RAX, RBX, RCX
   ParseInstructionAndCheckResult({0xc4, 0xe2, 0xe0, 0xf2, 0xc1},
-                                 "VEX.NDS.LZ. 0F38.W1 F2 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F38
-      inverted_register_operand: 12
-      not_b: true
-      not_r: true
-      not_x: true
-      w: true
-    }
-    opcode: 0x0f38f2
-    modrm { addressing_mode: DIRECT rm_operand: 1 register_operand: 0 })proto");
+                                 "VEX.NDS.LZ. 0F38.W1 F2 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F38
+                                     inverted_register_operand: 12
+                                     not_b: true
+                                     not_r: true
+                                     not_x: true
+                                     w: true
+                                   }
+                                   opcode: 0x0f38f2
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 1
+                                     register_operand: 0
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseTwoByteVexPrefix) {
   // VADDPD xmm2, xmm3, xmm4
   ParseInstructionAndCheckResult({0xc5, 0xe1, 0x58, 0xd4},
-                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F
-      inverted_register_operand: 12
-      not_b: true
-      not_r: true
-      not_x: true
-      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-    }
-    opcode: 0x0f58
-    modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 2 })proto");
+                                 "VEX.NDS.128.66.0F.WIG 58 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F
+                                     inverted_register_operand: 12
+                                     not_b: true
+                                     not_r: true
+                                     not_x: true
+                                     mandatory_prefix:
+                                         MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                                   }
+                                   opcode: 0x0f58
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 4
+                                     register_operand: 2
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithSegmentOverride) {
@@ -1034,96 +1056,129 @@ TEST_F(InstructionParserTest, ParseTwoByteVexPrefixWithExtendedRegisters) {
   // encodes the second operand in full. We can have a two-byte prefix here as
   // long as the third operand is xmm0-xmm7.
   ParseInstructionAndCheckResult({0xc5, 0x11, 0x58, 0xe4},
-                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F
-      inverted_register_operand: 2
-      not_b: true
-      not_x: true
-      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-    }
-    opcode: 0x0f58
-    modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 4 })proto");
+                                 "VEX.NDS.128.66.0F.WIG 58 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F
+                                     inverted_register_operand: 2
+                                     not_b: true
+                                     not_x: true
+                                     mandatory_prefix:
+                                         MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                                   }
+                                   opcode: 0x0f58
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 4
+                                     register_operand: 4
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseVaddpdWithExtendedRegisters) {
   // VADDPD xmm12, xmm13, xmm14
   ParseInstructionAndCheckResult({0xc4, 0x41, 0x11, 0x58, 0xe6},
-                                 "VEX.NDS.128.66.0F.WIG 58 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F
-      inverted_register_operand: 2
-      not_x: true
-      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-    }
-    opcode: 0x0f58
-    modrm { addressing_mode: DIRECT rm_operand: 6 register_operand: 4 })proto");
+                                 "VEX.NDS.128.66.0F.WIG 58 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F
+                                     inverted_register_operand: 2
+                                     not_x: true
+                                     mandatory_prefix:
+                                         MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                                   }
+                                   opcode: 0x0f58
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 6
+                                     register_operand: 4
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseVaddpdWith256Registers) {
   // VADDPD YMM1, YMM5, YMM12
   ParseInstructionAndCheckResult({0xc4, 0xc1, 0x55, 0x58, 0xcc},
-                                 "VEX.NDS.256.66.0F.WIG 58 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F
-      inverted_register_operand: 10
-      not_r: true
-      not_x: true
-      use_256_bit_vector_length: true
-      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-    }
-    opcode: 0x0f58
-    modrm { addressing_mode: DIRECT rm_operand: 4 register_operand: 1 })proto");
+                                 "VEX.NDS.256.66.0F.WIG 58 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F
+                                     inverted_register_operand: 10
+                                     not_r: true
+                                     not_x: true
+                                     use_256_bit_vector_length: true
+                                     mandatory_prefix:
+                                         MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                                   }
+                                   opcode: 0x0f58
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 4
+                                     register_operand: 1
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParsePextWith64BitValues) {
   // PEXT RAX, RBX, RCX
   ParseInstructionAndCheckResult({0xc4, 0xe2, 0xe2, 0xf5, 0xc1},
-                                 "VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F38
-      inverted_register_operand: 12
-      not_b: true
-      not_r: true
-      not_x: true
-      w: true
-      mandatory_prefix: MANDATORY_PREFIX_REPE
-    }
-    opcode: 0x0f38f5
-    modrm { addressing_mode: DIRECT rm_operand: 1 register_operand: 0 })proto");
+                                 "VEX.NDS.LZ.F3.0F38.W1 F5 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F38
+                                     inverted_register_operand: 12
+                                     not_b: true
+                                     not_r: true
+                                     not_x: true
+                                     w: true
+                                     mandatory_prefix: MANDATORY_PREFIX_REPE
+                                   }
+                                   opcode: 0x0f38f5
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 1
+                                     register_operand: 0
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParsePextWith32BitValues) {
   // PEXT EAX, EDX, ESI
   ParseInstructionAndCheckResult({0xc4, 0xe2, 0x6a, 0xf5, 0xc6},
-                                 "VEX.NDS.LZ.F3.0F38.W0 F5 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F38
-      inverted_register_operand: 13
-      not_b: true
-      not_r: true
-      not_x: true
-      mandatory_prefix: MANDATORY_PREFIX_REPE
-    }
-    opcode: 0x0f38f5
-    modrm { addressing_mode: DIRECT rm_operand: 6 register_operand: 0 })proto");
+                                 "VEX.NDS.LZ.F3.0F38.W0 F5 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F38
+                                     inverted_register_operand: 13
+                                     not_b: true
+                                     not_r: true
+                                     not_x: true
+                                     mandatory_prefix: MANDATORY_PREFIX_REPE
+                                   }
+                                   opcode: 0x0f38f5
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 6
+                                     register_operand: 0
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseShrx) {
   // SHRX RAX, RDX, R14
   ParseInstructionAndCheckResult({0xC4, 0xE2, 0x8B, 0xF7, 0xC2},
-                                 "VEX.NDS.LZ.F2.0F38.W1 F7 /r", R"proto(
-    vex_prefix {
-      map_select: MAP_SELECT_0F38
-      inverted_register_operand: 1
-      not_b: true
-      not_r: true
-      not_x: true
-      w: true
-      mandatory_prefix: MANDATORY_PREFIX_REPNE
-    }
-    opcode: 0x0f38f7
-    modrm { addressing_mode: DIRECT rm_operand: 2 register_operand: 0 })proto");
+                                 "VEX.NDS.LZ.F2.0F38.W1 F7 /r",
+                                 R"proto(
+                                   vex_prefix {
+                                     map_select: MAP_SELECT_0F38
+                                     inverted_register_operand: 1
+                                     not_b: true
+                                     not_r: true
+                                     not_x: true
+                                     w: true
+                                     mandatory_prefix: MANDATORY_PREFIX_REPNE
+                                   }
+                                   opcode: 0x0f38f7
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 2
+                                     register_operand: 0
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, ParseImmediateValues) {
@@ -1138,8 +1193,8 @@ TEST_F(InstructionParserTest, ParseImmediateValues) {
   // ADC 0xabcdef01 [to EAX]
   ParseInstructionAndCheckResult({0x15, 0xab, 0xcd, 0xef, 0x01}, "15 id",
                                  R"proto(
-    opcode: 0x15
-    immediate_value: '\xab\xcd\xef\x01')proto");
+                                   opcode: 0x15
+                                   immediate_value: '\xab\xcd\xef\x01')proto");
 }
 
 TEST_F(InstructionParserTest, ParseImmediateValuesWithVexPrefix) {
@@ -1179,18 +1234,24 @@ TEST_F(InstructionParserTest, MissingOrIncompleteImmediateValue) {
 TEST_F(InstructionParserTest, ParseVexSuffix) {
   // VBLENDVPD xmm1, xmm2, xmm3, xmm4
   ParseInstructionAndCheckResult({0xc4, 0xe3, 0x69, 0x4b, 0xcb, 0x40},
-                                 "VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"proto(
-    vex_prefix {
-      mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-      inverted_register_operand: 13
-      not_b: true
-      not_r: true
-      not_x: true
-      map_select: MAP_SELECT_0F3A
-      vex_suffix_value: 0x40
-    }
-    opcode: 0x0f3a4b
-    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 })proto");
+                                 "VEX.NDS.128.66.0F3A.W0 4B /r /is4",
+                                 R"proto(
+                                   vex_prefix {
+                                     mandatory_prefix:
+                                         MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+                                     inverted_register_operand: 13
+                                     not_b: true
+                                     not_r: true
+                                     not_x: true
+                                     map_select: MAP_SELECT_0F3A
+                                     vex_suffix_value: 0x40
+                                   }
+                                   opcode: 0x0f3a4b
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 3
+                                     register_operand: 1
+                                   })proto");
 }
 
 TEST_F(InstructionParserTest, MissingVexSuffix) {
@@ -1201,36 +1262,46 @@ TEST_F(InstructionParserTest, MissingVexSuffix) {
 TEST_F(InstructionParserTest, ParseEvexPrefix) {
   // VMOVSD XMM1 {k4} {z},XMM2,XMM3
   ParseInstructionAndCheckResult({0x62, 0xf1, 0xef, 0x8c, 0x10, 0xcb},
-                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r", R"proto(
-    evex_prefix {
-      mandatory_prefix: MANDATORY_PREFIX_REPNE
-      w: true
-      map_select: MAP_SELECT_0F
-      not_r: 3
-      not_b: true
-      not_x: true
-      inverted_register_operand: 29
-      opmask_register: 4
-      z: true
-    }
-    opcode: 0x0f10
-    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 })proto");
+                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r",
+                                 R"proto(
+                                   evex_prefix {
+                                     mandatory_prefix: MANDATORY_PREFIX_REPNE
+                                     w: true
+                                     map_select: MAP_SELECT_0F
+                                     not_r: 3
+                                     not_b: true
+                                     not_x: true
+                                     inverted_register_operand: 29
+                                     opmask_register: 4
+                                     z: true
+                                   }
+                                   opcode: 0x0f10
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 3
+                                     register_operand: 1
+                                   })proto");
   // VMOVSD XMM1 {k1} {z},XMM29,XMM3
   ParseInstructionAndCheckResult({0x62, 0xf1, 0x97, 0x81, 0x10, 0xcb},
-                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r", R"proto(
-    evex_prefix {
-      mandatory_prefix: MANDATORY_PREFIX_REPNE
-      w: true
-      map_select: MAP_SELECT_0F
-      not_r: 3
-      not_b: true
-      not_x: true
-      inverted_register_operand: 2
-      opmask_register: 1
-      z: true
-    }
-    opcode: 0x0f10
-    modrm { addressing_mode: DIRECT rm_operand: 3 register_operand: 1 })proto");
+                                 "EVEX.NDS.LIG.F2.0F.W1 10 /r",
+                                 R"proto(
+                                   evex_prefix {
+                                     mandatory_prefix: MANDATORY_PREFIX_REPNE
+                                     w: true
+                                     map_select: MAP_SELECT_0F
+                                     not_r: 3
+                                     not_b: true
+                                     not_x: true
+                                     inverted_register_operand: 2
+                                     opmask_register: 1
+                                     z: true
+                                   }
+                                   opcode: 0x0f10
+                                   modrm {
+                                     addressing_mode: DIRECT
+                                     rm_operand: 3
+                                     register_operand: 1
+                                   })proto");
   // The same instruction as above, but one of the reserved bits in the EVEX
   // prefix is set incorrectly.
   ParseInstructionAndCheckError({0x62, 0xf5, 0xef, 0x89, 0x10, 0xcb},

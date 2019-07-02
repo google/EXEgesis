@@ -18,13 +18,14 @@
 #define EXEGESIS_TOOLS_ARCHITECTURE_FLAGS_H_
 
 #include <memory>
+#include <string>
 
+#include "absl/flags/declare.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "gflags/gflags.h"
 
-DECLARE_string(exegesis_architecture);
-DECLARE_string(exegesis_microarchitecture);
+ABSL_DECLARE_FLAG(std::string, exegesis_architecture);
+ABSL_DECLARE_FLAG(std::string, exegesis_microarchitecture);
 
 namespace exegesis {
 

@@ -36,9 +36,13 @@ class ReorderBufferTest : public ::testing::Test {
     llvm::MCInst Inst1;
     llvm::MCInst Inst2;
     llvm::MCInst Inst3;
+    llvm::MCInst Inst4;
+    llvm::MCInst Inst5;
     Inst1.setOpcode(1);
     Inst2.setOpcode(2);
     Inst3.setOpcode(3);
+    Inst4.setOpcode(4);
+    Inst5.setOpcode(5);
     Instructions_ = {Inst1, Inst2, Inst3};
     InstrDesc_[1].SchedClass = 1;
     InstrDesc_[2].SchedClass = 2;
@@ -71,7 +75,7 @@ class ReorderBufferTest : public ::testing::Test {
       Decomposition->Uops[0].ProcResIdx = 1;
       Decomposition->Uops[0].StartCycle = 0;
       Decomposition->Uops[0].EndCycle = 1;
-      Context_.SetInstructionDecomposition(1, std::move(Decomposition));
+      Context_.SetInstructionDecomposition(Inst1, std::move(Decomposition));
     }
     {
       // 1 cycle on P1
@@ -80,7 +84,7 @@ class ReorderBufferTest : public ::testing::Test {
       Decomposition->Uops[0].ProcResIdx = 2;
       Decomposition->Uops[0].StartCycle = 0;
       Decomposition->Uops[0].EndCycle = 1;
-      Context_.SetInstructionDecomposition(2, std::move(Decomposition));
+      Context_.SetInstructionDecomposition(Inst2, std::move(Decomposition));
     }
     {
       // 1 cycle on P1 + 2 cycles on P0
@@ -95,7 +99,7 @@ class ReorderBufferTest : public ::testing::Test {
       Decomposition->Uops[2].ProcResIdx = 1;
       Decomposition->Uops[2].StartCycle = 0;
       Decomposition->Uops[2].EndCycle = 1;
-      Context_.SetInstructionDecomposition(3, std::move(Decomposition));
+      Context_.SetInstructionDecomposition(Inst3, std::move(Decomposition));
     }
     {
       // Resourceless Uop
@@ -104,7 +108,7 @@ class ReorderBufferTest : public ::testing::Test {
       Decomposition->Uops[0].ProcResIdx = 0;
       Decomposition->Uops[0].StartCycle = 0;
       Decomposition->Uops[0].EndCycle = 1;
-      Context_.SetInstructionDecomposition(4, std::move(Decomposition));
+      Context_.SetInstructionDecomposition(Inst4, std::move(Decomposition));
     }
     {
       // 1 cycle on P1, latency 3 (e.g. IMUL).
@@ -113,7 +117,7 @@ class ReorderBufferTest : public ::testing::Test {
       Decomposition->Uops[0].ProcResIdx = 2;
       Decomposition->Uops[0].StartCycle = 0;
       Decomposition->Uops[0].EndCycle = 3;
-      Context_.SetInstructionDecomposition(5, std::move(Decomposition));
+      Context_.SetInstructionDecomposition(Inst5, std::move(Decomposition));
     }
 
     ReorderBuffer::Config Config;

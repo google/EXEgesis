@@ -161,9 +161,9 @@ TEST(EncodingSpecificationParserTest, ModRm) {
     modrm_opcode_extension: 1)proto");
   CheckParser("10 /r",
               R"proto(
-    legacy_prefixes {}
-    opcode: 0x10
-    modrm_usage: FULL_MODRM)proto");
+                legacy_prefixes {}
+                opcode: 0x10
+                modrm_usage: FULL_MODRM)proto");
 }
 
 TEST(EncodingSpecificationParserTest, ModRmMemorySuffix) {
@@ -179,19 +179,19 @@ TEST(EncodingSpecificationParserTest, ModRmMemorySuffix) {
 TEST(EncodingSpecificationParserTest, ImmediateValue) {
   CheckParser("D5 ib",
               R"proto(
-    legacy_prefixes {}
-    opcode: 0xd5
-    immediate_value_bytes: 1)proto");
+                legacy_prefixes {}
+                opcode: 0xd5
+                immediate_value_bytes: 1)proto");
   CheckParser("15 iw",
               R"proto(
-    legacy_prefixes {}
-    opcode: 0x15
-    immediate_value_bytes: 2)proto");
+                legacy_prefixes {}
+                opcode: 0x15
+                immediate_value_bytes: 2)proto");
   CheckParser("15 id",
               R"proto(
-    legacy_prefixes {}
-    opcode: 0x15
-    immediate_value_bytes: 4)proto");
+                legacy_prefixes {}
+                opcode: 0x15
+                immediate_value_bytes: 4)proto");
   CheckParser("C8 iw ib", R"proto(
     legacy_prefixes {}
     opcode: 0xc8

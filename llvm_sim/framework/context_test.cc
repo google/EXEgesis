@@ -133,10 +133,15 @@ TEST(ContextTest, Decomposition) {
       /*ReadAdvanceEntries=*/nullptr, /*InstrStages=*/nullptr,
       /*OperandCycles=*/nullptr, /*ForwardingPaths=*/nullptr);
 
-  ASSERT_EQ(Context.GetSchedClassForInstruction(1), &SchedClasses[1]);
-  ASSERT_EQ(Context.GetSchedClassForInstruction(2), &SchedClasses[2]);
-  ASSERT_EQ(Context.GetSchedClassForInstruction(3), &SchedClasses[3]);
-  ASSERT_EQ(Context.GetSchedClassForInstruction(4), &SchedClasses[4]);
+  llvm::MCInst Inst;
+  Inst.setOpcode(1);
+  ASSERT_EQ(Context.GetSchedClassForInstruction(Inst), &SchedClasses[1]);
+  Inst.setOpcode(2);
+  ASSERT_EQ(Context.GetSchedClassForInstruction(Inst), &SchedClasses[2]);
+  Inst.setOpcode(3);
+  ASSERT_EQ(Context.GetSchedClassForInstruction(Inst), &SchedClasses[3]);
+  Inst.setOpcode(4);
+  ASSERT_EQ(Context.GetSchedClassForInstruction(Inst), &SchedClasses[4]);
 
   const auto ProcResIdxIs = [](const unsigned ProcResIdx) {
     return Field(&InstrUopDecomposition::Uop::ProcResIdx, Eq(ProcResIdx));
@@ -146,17 +151,23 @@ TEST(ContextTest, Decomposition) {
                  Field(&InstrUopDecomposition::Uop::EndCycle, Eq(End)));
   };
   {
-    const auto& Decomposition = Context.GetInstructionDecomposition(1);
+    llvm::MCInst Inst;
+    Inst.setOpcode(1);
+    const auto& Decomposition = Context.GetInstructionDecomposition(Inst);
     ASSERT_THAT(Decomposition.Uops, ElementsAre(ProcResIdxIs(1)));
     ASSERT_THAT(Decomposition.Uops, ElementsAre(StartEndCyclesAre(0, 1)));
   }
   {
-    const auto& Decomposition = Context.GetInstructionDecomposition(2);
+    llvm::MCInst Inst;
+    Inst.setOpcode(2);
+    const auto& Decomposition = Context.GetInstructionDecomposition(Inst);
     ASSERT_THAT(Decomposition.Uops, ElementsAre(ProcResIdxIs(2)));
     ASSERT_THAT(Decomposition.Uops, ElementsAre(StartEndCyclesAre(0, 1)));
   }
   {
-    const auto& Decomposition = Context.GetInstructionDecomposition(3);
+    llvm::MCInst Inst;
+    Inst.setOpcode(3);
+    const auto& Decomposition = Context.GetInstructionDecomposition(Inst);
     ASSERT_THAT(Decomposition.Uops,
                 ElementsAre(ProcResIdxIs(1), ProcResIdxIs(1), ProcResIdxIs(2)));
     ASSERT_THAT(Decomposition.Uops,
@@ -164,7 +175,9 @@ TEST(ContextTest, Decomposition) {
                             StartEndCyclesAre(3, 4)));
   }
   {
-    const auto& Decomposition = Context.GetInstructionDecomposition(4);
+    llvm::MCInst Inst;
+    Inst.setOpcode(4);
+    const auto& Decomposition = Context.GetInstructionDecomposition(Inst);
     ASSERT_THAT(Decomposition.Uops,
                 ElementsAre(ProcResIdxIs(1), ProcResIdxIs(1), ProcResIdxIs(2),
                             ProcResIdxIs(2), ProcResIdxIs(2)));
@@ -181,6 +194,50 @@ TEST(BlockContextTest, GetInstruction) {
   ASSERT_FALSE(BlockContext.IsLoop());
   ASSERT_EQ(BlockContext.GetNumBasicBlockInstructions(), 2);
   ASSERT_NE(&BlockContext.GetInstruction(0), &BlockContext.GetInstruction(1));
+}
+
+TEST(BlockContextTest, MCInstEqHash) {
+  const GlobalContext::MCInstEq InstEq;
+  const absl::Hash<llvm::MCInst> InstHash;
+
+  llvm::MCInst A, B;
+
+  A.setOpcode(123);
+  B.setOpcode(456);
+  EXPECT_TRUE(InstEq(B, B));
+  EXPECT_EQ(InstHash(B), InstHash(B));
+  EXPECT_FALSE(InstEq(A, B));
+
+  B.setOpcode(123);
+  EXPECT_TRUE(InstEq(A, B));
+  EXPECT_EQ(InstHash(A), InstHash(B));
+  A.setFlags(2);
+  B.setFlags(4);
+  EXPECT_TRUE(InstEq(B, B));
+  EXPECT_EQ(InstHash(B), InstHash(B));
+  EXPECT_FALSE(InstEq(A, B));
+
+  B.setFlags(2);
+  EXPECT_TRUE(InstEq(A, B));
+  EXPECT_EQ(InstHash(A), InstHash(B));
+  A.addOperand(llvm::MCOperand::createReg(12));
+  EXPECT_TRUE(InstEq(B, B));
+  EXPECT_EQ(InstHash(B), InstHash(B));
+  EXPECT_FALSE(InstEq(A, B));
+
+  B.addOperand(llvm::MCOperand::createReg(11));
+  EXPECT_FALSE(InstEq(A, B));
+  B.getOperand(0).setReg(12);
+  EXPECT_TRUE(InstEq(A, B));
+  EXPECT_EQ(InstHash(A), InstHash(B));
+  A.addOperand(llvm::MCOperand::createImm(12));
+  B.addOperand(llvm::MCOperand::createImm(11));
+  EXPECT_TRUE(InstEq(B, B));
+  EXPECT_EQ(InstHash(B), InstHash(B));
+  EXPECT_FALSE(InstEq(A, B));
+  B.getOperand(1).setImm(12);
+  EXPECT_TRUE(InstEq(A, B));
+  EXPECT_EQ(InstHash(A), InstHash(B));
 }
 
 }  // namespace

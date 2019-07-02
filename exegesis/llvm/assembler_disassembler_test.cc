@@ -57,34 +57,34 @@ void CheckDisassemblyOK(const std::string& binary,
 TEST(AssemblerDisassemblerTest, MovEax_Intel) {
   CheckAssemblyDisassemblyOK("mov eax,0x12345678", llvm::InlineAsm::AD_Intel,
                              R"proto(
-    llvm_mnemonic: 'MOV32ri'
-    intel_syntax {
-      mnemonic: 'mov'
-      operands { name: 'eax' }
-      operands { name: '0x12345678' }
-    }
-    att_syntax {
-      mnemonic: 'movl'
-      operands { name: '$0x12345678' }
-      operands { name: '%eax' }
-    })proto");
+                               llvm_mnemonic: 'MOV32ri'
+                               intel_syntax {
+                                 mnemonic: 'mov'
+                                 operands { name: 'eax' }
+                                 operands { name: '0x12345678' }
+                               }
+                               att_syntax {
+                                 mnemonic: 'movl'
+                                 operands { name: '$0x12345678' }
+                                 operands { name: '%eax' }
+                               })proto");
 }
 
 TEST(AssemblerDisassemblerTest, MovRax_Intel) {
   CheckAssemblyDisassemblyOK("movabs rax,0x1234567890ABCDEF",
                              llvm::InlineAsm::AD_Intel,
                              R"proto(
-    llvm_mnemonic: 'MOV64ri'
-    intel_syntax {
-      mnemonic: 'movabs'
-      operands { name: 'rax' }
-      operands { name: '0x1234567890abcdef' }
-    }
-    att_syntax {
-      mnemonic: 'movabsq'
-      operands { name: '$0x1234567890abcdef' }
-      operands { name: '%rax' }
-    })proto");
+                               llvm_mnemonic: 'MOV64ri'
+                               intel_syntax {
+                                 mnemonic: 'movabs'
+                                 operands { name: 'rax' }
+                                 operands { name: '0x1234567890abcdef' }
+                               }
+                               att_syntax {
+                                 mnemonic: 'movabsq'
+                                 operands { name: '$0x1234567890abcdef' }
+                                 operands { name: '%rax' }
+                               })proto");
 }
 
 TEST(AssemblerDisassemblerTest, MovEaxBinary) {
@@ -105,50 +105,50 @@ TEST(AssemblerDisassemblerTest, MovEaxBinary) {
 TEST(AssemblerDisassemblerTest, MovRaxBinary) {
   CheckDisassemblyOK("0x48,0xb8,0xef,0xcd,0xab,0x90,0x78,0x56,0x34,0x12",
                      R"proto(
-    llvm_mnemonic: 'MOV64ri'
-    intel_syntax {
-      mnemonic: 'movabs'
-      operands { name: 'rax' }
-      operands { name: '0x1234567890abcdef' }
-    }
-    att_syntax {
-      mnemonic: 'movabsq'
-      operands { name: '$0x1234567890abcdef' }
-      operands { name: '%rax' }
-    })proto");
+                       llvm_mnemonic: 'MOV64ri'
+                       intel_syntax {
+                         mnemonic: 'movabs'
+                         operands { name: 'rax' }
+                         operands { name: '0x1234567890abcdef' }
+                       }
+                       att_syntax {
+                         mnemonic: 'movabsq'
+                         operands { name: '$0x1234567890abcdef' }
+                         operands { name: '%rax' }
+                       })proto");
 }
 
 TEST(AssemblerDisassemblerTest, MovEax_Att) {
   CheckAssemblyDisassemblyOK("movl $$0x12345678, %eax", llvm::InlineAsm::AD_ATT,
                              R"proto(
-    llvm_mnemonic: 'MOV32ri'
-    intel_syntax {
-      mnemonic: 'mov'
-      operands { name: 'eax' }
-      operands { name: '0x12345678' }
-    }
-    att_syntax {
-      mnemonic: 'movl'
-      operands { name: '$0x12345678' }
-      operands { name: '%eax' }
-    })proto");
+                               llvm_mnemonic: 'MOV32ri'
+                               intel_syntax {
+                                 mnemonic: 'mov'
+                                 operands { name: 'eax' }
+                                 operands { name: '0x12345678' }
+                               }
+                               att_syntax {
+                                 mnemonic: 'movl'
+                                 operands { name: '$0x12345678' }
+                                 operands { name: '%eax' }
+                               })proto");
 }
 
 TEST(AssemblerDisassemblerTest, MovRax_Att) {
   CheckAssemblyDisassemblyOK("movabsq $$0x1234567890ABCDEF, %rax",
                              llvm::InlineAsm::AD_ATT,
                              R"proto(
-    llvm_mnemonic: 'MOV64ri'
-    intel_syntax {
-      mnemonic: 'movabs'
-      operands { name: 'rax' }
-      operands { name: '0x1234567890abcdef' }
-    }
-    att_syntax {
-      mnemonic: 'movabsq'
-      operands { name: '$0x1234567890abcdef' }
-      operands { name: '%rax' }
-    })proto");
+                               llvm_mnemonic: 'MOV64ri'
+                               intel_syntax {
+                                 mnemonic: 'movabs'
+                                 operands { name: 'rax' }
+                                 operands { name: '0x1234567890abcdef' }
+                               }
+                               att_syntax {
+                                 mnemonic: 'movabsq'
+                                 operands { name: '$0x1234567890abcdef' }
+                                 operands { name: '%rax' }
+                               })proto");
 }
 
 }  // namespace

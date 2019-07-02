@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2019 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file contains utilities to create transforms from flags.
+#include "exegesis/base/init_main.h"
 
-#ifndef EXEGESIS_BASE_TRANSFORM_FACTORY_H_
-#define EXEGESIS_BASE_TRANSFORM_FACTORY_H_
-
-#include <string>
-#include <vector>
-
-#include "absl/flags/declare.h"
-#include "exegesis/base/cleanup_instruction_set.h"
-
-ABSL_DECLARE_FLAG(std::string, exegesis_transforms);
+#include "absl/flags/parse.h"
+#include "glog/logging.h"
 
 namespace exegesis {
 
-// Returns a vector of transforms corresponding to transformations given in
-// --exegesis_transforms.
-std::vector<InstructionSetTransform> GetTransformsFromCommandLineFlags();
+void InitMain(int argc, char* argv[]) {
+  google::InitGoogleLogging(argv[0]);
+  absl::ParseCommandLine(argc, argv);
+}
 
 }  // namespace exegesis
-
-#endif  // EXEGESIS_BASE_TRANSFORM_FACTORY_H_

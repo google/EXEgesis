@@ -71,18 +71,17 @@ std::vector<uint8_t> GetIACAMarkedCode(const std::string& FileName) {
     if (!Section.isText()) {
       continue;
     }
-    llvm::StringRef Code;
-    Section.getContents(Code);
+    llvm::Expected<llvm::StringRef> Code = Section.getContents();
     // Find the begin/end markers.
-    auto BeginIt = std::search(Code.begin(), Code.end(), kBeginMagicMarker,
+    auto BeginIt = std::search(Code->begin(), Code->end(), kBeginMagicMarker,
                                kBeginMagicMarker + sizeof(kBeginMagicMarker));
-    if (BeginIt == Code.end()) {
+    if (BeginIt == Code->end()) {
       continue;
     }
     BeginIt += sizeof(kBeginMagicMarker);
-    const auto EndIt = std::search(BeginIt, Code.end(), kEndMagicMarker,
+    const auto EndIt = std::search(BeginIt, Code->end(), kEndMagicMarker,
                                    kEndMagicMarker + sizeof(kEndMagicMarker));
-    if (EndIt == Code.end()) {
+    if (EndIt == Code->end()) {
       std::cerr << "found begin marker without end marker\n";
       continue;
     }
@@ -427,9 +426,7 @@ void WriteTraceLine(const GlobalContext& Context,
 
   // Then each uop.
   const size_t NumUops =
-      Context
-          .GetInstructionDecomposition(
-              BlockContext.GetInstruction(BBIndex).getOpcode())
+      Context.GetInstructionDecomposition(BlockContext.GetInstruction(BBIndex))
           .Uops.size();
   for (size_t UopIndex = 0; UopIndex < NumUops; ++UopIndex) {
     WriteLineBegin(

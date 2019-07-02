@@ -33,9 +33,6 @@ cc_library(
         "//conditions:default": [],
     }),
     visibility = ["//visibility:public"],
-    deps = [
-        "@com_github_gflags_gflags//:gflags",
-    ],
 )
 
 config_setting(

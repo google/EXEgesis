@@ -14,7 +14,6 @@ cc_library(
     deps = [
         "//base",
         "//util/gtl:map_util",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",

@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "base/casts.h"
-#include "gflags/gflags.h"
+#include "base/commandlineflags.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
 

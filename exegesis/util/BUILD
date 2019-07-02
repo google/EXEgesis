@@ -11,7 +11,6 @@ cc_library(
     hdrs = ["bits.h"],
     deps = [
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
     ],
@@ -23,7 +22,6 @@ cc_test(
     deps = [
         ":bits",
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
@@ -40,7 +38,6 @@ cc_library(
     hdrs = ["category_util.h"],
     deps = [
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
     ],
@@ -53,7 +50,6 @@ cc_test(
     deps = [
         ":category_util",
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
@@ -69,7 +65,6 @@ cc_library(
     hdrs = ["file_util.h"],
     deps = [
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
     ],
@@ -113,7 +108,6 @@ cc_library(
         "//base",
         "//exegesis/proto:instructions_cc_proto",
         "//util/gtl:map_util",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
@@ -146,7 +140,6 @@ cc_library(
         "//base",
         "//util/task:status",
         "//util/task:statusor",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
@@ -164,7 +157,6 @@ cc_test(
         "//exegesis/testing:test_util",
         "//file/base:path",
         "//util/task:status",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -181,7 +173,6 @@ cc_library(
     deps = [
         "//base",
         "//util/task:status",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
     ],
@@ -209,7 +200,6 @@ cc_library(
         "//base",
         "//util/task:status",
         "//util/task:statusor",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
@@ -275,7 +265,6 @@ cc_library(
     hdrs = ["system.h"],
     deps = [
         "//base",
-        "@com_github_gflags_gflags//:gflags",
         "@com_github_glog_glog//:glog",
         "@com_google_protobuf//:protobuf_lite",
     ],

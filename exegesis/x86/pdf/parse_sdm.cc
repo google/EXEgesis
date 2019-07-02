@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 
+#include "absl/flags/flag.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
@@ -30,15 +31,14 @@
 #include "exegesis/util/proto_util.h"
 #include "exegesis/x86/pdf/intel_sdm_extractor.h"
 #include "exegesis/x86/registers.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_bool(exegesis_parse_sdm_store_intermediate_files, false,
-            "Set to true to write intermediate files: the PDF and SDM protos "
-            "and the raw instruction set.");
+ABSL_FLAG(bool, exegesis_parse_sdm_store_intermediate_files, false,
+          "Set to true to write intermediate files: the PDF and SDM protos "
+          "and the raw instruction set.");
 
 namespace exegesis {
 namespace x86 {
@@ -101,7 +101,7 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
   for (int request_id = 0; request_id < requests.size(); ++request_id) {
     const PdfParseRequest& spec = requests[request_id];
     const PdfDocument pdf_document = ParseOrDie(spec, patch_sets);
-    if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
+    if (absl::GetFlag(FLAGS_exegesis_parse_sdm_store_intermediate_files)) {
       const std::string pb_filename =
           absl::StrCat(output_base, "_", request_id, ".pdf.pb");
       LOG(INFO) << "Saving pdf as proto file : " << pb_filename;
@@ -111,7 +111,7 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
     LOG(INFO) << "Extracting instruction set";
     const SdmDocument sdm_document =
         ConvertPdfDocumentToSdmDocument(pdf_document);
-    if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
+    if (absl::GetFlag(FLAGS_exegesis_parse_sdm_store_intermediate_files)) {
       const std::string sdm_pb_filename =
           absl::StrCat(output_base, "_", request_id, ".sdm.pb");
       LOG(INFO) << "Saving pdf as proto file : " << sdm_pb_filename;
@@ -128,7 +128,7 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
   *architecture.mutable_register_set() = x86::GetRegisterSet();
 
   // Outputs the instructions.
-  if (FLAGS_exegesis_parse_sdm_store_intermediate_files) {
+  if (absl::GetFlag(FLAGS_exegesis_parse_sdm_store_intermediate_files)) {
     const std::string instructions_filename =
         absl::StrCat(output_base, ".raw.pbtxt");
     LOG(INFO) << "Saving instruction database as: " << instructions_filename;

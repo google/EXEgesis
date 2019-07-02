@@ -123,30 +123,32 @@ GlobalContext::GlobalContext() {}
 
 GlobalContext::~GlobalContext() {}
 
-// TODO(courbet): Move to TargetSchedModel and refactor with
-// TargetSchedModel::resolveSchedClass() ?
 const llvm::MCSchedClassDesc* GlobalContext::GetSchedClassForInstruction(
-    const unsigned Opcode) const {
+    const llvm::MCInst& Inst) const {
   assert(InstrInfo && "InstrInfo is required");
   assert(SchedModel && "SchedModel is required");
   // Get the definition's scheduling class descriptor from this machine model.
-  unsigned SchedClassId = InstrInfo->get(Opcode).getSchedClass();
-  const llvm::MCSchedClassDesc* const SCDesc =
+  assert(Inst.getOpcode() != 0 && "invalid opcode");
+  unsigned SchedClassId = InstrInfo->get(Inst.getOpcode()).getSchedClass();
+  const llvm::MCSchedClassDesc* SCDesc =
       SchedModel->getSchedClassDesc(SchedClassId);
   assert(SCDesc && "missing sched class");
+  while (SCDesc->isVariant()) {
+    SchedClassId = SubtargetInfo->resolveVariantSchedClass(
+        SchedClassId, &Inst, SchedModel->getProcessorID());
+    SCDesc = SchedModel->getSchedClassDesc(SchedClassId);
+    assert(SCDesc && "missing sched class");
+  }
   assert(SCDesc->isValid() && "invalid sched class");
-  // TODO(courbet): Handle variants. This requires some refactoring of
-  // TargetSubtargetInfo::resolveSchedClass().
-  assert(!SCDesc->isVariant() && "not implemented");
   return SCDesc;
 }
 
 void GlobalContext::ComputeInstructionUops(
-    const unsigned Opcode,
+    const llvm::MCInst& Inst,
     llvm::SmallVectorImpl<InstrUopDecomposition::Uop>* Uops) const {
   // TODO(courbet): Handle scheduling models that have itineraries instead of
   // sched classes.
-  const auto* const SCDesc = GetSchedClassForInstruction(Opcode);
+  const auto* const SCDesc = GetSchedClassForInstruction(Inst);
 
   // The scheduling model for LLVM is such that each instruction has a certain
   // number of uops which consume resources which are described by
@@ -226,13 +228,13 @@ void GlobalContext::ComputeInstructionUops(
     // because we want to check them.
 #if !defined(NDEBUG)
     // These are TD mistakes that should be fixed in LLVM.
-    llvm::errs() << InstrInfo->getName(Opcode)
+    llvm::errs() << InstrInfo->getName(Inst.getOpcode())
                  << ": inconsistent sum(ResourceCycles) (" << Uops->size()
                  << ") vs NumMicroOps (" << SCDesc->NumMicroOps << ")\n";
 #endif
     if (Uops->empty() && SCDesc->NumMicroOps == 1) {
 #if !defined(NDEBUG)
-      llvm::errs() << InstrInfo->getName(Opcode)
+      llvm::errs() << InstrInfo->getName(Inst.getOpcode())
                    << ": assuming resourceless uop\n";
 #endif
       // Add a resourceless uop.
@@ -244,9 +246,9 @@ void GlobalContext::ComputeInstructionUops(
 }
 
 void GlobalContext::ComputeUopLatencies(
-    const unsigned Opcode,
+    const llvm::MCInst& Inst,
     llvm::SmallVectorImpl<InstrUopDecomposition::Uop>* Uops) const {
-  const auto* const SCDesc = GetSchedClassForInstruction(Opcode);
+  const auto* const SCDesc = GetSchedClassForInstruction(Inst);
 
   // We assume that the latency of the instruction is the maximum time it takes
   // for all its defs to be written.
@@ -261,8 +263,9 @@ void GlobalContext::ComputeUopLatencies(
 #if !defined(NDEBUG)
   if (MaxDefLatency < Uops->size()) {
     // These are TD mistakes that should be fixed in LLVM.
-    llvm::errs() << InstrInfo->getName(Opcode) << ": inconsistent latency of "
-                 << MaxDefLatency << " for " << Uops->size() << " uops\n";
+    llvm::errs() << InstrInfo->getName(Inst.getOpcode())
+                 << ": inconsistent latency of " << MaxDefLatency << " for "
+                 << Uops->size() << " uops\n";
   }
 #endif
 
@@ -283,7 +286,7 @@ void GlobalContext::ComputeUopLatencies(
     // this by making its latency one and preserving the end cycle, so that the
     // overall latency of the instruction is respected.
     if (Uop.EndCycle == Uop.StartCycle) {
-      llvm::errs() << InstrInfo->getName(Opcode) << ": uop "
+      llvm::errs() << InstrInfo->getName(Inst.getOpcode()) << ": uop "
                    << (Uops->size() - RemainingUops)
                    << " has zero latency, fixing it to one.";
       assert(Uop.StartCycle > 0);
@@ -296,8 +299,8 @@ void GlobalContext::ComputeUopLatencies(
 }
 
 const InstrUopDecomposition& GlobalContext::GetInstructionDecomposition(
-    const unsigned Opcode) const {
-  auto& Result = DecompositionCache_[Opcode];
+    const llvm::MCInst& Inst) const {
+  auto& Result = DecompositionCache_[Inst];
   if (Result) {
     return *Result;
   }
@@ -308,14 +311,48 @@ const InstrUopDecomposition& GlobalContext::GetInstructionDecomposition(
   }
 
   Result = llvm::make_unique<InstrUopDecomposition>();
-  ComputeInstructionUops(Opcode, &Result->Uops);
-  ComputeUopLatencies(Opcode, &Result->Uops);
+  ComputeInstructionUops(Inst, &Result->Uops);
+  ComputeUopLatencies(Inst, &Result->Uops);
   return *Result;
 }
 
 BlockContext::BlockContext(llvm::ArrayRef<llvm::MCInst> Instructions,
                            bool IsLoop)
     : Instructions_(Instructions), IsLoop_(IsLoop) {}
+
+bool GlobalContext::MCInstEq::operator()(const llvm::MCInst& A,
+                                         const llvm::MCInst& B) const {
+  if (A.getOpcode() != B.getOpcode()) {
+    return false;
+  }
+  if (A.getFlags() != B.getFlags()) {
+    return false;
+  }
+  if (A.getNumOperands() != B.getNumOperands()) {
+    return false;
+  }
+  const auto OpEq = [](const llvm::MCOperand& OpA, const llvm::MCOperand& OpB) {
+    if (!OpA.isValid()) {
+      return !OpB.isValid();
+    }
+    if (OpA.isReg()) {
+      return OpB.isReg() && OpA.getReg() == OpB.getReg();
+    }
+    if (OpA.isImm()) {
+      return OpB.isImm() && OpA.getImm() == OpB.getImm();
+    }
+    if (OpA.isFPImm()) {
+      return OpB.isFPImm() && OpA.getFPImm() == OpB.getFPImm();
+    }
+    return true;
+  };
+  for (int I = 0; I < A.getNumOperands(); ++I) {
+    if (!OpEq(A.getOperand(I), B.getOperand(I))) {
+      return false;
+    }
+  }
+  return true;
+}
 
 }  // namespace simulator
 }  // namespace exegesis

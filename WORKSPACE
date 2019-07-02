@@ -5,11 +5,11 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file"
 
 http_archive(
     name = "com_google_absl",
-    sha256 = "d10f684f170eb36f3ce752d2819a0be8cc703b429247d7d662ba5b4b48dd7f65",
-    strip_prefix = "abseil-cpp-3088e76c597e068479e82508b1770a7ad0c806b6",
+    sha256 = "a8b00e4be7ad89a2c0a28b5fd8152fcb1972006560aca2ce85cb72b6985b577c",
+    strip_prefix = "abseil-cpp-c964fcffac27bd4a9ff67fe393410dd1146ef8b8",
     urls = [
-        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/3088e76c597e068479e82508b1770a7ad0c806b6.tar.gz",
-        "https://github.com/abseil/abseil-cpp/archive/3088e76c597e068479e82508b1770a7ad0c806b6.tar.gz",
+        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/c964fcffac27bd4a9ff67fe393410dd1146ef8b8.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/c964fcffac27bd4a9ff67fe393410dd1146ef8b8.tar.gz",
     ],
 )
 
@@ -180,14 +180,14 @@ http_archive(
 http_archive(
     name = "llvm_git",
     build_file = "@//:llvm.BUILD",
-    sha256 = "5e59b94b47a9c6542a13d51eb406938c8a6c9c1c033a23e703fb9327b010d54e",
-    strip_prefix = "llvm-677f061542a6eb05369e0f032224ceae456a0580",
+    sha256 = "033b68200d9d7a9c3775abebb4c3d6ff44fbf487ce4f26b10fcc0f99bf9c0ed8",
+    strip_prefix = "llvm-cf66538c755246bc7df4b1a93a4c667e3a33618e",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/677f061542a6eb05369e0f032224ceae456a0580.tar.gz",
-        "https://github.com/llvm-mirror/llvm/archive/677f061542a6eb05369e0f032224ceae456a0580.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/cf66538c755246bc7df4b1a93a4c667e3a33618e.tar.gz",
+        "https://github.com/llvm-mirror/llvm/archive/cf66538c755246bc7df4b1a93a4c667e3a33618e.tar.gz",
     ],
 )
 
@@ -195,7 +195,7 @@ http_archive(
 
 http_file(
     name = "intel_sdm_pdf",
-    sha256 = "40f85ccb09a539808e26b676370fea39f52b7747650c318039e9819320fb79e9",
+    sha256 = "caad5b299d050747ee1492ae991b568bec1c28001216cf3ad5049cb5939ed8b7",
     urls = ["https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf"],
 )
 

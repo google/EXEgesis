@@ -119,11 +119,10 @@ void PrintPortPressures(const GlobalContext& Context,
     for (unsigned InstrIdx = 0;
          InstrIdx < BlockContext.GetNumBasicBlockInstructions(); ++InstrIdx) {
       const int CurTableRow = InstrIdx + 1;
-      const auto Uops =
-          Context
-              .GetInstructionDecomposition(
-                  BlockContext.GetInstruction(InstrIdx).getOpcode())
-              .Uops;
+      const auto Uops = Context
+                            .GetInstructionDecomposition(
+                                BlockContext.GetInstruction(InstrIdx))
+                            .Uops;
       std::string UopString;
       if (std::any_of(Uops.begin(), Uops.end(),
                       [](const InstrUopDecomposition::Uop& Uop) {

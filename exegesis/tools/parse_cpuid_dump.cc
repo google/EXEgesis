@@ -23,35 +23,36 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
 #include "exegesis/base/cpuid.h"
 #include "exegesis/base/cpuid_x86.h"
+#include "exegesis/base/init_main.h"
 #include "exegesis/proto/cpuid.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "exegesis/util/file_util.h"
 #include "exegesis/util/proto_util.h"
-#include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "util/task/status.h"
 #include "util/task/statusor.h"
 
 // Supported input formats.
-DEFINE_string(
-    exegesis_input_x86_cpuid_dump, "",
+ABSL_FLAG(
+    std::string, exegesis_input_x86_cpuid_dump, "",
     "The name of the file from which the x86 CPUID dump is read or - "
     "to read from stdin. The dump must be in the text format supported by "
     "exegesis::CpuIdDump::FromString().");
-DEFINE_string(exegesis_input_cpuid_dump_proto, "",
-              "The name of the file from which a CpuIdDumpProto is read or - "
-              "to read from stdin. The proto must be in the text format.");
+ABSL_FLAG(std::string, exegesis_input_cpuid_dump_proto, "",
+          "The name of the file from which a CpuIdDumpProto is read or - "
+          "to read from stdin. The proto must be in the text format.");
 
 // Supported output formats.
-DEFINE_string(exegesis_output_cpu_model, "",
-              "The name of the file to which the CPU model information is "
-              "written or - to write to stdout.");
-DEFINE_string(exegesis_output_cpuid_dump, "",
-              "The name of the file to which the CPUID dump is written as a "
-              "proto in text format, or - to write to stdout.");
+ABSL_FLAG(std::string, exegesis_output_cpu_model, "",
+          "The name of the file to which the CPU model information is "
+          "written or - to write to stdout.");
+ABSL_FLAG(std::string, exegesis_output_cpuid_dump, "",
+          "The name of the file to which the CPUID dump is written as a "
+          "proto in text format, or - to write to stdout.");
 
 namespace exegesis {
 namespace {
@@ -94,20 +95,27 @@ void PrintCpuModelFromCpuIdDump(const CpuIdDumpProto& cpuid_dump,
 
 void ProcessCpuIdDump() {
   CpuIdDumpProto cpuid_dump;
-  if (!FLAGS_exegesis_input_x86_cpuid_dump.empty()) {
-    cpuid_dump = ParseX86CpuIdDumpOrDie(FLAGS_exegesis_input_x86_cpuid_dump);
-  } else if (!FLAGS_exegesis_input_cpuid_dump_proto.empty()) {
-    cpuid_dump =
-        ParseCpuIdDumpProtoOrDie(FLAGS_exegesis_input_cpuid_dump_proto);
+  const std::string exegesis_input_x86_cpuid_dump =
+      absl::GetFlag(FLAGS_exegesis_input_x86_cpuid_dump);
+  const std::string exegesis_input_cpuid_dump_proto =
+      absl::GetFlag(FLAGS_exegesis_input_cpuid_dump_proto);
+  if (!exegesis_input_x86_cpuid_dump.empty()) {
+    cpuid_dump = ParseX86CpuIdDumpOrDie(exegesis_input_x86_cpuid_dump);
+  } else if (!exegesis_input_cpuid_dump_proto.empty()) {
+    cpuid_dump = ParseCpuIdDumpProtoOrDie(exegesis_input_cpuid_dump_proto);
   } else {
     LOG(FATAL) << "No CPUID dump source was specified.";
   }
 
-  if (!FLAGS_exegesis_output_cpu_model.empty()) {
-    PrintCpuModelFromCpuIdDump(cpuid_dump, FLAGS_exegesis_output_cpu_model);
+  const std::string exegesis_output_cpu_model =
+      absl::GetFlag(FLAGS_exegesis_output_cpu_model);
+  if (!exegesis_output_cpu_model.empty()) {
+    PrintCpuModelFromCpuIdDump(cpuid_dump, exegesis_output_cpu_model);
   }
-  if (!FLAGS_exegesis_output_cpuid_dump.empty()) {
-    PrintCpuIdDump(cpuid_dump, FLAGS_exegesis_output_cpuid_dump);
+  const std::string exegesis_output_cpuid_dump =
+      absl::GetFlag(FLAGS_exegesis_output_cpuid_dump);
+  if (!exegesis_output_cpuid_dump.empty()) {
+    PrintCpuIdDump(cpuid_dump, exegesis_output_cpuid_dump);
   }
 }
 
@@ -115,7 +123,7 @@ void ProcessCpuIdDump() {
 }  // namespace exegesis
 
 int main(int argc, char* argv[]) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
+  exegesis::InitMain(argc, argv);
   exegesis::ProcessCpuIdDump();
   return 0;
 }

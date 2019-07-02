@@ -23,18 +23,18 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/flags/flag.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/util/pdf/geometry.h"
-#include "gflags/gflags.h"
 #include "util/graph/connected_components.h"
 #include "util/gtl/map_util.h"
 
-DEFINE_double(exegesis_pdf_max_character_distance, 0.9,
-              "The maximal distance of two characters to be considered part of "
-              "the same cell. The value is a multiplier; the real distance is "
-              "obtained by multiplying the font size with this coefficient.");
+ABSL_FLAG(double, exegesis_pdf_max_character_distance, 0.9,
+          "The maximal distance of two characters to be considered part of "
+          "the same cell. The value is a multiplier; the real distance is "
+          "obtained by multiplying the font size with this coefficient.");
 
 namespace exegesis {
 namespace pdf {
@@ -141,7 +141,8 @@ void ClusterCharacters(const Characters& all, PdfTextSegments* segments) {
     const bool within_distance =
         forward_distance > 0 &&
         forward_distance <
-            FLAGS_exegesis_pdf_max_character_distance * a.font_size();
+            absl::GetFlag(FLAGS_exegesis_pdf_max_character_distance) *
+                a.font_size();
     if (same_line && same_orientation && within_distance) {
       return forward_distance;
     }
