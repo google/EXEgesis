@@ -14,22 +14,22 @@
 
 #include "exegesis/base/opcode.h"
 
-#include "base/stringprintf.h"
+#include "absl/strings/str_format.h"
 
 namespace exegesis {
 
 std::string Opcode::ToString() const {
   std::string buffer;
   if (value_ > 0xffffff) {
-    StringAppendF(&buffer, "%02X ", value_ >> 24);
+    absl::StrAppendFormat(&buffer, "%02X ", value_ >> 24);
   }
   if (value_ > 0xffff) {
-    StringAppendF(&buffer, "%02X ", 0xff & (value_ >> 16));
+    absl::StrAppendFormat(&buffer, "%02X ", 0xff & (value_ >> 16));
   }
   if (value_ > 0xff) {
-    StringAppendF(&buffer, "%02X ", 0xff & (value_ >> 8));
+    absl::StrAppendFormat(&buffer, "%02X ", 0xff & (value_ >> 8));
   }
-  StringAppendF(&buffer, "%02X", 0xff & value_);
+  absl::StrAppendFormat(&buffer, "%02X", 0xff & value_);
   return buffer;
 }
 

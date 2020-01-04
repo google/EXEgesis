@@ -14,6 +14,8 @@
 
 #include "llvm_sim/components/issue_policy.h"
 
+#include "absl/memory/memory.h"
+
 namespace exegesis {
 namespace simulator {
 
@@ -59,11 +61,11 @@ class LeastLoadedIssuePolicy final : public IssuePolicy {
 }  // namespace
 
 std::unique_ptr<IssuePolicy> IssuePolicy::Greedy() {
-  return llvm::make_unique<GreedyIssuePolicy>();
+  return absl::make_unique<GreedyIssuePolicy>();
 }
 
 std::unique_ptr<IssuePolicy> IssuePolicy::LeastLoaded() {
-  return llvm::make_unique<LeastLoadedIssuePolicy>();
+  return absl::make_unique<LeastLoadedIssuePolicy>();
 }
 
 }  // namespace simulator

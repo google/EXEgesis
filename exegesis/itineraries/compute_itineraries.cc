@@ -31,11 +31,11 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "base/commandlineflags.h"
-#include "base/stringprintf.h"
 #include "exegesis/base/cpu_info.h"
 #include "exegesis/base/host_cpu.h"
 #include "exegesis/base/prettyprint.h"
@@ -310,8 +310,8 @@ class ComputeItinerariesHelper {
       std::string result;
       for (int quantile = 0; quantile < kNumQuantiles; ++quantile) {
         const double q = static_cast<double>(quantile);
-        StringAppendF(&result, "[%.02f %.02f), ", q / kNumQuantiles,
-                      (q + 1) / kNumQuantiles);
+        absl::StrAppendFormat(&result, "[%.02f %.02f), ", q / kNumQuantiles,
+                              (q + 1) / kNumQuantiles);
         absl::StrAppend(&result, absl::StrJoin(uop_stats_[quantile], ", "),
                         "\n");
       }
@@ -408,7 +408,7 @@ std::string ComputeItinerariesHelper::MakeInitCode(
   // Store the FPU/MMX/SSE state. We'll reinstate it after the code under
   // test. This is to ensure that there is no contamination between
   // measurements.
-  return StringPrintf(
+  return absl::StrFormat(
       R"(
         movabs rax,%p
         fxsave64 [rax]
@@ -418,7 +418,7 @@ std::string ComputeItinerariesHelper::MakeInitCode(
 
 std::string ComputeItinerariesHelper::MakePrefixCode(char* const src_buffer,
                                                      char* const dst_buffer) {
-  return StringPrintf(
+  return absl::StrFormat(
       R"(
         # Load constants into registers to not break instructions like
         # BT or FP instructions.
@@ -445,7 +445,7 @@ std::string ComputeItinerariesHelper::MakePrefixCode(char* const src_buffer,
 // TODO(bdb): Use RDI as the destination register. Increment only when
 // memory is written to.
 std::string ComputeItinerariesHelper::MakeUpdateCode(const int rsi_step) {
-  return StringPrintf(
+  return absl::StrFormat(
       R"(
         ADD RSI,%i
       )",
@@ -454,7 +454,7 @@ std::string ComputeItinerariesHelper::MakeUpdateCode(const int rsi_step) {
 
 std::string ComputeItinerariesHelper::MakeCleanupCode(
     uint8* const fx_state_buffer) {
-  return StringPrintf(
+  return absl::StrFormat(
       R"(
         # Restore FPU/MMX/SSE state.
         movabs rax,%p

@@ -126,6 +126,7 @@ cc_library(
     srcs = ["issue_policy.cc"],
     hdrs = ["issue_policy.h"],
     deps = [
+        "@com_google_absl//absl/memory",
         "@llvm_git//:support",
     ],
 )

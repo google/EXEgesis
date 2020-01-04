@@ -30,7 +30,7 @@ TEST(ContextTest, Decomposition) {
   GlobalContext Context;
 
   // Setup fake InstrInfo.
-  auto InstrInfo = llvm::make_unique<llvm::MCInstrInfo>();
+  auto InstrInfo = absl::make_unique<llvm::MCInstrInfo>();
   constexpr char InstrNameData[] = "I0\0I1\0I2\0I3\0I4";
   constexpr std::array<unsigned, 5> InstrNameIndices = {0, 3, 6, 9, 12};
   std::array<llvm::MCInstrDesc, 5> InstrDesc;
@@ -125,7 +125,7 @@ TEST(ContextTest, Decomposition) {
   // Latency 4 on first def.
   WriteLatencyEntries[1].Cycles = 4;
   WriteLatencyEntries[1].WriteResourceID = 0;
-  Context.SubtargetInfo = llvm::make_unique<llvm::MCSubtargetInfo>(
+  Context.SubtargetInfo = absl::make_unique<llvm::MCSubtargetInfo>(
       llvm::Triple(), /*CPU=*/"", /*FeatureString=*/"",
       llvm::ArrayRef<llvm::SubtargetFeatureKV>(),
       llvm::ArrayRef<llvm::SubtargetSubTypeKV>(), WriteProcResEntries.data(),

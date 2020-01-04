@@ -346,8 +346,12 @@ namespace {
 
 bool InstructionIsMovFromSRegWithOperand(absl::string_view operand_name,
                                          const InstructionProto& instruction) {
-  static constexpr char kMovFromSreg[] = "REX.W + 8C /r";
-  if (instruction.raw_encoding_specification() != kMovFromSreg) return false;
+  static constexpr char kMovFromSreg64Bit[] = "REX.W + 8C /r";
+  static constexpr char kMovFromSreg32Bit[] = "8C /r";
+  if (instruction.raw_encoding_specification() != kMovFromSreg32Bit &&
+      instruction.raw_encoding_specification() != kMovFromSreg64Bit) {
+    return false;
+  }
   const InstructionFormat& vendor_syntax =
       GetUniqueVendorSyntaxOrDie(instruction);
   if (vendor_syntax.operands_size() != 2) return false;

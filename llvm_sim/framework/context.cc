@@ -86,7 +86,12 @@ GlobalContext::ResourceHierarchy::ResourceHierarchy(
 }
 
 std::unique_ptr<const GlobalContext> GlobalContext::Create(
-    const llvm::StringRef TripleName, const llvm::StringRef CpuName) {
+    llvm::StringRef TripleName, llvm::StringRef CpuName) {
+  return CreateMutable(TripleName, CpuName);
+}
+
+std::unique_ptr<GlobalContext> GlobalContext::CreateMutable(
+    llvm::StringRef TripleName, llvm::StringRef CpuName) {
   std::string ErrorMsg;
   const auto* const Target =
       llvm::TargetRegistry::lookupTarget(TripleName, ErrorMsg);
@@ -96,17 +101,17 @@ std::unique_ptr<const GlobalContext> GlobalContext::Create(
     return {};
   }
 
-  auto Context = llvm::make_unique<GlobalContext>();
+  auto Context = absl::make_unique<GlobalContext>();
   Context->Target = Target;
   Context->Triple = llvm::Triple(TripleName);
   Context->InstrInfo.reset(Target->createMCInstrInfo());
   Context->SubtargetInfo.reset(
       Target->createMCSubtargetInfo(TripleName, CpuName, ""));
   Context->RegisterInfo.reset(Target->createMCRegInfo(TripleName));
-  Context->AsmInfo.reset(
-      Target->createMCAsmInfo(*Context->RegisterInfo, Context->Triple.str()));
-  auto ObjectFileInfo = llvm::make_unique<llvm::MCObjectFileInfo>();
-  Context->LLVMContext = llvm::make_unique<llvm::MCContext>(
+  Context->AsmInfo.reset(Target->createMCAsmInfo(
+      *Context->RegisterInfo, Context->Triple.str(), llvm::MCTargetOptions()));
+  auto ObjectFileInfo = absl::make_unique<llvm::MCObjectFileInfo>();
+  Context->LLVMContext = absl::make_unique<llvm::MCContext>(
       Context->AsmInfo.get(), Context->RegisterInfo.get(),
       ObjectFileInfo.get());
   ObjectFileInfo->InitMCObjectFileInfo(Context->Triple, /*PIC*/ false,
@@ -116,7 +121,7 @@ std::unique_ptr<const GlobalContext> GlobalContext::Create(
       *Context->InstrInfo, *Context->RegisterInfo, *Context->LLVMContext));
   Context->SchedModel = &Context->SubtargetInfo->getSchedModel();
 
-  return std::move(Context);
+  return Context;
 }
 
 GlobalContext::GlobalContext() {}
@@ -307,10 +312,10 @@ const InstrUopDecomposition& GlobalContext::GetInstructionDecomposition(
   // The decomposition is not cached; compute it.
   if (!ResourceHierarchy_) {
     assert(SchedModel && "instruction decomposition requires a SchedModel");
-    ResourceHierarchy_ = llvm::make_unique<ResourceHierarchy>(*SchedModel);
+    ResourceHierarchy_ = absl::make_unique<ResourceHierarchy>(*SchedModel);
   }
 
-  Result = llvm::make_unique<InstrUopDecomposition>();
+  Result = absl::make_unique<InstrUopDecomposition>();
   ComputeInstructionUops(Inst, &Result->Uops);
   ComputeUopLatencies(Inst, &Result->Uops);
   return *Result;
@@ -352,6 +357,11 @@ bool GlobalContext::MCInstEq::operator()(const llvm::MCInst& A,
     }
   }
   return true;
+}
+
+std::unique_ptr<GlobalContext> CreateGlobalContextForClif(
+    const std::string& LlvmTriple, const std::string& CpuName) {
+  return GlobalContext::CreateMutable(LlvmTriple, CpuName);
 }
 
 }  // namespace simulator

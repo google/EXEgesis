@@ -20,8 +20,8 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "base/stringprintf.h"
 #include "exegesis/proto/x86/cpuid.pb.h"
 #include "exegesis/util/structured_register.h"
 #include "glog/logging.h"
@@ -537,7 +537,7 @@ CpuInfo CpuIdDump::ToCpuInfo() const {
           : features.eax.model();
 
   CpuInfoProto proto;
-  proto.set_model_id(StringPrintf("intel:%02X_%02X", family, model));
+  proto.set_model_id(absl::StrFormat("intel:%02X_%02X", family, model));
   for (const auto& feature_name : indexed_features) {
     proto.add_feature_names(feature_name);
   }
@@ -551,10 +551,10 @@ std::string CpuIdDump::ToString() const {
   std::string buffer;
   for (const CpuIdEntryProto& entry : dump_proto_.x86_cpuid_dump().entries()) {
     if (!buffer.empty()) buffer += "\n";
-    StringAppendF(&buffer, "CPUID %08X: %08X-%08X-%08X-%08X",
-                  entry.input().leaf(), entry.output().eax(),
-                  entry.output().ebx(), entry.output().ecx(),
-                  entry.output().edx());
+    absl::StrAppendFormat(&buffer, "CPUID %08X: %08X-%08X-%08X-%08X",
+                          entry.input().leaf(), entry.output().eax(),
+                          entry.output().ebx(), entry.output().ecx(),
+                          entry.output().edx());
   }
   return buffer;
 }

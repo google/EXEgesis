@@ -133,7 +133,8 @@ class ParseContext {
   // Adds a the given register and its concreate value as a new
   // InstructionOperand to the given leaf_sgx instruction.
   void AddRegisterOperandValue(InstructionProto* leaf_sgx,
-                               std::string register_name, std::string value);
+                               std::string register_name,
+                               absl::string_view value);
 
   // Adds a the given register and description as a new
   // InstructionOperand to the given leaf_sgx instruction.
@@ -239,7 +240,7 @@ void ParseContext::AddLeafSgxInstruction(absl::string_view main_mnemonic,
 
 void ParseContext::AddRegisterOperandValue(InstructionProto* leaf_sgx,
                                            std::string register_name,
-                                           std::string value) {
+                                           absl::string_view value) {
   CHECK(main_sgx_index_ >= 0) << "Unknown main SGX instruction.";
   AddRegisterOperand(leaf_sgx, std::move(register_name))
       ->set_value(absl::HexStringToBytes(value));
@@ -257,6 +258,11 @@ void ParseContext::AddRegisterOperandDescription(
       << leaf_sgx->DebugString();
   CHECK_EQ("EAX", leaf_sgx->vendor_syntax(0).operands(0).name())
       << leaf_sgx->DebugString();
+
+  VLOG(1) << "Adding description to " << leaf_sgx->vendor_syntax(0).mnemonic()
+          << ":\n"
+          << "register_name = " << register_name
+          << "\ndescription = " << description;
 
   if ("EAX" == register_name) {
     *leaf_sgx->mutable_vendor_syntax(0)
@@ -318,6 +324,7 @@ InstructionOperand::Encoding ParseContext::GetRegisterEncodingByName(
 InstructionOperand* ParseContext::AddRegisterOperand(
     InstructionProto* leaf_sgx, std::string register_name) {
   CHECK(!register_name.empty());
+  VLOG(1) << "Adding register operand " << register_name;
   auto* const vendor_syntax = leaf_sgx->vendor_syntax_size() == 0
                                   ? leaf_sgx->add_vendor_syntax()
                                   : leaf_sgx->mutable_vendor_syntax(0);
@@ -488,22 +495,71 @@ GetInstructionModeMatchers() {
 }
 
 const std::set<absl::string_view>& GetValidFeatureSet() {
-  static const auto* kValidFeatures = new std::set<absl::string_view>{
-      "3DNOW",         "ADX",         "AES",           "AVX",
-      "AVX2",          "AVX512BW",    "AVX512CD",      "AVX512DQ",
-      "AVX512ER",      "AVX512F",     "AVX512_4FMAPS", "AVX512_4VNNIW",
-      "AVX512_BITALG", "AVX512_IFMA", "AVX512PF",      "AVX512_VBMI",
-      "AVX512_VNNI",   "AVX512F",     "AVX512VL",      "BMI1",
-      "BMI2",          "CLDEMOTE",    "CLMUL",         "CLWB",
-      "F16C",          "FMA",         "FPU",           "FSGSBASE",
-      "GFNI",          "HLE",         "INVPCID",       "LZCNT",
-      "MMX",           "MOVDIRI",     "MOVDIR64B",     "MPX",
-      "OSPKE",         "PREFETCHW",   "RDPID",         "RDRAND",
-      "RDSEED",        "RTM",         "SHA",           "SMAP",
-      "SSE",           "SSE2",        "SSE3",          "SSE4_1",
-      "SSE4_2",        "SSSE3",       "XSAVE",         "XSAVEC",
-      "XSS",           "XSAVEOPT",    "SGX1",          "SGX2",
-      "VAES",          "VPCLMULQDQ",  "WAITPKG"};
+  static const auto* kValidFeatures =
+      new std::set<absl::string_view>{"3DNOW",
+                                      "ADX",
+                                      "AES",
+                                      "AVX",
+                                      "AVX2",
+                                      "AVX512BW",
+                                      "AVX512CD",
+                                      "AVX512DQ",
+                                      "AVX512ER",
+                                      "AVX512F",
+                                      "AVX512F",
+                                      "AVX512PF",
+                                      "AVX512VL",
+                                      "AVX512_4FMAPS",
+                                      "AVX512_4VNNIW",
+                                      "AVX512_BITALG",
+                                      "AVX512_IFMA",
+                                      "AVX512_VBMI",
+                                      "AVX512_VBMI2",
+                                      "AVX512_VNNI",
+                                      "AVX512_VPOPCNTDQ",
+                                      "BMI1",
+                                      "BMI2",
+                                      "CET_IBT",
+                                      "CET_SS",
+                                      "CLDEMOTE",
+                                      "CLMUL",
+                                      "CLWB",
+                                      "F16C",
+                                      "FMA",
+                                      "FPU",
+                                      "FSGSBASE",
+                                      "GFNI",
+                                      "HLE",
+                                      "INVPCID",
+                                      "LZCNT",
+                                      "MMX",
+                                      "MOVDIR64B",
+                                      "MOVDIRI",
+                                      "MPX",
+                                      "OSPKE",
+                                      "PCLMULQDQ",
+                                      "PREFETCHW",
+                                      "RDPID",
+                                      "RDRAND",
+                                      "RDSEED",
+                                      "RTM",
+                                      "SGX1",
+                                      "SGX2",
+                                      "SHA",
+                                      "SMAP",
+                                      "SSE",
+                                      "SSE2",
+                                      "SSE3",
+                                      "SSE4_1",
+                                      "SSE4_2",
+                                      "SSSE3",
+                                      "VAES",
+                                      "VPCLMULQDQ",
+                                      "WAITPKG",
+                                      "XSAVE",
+                                      "XSAVEC",
+                                      "XSAVEOPT",
+                                      "XSS"};
   return *kValidFeatures;
 }
 
@@ -573,6 +629,25 @@ bool IsValidMode(const std::string& text) {
 // logical composition of them (several features separated by '&&' or '||')
 // TODO(gchatelet): Move this to configuration file.
 std::string FixFeature(std::string feature) {
+  static const auto* const kReplacements =
+      new absl::flat_hash_map<absl::string_view, absl::string_view>(
+          {{"AESAVX", "AES && AVX"},
+           {"AES AVX", "AES && AVX"},
+           {"AVX512_VPOPCNTDQAVX512VL", "AVX512_VPOPCNTDQ && AVX512VL"},
+           {"AVX512_VBMI2AVX512VL", "AVX512_VBMI2 && AVX512VL"},
+           {"AVXGFNI", "AVX && GFNI"},
+           {"Both AES andAVX flags", "AES && AVX"},
+           {"Both PCLMULQDQ and AVX flags", "CLMUL && AVX"},
+           {"HLE or RTM", "HLE || RTM"},
+           {"PCLMULQDQ AVX", "CLMUL && AVX"},
+           {"PCLMULQDQ", "CLMUL"},
+           {"PREFETCHWT1", "3DNOW"},
+           {"HLE1", "HLE"},
+           // NOTE(ondrasej): PRFCHW was renamed to PREFETCHW in the November
+           // 2018 version of the SDM. We always use the new name, but we want
+           // to remain compatible with previous versions of the SDM.
+           {"PRFCHW", "PREFETCHW"}});
+
   absl::StripAsciiWhitespace(&feature);
   RE2::GlobalReplace(&feature, R"([\n-])", "");
   // Matches a sequence of feature names with no separation between them.
@@ -591,16 +666,10 @@ std::string FixFeature(std::string feature) {
     }
     return absl::StrJoin(pieces, " && ");
   }
-  if (feature == "Both AES andAVX flags") return "AES && AVX";
-  if (feature == "Both PCLMULQDQ and AVX flags") return "CLMUL && AVX";
-  if (feature == "HLE or RTM") return "HLE || RTM";
-  if (feature == "PCLMULQDQ") return "CLMUL";
-  if (feature == "PREFETCHWT1") return "3DNOW";
-  if (feature == "HLE1") return "HLE";
-  // NOTE(ondrasej): PRFCHW was renamed to PREFETCHW in the November 2018
-  // version of the SDM. We always use the new name, but we want to remain
-  // compatible with previous versions of the SDM.
-  if (feature == "PRFCHW") return "PREFETCHW";
+  absl::string_view replacement;
+  if (gtl::FindCopy(*kReplacements, feature, &replacement)) {
+    feature = std::string(replacement);
+  }
   return feature;
 }
 
@@ -644,8 +713,7 @@ void ParseLeafSgxOpcodeInstructionCell(absl::string_view text,
 
   *instruction->mutable_llvm_mnemonic() = leaf_instruction;
   parse_context->AddLeafSgxInstruction(main_instruction, instruction);
-  parse_context->AddRegisterOperandValue(instruction, "EAX",
-                                         std::move(eax_value));
+  parse_context->AddRegisterOperandValue(instruction, "EAX", eax_value);
 }
 
 void ParseOpCodeInstructionCell(absl::string_view text,
@@ -849,6 +917,8 @@ void ParseInstructionTable(const SubSection& sub_section,
     // number of blocks would stop the parsing here, discarding that instruction
     // and all instructions below it.
     if (row.blocks_size() < columns.size()) break;  // end of the table
+    CHECK_LE(row.blocks_size(), columns.size()) << "Too many blocks in row:\n"
+                                                << row.DebugString();
     parse_context->set_instruction_index(table->instructions_size());
     auto* instruction = table->add_instructions();
     int i = 0;
@@ -951,14 +1021,15 @@ void ParseSgxOperandEncodingTableRow(const PdfTextTableRow& row,
   int second_operand_index = -1;
   std::string eax_description;
   if (parse_context->GetRegistersCount() == columns_count - 1) {
+    VLOG(1) << "EAX is in one cell";
     second_operand_index = 2;
     eax_description = row.blocks(1).text();
   } else if (parse_context->GetRegistersCount() == columns_count - 2) {
     // Sometimes the description for EAX column is split into two.
+    VLOG(1) << "EAX is in two cells";
     second_operand_index = 3;
-    row.blocks(1).AppendToString(&eax_description);
-    absl::StrAppend(&eax_description, " | ");
-    row.blocks(2).AppendToString(&eax_description);
+    eax_description =
+        absl::StrCat(row.blocks(1).text(), "; ", row.blocks(2).text());
   } else {
     LOG(FATAL) << "Unexpected columns count of " << columns_count
                << " in row: " << GetRowText(row);
@@ -971,7 +1042,8 @@ void ParseSgxOperandEncodingTableRow(const PdfTextTableRow& row,
       // `index - 1` because the table has more one more column than the number
       // of registers
       parse_context->AddRegisterOperandDescription(
-          &leaf_sgx, parse_context->GetRegister(index - 1),
+          &leaf_sgx,
+          parse_context->GetRegister(index - second_operand_index + 1),
           row.blocks(index).text());
     }
   }
@@ -1000,11 +1072,10 @@ void ParseOperandEncodingTable(const SubSection& sub_section,
       if (GetOperandEncodingTableHeaderType(row, parse_context) == table_type) {
         continue;
       }
-      // Stop parsing if we're out of the table.
-      if (row.blocks_size() != column_count) {
-        break;
-      }
-      if (table_type == OET_LEAF_SGX) {
+      // Parse the SGX operand encodings. There might be more columns than in
+      // the table header - when a register is used both as input and output,
+      // they use a sub-column for each.
+      if (table_type == OET_LEAF_SGX && row.blocks_size() >= column_count) {
         // Sanity check.
         if (!parse_context->IsLeafSgx()) {
           LOG(WARNING)
@@ -1012,6 +1083,10 @@ void ParseOperandEncodingTable(const SubSection& sub_section,
         }
         ParseSgxOperandEncodingTableRow(row, table, parse_context);
         return;
+      }
+      // Stop parsing if we're out of the table.
+      if (row.blocks_size() != column_count) {
+        break;
       }
       // Parsing a operand encoding table row.
       ParseOperandEncodingTableRow(table_type, row, table);
@@ -1069,6 +1144,12 @@ void PairOperandEncodings(ParseContext* parse_context,
                  << ", this will result in UNKNOWN operand encoding sheme";
       gtl::InsertIfNotPresent(&duplicated_crossreference, cross_reference);
     }
+  }
+
+  // SGX leaf instructions operand tables use a slightly different format, and
+  // they are parsed during the parsing of the instruction itself.
+  if (mapping.empty() && parse_context->IsLeafSgx()) {
+    return;
   }
 
   // VMX instructions don't have encoding table.
@@ -1333,6 +1414,7 @@ bool MatchesVmxFirstPage(const std::vector<const PdfTextTableRow*>& rows,
 bool MatchesSgxInstruction(absl::string_view cell_text,
                            absl::string_view instruction_name, bool* is_leaf) {
   CHECK(is_leaf != nullptr);
+  *is_leaf = false;
   return absl::EndsWith(cell_text, instruction_name) ||
          (*is_leaf = absl::EndsWith(cell_text,
                                     absl::StrCat("[", instruction_name, "]")));
@@ -1462,7 +1544,7 @@ int CollectVmxOrSgxInstructions(
         id_to_pages) {
   const auto& first_page = pdf.pages(page_idx);
   std::string instruction_name;
-  bool is_leaf;
+  bool is_leaf = false;
   if (MatchesFirstPagePattern(first_page, is_sgx, &is_leaf,
                               &instruction_name)) {
     const InstructionType type =
@@ -1478,7 +1560,7 @@ int CollectVmxOrSgxInstructions(
       // We can't tell when a section ends. We can only determine that by
       // looking ahead for the start of the next thing (either the next
       // instruction or a new section entirely).
-      bool next_leaf;
+      bool next_leaf = false;
       if (MatchesFirstPagePattern(cur_page, is_sgx, &next_leaf, &new_name)) {
         break;
       } else if (SeesNewSection(cur_page, is_sgx ? "40." : "30.",

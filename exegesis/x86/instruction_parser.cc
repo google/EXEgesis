@@ -19,8 +19,8 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-#include "base/stringprintf.h"
 #include "exegesis/base/opcode.h"
 #include "exegesis/util/bits.h"
 #include "exegesis/util/strings.h"
@@ -336,7 +336,7 @@ Status InstructionParser::ConsumeVexPrefix(
     } break;
     default:
       return InvalidArgumentError(
-          StringPrintf("Not a VEX prefix byte: %x", vex_prefix_byte));
+          absl::StrFormat("Not a VEX prefix byte: %x", vex_prefix_byte));
   }
   return OkStatus();
 }

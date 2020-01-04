@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "llvm/ADT/StringRef.h"
@@ -91,6 +92,22 @@ std::string DumpMCInstToString(const llvm::MCInst& instruction,
 
 // Creates a human-readable string representation of the scheduling dependency.
 std::string DumpSDepToString(const llvm::SDep& sdep);
+
+// Creates a human-readable string that describes the given LLVM register.
+std::string DumpRegisterToString(unsigned reg,
+                                 const llvm::MCRegisterInfo* register_info);
+
+// Assumes that collection is a collection of LLVM registers. Creates a string
+// that contains a comma-separated list of their string representations (via
+// RegisterToString).
+template <typename CollectionType>
+std::string DumpRegistersToString(const CollectionType& collection,
+                                  const llvm::MCRegisterInfo* register_info) {
+  return absl::StrJoin(
+      collection, ", ", [register_info](std::string* buffer, unsigned reg) {
+        buffer->append(DumpRegisterToString(reg, register_info));
+      });
+}
 
 // Creates a human-readable string representation of the MC operand object.
 std::string DumpMCOperandToString(const llvm::MCOperand& operand,

@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "absl/strings/str_cat.h"
-#include "base/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/llvm/inline_asm.h"
 #include "exegesis/util/strings.h"
@@ -93,10 +93,10 @@ Status DebugCPUStateChange(
   )";
 
   const std::string in_code =
-      StringPrintf(kGetStateCodeTemplate, fx_state_buffer_in->get());
+      absl::StrFormat(kGetStateCodeTemplate, fx_state_buffer_in->get());
 
   const std::string out_code =
-      StringPrintf(kGetStateCodeTemplate, fx_state_buffer_out->get());
+      absl::StrFormat(kGetStateCodeTemplate, fx_state_buffer_out->get());
 
   const auto inline_asm_function = jit.CompileInlineAssemblyToFunction(
       /*num_iterations=*/1,

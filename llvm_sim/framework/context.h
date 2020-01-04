@@ -129,6 +129,12 @@ class GlobalContext {
  private:
   class ResourceHierarchy;
 
+  // Creates a (mutable) GlobalContext for the given LLVM triple and the CPU
+  // name. This method is the actual implementation that is called by
+  // GlobalContext::Create() and CreateGlobalContextForClif().
+  static std::unique_ptr<GlobalContext> CreateMutable(
+      llvm::StringRef TripleName, llvm::StringRef CpuName);
+
   void ComputeInstructionUops(
       const llvm::MCInst& Inst,
       llvm::SmallVectorImpl<InstrUopDecomposition::Uop>* Uops) const;
@@ -144,7 +150,24 @@ class GlobalContext {
 
   // Mutable because lazily initialized.
   mutable std::unique_ptr<ResourceHierarchy> ResourceHierarchy_;
+
+  friend std::unique_ptr<GlobalContext> CreateGlobalContextForClif(
+      const std::string&, const std::string&);
 };
+
+// A helper function for Clif that creates a global context. This gets around
+// the limitations of Clif:
+//   * It does not understand std::unique_ptr<const T>, only std::unique_ptr<T>.
+//     This is because Python does not have a concept of immutability. Since
+//     we're not exporting any members of GlobalContext, this does not
+//     necessarily have to be an issue.
+//   * It does not understand llvm::StringRef.
+// This function should not be used in any other context.
+// TODO(ondrasej): We might be able to get around these by writing custom C++ to
+// Python conversion functions. Investigate the options and remove this function
+// when ready.
+std::unique_ptr<GlobalContext> CreateGlobalContextForClif(
+    const std::string& LlvmTriple, const std::string& CpuName);
 
 // This is the block context which is valid for a single basic block simulation.
 class BlockContext {

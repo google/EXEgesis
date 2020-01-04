@@ -638,10 +638,26 @@ TEST(RemoveDuplicateMovFromSRegTest, Remove) {
     instructions {
       vendor_syntax {
         mnemonic: "MOV"
+        operands { name: "r16/r32/m16" }
+        operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
+      }
+      raw_encoding_specification: "66 8C /r"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOV"
         operands { name: "r64/m16" }
         operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
       }
       raw_encoding_specification: "REX.W + 8C /r"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOV"
+        operands { name: "r16/r32/m16" }
+        operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
+      }
+      raw_encoding_specification: "8C /r"
     }
     instructions {
       vendor_syntax {
@@ -660,6 +676,14 @@ TEST(RemoveDuplicateMovFromSRegTest, Remove) {
       }
       raw_encoding_specification: "REX + 80 /2 ib"
       instruction_group_index: 4
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "MOV"
+        operands { name: "r16/r32/m16" }
+        operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
+      }
+      raw_encoding_specification: "66 8C /r"
     }
     instructions {
       vendor_syntax {

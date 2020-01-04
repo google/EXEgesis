@@ -51,13 +51,13 @@ TEST(IdentityComponentTest, Works) {
   // Setup fake decompositions. 2 uops for instr 0,
   {
     //  2 uops for instr 1.
-    auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+    auto Decomposition = absl::make_unique<InstrUopDecomposition>();
     Decomposition->Uops.resize(2);
     Context.SetInstructionDecomposition(Inst1, std::move(Decomposition));
   }
   {
     //  1 uop for instr 2.
-    auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+    auto Decomposition = absl::make_unique<InstrUopDecomposition>();
     Decomposition->Uops.resize(1);
     Context.SetInstructionDecomposition(Inst2, std::move(Decomposition));
   }

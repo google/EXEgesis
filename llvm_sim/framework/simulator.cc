@@ -60,7 +60,7 @@ class Simulator::IterationCounterSink : public Sink<InstructionIndex> {
 };
 
 Simulator::Simulator()
-    : InstructionSink_(llvm::make_unique<IterationCounterSink>()) {}
+    : InstructionSink_(absl::make_unique<IterationCounterSink>()) {}
 
 Simulator::~Simulator() {}
 
@@ -83,7 +83,7 @@ std::unique_ptr<SimulationLog> Simulator::Run(const BlockContext& BlockContext,
                                               unsigned MaxNumCycles) const {
   assert((MaxNumIterations > 0 || MaxNumCycles > 0) && "running forever ?");
 
-  auto Result = llvm::make_unique<SimulationLog>(BufferDescriptions_);
+  auto Result = absl::make_unique<SimulationLog>(BufferDescriptions_);
 
   // Set up components.
   for (const auto& Component : Components_) {

@@ -25,8 +25,8 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/synchronization/mutex.h"
-#include "base/stringprintf.h"
 #include "exegesis/base/host_cpu.h"
 #include "exegesis/base/microarchitecture.h"
 #include "glog/logging.h"
@@ -52,10 +52,10 @@ double PerfResult::GetScaledOrDie(const std::string& name) const {
 std::string PerfResult::ToString() const {
   std::string result;
   for (const auto& key_value : timings_) {
-    StringAppendF(&result, "%s: %.2f, ", key_value.first.c_str(),
-                  Scale(key_value.second));
+    absl::StrAppendFormat(&result, "%s: %.2f, ", key_value.first,
+                          Scale(key_value.second));
   }
-  StringAppendF(&result, "(num_times: %lu)", num_times_);
+  absl::StrAppendFormat(&result, "(num_times: %u)", num_times_);
   return result;
 }
 

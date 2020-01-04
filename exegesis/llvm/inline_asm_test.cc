@@ -14,7 +14,6 @@
 
 #include "exegesis/llvm/inline_asm.h"
 
-#include "base/stringprintf.h"
 #include "exegesis/llvm/llvm_utils.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/strings.h"
@@ -33,7 +32,6 @@ constexpr const char kGenericMcpu[] = "generic";
 
 TEST(JitCompilerTest, CreateAFunctionWithoutLoop) {
   constexpr char kExpectedIR[] =
-      "\n"
       "define void @inline_assembly_0() {\n"
       "entry:\n"
       "  call void asm \"mov %ebx, %ecx\", \"~{ebx},~{ecx}\"()\n"
@@ -54,7 +52,6 @@ TEST(JitCompilerTest, CreateAFunctionWithoutLoop) {
 
 TEST(JitCompilerTest, CreateAFunctionWithoutLoopWithInitBlock) {
   constexpr char kExpectedIR[] =
-      "\n"
       "define void @inline_assembly_0() {\n"
       "entry:\n"
       "  call void asm \"mov %ebx, 0x1234\", \"~{ebx}\"()\n"
@@ -88,7 +85,6 @@ TEST(JitCompilerTest, CreateAFunctionWithoutLoopWithInitBlock) {
 
 TEST(JitCompilerTest, CreateAFunctionWithLoop) {
   constexpr char kExpectedIR[] =
-      "\n"
       "define void @inline_assembly_0() {\n"
       "entry:\n"
       "  br label %loop\n"

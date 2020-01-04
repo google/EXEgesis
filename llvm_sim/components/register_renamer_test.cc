@@ -55,7 +55,7 @@ class RegisterRenamerTest : public ::testing::Test {
 
     // Let all instructions use 1 uop.
     for (int I = 0; I < 10; ++I) {
-      auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition = absl::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(1);
       Decomposition->Uops[0].ProcResIdx = 0;
       llvm::MCInst Inst;

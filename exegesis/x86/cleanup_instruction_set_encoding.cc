@@ -258,7 +258,7 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
        *instruction_set->mutable_instructions()) {
     std::string specification =
         absl::StrReplaceAll(instruction.raw_encoding_specification(),
-                            {{"0f", "0F"}, {"imm8", "ib"}});
+                            {{"0f", "0F"}, {"imm8", "ib"}, {"/ib", "ib"}});
     RE2::Replace(&specification, fix_w0_regexp, "\\1W0 ");
 
     instruction.set_raw_encoding_specification(specification);
@@ -267,12 +267,27 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecifications, 1000);
 
+Status DropModRmModDetailsFromEncodingSpecifications(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  const RE2 drop_mod_rm_mod_regexp(R"( *\(mod.*\)$)");
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    RE2::Replace(instruction.mutable_raw_encoding_specification(),
+                 drop_mod_rm_mod_regexp, "");
+  }
+
+  return OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(
+    DropModRmModDetailsFromEncodingSpecifications, 1000);
+
 Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kFullModRmSuffix[] = "/r";
   const absl::flat_hash_set<std::string> kMissingModRMInstructionMnemonics = {
-      "CVTDQ2PD", "VMOVD"};
+      "CVTDQ2PD", "VMOVD", "WRSSD", "WRSSQ", "WRUSSD", "WRUSSQ"};
   constexpr char kImmediateByteSuffix[] = "ib";
   const absl::flat_hash_set<std::string> kMissingImmediateInstructionMnemonics =
       {

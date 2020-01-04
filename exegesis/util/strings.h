@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "base/stringprintf.h"
 #include "util/task/statusor.h"
 
 namespace exegesis {
@@ -50,7 +50,7 @@ std::string ToHumanReadableHexString(const Range& binary_data) {
     if (!buffer.empty()) {
       buffer.push_back(' ');
     }
-    StringAppendF(&buffer, "%02X", static_cast<uint32_t>(encoding_byte));
+    absl::StrAppendFormat(&buffer, "%02X", encoding_byte);
   }
   return buffer;
 }
@@ -66,7 +66,7 @@ std::string ToPastableHexString(const Range& binary_data) {
     if (!buffer.empty()) {
       buffer.append(", ");
     }
-    StringAppendF(&buffer, "0x%02X", static_cast<uint32_t>(encoding_byte));
+    absl::StrAppendFormat(&buffer, "0x%02X", encoding_byte);
   }
   return buffer;
 }

@@ -180,14 +180,14 @@ http_archive(
 http_archive(
     name = "llvm_git",
     build_file = "@//:llvm.BUILD",
-    sha256 = "033b68200d9d7a9c3775abebb4c3d6ff44fbf487ce4f26b10fcc0f99bf9c0ed8",
-    strip_prefix = "llvm-cf66538c755246bc7df4b1a93a4c667e3a33618e",
+    sha256 = "fb0d9afef5277ed63a255678800e6beea574fe053498bd410ca70321e8672bd7",
+    strip_prefix = "llvm-project-be4704bd41a4dd8bb5c4dd5a614744c69fb3cf8e/llvm",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm-mirror/llvm/archive/cf66538c755246bc7df4b1a93a4c667e3a33618e.tar.gz",
-        "https://github.com/llvm-mirror/llvm/archive/cf66538c755246bc7df4b1a93a4c667e3a33618e.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm/llvm-project/archive/be4704bd41a4dd8bb5c4dd5a614744c69fb3cf8e.tar.gz",
+        "https://github.com/llvm/llvm-project/archive/be4704bd41a4dd8bb5c4dd5a614744c69fb3cf8e.tar.gz",
     ],
 )
 
@@ -195,7 +195,7 @@ http_archive(
 
 http_file(
     name = "intel_sdm_pdf",
-    sha256 = "caad5b299d050747ee1492ae991b568bec1c28001216cf3ad5049cb5939ed8b7",
+    sha256 = "ff074d550b2fe444173981f2f0b808725dcd457e897aff35d82cc2653fd9f5c4",
     urls = ["https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf"],
 )
 

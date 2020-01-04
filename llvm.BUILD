@@ -2,13 +2,16 @@
 
 # TODO(courbet): Make this configurable with select() statements.
 llvm_host_triple = "x86_64"
+
 llvm_native_arch = "X86"
 
 # These three are the space-separated list of targets we support. When adding a
 # target here, you also need to add the list of generated files to
 # llvm_target_list below.
 llvm_targets = "X86"
+
 llvm_target_asm_parsers = "X86"
+
 llvm_target_disassemblers = "X86"
 
 # Genrules.
@@ -201,9 +204,10 @@ cc_library(
         "lib/CodeGen/AsmPrinter/*.h",
     ]),
     hdrs = [
-               "include/llvm/CodeGen/AsmPrinter.h",
-           ] +
-           glob(["lib/CodeGen/AsmPrinter/*.def"]),
+        "include/llvm/CodeGen/AsmPrinter.h",
+    ] + glob([
+        "lib/CodeGen/AsmPrinter/*.def",
+    ]),
     deps = [
         ":analysis",
         ":codegen",
@@ -223,16 +227,15 @@ cc_library(
     srcs = glob([
         "lib/Bitcode/Reader/*.cpp",
         "lib/Bitcode/Reader/*.h",
-    ]) + [
-        "include/llvm-c/BitReader.h",
-    ],
+    ]),
     hdrs = [
-        "include/llvm/Bitcode/BitCodes.h",
+        "include/llvm-c/BitReader.h",
+        "include/llvm/Bitcode/BitcodeAnalyzer.h",
         "include/llvm/Bitcode/BitcodeReader.h",
-        "include/llvm/Bitcode/BitstreamReader.h",
         "include/llvm/Bitcode/LLVMBitCodes.h",
     ],
     deps = [
+        ":bitstream_reader",
         ":config",
         ":ir",
         ":support",
@@ -244,20 +247,49 @@ cc_library(
     srcs = glob([
         "lib/Bitcode/Writer/*.cpp",
         "lib/Bitcode/Writer/*.h",
-    ]) + [
-        "include/llvm-c/BitWriter.h",
-    ],
+    ]),
     hdrs = [
-        "include/llvm/Bitcode/BitCodes.h",
+        "include/llvm-c/BitWriter.h",
         "include/llvm/Bitcode/BitcodeWriter.h",
         "include/llvm/Bitcode/BitcodeWriterPass.h",
-        "include/llvm/Bitcode/BitstreamWriter.h",
         "include/llvm/Bitcode/LLVMBitCodes.h",
     ],
     deps = [
         ":analysis",
+        ":bitstream_writer",
         ":config",
         ":ir",
+        ":machine_code",
+        ":object",
+        ":support",
+    ],
+)
+
+cc_library(
+    name = "bitstream_reader",
+    srcs = glob([
+        "lib/Bitstream/Reader/*.cpp",
+        "lib/Bitstream/Reader/*.h",
+    ]),
+    hdrs = [
+        "include/llvm/Bitstream/BitCodes.h",
+        "include/llvm/Bitstream/BitstreamReader.h",
+    ],
+    deps = [
+        ":support",
+    ],
+)
+
+cc_library(
+    name = "bitstream_writer",
+    srcs = glob([
+        "lib/Bitstream/Writer/*.h",
+    ]),
+    hdrs = [
+        "include/llvm/Bitstream/BitCodes.h",
+        "include/llvm/Bitstream/BitstreamWriter.h",
+    ],
+    deps = [
         ":support",
     ],
 )
@@ -269,9 +301,9 @@ cc_library(
         "include/llvm/Config/AsmPrinters.def",
         "include/llvm/Config/Disassemblers.def",
         "include/llvm/Config/Targets.def",
+        "include/llvm/Config/abi-breaking.h",
         "include/llvm/Config/config.h",
         "include/llvm/Config/llvm-config.h",
-        "include/llvm/Config/abi-breaking.h",
     ],
     defines = [
         "LLVM_ENABLE_STATS",
@@ -333,18 +365,18 @@ cc_library(
     ),
     visibility = ["//visibility:public"],
     deps = [
-        ":asm_parser",
         ":analysis",
+        ":asm_parser",
         ":bit_reader",
         ":bit_writer",
         ":config",
         ":ir",
         ":machine_code",
         ":remarks",
+        ":scalar_transforms",
         ":support",
         ":target_base",
         ":transform_utils",
-        ":scalar_transforms",
     ],
 )
 
@@ -367,11 +399,11 @@ cc_library(
         "include/llvm/DebugInfo/CodeView/*.h",
         "include/llvm/DebugInfo/CodeView/*.def",
     ]),
+    includes = ["include/llvm/DebugInfo/CodeView"],
     deps = [
         ":binary_format",
         ":support",
     ],
-    includes = ["include/llvm/DebugInfo/CodeView"],
 )
 
 cc_library(
@@ -396,9 +428,9 @@ cc_library(
         "lib/Demangle/*.h",
     ]),
     hdrs = glob(["include/llvm/Demangle/*.h"]),
+    includes = ["include"],
     visibility = ["//visibility:public"],
     deps = [":config"],
-    includes = ["include"],
 )
 
 cc_library(
@@ -408,13 +440,13 @@ cc_library(
         "lib/TableGen/*.h",
     ]),
     hdrs = glob(["include/llvm/TableGen/*.h"]),
+    includes = ["include"],
     linkopts = ["-ldl"],
     visibility = ["//visibility:public"],
     deps = [
         ":config",
         ":support",
     ],
-    includes = ["include"],
 )
 
 cc_library(
@@ -430,16 +462,16 @@ cc_library(
         "include/llvm-c/ExecutionEngine.h",
         "include/llvm/DebugInfo/DIContext.h",
     ],
-    hdrs = [
-        "include/llvm/ExecutionEngine/ExecutionEngine.h",
-        "include/llvm/ExecutionEngine/GenericValue.h",
-        "include/llvm/ExecutionEngine/JITEventListener.h",
-        "include/llvm/ExecutionEngine/JITSymbol.h",
-        "include/llvm/ExecutionEngine/ObjectCache.h",
-        "include/llvm/ExecutionEngine/RTDyldMemoryManager.h",
-        "include/llvm/ExecutionEngine/RuntimeDyld.h",
-        "include/llvm/ExecutionEngine/RuntimeDyldChecker.h",
-        "include/llvm/ExecutionEngine/SectionMemoryManager.h",
+    hdrs = glob(
+        [
+            "include/llvm/ExecutionEngine/*.h",
+        ],
+        exclude = [
+            "include/llvm/ExecutionEngine/MCJIT*.h",
+            "include/llvm/ExecutionEngine/OProfileWrapper.h",
+        ],
+    ) + [
+        "include/llvm-c/ExecutionEngine.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -478,30 +510,33 @@ cc_library(
     srcs = glob([
         "utils/TableGen/*.cpp",
         "utils/TableGen/*.h",
-        "include/llvm/CodeGen/*.h",
-        "include/llvm/MC/*.h",
-        "lib/Target/X86/Disassembler/X86DisassemblerDecoderCommon.h",
+        "utils/TableGen/GlobalISel/*.cpp",
     ]),
-    hdrs = [
-        "include/llvm/Support/TargetOpcodes.def",
-    ],
+    hdrs = glob([
+        "utils/TableGen/GlobalISel/*.h",
+    ]),
+    includes = ["include"],
     linkopts = ["-ldl"],
     deps = [
         ":config",
+        ":machine_code",
         ":support",
         ":tablegen",
     ],
-    includes = ["include"],
 )
 
 cc_binary(
     name = "llvm-tblgen",
-    linkopts = ["-ldl", "-lm", "-lpthread"],
+    includes = ["include"],
+    linkopts = [
+        "-ldl",
+        "-lm",
+        "-lpthread",
+    ],
     stamp = 0,
     deps = [
         ":llvm-tblgen-lib",
     ],
-    includes = ["include"],
 )
 
 gentbl(
@@ -525,6 +560,81 @@ gentbl(
         "include/llvm/IR/Intrinsics*.td",
     ]),
 )
+
+llvm_target_intrinsics_list = [
+    {
+        "name": "AArch64",
+        "intrinsic_prefix": "aarch64",
+    },
+    {
+        "name": "AMDGPU",
+        "intrinsic_prefix": "amdgcn",
+    },
+    {
+        "name": "ARM",
+        "intrinsic_prefix": "arm",
+    },
+    {
+        "name": "BPF",
+        "intrinsic_prefix": "bpf",
+    },
+    {
+        "name": "Hexagon",
+        "intrinsic_prefix": "hexagon",
+    },
+    {
+        "name": "Mips",
+        "intrinsic_prefix": "mips",
+    },
+    {
+        "name": "NVPTX",
+        "intrinsic_prefix": "nvvm",
+    },
+    {
+        "name": "PowerPC",
+        "intrinsic_prefix": "ppc",
+    },
+    {
+        "name": "R600",
+        "intrinsic_prefix": "r600",
+    },
+    {
+        "name": "RISCV",
+        "intrinsic_prefix": "riscv",
+    },
+    {
+        "name": "S390",
+        "intrinsic_prefix": "s390",
+    },
+    {
+        "name": "WebAssembly",
+        "intrinsic_prefix": "wasm",
+    },
+    {
+        "name": "X86",
+        "intrinsic_prefix": "x86",
+    },
+    {
+        "name": "XCore",
+        "intrinsic_prefix": "xcore",
+    },
+]
+
+[[
+    gentbl(
+        name = "intrinsic_" + target["name"] + "_gen",
+        tbl_outs = [(
+            "-gen-intrinsic-enums -intrinsic-prefix=" + target["intrinsic_prefix"],
+            "include/llvm/IR/Intrinsics" + target["name"] + ".h",
+        )],
+        tblgen = ":llvm-tblgen",
+        td_file = "include/llvm/IR/Intrinsics.td",
+        td_srcs = glob([
+            "include/llvm/CodeGen/*.td",
+            "include/llvm/IR/*.td",
+        ]),
+    ),
+] for target in llvm_target_intrinsics_list]
 
 gentbl(
     name = "attributes_gen",
@@ -575,7 +685,7 @@ cc_library(
         "include/llvm/Analysis/*.h",
     ]) + [
         "include/llvm/Bitcode/BitcodeReader.h",
-        "include/llvm/Bitcode/BitCodes.h",
+        "include/llvm/Bitcode/LLVMBitCodes.h",
         "include/llvm/CodeGen/ValueTypes.h",
         "include/llvm-c/Core.h",
     ],
@@ -593,9 +703,9 @@ cc_library(
             "include/llvm/LinkAllPasses.h",
             "include/llvm/LinkAllIR.h",
         ],
-    ),
-    visibility = ["//visibility:public"],
+    ) + ["include/llvm/IR/Intrinsics" + target["name"] + ".h" for target in llvm_target_intrinsics_list],
     includes = ["include"],
+    visibility = ["//visibility:public"],
     deps = [
         ":attributes_compat_gen",
         ":attributes_gen",
@@ -715,6 +825,7 @@ cc_library(
         ":machine_code",
         ":machine_code_parser",
         ":support",
+        ":textapi",
     ],
 )
 
@@ -745,18 +856,17 @@ cc_library(
         "lib/Support/Unix/*.h",
         "lib/Support/Unix/*.inc",
         "include/llvm-c/*.h",
-    ]) + [
-        "include/llvm/Support/DataTypes.h",
-        "include/llvm/Support/VCSRevision.h",
-    ],
+    ]),
     hdrs = glob([
         "include/llvm/Support/*.h",
-        "include/llvm/Support/*.def",
-        "include/llvm/Support/**/*.def",
         "include/llvm/ADT/*.h",
-    ]),
+    ]) + ["include/llvm/Support/VCSRevision.h"],
     includes = ["include"],
     linkopts = ["-ldl"],
+    textual_hdrs = glob([
+        "include/llvm/Support/*.def",
+        "include/llvm/Support/**/*.def",
+    ]),
     visibility = ["//visibility:public"],
     deps = [
         ":config",
@@ -812,11 +922,11 @@ cc_library(
     ]),
     hdrs = glob(["include/llvm/Transforms/Utils/*.h"]),
     deps = [
-        ":transform_base",
         ":analysis",
         ":config",
         ":ir",
         ":support",
+        ":transform_base",
     ],
 )
 
@@ -834,6 +944,20 @@ cc_library(
         ":analysis",
         ":support",
         ":transform_utils",
+    ],
+)
+
+cc_library(
+    name = "cfguard_transforms",
+    srcs = glob([
+        "lib/Transforms/CFGuard/*.cpp",
+        "lib/Transforms/CFGuard/*.h",
+    ]),
+    hdrs = ["include/llvm/Transforms/CFGuard.h"],
+    includes = ["include"],
+    deps = [
+        ":ir",
+        ":support",
     ],
 )
 
@@ -894,6 +1018,7 @@ cc_library(
     srcs = glob([
         "lib/Transforms/Instrumentation/*.cpp",
         "lib/Transforms/Instrumentation/*.h",
+        "lib/Transforms/Instrumentation/*.inc",
         "include/llvm/Transforms/Instrumentation/*.h",
     ]),
     deps = [
@@ -922,8 +1047,9 @@ cc_library(
         "include/llvm/Transforms/IPO.h",
     ],
     deps = [
-        ":config",
         ":bit_writer",
+        ":config",
+        ":instrumentation_transforms",
         ":ir",
         ":ir_reader",
         ":linker",
@@ -932,7 +1058,6 @@ cc_library(
         ":target_base",
         ":transform_base",
         ":transform_utils",
-        ":instrumentation_transforms",
         ":vectorize_transforms",
     ],
 )
@@ -956,17 +1081,25 @@ cc_library(
 
 cc_library(
     name = "remarks",
-    srcs = glob([
-        "lib/Remarks/*.cpp",
-        "lib/Remarks/*.h",
-    ]),
-    hdrs = glob([
-        "include/llvm/Remarks/*.h",
-    ]) + [
+    srcs = glob(
+        [
+            "lib/Remarks/*.cpp",
+            "lib/Remarks/*.h",
+        ],
+        exclude = ["lib/Remarks/RemarkLinker.cpp"],
+    ),
+    hdrs = glob(
+        [
+            "include/llvm/Remarks/*.h",
+        ],
+        exclude = ["include/llvm/Remarks/RemarkLinker.h"],
+    ) + [
         "include/llvm-c/Remarks.h",
     ],
     linkopts = ["-ldl"],
     deps = [
+        ":bitstream_reader",
+        ":bitstream_writer",
         ":support",
     ],
 )
@@ -988,10 +1121,10 @@ cc_library(
         "include/llvm/Transforms/Scalar/GVN.h",
     ],
     deps = [
+        ":aggressiveinstcombine_transforms",
         ":analysis",
         ":config",
         ":instcombine_transforms",
-        ":aggressiveinstcombine_transforms",
         ":ir",
         ":profiledata",
         ":support",
@@ -1012,15 +1145,32 @@ cc_library(
         "include/llvm/Transforms/Scalar/LoopPassManager.h",
     ],
     hdrs = [
-        "include/llvm/Transforms/Vectorize.h",
         "include/llvm/Transforms/Scalar/LoopPassManager.h",
+        "include/llvm/Transforms/Vectorize.h",
     ],
     deps = [
         ":analysis",
         ":config",
         ":ir",
+        ":support",
         ":transform_base",
         ":transform_utils",
+    ],
+)
+
+cc_library(
+    name = "textapi",
+    srcs = glob([
+        "lib/TextAPI/**/*.cpp",
+    ]),
+    hdrs = glob([
+        "include/llvm/TextAPI/**/*.h",
+        "include/llvm/TextAPI/**/*.def",
+        "lib/TextAPI/MachO/*.h",
+    ]),
+    includes = ["include"],
+    deps = [
+        ":binary_format",
         ":support",
     ],
 )
@@ -1135,15 +1285,15 @@ llvm_target_list = [
             "lib/Target/" + target["name"] + "/*.cpp",
             "lib/Target/" + target["name"] + "/*.h",
         ]),
-        hdrs = glob(["lib/Target/" + target["name"] + "/" + target["short_name"] + "*.inc"]) +
-               [
-                   "lib/Target/" + target["name"] + "/" + target["short_name"] + ".h",
-                   "lib/Target/" + target["name"] + "/" + target["short_name"] + "GenRegisterBankInfo.def",
-               ],
+        hdrs = glob(["lib/Target/" + target["name"] + "/" + target["short_name"] + "*.inc"]) + [
+            "lib/Target/" + target["name"] + "/" + target["short_name"] + ".h",
+            "lib/Target/" + target["name"] + "/" + target["short_name"] + "GenRegisterBankInfo.def",
+        ],
         copts = ["-Ilib/Target/" + target["name"]],
         visibility = ["//visibility:public"],
         deps = [
             ":asm_printer",
+            ":cfguard_transforms",
             ":codegen",
             ":config",
             ":ipo_transforms",
@@ -1170,8 +1320,8 @@ llvm_target_list = [
         visibility = ["//visibility:public"],
         deps = [
             ":machine_code",
-            ":support",
             ":machine_code_parser",
+            ":support",
             ":target_base",
             ":" + target["lower_name"] + "_target",
             ":" + target["lower_name"] + "_target_utils",

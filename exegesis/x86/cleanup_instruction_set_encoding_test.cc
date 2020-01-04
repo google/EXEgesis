@@ -514,6 +514,15 @@ TEST(FixEncodingSpecificationsTest, SomeInstructions) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: '66 0f 38 20 /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "GF2P8AFFINEQB"
+        operands { name: "xmm1" }
+        operands { name: "xmm2/m128" }
+        operands { name: "imm8" }
+      }
+      raw_encoding_specification: "66 0F3A CE /r /ib"
     })proto";
   constexpr char kExpectedInstructionSetProto[] = R"proto(
     instructions {
@@ -541,9 +550,59 @@ TEST(FixEncodingSpecificationsTest, SomeInstructions) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: '66 0F 38 20 /r'
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "GF2P8AFFINEQB"
+        operands { name: "xmm1" }
+        operands { name: "xmm2/m128" }
+        operands { name: "imm8" }
+      }
+      raw_encoding_specification: "66 0F3A CE /r ib"
     })proto";
   TestTransform(FixEncodingSpecifications, kInstructionSetProto,
                 kExpectedInstructionSetProto);
+}
+
+TEST(DropModRmModDetailsFromEncodingSpecifications, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "GF2P8AFFINEQB"
+        operands { name: "xmm1" }
+        operands { name: "xmm2/m128" }
+        operands { name: "imm8" }
+      }
+      raw_encoding_specification: "66 0F3A CE /r ib"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "RDSSPD"
+        operands { name: "r32" }
+      }
+      feature_name: "CET_SS"
+      raw_encoding_specification: "F3 0F 1E /1 (mod=11)"
+    })proto";
+  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions {
+      vendor_syntax {
+        mnemonic: "GF2P8AFFINEQB"
+        operands { name: "xmm1" }
+        operands { name: "xmm2/m128" }
+        operands { name: "imm8" }
+      }
+      raw_encoding_specification: "66 0F3A CE /r ib"
+    }
+    instructions {
+      vendor_syntax {
+        mnemonic: "RDSSPD"
+        operands { name: "r32" }
+      }
+      feature_name: "CET_SS"
+      raw_encoding_specification: "F3 0F 1E /1"
+    })proto";
+  TestTransform(DropModRmModDetailsFromEncodingSpecifications,
+                kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(FixRexPrefixSpecificationTest, SomeInstructions) {

@@ -907,11 +907,12 @@ Status EraseOperandEncoding(
   if (!IsImplicitOperandEncoding(encoding)) {
     const auto iterator = available_encodings->find(encoding);
     if (iterator == available_encodings->end()) {
-      status = InvalidArgumentError(
-          absl::StrCat("Operand '", operand.name(), "' encoded using ",
-                       InstructionOperand::Encoding_Name(encoding),
-                       " is not specified in the encoding specification: ",
-                       instruction.raw_encoding_specification()));
+      status = InvalidArgumentError(absl::StrCat(
+          "Operand '", operand.name(), "' encoded using ",
+          InstructionOperand::Encoding_Name(encoding),
+          " is not specified in the encoding specification: ",
+          instruction.raw_encoding_specification(),
+          ", mnemonic: ", GetAnyVendorSyntaxOrDie(instruction).mnemonic()));
       LOG(WARNING) << status;
     } else {
       available_encodings->erase(iterator);
@@ -959,7 +960,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
                          &addressing_mode)) {
         status = InvalidArgumentError(absl::StrCat(
             "Could not determine addressing mode of operand: ", operand->name(),
-            ", instruction ", vendor_syntax->mnemonic()));
+            ", instruction ", vendor_syntax->mnemonic(), " (",
+            instruction.raw_encoding_specification(), ")"));
         LOG(ERROR) << status;
         continue;
       }
@@ -1176,13 +1178,18 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(AddMovdir64BOperandInfo, 999);
 
 Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  constexpr absl::string_view kUmonitor = "F3 0F AE /6";
+  constexpr absl::string_view kUmonitorEncoding = "F3 0F AE /6";
+  constexpr absl::string_view kUmonitorMnemonic = "UMONITOR";
   constexpr int kExpectedNumOperands = 1;
   constexpr absl::string_view kOperandName = "r16/r32/r64";
   for (auto& instruction : *instruction_set->mutable_instructions()) {
-    if (instruction.raw_encoding_specification() != kUmonitor) continue;
+    if (instruction.raw_encoding_specification() != kUmonitorEncoding) continue;
     InstructionFormat& vendor_syntax =
         *GetOrAddUniqueVendorSyntaxOrDie(&instruction);
+    // In the October 2019 version of the SDM, UMONITOR has exactly the same
+    // encoding as CLRSSBSY; we need to use the mnemonic to distinguish between
+    // them.
+    if (vendor_syntax.mnemonic() != kUmonitorMnemonic) continue;
     if (vendor_syntax.operands_size() != kExpectedNumOperands) {
       return InvalidArgumentError(
           absl::StrCat("Unexpected number of operands of UMONITOR: ",

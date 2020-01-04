@@ -304,6 +304,21 @@ pages {
   }
 }
 pages {
+  page_number: 1174
+  patches {
+    row: 5
+    col: 5
+    expected: "1"
+    remove_cell: true
+  }
+  patches {
+    row: 8
+    col: 5
+    expected: "1"
+    remove_cell: true
+  }
+}
+pages {
   page_number: 1189
   patches {
     row: 11
@@ -544,5 +559,42 @@ pages {
     row: 4
     expected: "EVEX.LLIG.F2.0F38.W0 AB /r\nV4FNMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
     replacement: "EVEX.DDS.LIG.F2.0F38.W0 AB /r\nV4FNMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
+  }
+}
+
+# These patches merge cells in operand descriptions of SGX instructions. In the
+# PDF, a column for some registers are sometimes split into sub-columns when the
+# register is used for both input and output. Matching the split columns to
+# their "parent" columns is difficult. To make things easier, the parser handles
+# split columns only for the EAX register, all other split columns are merged
+# back using the patches below.
+pages {
+  page_number: 4277
+  patches {
+    row: 6
+    col: 3
+    expected: "Address of the destination EPC page \n(In, EA)"
+    replacement: "Address of the destination EPC page (In, EA); Address of the SECS page (In, EA)"
+  }
+  patches {
+    row: 6
+    col: 4
+    expected: "Address of the SECS page (In, EA)"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 4295
+  patches {
+    row: 6
+    col: 4
+    expected: "Address of AEP (In)"
+    replacement: "Address of AEP (In); Address of IP following EENTER (Out)"
+  }
+  patches {
+    row: 6
+    col: 5
+    expected: "Address of IP following \nEENTER (Out)"
+    remove_cell: true
   }
 }

@@ -18,14 +18,14 @@
 #include <cstring>
 
 #include "absl/strings/str_cat.h"
-#include "base/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "exegesis/util/bits.h"
 #include "glog/logging.h"
 
 namespace exegesis {
 
 std::string FPUControlWord::DebugString() const {
-  return StringPrintf(
+  return absl::StrFormat(
       "%i bits precision, rounding: %s, enabled exceptions: %s%s%s%s%s%s",
       GetPrecision(), GetRoundingMode(),
       raw_value_ & 0x0020 ? "Precision|" : "",        //
@@ -69,7 +69,7 @@ const char* FPUControlWord::GetRoundingMode() const {
 }
 
 std::string FPUStatusWord::DebugString() const {
-  return StringPrintf(
+  return absl::StrFormat(
       "Busy: %i, Condition Code: 0x%x, top: %i, Err: %i StackFail: %i, "
       "exceptions: %s%s%s%s%s%s",
       !!(raw_value_ & 15),                            //
@@ -132,7 +132,7 @@ std::string FXStateBuffer::DebugString() const {
   const auto control = GetFPUControlWord();
   const auto status = GetFPUStatusWord();
   const auto tag = GetAbridgedFPUTagWord();
-  return StringPrintf(
+  return absl::StrFormat(
       R"(
     FPU Control Word:                                          0x%.4X
         (%s)
@@ -141,14 +141,14 @@ std::string FXStateBuffer::DebugString() const {
     Abridged FPU Tag Word:                                       0x%.2X
         (%s)
     FPU Opcode:                                                0x%.4X
-    FPU Instruction Pointer Selector:              0x%.16lX
-    FPU Instruction Operand (Data) Pointer Offset: 0x%.16lX
+    FPU Instruction Pointer Selector:              0x%.16X
+    FPU Instruction Operand (Data) Pointer Offset: 0x%.16X
     MXCSR Register State:                                  0x%.8X
     MXCSR_MASK:                                            0x%.8X
     )",
-      control.raw_value_, control.DebugString().c_str(), status.raw_value_,
-      status.DebugString().c_str(), tag.raw_value_, tag.DebugString().c_str(),
-      GetFPUOpCode(), GetFPUInstructionPointerOffset(),
+      control.raw_value_, control.DebugString(), status.raw_value_,
+      status.DebugString(), tag.raw_value_, tag.DebugString(), GetFPUOpCode(),
+      GetFPUInstructionPointerOffset(),
       GetFPUInstructionOperandDataPointerOffset(), GetMXCSRRegisterState(),
       GetMXCSR_MASK());
 }

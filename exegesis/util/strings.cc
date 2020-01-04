@@ -15,7 +15,6 @@
 #include "exegesis/util/strings.h"
 
 #include "absl/strings/str_cat.h"
-#include "base/stringprintf.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/task/canonical_errors.h"

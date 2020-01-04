@@ -100,6 +100,14 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set);
 // 3. Replaces .0 at the end of a VEX prefix with .W0.
 Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
 
+// Since the October 2019 version of the SDM, encoding specifications of some
+// instructions contain additional information about the ModR/M mod bits in the
+// form "(mod=?? + optional comment)". For now, these comments match the
+// register information available elsewhere, so we dorp the whole parenthesis
+// without parsing it. We might need to parse these in the future.
+Status DropModRmModDetailsFromEncodingSpecifications(
+    InstructionSetProto* instruction_set);
+
 // Fixes the encoding specification of instructions that use the REX prefix
 // specification where REX.W should be used.
 Status FixRexPrefixSpecification(InstructionSetProto* instruction_set);

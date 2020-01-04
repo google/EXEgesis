@@ -59,7 +59,7 @@ class RegisterNameTrackerImpl : public RegisterNameTracker {
 
 std::unique_ptr<RegisterNameTracker> RegisterNameTracker::Create(
     const llvm::MCRegisterInfo& RegisterInfo) {
-  return llvm::make_unique<RegisterNameTrackerImpl>(RegisterInfo);
+  return absl::make_unique<RegisterNameTrackerImpl>(RegisterInfo);
 }
 
 RegisterNameTracker::~RegisterNameTracker() {}

@@ -44,12 +44,12 @@ class DecoderTest : public ::testing::Test {
 
     // Setup fake decompositions.
     {
-      auto Decomposition1 = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition1 = absl::make_unique<InstrUopDecomposition>();
       Decomposition1->Uops.resize(2);
       Context_.SetInstructionDecomposition(Inst1, std::move(Decomposition1));
     }
     {
-      auto Decomposition2 = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition2 = absl::make_unique<InstrUopDecomposition>();
       Decomposition2->Uops.resize(1);
       Context_.SetInstructionDecomposition(Inst2, std::move(Decomposition2));
     }

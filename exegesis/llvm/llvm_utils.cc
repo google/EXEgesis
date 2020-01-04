@@ -24,11 +24,13 @@
 #include "absl/flags/flag.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "base/stringprintf.h"
 #include "glog/logging.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/CodeGen/CommandFlags.inc"
+#include "llvm/CodeGen/Register.h"
+#include "llvm/IR/ModuleSlotTracker.h"
 #include "llvm/InitializePasses.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCTargetOptionsCommandFlags.inc"
@@ -137,7 +139,17 @@ std::string DumpMachineInstrToString(const llvm::MachineInstr* instruction) {
 
 std::string DumpMachineMemOperandToString(
     const llvm::MachineMemOperand* mem_operand) {
-  return DumpObjectToString(mem_operand);
+  // TODO(http://llvm.org/PR41772): operator<< for MachineMemOperand was removed
+  // due to unsafe dummy nullptr parameters. Real values should be used here.
+  CHECK(mem_operand != nullptr);
+  llvm::ModuleSlotTracker dummy_mst(nullptr);
+  llvm::SmallVector<StringRef, 0> ssns;
+  llvm::LLVMContext ctx;
+  std::string buffer;
+  llvm::raw_string_ostream stream(buffer);
+  mem_operand->print(stream, dummy_mst, ssns, ctx, nullptr, nullptr);
+  stream.flush();
+  return buffer;
 }
 
 std::string DumpMachineOperandToString(const llvm::MachineOperand* operand) {
@@ -179,6 +191,21 @@ std::string DumpSDepToString(const llvm::SDep& sdep) {
 
 #undef ADD_SDEP_PROPERTY_TO_BUFFER
 
+std::string DumpRegisterToString(unsigned reg,
+                                 const llvm::MCRegisterInfo* register_info) {
+  if (reg == 0) {
+    return "undefined";
+  } else if (llvm::Register::isVirtualRegister(reg)) {
+    return absl::StrCat("virtual:", llvm::Register::virtReg2Index(reg));
+  } else if (register_info != nullptr) {
+    CHECK(llvm::Register::isPhysicalRegister(reg));
+    return absl::StrCat(register_info->getName(reg));
+  } else {
+    CHECK(llvm::Register::isPhysicalRegister(reg));
+    return absl::StrCat("physical:", reg);
+  }
+}
+
 std::string DumpMCOperandToString(const llvm::MCOperand& operand,
                                   const llvm::MCRegisterInfo* register_info) {
   CHECK(register_info != nullptr);
@@ -191,11 +218,10 @@ std::string DumpMCOperandToString(const llvm::MCOperand& operand,
       debug_string = absl::StrCat("Imm(", operand.getImm(), ")");
     } else if (operand.isFPImm()) {
       debug_string = absl::StrCat(
-          "FPImm(", StringPrintf("%.17g", operand.getFPImm()), ")");
+          "FPImm(", absl::StrFormat("%.17g", operand.getFPImm()), ")");
     } else if (operand.isReg()) {
-      debug_string =
-          absl::StrCat("R:", register_info->getName(operand.getReg()), "(",
-                       operand.getReg(), ")");
+      debug_string = absl::StrCat(
+          "R:", DumpRegisterToString(operand.getReg(), register_info));
     } else if (operand.isExpr()) {
       debug_string = "expr";
     } else if (operand.isInst()) {

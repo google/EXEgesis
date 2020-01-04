@@ -608,6 +608,7 @@ TEST(AddUmonitorOperandInfoTest, AddInfo) {
   constexpr const char kInstructionSetProto[] = R"proto(
     instructions {
       vendor_syntax {
+        mnemonic: "UMONITOR"
         operands {
           encoding: MODRM_RM_ENCODING
           name: "r16/r32/r64"
@@ -619,6 +620,7 @@ TEST(AddUmonitorOperandInfoTest, AddInfo) {
   constexpr const char kExpectedInstructionSetProto[] = R"proto(
     instructions {
       vendor_syntax {
+        mnemonic: "UMONITOR"
         operands {
           addressing_mode: INDIRECT_ADDRESSING_WITH_BASE
           encoding: MODRM_RM_ENCODING

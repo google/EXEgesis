@@ -20,9 +20,9 @@
 
 #include "absl/base/macros.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_format.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "base/stringprintf.h"
 #include "exegesis/llvm/llvm_utils.h"
 #include "glog/logging.h"
 #include "llvm/MC/MCAsmInfo.h"
@@ -65,7 +65,8 @@ void Disassembler::Init() {
   CHECK(nullptr != register_info_) << "Unable to create target register info.";
 
   // Create assembler info.
-  asm_info_.reset(target_->createMCAsmInfo(*register_info_, triple_name_));
+  asm_info_.reset(target_->createMCAsmInfo(*register_info_, triple_name_,
+                                           llvm::MCTargetOptions()));
   CHECK(nullptr != asm_info_) << "Unable to create target asm info.";
 
   // FIXME: This is not pretty. MCContext has a ptr to MCObjectFileInfo and
@@ -215,10 +216,9 @@ std::string Disassembler::DisassembleHexString(
                     &intel_instruction, &att_instruction);
     std::replace(intel_instruction.begin(), intel_instruction.end(), '\t', ' ');
     std::replace(att_instruction.begin(), att_instruction.end(), '\t', ' ');
-    StringAppendF(&result, "%08x; %s;%s;%s; %s", offset,
-                  hex_bytes.substr(2 * offset, 2 * instruction_size).c_str(),
-                  intel_instruction.c_str(), att_instruction.c_str(),
-                  llvm_mnemonic.c_str());
+    absl::StrAppendFormat(&result, "%08x; %s;%s;%s; %s", offset,
+                          hex_bytes.substr(2 * offset, 2 * instruction_size),
+                          intel_instruction, att_instruction, llvm_mnemonic);
   }
   return result;
 }

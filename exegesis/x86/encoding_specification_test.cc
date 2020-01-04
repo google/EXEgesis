@@ -419,6 +419,17 @@ TEST(EncodingSpecificationParserTest, EvexLig512) {
     modrm_usage: FULL_MODRM)proto");
 }
 
+TEST(EncodingSpecificationParserTest, ShadowStackPointer) {
+  CheckParser("F3 REX.W 0F AE /05", R"proto(
+    opcode: 0x0fae
+    modrm_usage: OPCODE_EXTENSION_IN_MODRM
+    modrm_opcode_extension: 5
+    legacy_prefixes {
+      has_mandatory_repe_prefix: true
+      rex_w_prefix: PREFIX_IS_REQUIRED
+    })proto");
+}
+
 TEST(GetAvailableEncodingsTest, GetEncodings) {
   static const struct {
     const char* encoding_specification;

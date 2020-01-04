@@ -18,7 +18,6 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
-#include "base/stringprintf.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"

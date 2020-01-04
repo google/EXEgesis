@@ -63,11 +63,11 @@ class FetcherTest : public ::testing::Test {
     InstrDesc_[1].Size = 4;
     InstrDesc_[2].Size = 0;  // Variable size.
     InstrDesc_[3].Size = 0;  // Variable size.
-    auto InstrInfo = llvm::make_unique<llvm::MCInstrInfo>();
+    auto InstrInfo = absl::make_unique<llvm::MCInstrInfo>();
     InstrInfo->InitMCInstrInfo(InstrDesc_.data(), nullptr, nullptr,
                                InstrDesc_.size());
     Context_.InstrInfo = std::move(InstrInfo);
-    Context_.CodeEmitter = llvm::make_unique<TestMCCodeEmitter>();
+    Context_.CodeEmitter = absl::make_unique<TestMCCodeEmitter>();
   }
 
   llvm::MCInst Inst4ByteFixed_;

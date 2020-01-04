@@ -25,9 +25,9 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "base/stringprintf.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
@@ -99,7 +99,7 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   if (uops_retired > 50.0) {
     return util::InternalError(
         absl::StrCat("Too many uops to solve the problem",
-                     StringPrintf("%.17g", uops_retired)));
+                     absl::StrFormat("%.17g", uops_retired)));
   }
   // Compute the maximum number of uops per port mask. This enables us to
   // create less variables and to make the model easier to solve.
@@ -395,13 +395,13 @@ std::string DecompositionSolver::DebugString() const {
     for (int port = 0; port < num_execution_ports_; ++port) {
       const double load = port_loads_[i][port];
       if (load < kThreshold) continue;
-      StringAppendF(&output, "%d: %.5f, ", port, load);
+      absl::StrAppendFormat(&output, "%d: %.5f, ", port, load);
     }
     absl::StrAppend(&output, "}\n");
   }
-  StringAppendF(&output, "max_error = %.5f\nerror {", max_error_value_);
+  absl::StrAppendFormat(&output, "max_error = %.5f\nerror {", max_error_value_);
   for (int port = 0; port < num_execution_ports_; ++port) {
-    StringAppendF(&output, "%d: %.5f, ", port, error_values_[port]);
+    absl::StrAppendFormat(&output, "%d: %.5f, ", port, error_values_[port]);
   }
   absl::StrAppend(&output,
                   "}\nis_order_unique = ", static_cast<int>(is_order_unique()),

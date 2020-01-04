@@ -27,9 +27,9 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "base/stringprintf.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
 #include "exegesis/x86/instruction_encoding_constants.h"
@@ -152,7 +152,8 @@ EncodingSpecificationParser::EncodingSpecificationParser()
 StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
     absl::string_view specification) {
   specification_.Clear();
-  if (StartsWith(specification, "VEX.") || StartsWith(specification, "EVEX")) {
+  if (absl::StartsWith(specification, "VEX.") ||
+      absl::StartsWith(specification, "EVEX")) {
     RETURN_IF_ERROR(ParseVexOrEvexPrefix(&specification));
   } else {
     RETURN_IF_ERROR(ParseLegacyPrefixes(&specification));
@@ -393,10 +394,10 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
   //   another ModR/M suffix, so we just ignore them here.
   static const LazyRE2 modrm_and_imm_parser = {
       " *(?:"
-      "(\\/is4)|"   // is4
-      "i([bwdo])|"  // immediate
-      "/([r0-9])|"  // modrm
-      "(/vsib)|"    // vsib
+      "(\\/is4)|"     // is4
+      "i([bwdo])|"    // immediate
+      "/0?([r0-9])|"  // modrm
+      "(/vsib)|"      // vsib
       "(?:m(?:64|128|256))|"
       "c([bwdpot]))"};  // code offset size
   while (RE2::Consume(&specification, *modrm_and_imm_parser, &is4_suffix_str,
@@ -505,17 +506,19 @@ std::string GenerateLegacyPrefixEncodingSpec(
     raw_encoding_spec.append("REX.W + ");
   }
   if (prefixes.has_mandatory_repne_prefix()) {
-    StringAppendF(&raw_encoding_spec, "%02X ", kRepNePrefixByte);
+    absl::StrAppendFormat(&raw_encoding_spec, "%02X ", kRepNePrefixByte);
   }
   if (prefixes.has_mandatory_repe_prefix()) {
-    StringAppendF(&raw_encoding_spec, "%02X ", kRepPrefixByte);
+    absl::StrAppendFormat(&raw_encoding_spec, "%02X ", kRepPrefixByte);
   }
   if (prefixes.has_mandatory_address_size_override_prefix()) {
-    StringAppendF(&raw_encoding_spec, "%02X ", kAddressSizeOverrideByte);
+    absl::StrAppendFormat(&raw_encoding_spec, "%02X ",
+                          kAddressSizeOverrideByte);
   }
   if (prefixes.operand_size_override_prefix() ==
       LegacyEncoding::PREFIX_IS_REQUIRED) {
-    StringAppendF(&raw_encoding_spec, "%02X ", kOperandSizeOverrideByte);
+    absl::StrAppendFormat(&raw_encoding_spec, "%02X ",
+                          kOperandSizeOverrideByte);
   }
 
   return raw_encoding_spec;
@@ -664,7 +667,7 @@ std::string GenerateEncodingSpec(const InstructionFormat& instruction,
     if (!raw_encoding_spec.empty() && raw_encoding_spec.back() != ' ') {
       raw_encoding_spec.push_back(' ');
     }
-    StringAppendF(&raw_encoding_spec, "%02X", b);
+    absl::StrAppendFormat(&raw_encoding_spec, "%02X", b);
   }
 
   switch (encoding_spec.operand_in_opcode()) {

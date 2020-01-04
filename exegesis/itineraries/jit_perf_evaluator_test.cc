@@ -16,7 +16,7 @@
 
 #include <cstdint>
 
-#include "base/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/testing/test_util.h"
 #include "glog/logging.h"
@@ -88,7 +88,7 @@ TEST(JitPerfEvaluatorTest, AddsdrmIntel) {
   PerfResult result;
   ASSERT_OK(EvaluateAssemblyString(
       llvm::InlineAsm::AD_Intel, kGenericMcpu, kInnerIter,
-      /*init_code=*/StringPrintf("movabs r11,%p", &memory),
+      /*init_code=*/absl::StrFormat("movabs r11,%p", &memory),
       /*prefix_code=*/"",
       /*measured_code=*/"addsd xmm0,qword ptr [r11]",
       /*update_code=*/"",
@@ -107,7 +107,7 @@ TEST(JitPerfEvaluatorTest, Mov64mi32ATT) {
   ASSERT_OK(EvaluateAssemblyString(
       llvm::InlineAsm::AD_ATT, kGenericMcpu, kInnerIter,
       /*init_code=*/"",
-      /*prefix_code=*/StringPrintf("movabsq $$%p,%%r11", &memory),
+      /*prefix_code=*/absl::StrFormat("movabsq $$%p,%%r11", &memory),
       /*measured_code=*/"movq $$64,(%r11)",
       /*update_code=*/"",
       /*suffix_code=*/"",
@@ -133,7 +133,7 @@ TEST(JitPerfEvaluatorTest, DebugCPUStateChange) {
   uint16_t fpu_control_word_out = kExpectedFPUControlWord;
 
   // Save previous control word.
-  const std::string prefix_code = StringPrintf(
+  const std::string prefix_code = absl::StrFormat(
       R"(
         movabs rsi,%p
         fstcw word ptr[rsi]
@@ -141,7 +141,7 @@ TEST(JitPerfEvaluatorTest, DebugCPUStateChange) {
       &fpu_control_word_save);
 
   // Load control word from fpu_control_word_out.
-  const std::string code = StringPrintf(
+  const std::string code = absl::StrFormat(
       R"(
         movabs rdi,%p
         fldcw word ptr[rdi]

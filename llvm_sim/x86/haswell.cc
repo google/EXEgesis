@@ -40,10 +40,10 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
     const GlobalContext& Context) {
   // Create Buffers ------------------------------------------------------------
   // "Instruction Queue", a.k.a. "Pre-Decode Buffer".
-  auto InstructionQueue = llvm::make_unique<FifoBuffer<InstructionIndex>>(20);
+  auto InstructionQueue = absl::make_unique<FifoBuffer<InstructionIndex>>(20);
   // "Instruction Decode Queue", a.k.a. "IDQ", "uOp Queue".
   // TODO(user) Change back to 64 when IDIV decomposition gets fixed.
-  auto InstructionDecodeQueue = llvm::make_unique<FifoBuffer<UopId>>(68);
+  auto InstructionDecodeQueue = absl::make_unique<FifoBuffer<UopId>>(68);
   // Ports.
   std::vector<std::unique_ptr<LinkBuffer<ROBUopId>>> Ports;
   std::vector<Sink<ROBUopId>*> PortSinks;
@@ -61,7 +61,7 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
       // As for as the simulator is concerned, this is similar to having two
       // ports with one unit, but the reorder buffer dispatches by resource id.
       Ports.push_back(
-          llvm::make_unique<DispatchPort<ROBUopId>>(ProcResDesc->NumUnits));
+          absl::make_unique<DispatchPort<ROBUopId>>(ProcResDesc->NumUnits));
       PortSinks.push_back(Ports.back().get());
       PortNames.push_back(ProcResDesc->Name);
     }
@@ -69,38 +69,38 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
   // Links.
   // Fetched instructions buffer.
   auto FetchedInstructionsLink =
-      llvm::make_unique<LinkBuffer<InstructionIndex>>(kInfiniteCapacity);
+      absl::make_unique<LinkBuffer<InstructionIndex>>(kInfiniteCapacity);
   auto RenamerToROBLink =
-      llvm::make_unique<LinkBuffer<RenamedUopId>>(kInfiniteCapacity);
+      absl::make_unique<LinkBuffer<RenamedUopId>>(kInfiniteCapacity);
   // ROB->Retirer and Retirer->ROB writeback links.
-  auto UopsToRetireLink = llvm::make_unique<LinkBuffer<ROBUopId>>(3);
+  auto UopsToRetireLink = absl::make_unique<LinkBuffer<ROBUopId>>(3);
   auto RetiredUopsLink =
-      llvm::make_unique<LinkBuffer<ROBUopId>>(kInfiniteCapacity);
-  auto ExecDepsTracker = llvm::make_unique<ExecDepsBuffer<ROBUopId>>();
+      absl::make_unique<LinkBuffer<ROBUopId>>(kInfiniteCapacity);
+  auto ExecDepsTracker = absl::make_unique<ExecDepsBuffer<ROBUopId>>();
   // Executed uops writeback link.
   auto ExecutedWritebackLink =
-      llvm::make_unique<LinkBuffer<ROBUopId>>(kInfiniteCapacity);
+      absl::make_unique<LinkBuffer<ROBUopId>>(kInfiniteCapacity);
 
   // Create and add components -------------------------------------------------
-  auto Simulator = llvm::make_unique<class Simulator>();
+  auto Simulator = absl::make_unique<class Simulator>();
 
   // Instruction Fetcher.
-  Simulator->AddComponent(llvm::make_unique<Fetcher>(
+  Simulator->AddComponent(absl::make_unique<Fetcher>(
       &Context, Fetcher::Config{16}, FetchedInstructionsLink.get()));
   // Instruction Parser.
-  Simulator->AddComponent(llvm::make_unique<InstructionParser>(
+  Simulator->AddComponent(absl::make_unique<InstructionParser>(
       &Context, InstructionParser::Config{4}, FetchedInstructionsLink.get(),
       InstructionQueue.get()));
   // Instruction Decoder.
-  Simulator->AddComponent(llvm::make_unique<InstructionDecoder>(
+  Simulator->AddComponent(absl::make_unique<InstructionDecoder>(
       &Context, InstructionDecoder::Config{5}, InstructionQueue.get(),
       InstructionDecodeQueue.get()));
   // Register Renamer.
-  Simulator->AddComponent(llvm::make_unique<RegisterRenamer>(
+  Simulator->AddComponent(absl::make_unique<RegisterRenamer>(
       &Context, RegisterRenamer::Config{3, 1000000},
       InstructionDecodeQueue.get(), RenamerToROBLink.get()));
   // Reorder Buffer.
-  Simulator->AddComponent(llvm::make_unique<ReorderBuffer>(
+  Simulator->AddComponent(absl::make_unique<ReorderBuffer>(
       &Context, ReorderBuffer::Config{/*NumROBEntries=*/192},
       RenamerToROBLink.get(), ExecDepsTracker.get(),
       ExecutedWritebackLink.get(), RetiredUopsLink.get(), ExecDepsTracker.get(),
@@ -108,12 +108,12 @@ std::unique_ptr<Simulator> CreateHaswellSimulator(
   // Execution units.
   for (int Port = 0; Port < Ports.size(); ++Port) {
     Simulator->AddComponent(
-        llvm::make_unique<SimplifiedExecutionUnits<ROBUopId>>(
+        absl::make_unique<SimplifiedExecutionUnits<ROBUopId>>(
             &Context, SimplifiedExecutionUnits<ROBUopId>::Config{},
             Ports[Port].get(), ExecutedWritebackLink.get()));
   }
   // Retirement Station.
-  Simulator->AddComponent(llvm::make_unique<Retirer<ROBUopId>>(
+  Simulator->AddComponent(absl::make_unique<Retirer<ROBUopId>>(
       &Context, Retirer<ROBUopId>::Config{}, UopsToRetireLink.get(),
       RetiredUopsLink.get(), Simulator->GetInstructionSink()));
 

@@ -24,7 +24,6 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "base/stringprintf.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"

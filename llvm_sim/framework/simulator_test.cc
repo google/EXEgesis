@@ -64,10 +64,10 @@ MATCHER_P4(EqLine, BufferIndex, Cycle, MsgTag, Msg, "") {
 
 TEST(SimulatorTest, Works) {
   const GlobalContext Context;
-  auto Component1 = llvm::make_unique<TestComponent>(&Context);
-  auto Component2 = llvm::make_unique<TestComponent>(&Context);
-  auto Buffer1 = llvm::make_unique<TestBuffer>();
-  auto Buffer2 = llvm::make_unique<TestBuffer>();
+  auto Component1 = absl::make_unique<TestComponent>(&Context);
+  auto Component2 = absl::make_unique<TestComponent>(&Context);
+  auto Buffer1 = absl::make_unique<TestBuffer>();
+  auto Buffer2 = absl::make_unique<TestBuffer>();
 
   testing::Sequence Seq;
   EXPECT_CALL(*Component1, Init()).InSequence(Seq);
@@ -118,7 +118,7 @@ TEST(SimulatorTest, Iterations) {
   const BlockContext BlockContext(Instructions, true);
 
   Simulator Simulator;
-  auto Component1 = llvm::make_unique<TestComponent>(&Context);
+  auto Component1 = absl::make_unique<TestComponent>(&Context);
 
   // A gmock action that pushes the given instruction to the simulator's sink.
   const auto SetInstructionDone = [&Simulator](size_t Iter, size_t BBIndex) {

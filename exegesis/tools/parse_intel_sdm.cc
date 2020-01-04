@@ -85,6 +85,7 @@ void Main() {
 }  // namespace exegesis
 
 int main(int argc, char** argv) {
+  FLAGS_logtostderr = true;
   exegesis::InitMain(argc, argv);
   ::exegesis::Main();
   return EXIT_SUCCESS;

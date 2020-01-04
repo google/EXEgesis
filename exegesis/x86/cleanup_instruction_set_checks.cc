@@ -21,7 +21,7 @@
 #include "absl/container/node_hash_map.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "base/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/registers.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
@@ -202,12 +202,12 @@ Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
     const uint32_t opcode_upper_bytes = opcode & kOpcodeUpperBytesMask;
     if (!kAllowedUpperBytes.contains(opcode_upper_bytes)) {
       LogErrorAndUpdateStatus(
-          StringPrintf("Invalid opcode upper bytes: %x", opcode_upper_bytes),
+          absl::StrFormat("Invalid opcode upper bytes: %x", opcode_upper_bytes),
           instruction, &status);
       continue;
     }
     if (kForbiddenOpcodes.contains(opcode)) {
-      LogErrorAndUpdateStatus(StringPrintf("Invalid opcode: %x", opcode),
+      LogErrorAndUpdateStatus(absl::StrFormat("Invalid opcode: %x", opcode),
                               instruction, &status);
       continue;
     }
@@ -412,8 +412,8 @@ Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
       for (const InstructionProto* candidate : *candidates) {
         if (IsSpecialCaseOfInstruction(*candidate, instruction)) {
           LogErrorAndUpdateStatus(
-              StringPrintf("Opcode is ambigious: %x\n%s", opcode,
-                           candidate->DebugString().c_str()),
+              absl::StrFormat("Opcode is ambigious: %x\n%s", opcode,
+                              candidate->DebugString()),
               instruction, &status);
         }
       }

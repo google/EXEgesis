@@ -9,7 +9,6 @@ cc_library(
     name = "base",
     hdrs = [
         "casts.h",
-        "stringprintf.h",
     ],
     deps = [
         "@com_google_protobuf//:protobuf_lite",

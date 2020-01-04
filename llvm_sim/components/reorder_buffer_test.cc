@@ -48,7 +48,7 @@ class ReorderBufferTest : public ::testing::Test {
     InstrDesc_[2].SchedClass = 2;
     InstrDesc_[3].SchedClass = 3;
     InstrDesc_[4].SchedClass = 4;
-    auto InstrInfo = llvm::make_unique<llvm::MCInstrInfo>();
+    auto InstrInfo = absl::make_unique<llvm::MCInstrInfo>();
     InstrInfo->InitMCInstrInfo(InstrDesc_.data(), nullptr, nullptr,
                                InstrDesc_.size());
     Context_.InstrInfo = std::move(InstrInfo);
@@ -70,7 +70,7 @@ class ReorderBufferTest : public ::testing::Test {
     // Setup fake decompositions.
     {
       // 1 cycle on P0
-      auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition = absl::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(1);
       Decomposition->Uops[0].ProcResIdx = 1;
       Decomposition->Uops[0].StartCycle = 0;
@@ -79,7 +79,7 @@ class ReorderBufferTest : public ::testing::Test {
     }
     {
       // 1 cycle on P1
-      auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition = absl::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(1);
       Decomposition->Uops[0].ProcResIdx = 2;
       Decomposition->Uops[0].StartCycle = 0;
@@ -88,7 +88,7 @@ class ReorderBufferTest : public ::testing::Test {
     }
     {
       // 1 cycle on P1 + 2 cycles on P0
-      auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition = absl::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(3);
       Decomposition->Uops[0].ProcResIdx = 2;
       Decomposition->Uops[0].StartCycle = 0;
@@ -103,7 +103,7 @@ class ReorderBufferTest : public ::testing::Test {
     }
     {
       // Resourceless Uop
-      auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition = absl::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(1);
       Decomposition->Uops[0].ProcResIdx = 0;
       Decomposition->Uops[0].StartCycle = 0;
@@ -112,7 +112,7 @@ class ReorderBufferTest : public ::testing::Test {
     }
     {
       // 1 cycle on P1, latency 3 (e.g. IMUL).
-      auto Decomposition = llvm::make_unique<InstrUopDecomposition>();
+      auto Decomposition = absl::make_unique<InstrUopDecomposition>();
       Decomposition->Uops.resize(1);
       Decomposition->Uops[0].ProcResIdx = 2;
       Decomposition->Uops[0].StartCycle = 0;
@@ -122,7 +122,7 @@ class ReorderBufferTest : public ::testing::Test {
 
     ReorderBuffer::Config Config;
     Config.NumROBEntries = kTestNumROBEntries;
-    ROB_ = llvm::make_unique<ReorderBuffer>(
+    ROB_ = absl::make_unique<ReorderBuffer>(
         &Context_, Config, &UopSource_, &AvailableDepsSource_,
         &WritebackSource_, &RetiredSource_, &IssuedSink_,
         std::vector<Sink<ROBUopId>*>{&Port0Sink_, &Port1Sink_},
@@ -353,7 +353,7 @@ TEST_F(ReorderBufferTest, DataDependenciesOnExecutedBytNotRetired) {
 TEST_F(ReorderBufferTest, Retirement) {
   ReorderBuffer::Config Config;
   Config.NumROBEntries = 1;
-  const auto ROB = llvm::make_unique<ReorderBuffer>(
+  const auto ROB = absl::make_unique<ReorderBuffer>(
       &Context_, Config, &UopSource_, &AvailableDepsSource_, &WritebackSource_,
       &RetiredSource_, &IssuedSink_,
       std::vector<Sink<ROBUopId>*>{&Port0Sink_, &Port1Sink_}, &RetirementSink_,
@@ -484,7 +484,7 @@ TEST_F(ReorderBufferTest, UsesLatencies) {
 TEST_F(ReorderBufferTest, OldestFirst) {
   ReorderBuffer::Config Config;
   Config.NumROBEntries = 2;
-  const auto ROB = llvm::make_unique<ReorderBuffer>(
+  const auto ROB = absl::make_unique<ReorderBuffer>(
       &Context_, Config, &UopSource_, &AvailableDepsSource_, &WritebackSource_,
       &RetiredSource_, &IssuedSink_,
       std::vector<Sink<ROBUopId>*>{&Port0Sink_, &Port1Sink_}, &RetirementSink_,
