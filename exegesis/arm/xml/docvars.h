@@ -15,24 +15,22 @@
 #ifndef EXEGESIS_ARM_XML_DOCVARS_H_
 #define EXEGESIS_ARM_XML_DOCVARS_H_
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "tinyxml2.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace arm {
 namespace xml {
 
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-
 // Parses the given <docvars> XML node into a proper DocVar proto.
-StatusOr<dv::DocVars> ParseDocVars(::tinyxml2::XMLNode* node);
+absl::StatusOr<dv::DocVars> ParseDocVars(::tinyxml2::XMLNode* node);
 
 // Returns whether the given 'subset' is really a subset of 'docvars', i.e. all
 // fields set in 'subset' are exactly equal to their equivalent in 'docvars'.
-Status DocVarsContains(const dv::DocVars& docvars, const dv::DocVars& subset);
+absl::Status DocVarsContains(const dv::DocVars& docvars,
+                             const dv::DocVars& subset);
 
 }  // namespace xml
 }  // namespace arm

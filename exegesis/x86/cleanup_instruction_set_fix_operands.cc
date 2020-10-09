@@ -21,6 +21,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/proto/instructions.pb.h"
@@ -29,16 +30,11 @@
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 using ::google::protobuf::RepeatedPtrField;
 
 // Mapping from memory operands to their sizes as used in the Intel assembly
@@ -56,7 +52,7 @@ const char* kRDIIndexes[] = {"BYTE PTR [RDI]", "WORD PTR [RDI]",
 
 }  // namespace
 
-Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
+absl::Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> kMnemonics = {"CMPS", "MOVS"};
   const absl::flat_hash_set<std::string> kSourceOperands(
@@ -65,7 +61,7 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
       std::begin(kRDIIndexes), std::begin(kRDIIndexes));
   const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -75,7 +71,7 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
     }
 
     if (vendor_syntax->operands_size() != 2) {
-      status = InvalidArgumentError(
+      status = absl::InvalidArgumentError(
           "Unexpected number of operands of a CMPS/MOVS instruction.");
       LOG(ERROR) << status;
       continue;
@@ -85,7 +81,7 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
                        vendor_syntax->operands(0).name(), &pointer_size) &&
         !kSourceOperands.contains(vendor_syntax->operands(0).name()) &&
         !kDestinationOperands.contains(vendor_syntax->operands(0).name())) {
-      status = InvalidArgumentError(
+      status = absl::InvalidArgumentError(
           absl::StrCat("Unexpected operand of a CMPS/MOVS instruction: ",
                        vendor_syntax->operands(0).name()));
       LOG(ERROR) << status;
@@ -113,12 +109,12 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfCmpsAndMovs, 2000);
 
-Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
+absl::Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
   constexpr char kIns[] = "INS";
   constexpr char kOuts[] = "OUTS";
   const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -130,7 +126,7 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
     }
 
     if (vendor_syntax->operands_size() != 2) {
-      status = InvalidArgumentError(
+      status = absl::InvalidArgumentError(
           "Unexpected number of operands of an INS/OUTS instruction.");
       LOG(ERROR) << status;
       continue;
@@ -140,7 +136,7 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
                        vendor_syntax->operands(0).name(), &pointer_size) &&
         !gtl::FindCopy(operand_to_pointer_size,
                        vendor_syntax->operands(1).name(), &pointer_size)) {
-      status = InvalidArgumentError(
+      status = absl::InvalidArgumentError(
           absl::StrCat("Unexpected operands of an INS/OUTS instruction: ",
                        vendor_syntax->operands(0).name(), ", ",
                        vendor_syntax->operands(1).name()));
@@ -171,7 +167,7 @@ Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfInsAndOuts, 2000);
 
-Status FixOperandsOfLddqu(InstructionSetProto* instruction_set) {
+absl::Status FixOperandsOfLddqu(InstructionSetProto* instruction_set) {
   constexpr char kMemOperand[] = "mem";
   constexpr char kM128Operand[] = "m128";
   constexpr char kLddquEncoding[] = "F2 0F F0 /r";
@@ -186,11 +182,12 @@ Status FixOperandsOfLddqu(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLddqu, 2000);
 
-Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
+absl::Status FixOperandsOfLodsScasAndStos(
+    InstructionSetProto* instruction_set) {
   // Note that we're matching only the versions with operands. These versions
   // use the mnemonics without the size suffix. By matching exactly these names,
   // we can easily avoid the operand-less versions.
@@ -201,7 +198,7 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   const absl::node_hash_map<std::string, std::string> kOperandToRegister = {
       {"m8", "AL"}, {"m16", "AX"}, {"m32", "EAX"}, {"m64", "RAX"}};
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =
@@ -214,7 +211,7 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
     }
 
     if (vendor_syntax->operands_size() != 1) {
-      status = InvalidArgumentError(
+      status = absl::InvalidArgumentError(
           "Unexpected number of operands of a LODS/STOS instruction.");
       LOG(ERROR) << status;
       continue;
@@ -225,7 +222,7 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
                        &register_operand) ||
         !gtl::FindCopy(operand_to_pointer_size,
                        vendor_syntax->operands(0).name(), &pointer_size)) {
-      status = InvalidArgumentError(
+      status = absl::InvalidArgumentError(
           absl::StrCat("Unexpected operand of a LODS/STOS instruction: ",
                        vendor_syntax->operands(0).name()));
       LOG(ERROR) << status;
@@ -259,7 +256,7 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfLodsScasAndStos, 2000);
 
-Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set) {
+absl::Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> kEncodings = {"0F 01 /0", "0F 01 /1"};
   constexpr char kMemoryOperandName[] = "m";
@@ -276,11 +273,11 @@ Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfSgdtAndSidt, 2000);
 
-Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
+absl::Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kVMovQEncoding[] = "VEX.128.F3.0F.WIG 7E /r";
   constexpr char kRegisterOrMemoryOperand[] = "xmm2/m64";
@@ -292,17 +289,17 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set) {
     InstructionFormat* const vendor_syntax =
         GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     if (vendor_syntax->operands_size() != 2) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Unexpected number of operands of a VMOVQ instruction: ",
                        instruction.DebugString()));
     }
     vendor_syntax->mutable_operands(1)->set_name(kRegisterOrMemoryOperand);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfVMovq, 2000);
 
-Status FixRegOperands(InstructionSetProto* instruction_set) {
+absl::Status FixRegOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kR8Operand[] = "r8";
   constexpr char kR16Operand[] = "r16";
@@ -323,7 +320,7 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
   std::vector<InstructionProto> new_instruction_protos;
   ::google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction : *instructions) {
     InstructionFormat* const vendor_syntax =
         GetOrAddUniqueVendorSyntaxOrDie(&instruction);
@@ -350,7 +347,7 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
         } else if (kRenameToReg32.contains(mnemonic)) {
           operand.set_name(kR32Operand);
         } else {
-          status = InvalidArgumentError(
+          status = absl::InvalidArgumentError(
               absl::StrCat("Unexpected instruction mnemonic: ", mnemonic));
           LOG(ERROR) << status;
           continue;
@@ -365,7 +362,7 @@ Status FixRegOperands(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixRegOperands, 2000);
 
-Status RenameOperands(InstructionSetProto* instruction_set) {
+absl::Status RenameOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::node_hash_map<std::string, std::string> kOperandRenaming = {
       // Synonyms (different names used for the same type in different parts of
@@ -392,11 +389,11 @@ Status RenameOperands(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RenameOperands, 2000);
 
-Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
+absl::Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr char kImplicitST0Operand[] = "ST(0)";
   const absl::flat_hash_set<std::string> kUpdatedInstructionEncodings = {
@@ -419,11 +416,11 @@ Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
                                    }),
                     operands->end());
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitST0Operand, 2000);
 
-Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
+absl::Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr char kImplicitXmm0Operand[] = "<XMM0>";
   for (InstructionProto& instruction :
@@ -437,7 +434,7 @@ Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
                                    }),
                     operands->end());
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitXmm0Operand, 2000);
 

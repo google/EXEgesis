@@ -22,7 +22,7 @@ cc_proto_library(
 proto_library(
     name = "decoded_instruction_proto",
     srcs = ["decoded_instruction.proto"],
-    deps = ["//exegesis/proto/x86:instruction_encoding_proto"],
+    deps = [":instruction_encoding_proto"],
 )
 
 cc_proto_library(

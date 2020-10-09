@@ -19,13 +19,13 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/base/port_mask.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "ortools/linear_solver/linear_solver.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "util/task/status.h"
 
 // Mixed Integer Programming model for decomposing an observation into execution
 // port masks.
@@ -109,8 +109,6 @@
 namespace exegesis {
 namespace itineraries {
 
-using ::exegesis::util::Status;
-
 // Computes the number of execution ports from 'port_masks'. It is simply 1 +
 // the maximum port number in 'port_masks'.
 int ComputeNumExecutionPorts(const std::vector<PortMask>& port_masks);
@@ -130,11 +128,11 @@ class DecompositionSolver {
   explicit DecompositionSolver(const MicroArchitecture& microarchitecture);
 
   // Runs the decomposition solver on 'observation'.
-  Status Run(const ObservationVector& observation);
+  absl::Status Run(const ObservationVector& observation);
 
   // Runs the decomposition solver on 'measurements'. 'num_uops' is the number
   // of micro-operations measured by the performance counters.
-  Status Run(const std::vector<double>& measurements, double num_uops);
+  absl::Status Run(const std::vector<double>& measurements, double num_uops);
 
   // Returns a string detailing the port masks used by each micro-operation,
   // and the allocation of each execution port to each micro-operation.

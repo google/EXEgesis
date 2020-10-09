@@ -20,16 +20,16 @@
 #include <vector>
 
 #include "absl/flags/flag.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "exegesis/util/instruction_syntax.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/descriptor.h"
 #include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
 #include "util/gtl/map_util.h"
-#include "util/task/status.h"
-#include "util/task/status_macros.h"
-#include "util/task/statusor.h"
 
 ABSL_FLAG(bool, exegesis_print_transform_names_to_log, true,
           "Print the names of the transforms executed by the transform "
@@ -40,9 +40,6 @@ ABSL_FLAG(bool, exegesis_print_transform_diffs_to_log, false,
 
 namespace exegesis {
 
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::Message;
 using ::google::protobuf::util::MessageDifferencer;
@@ -65,7 +62,7 @@ InstructionSetTransformOrder* GetMutableDefaultTransformOrder() {
   return transforms_order;
 }
 
-Status RunSingleTransform(
+absl::Status RunSingleTransform(
     const std::string& transform_name,
     InstructionSetTransformRawFunction* transform_function,
     InstructionSetProto* instruction_set) {
@@ -75,12 +72,12 @@ Status RunSingleTransform(
       absl::GetFlag(FLAGS_exegesis_print_transform_diffs_to_log)) {
     LOG(INFO) << "Running: " << transform_name;
   }
-  Status transform_status = OkStatus();
+  absl::Status transform_status = absl::OkStatus();
   if (absl::GetFlag(FLAGS_exegesis_print_transform_diffs_to_log)) {
-    const StatusOr<std::string> diff_or_status =
+    const absl::StatusOr<std::string> diff_or_status =
         RunTransformWithDiff(transform_function, instruction_set);
     if (diff_or_status.ok()) {
-      const std::string& diff = diff_or_status.ValueOrDie();
+      const std::string& diff = diff_or_status.value();
       // TODO(ondrasej): Consider trimming the output, so that we don't flood
       // the output when there are too many diffs.
       if (!diff.empty()) {
@@ -136,7 +133,7 @@ std::vector<InstructionSetTransform> GetDefaultTransformPipeline() {
   return transforms;
 }
 
-Status RunTransformPipeline(
+absl::Status RunTransformPipeline(
     const std::vector<InstructionSetTransform>& pipeline,
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -144,7 +141,7 @@ Status RunTransformPipeline(
     CHECK(transform != nullptr);
     RETURN_IF_ERROR(transform(instruction_set));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // A message difference reporter that reports the differences to a string, and
@@ -175,7 +172,7 @@ class ConciseDifferenceReporter : public MessageDifferencer::Reporter {
   MessageDifferencer::StreamReporter base_reporter_;
 };
 
-StatusOr<std::string> RunTransformWithDiff(
+absl::StatusOr<std::string> RunTransformWithDiff(
     const InstructionSetTransform& transform,
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
@@ -286,7 +283,7 @@ bool LessThan(const InstructionProto& instruction_a,
 
 }  // namespace
 
-Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
+absl::Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   google::protobuf::RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -297,7 +294,7 @@ Status SortByVendorSyntax(InstructionSetProto* instruction_set) {
     std::stable_sort(leaf_instructions->begin(), leaf_instructions->end(),
                      LessThan);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(SortByVendorSyntax, 7000);
 

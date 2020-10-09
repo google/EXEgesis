@@ -16,14 +16,13 @@
 
 #include <functional>
 
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
 #include "exegesis/testing/test_util.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
@@ -32,10 +31,6 @@ using ::exegesis::InstructionProto;
 using ::exegesis::InstructionSetProto;
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::TextFormat;
 
@@ -71,13 +66,13 @@ TEST(RunTransformWithDiffTest, NoDifference) {
 }
 
 // A dummy transform that deletes the second instruction in the instruction set,
-// and returns Status::OK. Used for testing the diff.
-Status DeleteSecondInstruction(InstructionSetProto* instruction_set) {
+// and returns absl::Status::OK. Used for testing the diff.
+absl::Status DeleteSecondInstruction(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
   instructions->erase(instructions->begin() + 1);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 TEST(RunTransformWithDiffTest, WithDifference) {
@@ -120,8 +115,9 @@ TEST(RunTransformWithDiffTest, WithDifference) {
 }
 
 // A dummy transform that immediately returns an error.
-Status ReturnErrorInsteadOfTransforming(InstructionSetProto* instruction_set) {
-  return InvalidArgumentError("I do not transform!");
+absl::Status ReturnErrorInsteadOfTransforming(
+    InstructionSetProto* instruction_set) {
+  return absl::InvalidArgumentError("I do not transform!");
 }
 
 TEST(RunTransformWithDiffTest, WithError) {
@@ -140,7 +136,7 @@ TEST(RunTransformWithDiffTest, WithError) {
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
   EXPECT_THAT(
       RunTransformWithDiff(ReturnErrorInsteadOfTransforming, &instruction_set),
-      StatusIs(INVALID_ARGUMENT, "I do not transform!"));
+      StatusIs(absl::StatusCode::kInvalidArgument, "I do not transform!"));
 }
 
 TEST(SortByVendorSyntaxTest, Sort) {

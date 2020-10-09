@@ -18,23 +18,18 @@
 #include <string>
 #include <utility>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/util/bits.h"
+#include "exegesis/util/status_util.h"
 #include "exegesis/x86/instruction_encoding.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status_macros.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::InternalError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 // Implements the instruction encoder. The encoding functionality is split into
 // several methods, and they all emit to the buffer managed by this class.
@@ -49,9 +44,9 @@ class InstructionEncoder {
   InstructionEncoder(const InstructionEncoder&) = delete;
   InstructionEncoder& operator=(const InstructionEncoder&) = delete;
 
-  // Validates the instruction data. Returns Status::OK if everything is OK,
-  // otherwise returns an error status and a description of the problem.
-  Status Validate() const;
+  // Validates the instruction data. Returns absl::Status::OK if everything is
+  // OK, otherwise returns an error status and a description of the problem.
+  absl::Status Validate() const;
 
   // Encodes the instruction and returns its binary encoding. Assumes that the
   // instruction is valid with respect to InstructionEncoder::Validate().
@@ -60,15 +55,15 @@ class InstructionEncoder {
  private:
   static constexpr int kMaxInstructionBytes = 17;
 
-  Status ValidatePrefix() const;
+  absl::Status ValidatePrefix() const;
   void EncodePrefix();
 
   // Methods for validating and encoding the legacy prefixes.
-  Status ValidateLegacyPrefixes() const;
-  Status ValidateRexPrefix() const;
-  Status ValidateLockOrRepPrefix() const;
-  Status ValidateOperandSizeOverridePrefix() const;
-  Status ValidateAddressSizeOverridePrefix() const;
+  absl::Status ValidateLegacyPrefixes() const;
+  absl::Status ValidateRexPrefix() const;
+  absl::Status ValidateLockOrRepPrefix() const;
+  absl::Status ValidateOperandSizeOverridePrefix() const;
+  absl::Status ValidateAddressSizeOverridePrefix() const;
   void EncodeLegacyPrefixes();
   void EncodeRexPrefixIfNeeded();
   void EncodeLockOrRepPrefixIfNeeded();
@@ -77,24 +72,24 @@ class InstructionEncoder {
   void EncodeAddressSizeOverridePrefixIfNeeded();
 
   // Methods for validating and encoding VEX and EVEX instructions.
-  Status ValidateVexPrefix() const;
-  Status ValidateEvexPrefix() const;
-  Status ValidateVexSuffix() const;
+  absl::Status ValidateVexPrefix() const;
+  absl::Status ValidateEvexPrefix() const;
+  absl::Status ValidateVexSuffix() const;
   void EncodeVexPrefix();
   void EncodeEvexPrefix();
   void EncodeVexSuffixIfNeeded();
 
   // Methods for validating and encoding the opcode.
-  Status ValidateOpcode() const;
+  absl::Status ValidateOpcode() const;
   void EncodeOpcode();
 
   // Methods for validating and encoding the ModR/M and SIB bytes and the
   // corresponding displacement values.
-  Status ValidateModRM() const;
+  absl::Status ValidateModRM() const;
   void EncodeModRMIfNeeded();
 
   // Methods for validating and encoding the immediate values of the function.
-  Status ValidateImmediateValues() const;
+  absl::Status ValidateImmediateValues() const;
   void EncodeImmediateValues();
 
   // Functions for emitting values.
@@ -119,13 +114,13 @@ class InstructionEncoder {
 
 constexpr int InstructionEncoder::kMaxInstructionBytes;
 
-Status InstructionEncoder::Validate() const {
+absl::Status InstructionEncoder::Validate() const {
   RETURN_IF_ERROR(ValidatePrefix());
   RETURN_IF_ERROR(ValidateOpcode());
   RETURN_IF_ERROR(ValidateModRM());
   RETURN_IF_ERROR(ValidateImmediateValues());
   RETURN_IF_ERROR(ValidateVexSuffix());
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 std::vector<uint8_t> InstructionEncoder::Encode() {
@@ -139,7 +134,7 @@ std::vector<uint8_t> InstructionEncoder::Encode() {
   return std::move(instruction_buffer_);
 }
 
-Status InstructionEncoder::ValidatePrefix() const {
+absl::Status InstructionEncoder::ValidatePrefix() const {
   if (specification_->has_legacy_prefixes()) {
     return ValidateLegacyPrefixes();
   } else if (specification_->has_vex_prefix()) {
@@ -149,12 +144,12 @@ Status InstructionEncoder::ValidatePrefix() const {
       case EVEX_PREFIX:
         return ValidateEvexPrefix();
       default:
-        return InternalError(
+        return absl::InternalError(
             absl::StrCat("The type of the VEX/EVEX prefix is not valid: ",
                          specification_->vex_prefix().prefix_type()));
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodePrefix() {
@@ -172,10 +167,10 @@ void InstructionEncoder::EncodePrefix() {
   }
 }
 
-Status InstructionEncoder::ValidateLegacyPrefixes() const {
+absl::Status InstructionEncoder::ValidateLegacyPrefixes() const {
   CHECK(specification_->has_legacy_prefixes());
   if (decoded_instruction_->has_vex_prefix()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The encoding specification prescribes legacy prefixes but the "
         "instruction data used a VEX prefix.");
   }
@@ -184,7 +179,7 @@ Status InstructionEncoder::ValidateLegacyPrefixes() const {
   RETURN_IF_ERROR(ValidateLockOrRepPrefix());
   RETURN_IF_ERROR(ValidateOperandSizeOverridePrefix());
   RETURN_IF_ERROR(ValidateAddressSizeOverridePrefix());
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeLegacyPrefixes() {
@@ -193,14 +188,14 @@ void InstructionEncoder::EncodeLegacyPrefixes() {
   EncodeOperandSizeOverridePrefixIfNeeded();
 }
 
-Status InstructionEncoder::ValidateRexPrefix() const {
+absl::Status InstructionEncoder::ValidateRexPrefix() const {
   const RexPrefix& rex = decoded_instruction_->legacy_prefixes().rex();
   if (!PrefixMatchesSpecification(
           specification_->legacy_prefixes().rex_w_prefix(), rex.w())) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The REX.W prefix does not match the specification.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeRexPrefixIfNeeded() {
@@ -217,24 +212,24 @@ void InstructionEncoder::EncodeRexPrefixIfNeeded() {
   }
 }
 
-Status InstructionEncoder::ValidateLockOrRepPrefix() const {
+absl::Status InstructionEncoder::ValidateLockOrRepPrefix() const {
   const LegacyPrefixEncodingSpecification& specification_prefixes =
       specification_->legacy_prefixes();
   const LegacyPrefixes& instruction_prefixes =
       decoded_instruction_->legacy_prefixes();
   if (specification_prefixes.has_mandatory_repe_prefix() &&
       instruction_prefixes.lock_or_rep() != LegacyEncoding::REP_PREFIX) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The encoding specification prescribes a REP/REPE prefix but the "
         "instruction does not use it.");
   }
   if (specification_prefixes.has_mandatory_repne_prefix() &&
       instruction_prefixes.lock_or_rep() != LegacyEncoding::REPNE_PREFIX) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The encoding specification prescribes a REP/REPNE prefix but the "
         "instruction does not use it.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeLockOrRepPrefixIfNeeded() {
@@ -266,17 +261,17 @@ void InstructionEncoder::EncodeSegmentOverridePrefixIfNeeded() {
   }
 }
 
-Status InstructionEncoder::ValidateOperandSizeOverridePrefix() const {
+absl::Status InstructionEncoder::ValidateOperandSizeOverridePrefix() const {
   const bool has_operand_size_override =
       decoded_instruction_->legacy_prefixes().operand_size_override() ==
       LegacyEncoding::OPERAND_SIZE_OVERRIDE;
   if (!PrefixMatchesSpecification(
           specification_->legacy_prefixes().operand_size_override_prefix(),
           has_operand_size_override)) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The operand size override prefix does not match the specification.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeOperandSizeOverridePrefixIfNeeded() {
@@ -286,16 +281,16 @@ void InstructionEncoder::EncodeOperandSizeOverridePrefixIfNeeded() {
   }
 }
 
-Status InstructionEncoder::ValidateAddressSizeOverridePrefix() const {
+absl::Status InstructionEncoder::ValidateAddressSizeOverridePrefix() const {
   if (specification_->legacy_prefixes()
           .has_mandatory_address_size_override_prefix() &&
       decoded_instruction_->address_size_override() ==
           LegacyEncoding::NO_ADDRESS_SIZE_OVERRIDE) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The encoding specification prescribes an operand size override prefix "
         "but the instruction does not use it.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeAddressSizeOverridePrefixIfNeeded() {
@@ -305,13 +300,13 @@ void InstructionEncoder::EncodeAddressSizeOverridePrefixIfNeeded() {
   }
 }
 
-Status InstructionEncoder::ValidateVexPrefix() const {
+absl::Status InstructionEncoder::ValidateVexPrefix() const {
   CHECK(specification_->has_vex_prefix());
   const VexPrefixEncodingSpecification& vex_specification =
       specification_->vex_prefix();
   CHECK_EQ(vex_specification.prefix_type(), VEX_PREFIX);
   if (!decoded_instruction_->has_vex_prefix()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The encoding specification prescribes a VEX prefix but the "
         "instruction does not have it");
   }
@@ -327,16 +322,16 @@ Status InstructionEncoder::ValidateVexPrefix() const {
   RETURN_IF_ERROR(ValidateVexWBit(vex_specification.vex_w_usage(), vex.w()));
   RETURN_IF_ERROR(ValidateMandatoryPrefixBits(vex_specification, vex));
   RETURN_IF_ERROR(ValidateMapSelectBits(vex_specification, vex));
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionEncoder::ValidateEvexPrefix() const {
+absl::Status InstructionEncoder::ValidateEvexPrefix() const {
   CHECK(specification_->has_vex_prefix());
   const VexPrefixEncodingSpecification& evex_specification =
       specification_->vex_prefix();
   CHECK_EQ(evex_specification.prefix_type(), EVEX_PREFIX);
   if (!decoded_instruction_->has_evex_prefix()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The encoding specification prescribes an EVEX prefix but the "
         "instruction does not have it");
   }
@@ -354,7 +349,7 @@ Status InstructionEncoder::ValidateEvexPrefix() const {
   RETURN_IF_ERROR(ValidateEvexBBit(evex_specification, *decoded_instruction_));
   RETURN_IF_ERROR(
       ValidateEvexOpmask(evex_specification, *decoded_instruction_));
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeVexPrefix() {
@@ -419,19 +414,19 @@ void InstructionEncoder::EncodeEvexPrefix() {
            GetBitRange(evex.opmask_register(), 0, 3));
 }
 
-Status InstructionEncoder::ValidateVexSuffix() const {
+absl::Status InstructionEncoder::ValidateVexSuffix() const {
   if (!specification_->has_vex_prefix()) {
-    return OkStatus();
+    return absl::OkStatus();
   }
   const VexPrefixEncodingSpecification& vex_specification =
       specification_->vex_prefix();
   if (!vex_specification.has_vex_operand_suffix() &&
       decoded_instruction_->vex_prefix().vex_suffix_value() > 0) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The instruction does not use the VEX suffix but the data was "
         "provided.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeVexSuffixIfNeeded() {
@@ -442,9 +437,9 @@ void InstructionEncoder::EncodeVexSuffixIfNeeded() {
   }
 }
 
-Status InstructionEncoder::ValidateOpcode() const {
+absl::Status InstructionEncoder::ValidateOpcode() const {
   // The opcode will be filled in by the encoder.
-  if (decoded_instruction_->opcode() == 0) return OkStatus();
+  if (decoded_instruction_->opcode() == 0) return absl::OkStatus();
   bool is_valid = false;
   if (specification_->operand_in_opcode() ==
       EncodingSpecification::NO_OPERAND_IN_OPCODE) {
@@ -461,13 +456,13 @@ Status InstructionEncoder::ValidateOpcode() const {
   }
 
   if (!is_valid) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("The opcode in the binary encoding specification (",
                      specification_->opcode(),
                      ") does not match the opcode in the instruction data (",
                      decoded_instruction_->opcode(), ")."));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeOpcode() {
@@ -487,34 +482,35 @@ void InstructionEncoder::EncodeOpcode() {
   EmitByte(static_cast<uint8_t>(opcode));
 }
 
-Status InstructionEncoder::ValidateModRM() const {
+absl::Status InstructionEncoder::ValidateModRM() const {
   const bool specification_requires_modrm_byte =
       specification_->modrm_usage() != EncodingSpecification::NO_MODRM_USAGE;
   if (specification_requires_modrm_byte != decoded_instruction_->has_modrm()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Instruction is missing a required ModR/M byte.");
   }
   if (!specification_requires_modrm_byte && decoded_instruction_->has_sib()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "There is a mismatch in the usage of the ModR/M and SIB bytes.");
   }
   if (!specification_requires_modrm_byte) {
-    return OkStatus();
+    return absl::OkStatus();
   }
   const ModRm& modrm = decoded_instruction_->modrm();
   if (specification_->modrm_usage() ==
           EncodingSpecification::OPCODE_EXTENSION_IN_MODRM &&
       specification_->modrm_opcode_extension() != modrm.register_operand()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "There is a mismatch in the use of opcode extension in the ModR/M "
         "byte.");
   }
 
   const bool requires_sib = ModRmRequiresSib(modrm);
   if (requires_sib != decoded_instruction_->has_sib()) {
-    return InvalidArgumentError("The presence of the SIB byte is not correct.");
+    return absl::InvalidArgumentError(
+        "The presence of the SIB byte is not correct.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Composes a byte from a two-bit and two three-bit values from parameters:
@@ -566,10 +562,10 @@ void InstructionEncoder::EncodeModRMIfNeeded() {
   }
 }
 
-Status InstructionEncoder::ValidateImmediateValues() const {
+absl::Status InstructionEncoder::ValidateImmediateValues() const {
   if (specification_->immediate_value_bytes_size() !=
       decoded_instruction_->immediate_value_size()) {
-    return InvalidArgumentError(absl::StrCat(
+    return absl::InvalidArgumentError(absl::StrCat(
         "The number of immediate values in the specification and in the "
         "instruction data is different: ",
         specification_->immediate_value_bytes_size(), " vs ",
@@ -580,7 +576,7 @@ Status InstructionEncoder::ValidateImmediateValues() const {
     const std::string& immediate_value =
         decoded_instruction_->immediate_value(i);
     if (expected_size != immediate_value.size()) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Unexpected size of immediate value: ", expected_size,
                        " vs ", immediate_value.size()));
     }
@@ -588,12 +584,12 @@ Status InstructionEncoder::ValidateImmediateValues() const {
 
   if (specification_->code_offset_bytes() !=
       decoded_instruction_->code_offset().size()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Unexpected size of the code offset: ",
                      specification_->code_offset_bytes(), " vs ",
                      decoded_instruction_->immediate_value().size()));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionEncoder::EncodeImmediateValues() {
@@ -608,7 +604,7 @@ void InstructionEncoder::EncodeImmediateValues() {
 
 // TODO(ondrasej): We might want a separate function that does just the
 // validation.
-StatusOr<std::vector<uint8_t>> EncodeInstruction(
+absl::StatusOr<std::vector<uint8_t>> EncodeInstruction(
     const EncodingSpecification& specification,
     const DecodedInstruction& decoded_instruction) {
   InstructionEncoder encoder(&specification, &decoded_instruction);

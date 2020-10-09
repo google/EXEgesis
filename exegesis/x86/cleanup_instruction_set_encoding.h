@@ -18,13 +18,11 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_ENCODING_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_ENCODING_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
 
 // Fixes the binary encoding specification of instructions that write to or read
 // from a memory address that is specified as segment + fixed offset, and the
@@ -35,13 +33,14 @@ using ::exegesis::util::Status;
 // size override prefix. This transform fixes these instructions by replacing
 // the original one with two new instructions (one with the prefix and one
 // without) with the correct binary encoding specification.
-Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set);
+absl::Status AddMissingMemoryOffsetEncoding(
+    InstructionSetProto* instruction_set);
 
 // Adds the missing ModR/M and immediates specifiers to the binary encoding
 // specification of instructions where they are missing. Most of these cases are
 // actual errors in the Intel manual rather than conversion errors that could be
 // fixed elsewhere.
-Status AddMissingModRmAndImmediateSpecification(
+absl::Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set);
 
 // Fixes and cleans up binary encodings of SET* instructions. These are
@@ -54,7 +53,7 @@ Status AddMissingModRmAndImmediateSpecification(
 //    is used only for the register index extension bits.
 // This transform adds the /0 specification (because the modrm.reg bits are not
 // used for anything), and it removes the REX versions of the instructions.
-Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
+absl::Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
     InstructionSetProto* instruction_set);
 
 // Fixes the binary encodings of POP FS and POP GS instructions. These
@@ -74,7 +73,7 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
 // non-encodable anyway), keeps the 64-bit version as is (this will be kept as
 // the default, since we're focusing on the 64-bit protected mode), and adds a
 // new version of the 64-bit version that uses the REX.W prefix.
-Status FixEncodingSpecificationOfPopFsAndGs(
+absl::Status FixEncodingSpecificationOfPopFsAndGs(
     InstructionSetProto* instruction_set);
 
 // Fixes the binary encodings of PUSH FS and PUSH GS instructions. These
@@ -84,51 +83,52 @@ Status FixEncodingSpecificationOfPopFsAndGs(
 // The Intel manual lists only one version of each. This transform adds the
 // missing versions and extends them with the necessary operand size override
 // and REX.W prefixes.
-Status FixEncodingSpecificationOfPushFsAndGs(
+absl::Status FixEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set);
 
 // Fixes the binary encoding specification of the instruction XBEGIN. The
 // specifications in the Intel manual have only the opcode, but there is also a
 // code offset passed as an immediate value, and the 16-bit version of the
 // instruction requires an operand-size override prefix.
-Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set);
+absl::Status FixEncodingSpecificationOfXBegin(
+    InstructionSetProto* instruction_set);
 
 // Fixes common errors in the binary encoding specification that were carried
 // from the Intel reference manuals. Errors fixed by this transform are:
 // 1. Replaces 0f with 0F,
 // 2. Replaces imm8 with ib,
 // 3. Replaces .0 at the end of a VEX prefix with .W0.
-Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
+absl::Status FixEncodingSpecifications(InstructionSetProto* instruction_set);
 
 // Since the October 2019 version of the SDM, encoding specifications of some
 // instructions contain additional information about the ModR/M mod bits in the
 // form "(mod=?? + optional comment)". For now, these comments match the
 // register information available elsewhere, so we dorp the whole parenthesis
 // without parsing it. We might need to parse these in the future.
-Status DropModRmModDetailsFromEncodingSpecifications(
+absl::Status DropModRmModDetailsFromEncodingSpecifications(
     InstructionSetProto* instruction_set);
 
 // Fixes the encoding specification of instructions that use the REX prefix
 // specification where REX.W should be used.
-Status FixRexPrefixSpecification(InstructionSetProto* instruction_set);
+absl::Status FixRexPrefixSpecification(InstructionSetProto* instruction_set);
 
 // Parses the raw encoding specification of each instruction in the
 // instruction set, and stores the parsed proto in the specialized x86 encoding
 // specification field. Assumes that instruction.raw_encoding_specification
 // contains the encoding specification in the format used in the Intel SDM.
 // Returns an error if parsing of any of the encoding specifications fails.
-Status ParseEncodingSpecifications(InstructionSetProto* instruction_set);
+absl::Status ParseEncodingSpecifications(InstructionSetProto* instruction_set);
 
 // Converts encoding specification of X87 FPU instructions that use direct
 // addressing into ModR/M format. This is done for avoiding false multi-byte
 // opcodes caused by those instructions, and use same single byte opcode as
 // indirect-addressing versions of the same instructions.
-Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
+absl::Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
     InstructionSetProto* instruction_set);
 
 // Adds REX.W prefixed version of STR instruction. It is not specified in the
 // Intel SDM, but we found it in code generated by some compilers.
-Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set);
+absl::Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

@@ -18,13 +18,11 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_FIX_OPERANDS_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_FIX_OPERANDS_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
 
 // Updates the operands of CMPS and MOVS instructions. These instructions are
 // documented in the Intel manual in two forms: a form that doesn't use any
@@ -36,7 +34,7 @@ using ::exegesis::util::Status;
 // for memory operands specified through the ModR/M byte and allowing any
 // addressing mode. This transform fixes this problem by changng the memory
 // operands to more explicit ones.
-Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set);
+absl::Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set);
 
 // Updates the operands of INS and OUTS instructions. These instructions are
 // documented in the Intel manual in two forms: a form that doesn't use any
@@ -48,12 +46,12 @@ Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set);
 // for memory operands specified through the ModR/M byte and allowing any
 // addressing mode. This transform fixes this problem by changng the memory
 // operands to more explicit ones.
-Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set);
+absl::Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set);
 
 // Updates the operands of the LDDQU instruction. In the SDM, the SSE version of
 // the instruction uses "mem" for the memory operand, whereas it should be using
 // "m128", similar to the 128-bit AVX version of the instruction.
-Status FixOperandsOfLddqu(InstructionSetProto* instruction_set);
+absl::Status FixOperandsOfLddqu(InstructionSetProto* instruction_set);
 
 // Updates the operands of LODS, SCAS and STOS instructions. These instructions
 // are documented in the Intel manual in two forms: a form that doesn't use any
@@ -69,7 +67,7 @@ Status FixOperandsOfLddqu(InstructionSetProto* instruction_set);
 //    allowing any addressing mode.
 // This transform fixes this problem by adding the register operand and by
 // changng the memory operand to something more explicit.
-Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set);
+absl::Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set);
 
 // Updates the operands of SGTD and SIDT instructions. In the Intel manual, they
 // are listed as SGTD m and SITD m, suggesting that they compute the effective
@@ -77,7 +75,7 @@ Status FixOperandsOfLodsScasAndStos(InstructionSetProto* instruction_set);
 // address. However, this is not the case, and they both write an 80-bit value
 // at the operand. According to another part of the SDM, the correct operand
 // type of these instructions is m16&32.
-Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set);
+absl::Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set);
 
 // Fixes the operands of VMOVQ. The Intel manual lists two variants of VMOVQ for
 // XMM registers: one that reads the value from another XMM registers, and one
@@ -88,7 +86,7 @@ Status FixOperandsOfSgdtAndSidt(InstructionSetProto* instruction_set);
 // RemoveDuplicateInstructions.
 // Note that the transform must run before AddOperandInfo and
 // RemoveDuplicateInstructions.
-Status FixOperandsOfVMovq(InstructionSetProto* instruction_set);
+absl::Status FixOperandsOfVMovq(InstructionSetProto* instruction_set);
 
 // Fixes the ambiguous operand "reg". There are two cases in the 2015 version
 // of the manual:
@@ -112,7 +110,7 @@ Status FixOperandsOfVMovq(InstructionSetProto* instruction_set);
 // instructions fixed by this transform. Instead of making them 32-bit only, we
 // might want to add a 64-bit entries to be compatible with what the assemblers
 // do.
-Status FixRegOperands(InstructionSetProto* instruction_set);
+absl::Status FixRegOperands(InstructionSetProto* instruction_set);
 
 // Removes the implicit ST(0) operand from instructions that do not require it
 // and where it is not produced by the LLVM disassembler. In all cases, this
@@ -122,20 +120,20 @@ Status FixRegOperands(InstructionSetProto* instruction_set);
 // enough (two different instructions with the same mnemonic might work with the
 // ST(0) register in different ways).
 // Note that this transform depends on the results of RenameOperands.
-Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set);
+absl::Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set);
 
 // Removes the implicit xmm0 operand. The operand is added automatically by the
 // LLVM assembler, but it is encoded neither in the ModR/M byte nor in the
 // opcode of the instruction (using the "+i" encoding), and it does not appear
 // in the LLVM disassembly. The Intel manual uses a special name <XMM0> for the
 // implicit use of the operand, and this transform matches it only by its name.
-Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set);
+absl::Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set);
 
 // Inspects the operands of the instructions and renames them so that the names
 // are consistent across types of operands. All of these renamings are either
 // synonyms used by the Intel manual in different contexts, or the types are
 // equivalent for 32- and 64-bit code.
-Status RenameOperands(InstructionSetProto* instruction_set);
+absl::Status RenameOperands(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

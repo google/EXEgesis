@@ -22,24 +22,25 @@
 #include <vector>
 
 #include "absl/flags/flag.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "glog/logging.h"
 #include "llvm/ADT/Triple.h"
-#include "llvm/CodeGen/CommandFlags.inc"
+#include "llvm/CodeGen/CommandFlags.h"
 #include "llvm/CodeGen/Register.h"
 #include "llvm/IR/ModuleSlotTracker.h"
 #include "llvm/InitializePasses.h"
 #include "llvm/MC/MCInstrInfo.h"
-#include "llvm/MC/MCTargetOptionsCommandFlags.inc"
+#include "llvm/MC/MCTargetOptionsCommandFlags.h"
 #include "llvm/PassRegistry.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "util/task/canonical_errors.h"
 
 ABSL_FLAG(std::string, exegesis_llvm_arch, "",
           "The architecture, for which the code is compiled.");
@@ -51,8 +52,8 @@ ABSL_FLAG(std::string, exegesis_extra_llvm_args, "",
 namespace exegesis {
 namespace {
 
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::StatusOr;
+static llvm::codegen::RegisterCodeGenFlags CGF;
+static llvm::mc::RegisterMCTargetOptionsFlags MOF;
 
 void OptionallyInitializeLLVMOnce(bool skip_initialization) {
   // Note that the variable is static, i.e. it is initialized only during the
@@ -95,14 +96,14 @@ void EnsureLLVMWasInitialized() { OptionallyInitializeLLVMOnce(false); }
 
 void MarkLLVMInitialized() { OptionallyInitializeLLVMOnce(true); }
 
-StatusOr<const llvm::Target*> GetLLVMTarget() {
+absl::StatusOr<const llvm::Target*> GetLLVMTarget() {
   llvm::Triple triple(GetNormalizedLLVMTripleName());
 
   std::string error_message;
   const llvm::Target* const target = llvm::TargetRegistry::lookupTarget(
       absl::GetFlag(FLAGS_exegesis_llvm_arch), triple, error_message);
   if (target == nullptr) {
-    return InvalidArgumentError(error_message);
+    return absl::InvalidArgumentError(error_message);
   }
 
   return target;
@@ -143,7 +144,7 @@ std::string DumpMachineMemOperandToString(
   // due to unsafe dummy nullptr parameters. Real values should be used here.
   CHECK(mem_operand != nullptr);
   llvm::ModuleSlotTracker dummy_mst(nullptr);
-  llvm::SmallVector<StringRef, 0> ssns;
+  llvm::SmallVector<llvm::StringRef, 0> ssns;
   llvm::LLVMContext ctx;
   std::string buffer;
   llvm::raw_string_ostream stream(buffer);
@@ -304,7 +305,7 @@ std::vector<std::string> GetLLVMMnemonicListOrDie() {
   return mnemonics;
 }
 
-StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
+absl::StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
     const std::string& asm_dialect_name) {
   const std::string canonical_name = absl::AsciiStrToUpper(asm_dialect_name);
   if (canonical_name == "INTEL") {
@@ -312,17 +313,17 @@ StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
   } else if (canonical_name == "ATT" || canonical_name == "AT&T") {
     return ::llvm::InlineAsm::AD_ATT;
   } else {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Unknown assembly dialect '", asm_dialect_name, "'"));
   }
 }
 
 llvm::TargetOptions LLVMInitTargetOptionsFromCodeGenFlags() {
-  return InitTargetOptionsFromCodeGenFlags();
+  return llvm::codegen::InitTargetOptionsFromCodeGenFlags();
 }
 
 llvm::MCTargetOptions LLVMInitMCTargetOptionsFromFlags() {
-  return InitMCTargetOptionsFromFlags();
+  return llvm::mc::InitMCTargetOptionsFromFlags();
 }
 
 }  // namespace exegesis

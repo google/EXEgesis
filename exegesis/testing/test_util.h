@@ -30,22 +30,23 @@
 //   EXPECT_THAT(proto, IgnoringFields({"MyProto.my_field", "OtherProto.foo"},
 //                                     EqualsProto("my_other_field: 1")));
 //
-// * IsOk, a gMock matcher that matches OK Status or StatusOr.
+// * IsOk, a gMock matcher that matches OK absl::Status or absl::StatusOr.
 //
 //   Usage:
-//   Status status = ReturnStatus();
+//   absl::Status status = ReturnStatus();
 //   EXPECT_THAT(status, IsOk());
 //
-// * StatusIs, a gMock matcher that matches a Status or StatusOr error code,
-//   and optionally its error message.
+// * StatusIs, a gMock matcher that matches a absl::Status or absl::StatusOr
+//   error code, and optionally its error message.
 //
 //   Usage #1:
 //   StatusOr<int> status_or = ReturnStatusOr();
-//   EXPECT_THAT(status_or, StatusIs(NOT_FOUND));
+//   EXPECT_THAT(status_or, StatusIs(absl::StatusCode::kNotFound));
 //
 //   Usage #2:
-//   Status status = ReturnStatusWithMessage("error_message");
-//   EXPECT_THAT(status, StatusIs(NOT_FOUND, "error_message"));
+//   absl::Status status = ReturnStatusWithMessage("error_message");
+//   EXPECT_THAT(status, StatusIs(absl::StatusCode::kNotFound,
+//                                "error_message"));
 //
 // * IsOkAndHolds, a gMock matcher that matches a StatusOr<T> value whose status
 //   is OK and whose inner value matches a given.
@@ -63,25 +64,17 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "src/google/protobuf/text_format.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace testing {
 
 namespace internal {
-
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::Code;
-
-Code StatusCode(const Status& status) {
-  return static_cast<Code>(status.error_code());
-}
 
 void AddIgnoredFieldsToDifferencer(
     const ::google::protobuf::Descriptor* descriptor,
@@ -233,33 +226,35 @@ MATCHER(IsOk, "") { return arg.ok(); }
 
 namespace internal {
 
-// Monomorphic matcher for the error code of a Status.
-bool StatusIsMatcher(const Status& actual_status,
-                     const Code& expected_error_code) {
-  return StatusCode(actual_status) == expected_error_code;
+// Monomorphic matcher for the error code of a absl::Status.
+inline bool StatusIsMatcher(const absl::Status& actual_status,
+                            const absl::StatusCode& expected_error_code) {
+  return actual_status.code() == expected_error_code;
 }
 
 // Monomorphic matcher for the error code of a StatusOr.
 template <typename T>
-bool StatusIsMatcher(const StatusOr<T>& actual_status_or,
-                     const Code& expected_error_code) {
+inline bool StatusIsMatcher(const absl::StatusOr<T>& actual_status_or,
+                            const absl::StatusCode& expected_error_code) {
   return StatusIsMatcher(actual_status_or.status(), expected_error_code);
 }
 
-// Monomorphic matcher for the error code & message of a Status.
-bool StatusIsMatcher(
-    const Status& actual_status, const Code& expected_error_code,
-    const ::testing::Matcher<const std::string&>& expected_message) {
+// Monomorphic matcher for the error code & message of a absl::Status.
+inline bool StatusIsMatcher(
+    const absl::Status& actual_status,
+    const absl::StatusCode& expected_error_code,
+    const ::testing::Matcher<absl::string_view>& expected_message) {
   ::testing::StringMatchResultListener sink;
-  return StatusCode(actual_status) == expected_error_code &&
-         expected_message.MatchAndExplain(actual_status.error_message(), &sink);
+  return actual_status.code() == expected_error_code &&
+         expected_message.MatchAndExplain(actual_status.message(), &sink);
 }
 
 // Monomorphic matcher for the error code & message of a StatusOr.
 template <typename T>
-bool StatusIsMatcher(
-    const StatusOr<T>& actual_status_or, const Code& expected_error_code,
-    const ::testing::Matcher<const std::string&>& expected_message) {
+inline bool StatusIsMatcher(
+    const absl::StatusOr<T>& actual_status_or,
+    const absl::StatusCode& expected_error_code,
+    const ::testing::Matcher<absl::string_view>& expected_message) {
   return StatusIsMatcher(actual_status_or.status(), expected_error_code,
                          expected_message);
 }
@@ -283,8 +278,8 @@ template <typename StatusOrType>
 class IsOkAndHoldsMatcherImpl
     : public ::testing::MatcherInterface<StatusOrType> {
  public:
-  using ValueType = typename std::remove_reference<decltype(
-      std::declval<StatusOrType>().ValueOrDie())>::type;
+  using ValueType = typename std::remove_reference<
+      decltype(std::declval<StatusOrType>().value())>::type;
 
   template <typename InnerMatcher>
   explicit IsOkAndHoldsMatcherImpl(InnerMatcher&& inner_matcher)
@@ -309,12 +304,12 @@ class IsOkAndHoldsMatcherImpl
     }
 
     ::testing::StringMatchResultListener inner_listener;
-    const bool matches = inner_matcher_.MatchAndExplain(
-        actual_value.ValueOrDie(), &inner_listener);
+    const bool matches =
+        inner_matcher_.MatchAndExplain(actual_value.value(), &inner_listener);
     const std::string inner_explanation = inner_listener.str();
     if (!inner_explanation.empty()) {
       *listener << "which contains value "
-                << ::testing::PrintToString(actual_value.ValueOrDie()) << ", "
+                << ::testing::PrintToString(actual_value.value()) << ", "
                 << inner_explanation;
     }
     return matches;

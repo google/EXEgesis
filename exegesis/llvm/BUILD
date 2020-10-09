@@ -18,12 +18,12 @@ cc_library(
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/util:instruction_syntax",
         "//exegesis/util:strings",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
-        "@llvm_git//:ir",
+        "@llvm_git//:Core",
     ],
 )
 
@@ -70,9 +70,9 @@ cc_library(
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
         "@com_google_protobuf//:protobuf_lite",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:machine_code_disassembler",
-        "@llvm_git//:support",
+        "@llvm_git//:MC",
+        "@llvm_git//:MCDisassembler",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -84,6 +84,7 @@ cc_test(
         ":disassembler",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+        "@llvm_git//:X86UtilsAndDesc",
     ],
 )
 
@@ -96,17 +97,17 @@ cc_library(
         ":llvm_utils",
         "//base",
         "//util/gtl:map_util",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
-        "@llvm_git//:execution_engine",
-        "@llvm_git//:ir",
-        "@llvm_git//:mcjit",
-        "@llvm_git//:support",
+        "@llvm_git//:Core",
+        "@llvm_git//:ExecutionEngine",
+        "@llvm_git//:MCJIT",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -121,6 +122,7 @@ cc_test(
         "//exegesis/testing:test_util",
         "//exegesis/util:strings",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf_lite",
@@ -132,10 +134,10 @@ cc_test(
 cc_library(
     name = "llvm_targets",
     deps = [
-        "@llvm_git//:x86_target",
-        "@llvm_git//:x86_target_asm_parser",
-        "@llvm_git//:x86_target_disassembler",
-        "@llvm_git//:x86_target_info",
+        "@llvm_git//:X86AsmParser",
+        "@llvm_git//:X86CodeGen",
+        "@llvm_git//:X86Disassembler",
+        "@llvm_git//:X86Info",
     ],
     alwayslink = 1,
 )
@@ -149,19 +151,19 @@ cc_library(
     deps = [
         ":llvm_targets",
         "//base",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:span",
         "@com_google_protobuf//:protobuf_lite",
-        "@llvm_git//:analysis",  # buildcleaner: keep
-        "@llvm_git//:codegen",
-        "@llvm_git//:ir",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
-        "@llvm_git//:target_base",
+        "@llvm_git//:Analysis",  # buildcleaner: keep
+        "@llvm_git//:CodeGen",
+        "@llvm_git//:Core",
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
+        "@llvm_git//:Target",
     ],
 )

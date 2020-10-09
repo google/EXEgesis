@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "absl/flags/flag.h"
+#include "absl/status/statusor.h"
 #include "exegesis/base/cpuid.h"
 #include "exegesis/base/cpuid_x86.h"
 #include "exegesis/base/init_main.h"
@@ -31,10 +32,9 @@
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "exegesis/util/file_util.h"
 #include "exegesis/util/proto_util.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 // Supported input formats.
 ABSL_FLAG(
@@ -57,16 +57,15 @@ ABSL_FLAG(std::string, exegesis_output_cpuid_dump, "",
 namespace exegesis {
 namespace {
 
-using ::exegesis::util::StatusOr;
 using ::google::protobuf::RepeatedFieldBackInserter;
 using ::google::protobuf::RepeatedPtrField;
 
 CpuIdDumpProto ParseX86CpuIdDumpOrDie(const std::string& input) {
   const std::string cpuid_dump_text = ReadTextFromFileOrStdInOrDie(input);
-  const StatusOr<x86::CpuIdDump> dump_or_status =
+  const absl::StatusOr<x86::CpuIdDump> dump_or_status =
       x86::CpuIdDump::FromString(cpuid_dump_text);
   CHECK_OK(dump_or_status.status());
-  return dump_or_status.ValueOrDie().dump_proto();
+  return dump_or_status.value().dump_proto();
 }
 
 CpuIdDumpProto ParseCpuIdDumpProtoOrDie(const std::string& input) {

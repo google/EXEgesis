@@ -15,13 +15,11 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_MERGE_INSTRUCTIONS_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_MERGE_INSTRUCTIONS_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
 
 // Merges instructions that are synonyms, i.e. they have the same encoding and
 // the same addressing modes of their operands. Replaces the synonymical
@@ -37,7 +35,7 @@ using ::exegesis::util::Status;
 // Examples of instructions updated by this transform:
 //   XCHG m32, r32 / XCHG r32, m32
 //   STOS BYTE PTR [RDI], STOSB
-Status MergeVendorSyntax(InstructionSetProto* instruction_set);
+absl::Status MergeVendorSyntax(InstructionSetProto* instruction_set);
 
 // Finds instructions that:
 // - have more than one vendor syntax,
@@ -45,7 +43,8 @@ Status MergeVendorSyntax(InstructionSetProto* instruction_set);
 //   mnemonic and all operands have (pointwise) the same names and the same
 //   addressing modes.
 // Removes all vendor syntaxes of such instructions except for the first one.
-Status RemoveUselessOperandPermutations(InstructionSetProto* instruction_set);
+absl::Status RemoveUselessOperandPermutations(
+    InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

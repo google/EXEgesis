@@ -14,6 +14,7 @@
 
 #include "exegesis/x86/cleanup_instruction_set_removals.h"
 
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
@@ -25,7 +26,6 @@ namespace x86 {
 namespace {
 
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::HasSubstr;
 
 TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
@@ -620,7 +620,7 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
     InstructionSetProto instruction_set =
         ParseProtoFromStringOrDie<InstructionSetProto>(instruction_set_source);
     EXPECT_THAT(RemoveDuplicateInstructionsWithRexPrefix(&instruction_set),
-                StatusIs(INVALID_ARGUMENT));
+                StatusIs(absl::StatusCode::kInvalidArgument));
   }
 }
 
@@ -717,8 +717,9 @@ TEST(RemoveDuplicateMovFromSRegTest, FailsWhenNotDuplicate) {
           }
           raw_encoding_specification: "REX.W + 8C /r"
         })proto");
-  EXPECT_THAT(RemoveDuplicateMovFromSReg(&instruction_set),
-              StatusIs(INVALID_ARGUMENT, HasSubstr("was not found")));
+  EXPECT_THAT(
+      RemoveDuplicateMovFromSReg(&instruction_set),
+      StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr("was not found")));
 }
 
 TEST(RemoveX87InstructionsWithGeneralVersionsTest, SomeInstructions) {

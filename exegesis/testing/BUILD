@@ -12,9 +12,9 @@ cc_library(
     hdrs = ["test_util.h"],
     deps = [
         "//base",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_googletest//:gtest",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",

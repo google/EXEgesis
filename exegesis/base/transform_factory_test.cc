@@ -15,6 +15,7 @@
 #include "exegesis/base/transform_factory.h"
 
 #include "absl/flags/flag.h"
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -22,12 +23,10 @@
 namespace exegesis {
 namespace {
 
-using ::exegesis::util::OkStatus;
-
-Status TestTransform1(InstructionSetProto*) { return OkStatus(); }
+absl::Status TestTransform1(InstructionSetProto*) { return absl::OkStatus(); }
 REGISTER_INSTRUCTION_SET_TRANSFORM(TestTransform1, kNotInDefaultPipeline);
 
-Status TestTransform2(InstructionSetProto*) { return OkStatus(); }
+absl::Status TestTransform2(InstructionSetProto*) { return absl::OkStatus(); }
 REGISTER_INSTRUCTION_SET_TRANSFORM(TestTransform2, kNotInDefaultPipeline);
 
 TEST(TransformFactoryTest, GetTransformsFromCommandLineFlags) {

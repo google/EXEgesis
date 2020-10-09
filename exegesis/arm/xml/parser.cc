@@ -19,6 +19,8 @@
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
@@ -30,14 +32,13 @@
 #include "exegesis/arm/xml/markdown.h"
 #include "exegesis/arm/xml/parser.pb.h"
 #include "exegesis/proto/instruction_encoding.pb.h"
+#include "exegesis/util/status_util.h"
 #include "exegesis/util/xml/xml_util.h"
 #include "file/base/path.h"
 #include "glog/logging.h"
 #include "net/proto2/util/public/repeated_field_util.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "tinyxml2.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace arm {
@@ -45,14 +46,6 @@ namespace xml {
 
 namespace {
 
-using ::exegesis::util::Annotate;
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::IsNotFound;
-using ::exegesis::util::NotFoundError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 using ::exegesis::xml::DebugString;
 using ::exegesis::xml::FindChild;
 using ::exegesis::xml::FindChildren;
@@ -70,14 +63,15 @@ using BitRange = FixedSizeInstructionLayout::BitRange;
 using BitPattern = BitRange::BitPattern;
 
 // Parses the brief & authored descriptions of the given <desc> XML node.
-Status ParseDescriptions(const XMLNode* desc, XmlInstruction* instruction) {
+absl::Status ParseDescriptions(const XMLNode* desc,
+                               XmlInstruction* instruction) {
   CHECK(desc != nullptr);
   CHECK(instruction != nullptr);
   const XMLElement* brief = desc->FirstChildElement("brief");
   instruction->set_brief_description(ExportToMarkdown(brief));
   const XMLElement* authored = desc->FirstChildElement("authored");
   instruction->set_authored_description(ExportToMarkdown(authored));
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Parses a given string as a bit pattern element, failing if it doesn't comply
@@ -95,7 +89,8 @@ Status ParseDescriptions(const XMLNode* desc, XmlInstruction* instruction) {
 // Valid only for NOT_MATCHING (or transforming UNDECIDED to NOT_MATCHING).
 //   >  "N" means that the bit isn't one.
 //   >  "Z" means that the bit isn't zero.
-StatusOr<BitPattern::Bit> ParseBit(const std::string& bit, PatternType* type) {
+absl::StatusOr<BitPattern::Bit> ParseBit(const std::string& bit,
+                                         PatternType* type) {
   CHECK(type != nullptr);
   if (bit.empty() || bit == "x") {
     return BitPattern::VARIABLE;
@@ -118,20 +113,21 @@ StatusOr<BitPattern::Bit> ParseBit(const std::string& bit, PatternType* type) {
       return BitPattern::CONSTANT_ZERO;
     }
   }
-  return InvalidArgumentError(absl::StrCat(
+  return absl::InvalidArgumentError(absl::StrCat(
       "Unrecognized bit '", bit, "' for pattern ", PatternType_Name(*type)));
 }
 
 // Parses a field-wise constraint string like "!= 0000" or "!= 111x" into
 // individual constraint bits. Returns an empty vector if there is no constraint
 // or fails if the constraint is non-empty but malformed.
-StatusOr<std::vector<std::string>> ParsePattern(const std::string& constraint) {
+absl::StatusOr<std::vector<std::string>> ParsePattern(
+    const std::string& constraint) {
   if (constraint.empty()) return std::vector<std::string>{};
   absl::string_view raw_pattern(constraint);
 
   if (!absl::ConsumePrefix(&raw_pattern, "!=")) {
-    return InvalidArgumentError(absl::StrCat("Invalid constraint '", constraint,
-                                             "', expected leading '!='"));
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Invalid constraint '", constraint, "', expected leading '!='"));
   }
   raw_pattern = absl::StripAsciiWhitespace(raw_pattern);
   std::vector<std::string> pattern(raw_pattern.size());
@@ -148,7 +144,7 @@ StatusOr<std::vector<std::string>> ParsePattern(const std::string& constraint) {
         pattern[i] = "x";
         break;
       default:
-        return InvalidArgumentError(absl::StrCat(
+        return absl::InvalidArgumentError(absl::StrCat(
             "Invalid bit '", std::string(1, bit), "' in '", constraint, "'"));
     }
   }
@@ -156,29 +152,31 @@ StatusOr<std::vector<std::string>> ParsePattern(const std::string& constraint) {
 }
 
 // Parses the raw bits from a XML <box> node as strings, not decoding semantics.
-Status ParseRawBits(XMLElement* box, RawInstructionLayout::Field* field) {
+absl::Status ParseRawBits(XMLElement* box, RawInstructionLayout::Field* field) {
   int bit_idx = 0;
   for (XMLElement* c : FindChildren(box, "c")) {
     const int span = ReadIntAttributeOrDefault(c, "colspan", 1);
     if (span <= 0)
-      return InvalidArgumentError(absl::StrCat("Invalid span ", span));
+      return absl::InvalidArgumentError(absl::StrCat("Invalid span ", span));
     const std::string bit = ReadSimpleText(c);
     for (int span_idx = 0; span_idx < span; ++span_idx, ++bit_idx) {
       if (bit_idx > field->bits_size() - 1) {
-        return InvalidArgumentError("Oversized bit initialization pattern");
+        return absl::InvalidArgumentError(
+            "Oversized bit initialization pattern");
       }
       // Don't force any undefined bit to preserve any parent-defined value.
       if (!bit.empty()) field->set_bits(bit_idx, bit);
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Finds any field in fields exactly matching the specified [msb:lsb] range,
-// or returns NOT_FOUND if no such field is found. Fails with an other error if:
+// or returns absl::StatusCode::kNotFound if no such field is found. Fails with
+// an other error if:
 // - the given range matches more than one field.
 // - the given range overlaps with a field but has misaligned boundaries.
-StatusOr<RawInstructionLayout::Field*> FindField(
+absl::StatusOr<RawInstructionLayout::Field*> FindField(
     RepeatedPtrField<RawInstructionLayout::Field>* fields, const int msb,
     const int lsb) {
   RawInstructionLayout::Field* found = nullptr;
@@ -188,37 +186,38 @@ StatusOr<RawInstructionLayout::Field*> FindField(
     if (exact_overlap) {
       // Allow only a single exact correspondence.
       if (found != nullptr) {
-        return InvalidArgumentError(absl::StrCat(
+        return absl::InvalidArgumentError(absl::StrCat(
             "Multiple matches for bit range [", msb, ":", lsb, "]"));
       }
       found = &field;
     } else if (loose_overlap) {
-      return InvalidArgumentError(
-          absl::StrCat("Misalignment of bit range [", msb, ":", lsb, "]",
-                       absl::StrCat(" over field '", field.name(), "' [",
-                                    field.msb(), ":", field.lsb(), "]")));
+      return absl::InvalidArgumentError(absl::StrCat(
+          "Misalignment of bit range [", msb, ":", lsb, "]", " over field '",
+          field.name(), "' [", field.msb(), ":", field.lsb(), "]"));
     }
   }
   if (found) return found;
-  return NotFoundError(
+  return absl::NotFoundError(
       absl::StrCat("No field matching bit range [", msb, ":", lsb, "]"));
 }
 
 // Detects any field-wise constraint like "!= 0000", "!= 111x", ...
 // Returns OK and updates field accordingly if a valid constraint is correctly
-// parsed. Returns NOT_FOUND if no constraint is detected, or any other error
-// if a constraint exists but can't be decoded.
-Status DetectConstraint(XMLElement* box, RawInstructionLayout::Field* field) {
+// parsed. Returns absl::StatusCode::kNotFound if no constraint is detected, or
+// any other error if a constraint exists but can't be decoded.
+absl::Status DetectConstraint(XMLElement* box,
+                              RawInstructionLayout::Field* field) {
   const std::string constraint = ReadAttribute(box, "constraint");
   const auto pattern = ParsePattern(constraint);
   if (!pattern.ok()) return pattern.status();
-  const std::vector<std::string>& pattern_bits = pattern.ValueOrDie();
-  if (pattern_bits.empty()) return NotFoundError("No constraint detected");
+  const std::vector<std::string>& pattern_bits = pattern.value();
+  if (pattern_bits.empty())
+    return absl::NotFoundError("No constraint detected");
 
   // Validate pattern size.
   const int width = field->msb() - field->lsb() + 1;
   if (pattern_bits.size() != width) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Constraint size mismatch: expected pattern holding ",
                      width, " bits but got constraint '", constraint, "'"));
   }
@@ -227,13 +226,13 @@ Status DetectConstraint(XMLElement* box, RawInstructionLayout::Field* field) {
   field->clear_bits();
   for (const auto& bit : pattern_bits) field->add_bits(bit);
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Merges an existing instruction layout with additional information from the
 // given node. This is mainly used to specialize instruction encodings from the
 // generic layout of the base instruction class.
-StatusOr<RawInstructionLayout> MergeInstructionLayout(
+absl::StatusOr<RawInstructionLayout> MergeInstructionLayout(
     XMLNode* node, const RawInstructionLayout& base) {
   CHECK(node != nullptr);
 
@@ -242,11 +241,11 @@ StatusOr<RawInstructionLayout> MergeInstructionLayout(
     // Parse and validate the bit range itself.
     const auto msb_found = ReadIntAttribute(box, "hibit");
     if (!msb_found.ok()) return msb_found.status();
-    const int msb = msb_found.ValueOrDie();
+    const int msb = msb_found.value();
     const int width = ReadIntAttributeOrDefault(box, "width", 1);
     const int lsb = msb - width + 1;
     if (msb > 31 || width < 1 || lsb < 0) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Invalid bit range: [", msb, ":", lsb, "]"));
     }
 
@@ -254,8 +253,8 @@ StatusOr<RawInstructionLayout> MergeInstructionLayout(
     auto base_field = FindField(result.mutable_fields(), msb, lsb);
     if (base_field.ok()) {
       // Detect any pre-existing field exactly overridden by this new range...
-      field = base_field.ValueOrDie();
-    } else if (IsNotFound(base_field.status())) {
+      field = base_field.value();
+    } else if (absl::IsNotFound(base_field.status())) {
       // ... or add a new field if no override was found.
       field = result.add_fields();
     } else {
@@ -267,17 +266,17 @@ StatusOr<RawInstructionLayout> MergeInstructionLayout(
     field->set_lsb(lsb);
 
     // If a constraint is detected, skip parsing the field's XML subtree.
-    const Status constraint_detection = DetectConstraint(box, field);
+    const absl::Status constraint_detection = DetectConstraint(box, field);
     if (constraint_detection.ok()) continue;
     // But don't fail if there's simply no constraint.
-    if (!IsNotFound(constraint_detection)) return constraint_detection;
+    if (!absl::IsNotFound(constraint_detection)) return constraint_detection;
 
     // Pre-fill the range assuming all bits are undefined until properly parsed.
     while (field->bits_size() < width) field->add_bits("");
 
     // Parse individual raw bit values if present.
-    const Status status = ParseRawBits(box, field);
-    if (!status.ok()) return Annotate(status, DebugString(box));
+    const absl::Status status = ParseRawBits(box, field);
+    if (!status.ok()) return AnnotateStatus(status, DebugString(box));
   }
 
   // Reorder everything to ensure fields are in order (necessary when merging).
@@ -289,16 +288,16 @@ StatusOr<RawInstructionLayout> MergeInstructionLayout(
 }
 
 // Parses a base instruction layout from the given <regdiagram> XML node.
-StatusOr<RawInstructionLayout> ParseBaseInstructionLayout(
+absl::StatusOr<RawInstructionLayout> ParseBaseInstructionLayout(
     XMLElement* regdiagram) {
   CHECK(regdiagram != nullptr);
   if (ReadAttribute(regdiagram, "form") != "32") {
-    return FailedPreconditionError(
+    return absl::FailedPreconditionError(
         absl::StrCat("Unexpected regdiagram form:\n", DebugString(regdiagram)));
   }
   const std::string name = ReadAttribute(regdiagram, "psname");
   if (name.empty()) {
-    return NotFoundError(
+    return absl::NotFoundError(
         absl::StrCat("Missing psname:\n", DebugString(regdiagram)));
   }
   RawInstructionLayout result;
@@ -309,7 +308,7 @@ StatusOr<RawInstructionLayout> ParseBaseInstructionLayout(
 // Performs the actual bit pattern parsing from the raw RawInstructionLayout,
 // after all partial segments have been merged together.
 // Assumes all invariants of RawInstructionLayout are respected in the input.
-StatusOr<FixedSizeInstructionLayout> ParseFixedSizeInstructionLayout(
+absl::StatusOr<FixedSizeInstructionLayout> ParseFixedSizeInstructionLayout(
     const RawInstructionLayout& raw) {
   FixedSizeInstructionLayout layout;
   layout.set_form_name(raw.name());
@@ -326,15 +325,14 @@ StatusOr<FixedSizeInstructionLayout> ParseFixedSizeInstructionLayout(
     for (int i = 0; i < field.bits_size(); ++i) {
       const auto parsed = ParseBit(field.bits(i), &type);
       if (!parsed.ok()) {
-        return Annotate(
+        return AnnotateStatus(
             parsed.status(),
-            absl::StrCat(
-                "while parsing bit # ", i, " '", field.bits(i), "' of field '",
-                field.name(), "' ",
-                absl::StrCat("['", absl::StrJoin(field.bits(), "','"), "'] ",
-                             "in a ", PatternType_Name(type), " pattern")));
+            absl::StrCat("while parsing bit # ", i, " '", field.bits(i),
+                         "' of field '", field.name(), "' ", "['",
+                         absl::StrJoin(field.bits(), "','"), "'] ", "in a ",
+                         PatternType_Name(type), " pattern"));
       }
-      pattern->add_bits(parsed.ValueOrDie());
+      pattern->add_bits(parsed.value());
     }
     if (type == PatternType::NOT_MATCHING) {
       // Don't just swap the fields - as it's a oneof access order is important.
@@ -346,7 +344,7 @@ StatusOr<FixedSizeInstructionLayout> ParseFixedSizeInstructionLayout(
 }
 
 // Parses the assembly template from the given <asmtemplate> XML node.
-StatusOr<AsmTemplate> ParseAsmTemplate(XMLNode* asmtemplate) {
+absl::StatusOr<AsmTemplate> ParseAsmTemplate(XMLNode* asmtemplate) {
   CHECK(asmtemplate != nullptr);
   AsmTemplate result;
 
@@ -364,12 +362,12 @@ StatusOr<AsmTemplate> ParseAsmTemplate(XMLNode* asmtemplate) {
       // field & explanation will get populated later by ParseExplanations().
     }
   }
-  if (result.pieces().empty()) return NotFoundError("Empty ASM template");
+  if (result.pieces().empty()) return absl::NotFoundError("Empty ASM template");
   return result;
 }
 
 // Parses all instruction encodings from the given <iclass> XML node.
-StatusOr<RepeatedPtrField<InstructionEncoding>> ParseInstructionEncodings(
+absl::StatusOr<RepeatedPtrField<InstructionEncoding>> ParseInstructionEncodings(
     XMLNode* iclass) {
   CHECK(iclass != nullptr);
   RepeatedPtrField<InstructionEncoding> result;
@@ -377,7 +375,7 @@ StatusOr<RepeatedPtrField<InstructionEncoding>> ParseInstructionEncodings(
   const auto regdiagram = FindChild(iclass, "regdiagram");
   if (!regdiagram.ok()) return regdiagram.status();
   const auto base_instruction_layout =
-      ParseBaseInstructionLayout(regdiagram.ValueOrDie());
+      ParseBaseInstructionLayout(regdiagram.value());
   if (!base_instruction_layout.ok()) return base_instruction_layout.status();
 
   for (XMLElement* encoding : FindChildren(iclass, "encoding")) {
@@ -392,30 +390,29 @@ StatusOr<RepeatedPtrField<InstructionEncoding>> ParseInstructionEncodings(
 
     const auto docvars = FindChild(encoding, "docvars");
     if (!docvars.ok()) return docvars.status();
-    const auto docvars_proto = ParseDocVars(docvars.ValueOrDie());
+    const auto docvars_proto = ParseDocVars(docvars.value());
     if (!docvars_proto.ok()) return docvars_proto.status();
-    *encoding_proto->mutable_docvars() = docvars_proto.ValueOrDie();
+    *encoding_proto->mutable_docvars() = docvars_proto.value();
 
     const auto asmtemplate = FindChild(encoding, "asmtemplate");
     if (!asmtemplate.ok()) return asmtemplate.status();
-    const auto asmtemplate_proto = ParseAsmTemplate(asmtemplate.ValueOrDie());
+    const auto asmtemplate_proto = ParseAsmTemplate(asmtemplate.value());
     if (!asmtemplate_proto.ok()) return asmtemplate_proto.status();
-    *encoding_proto->mutable_asm_template() = asmtemplate_proto.ValueOrDie();
+    *encoding_proto->mutable_asm_template() = asmtemplate_proto.value();
 
     const auto raw_instruction_layout =
-        MergeInstructionLayout(encoding, base_instruction_layout.ValueOrDie());
+        MergeInstructionLayout(encoding, base_instruction_layout.value());
     if (!raw_instruction_layout.ok()) return raw_instruction_layout.status();
     const auto instruction_layout =
-        ParseFixedSizeInstructionLayout(raw_instruction_layout.ValueOrDie());
+        ParseFixedSizeInstructionLayout(raw_instruction_layout.value());
     if (!instruction_layout.ok()) return instruction_layout.status();
-    *encoding_proto->mutable_instruction_layout() =
-        instruction_layout.ValueOrDie();
+    *encoding_proto->mutable_instruction_layout() = instruction_layout.value();
   }
   return result;
 }
 
 // Parses all instruction classes from the given <classes> XML node.
-StatusOr<RepeatedPtrField<InstructionClass>> ParseInstructionClasses(
+absl::StatusOr<RepeatedPtrField<InstructionClass>> ParseInstructionClasses(
     XMLNode* classes) {
   CHECK(classes != nullptr);
   RepeatedPtrField<InstructionClass> result;
@@ -427,13 +424,13 @@ StatusOr<RepeatedPtrField<InstructionClass>> ParseInstructionClasses(
 
     const auto docvars = FindChild(iclass, "docvars");
     if (!docvars.ok()) return docvars.status();
-    const auto docvars_proto = ParseDocVars(docvars.ValueOrDie());
+    const auto docvars_proto = ParseDocVars(docvars.value());
     if (!docvars_proto.ok()) return docvars_proto.status();
-    *iclass_proto->mutable_docvars() = docvars_proto.ValueOrDie();
+    *iclass_proto->mutable_docvars() = docvars_proto.value();
 
     const auto encodings = ParseInstructionEncodings(iclass);
     if (!encodings.ok()) return encodings.status();
-    *iclass_proto->mutable_encodings() = encodings.ValueOrDie();
+    *iclass_proto->mutable_encodings() = encodings.value();
   }
   return result;
 }
@@ -447,7 +444,8 @@ absl::string_view GetCanonicalLabel(absl::string_view label) {
 }
 
 // Parses operand definitions from the given <explanations> XML node.
-Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
+absl::Status ParseExplanations(XMLNode* explanations,
+                               XmlInstruction* instruction) {
   CHECK(explanations != nullptr);
   CHECK(instruction != nullptr);
 
@@ -459,18 +457,18 @@ Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
     // Symbols' links & labels allow linking back to asm templates.
     const auto symbol = FindChild(expl, "symbol");
     if (!symbol.ok()) return symbol.status();
-    const std::string id = ReadAttribute(symbol.ValueOrDie(), "link");
-    const std::string label = ReadSimpleText(symbol.ValueOrDie());
+    const std::string id = ReadAttribute(symbol.value(), "link");
+    const std::string label = ReadSimpleText(symbol.value());
 
     // Two (exclusive) types of explanations may be encountered: short <account>
     // descriptions and longer <definition> blocks featuring value tables.
     XMLElement* const account = expl->FirstChildElement("account");
     XMLElement* const definition = expl->FirstChildElement("definition");
     if (!account && !definition) {
-      return NotFoundError(
+      return absl::NotFoundError(
           absl::StrCat("Explanation missing:\n", DebugString(expl)));
     } else if (account && definition) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("<account> and <definition> are mutually exclusive:\n",
                        DebugString(expl)));
     }
@@ -502,7 +500,7 @@ Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
           auto* const symbol = piece.mutable_symbol();
           if (symbol->id() != id) continue;
           if (GetCanonicalLabel(symbol->label()) != GetCanonicalLabel(label)) {
-            return FailedPreconditionError(absl::StrCat(
+            return absl::FailedPreconditionError(absl::StrCat(
                 "Expected label '", symbol->label(), "', found '", label,
                 "' for symbol '", id, "' in\n:", DebugString(expl)));
           }
@@ -512,36 +510,37 @@ Status ParseExplanations(XMLNode* explanations, XmlInstruction* instruction) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 }  // namespace
 
-StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename) {
+absl::StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename) {
   XmlIndex index;
 
   XMLDocument xml_doc;
-  const Status load_status = GetStatus(xml_doc.LoadFile(filename.c_str()));
+  const absl::Status load_status =
+      GetStatus(xml_doc.LoadFile(filename.c_str()));
   if (!load_status.ok()) return load_status;
 
   const auto root = FindChild(&xml_doc, "alphaindex");
   if (!root.ok()) return root.status();
 
-  const auto toptitle = FindChild(root.ValueOrDie(), "toptitle");
+  const auto toptitle = FindChild(root.value(), "toptitle");
   if (!toptitle.ok()) return toptitle.status();
-  const std::string isa =
-      ReadAttribute(toptitle.ValueOrDie(), "instructionset");
+  const std::string isa = ReadAttribute(toptitle.value(), "instructionset");
   if (isa == "A32") {
     index.set_isa(Isa::A32);
   } else if (isa == "A64") {
     index.set_isa(Isa::A64);
   } else {
-    return FailedPreconditionError(absl::StrCat("Unsupported ISA '", isa, "'"));
+    return absl::FailedPreconditionError(
+        absl::StrCat("Unsupported ISA '", isa, "'"));
   }
 
-  const auto iforms = FindChild(root.ValueOrDie(), "iforms");
+  const auto iforms = FindChild(root.value(), "iforms");
   if (!iforms.ok()) return iforms.status();
-  for (XMLElement* iform : FindChildren(iforms.ValueOrDie(), "iform")) {
+  for (XMLElement* iform : FindChildren(iforms.value(), "iform")) {
     XmlIndex::File* file = index.add_files();
     file->set_filename(ReadAttribute(iform, "iformfile"));
     file->set_heading(ReadAttribute(iform, "heading"));
@@ -552,57 +551,60 @@ StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename) {
   return index;
 }
 
-StatusOr<XmlInstruction> ParseXmlInstruction(const std::string& filename) {
+absl::StatusOr<XmlInstruction> ParseXmlInstruction(
+    const std::string& filename) {
   XmlInstruction instruction;
 
   XMLDocument xml_doc;
-  const Status load_status = GetStatus(xml_doc.LoadFile(filename.c_str()));
+  const absl::Status load_status =
+      GetStatus(xml_doc.LoadFile(filename.c_str()));
   if (!load_status.ok()) return load_status;
 
   const auto root = FindChild(&xml_doc, "instructionsection");
   if (!root.ok()) return root.status();
 
-  instruction.set_xml_id(ReadAttribute(root.ValueOrDie(), "id"));
-  const auto heading = FindChild(root.ValueOrDie(), "heading");
+  instruction.set_xml_id(ReadAttribute(root.value(), "id"));
+  const auto heading = FindChild(root.value(), "heading");
   if (!heading.ok()) return heading.status();
-  instruction.set_heading(ReadSimpleText(heading.ValueOrDie()));
-  const auto docvars = FindChild(root.ValueOrDie(), "docvars");
+  instruction.set_heading(ReadSimpleText(heading.value()));
+  const auto docvars = FindChild(root.value(), "docvars");
   if (!docvars.ok()) return docvars.status();
-  const auto docvars_proto = ParseDocVars(docvars.ValueOrDie());
+  const auto docvars_proto = ParseDocVars(docvars.value());
   if (!docvars_proto.ok()) return docvars_proto.status();
-  *instruction.mutable_docvars() = docvars_proto.ValueOrDie();
+  *instruction.mutable_docvars() = docvars_proto.value();
 
-  const auto desc = FindChild(root.ValueOrDie(), "desc");
+  const auto desc = FindChild(root.value(), "desc");
   if (!desc.ok()) return desc.status();
-  const Status desc_status = ParseDescriptions(desc.ValueOrDie(), &instruction);
+  const absl::Status desc_status =
+      ParseDescriptions(desc.value(), &instruction);
   if (!desc_status.ok()) return desc_status;
 
-  const auto classes = FindChild(root.ValueOrDie(), "classes");
+  const auto classes = FindChild(root.value(), "classes");
   if (!classes.ok()) return classes.status();
-  const auto classes_proto = ParseInstructionClasses(classes.ValueOrDie());
+  const auto classes_proto = ParseInstructionClasses(classes.value());
   if (!classes_proto.ok()) return classes_proto.status();
-  *instruction.mutable_classes() = classes_proto.ValueOrDie();
+  *instruction.mutable_classes() = classes_proto.value();
 
-  auto* const expl = root.ValueOrDie()->FirstChildElement("explanations");
+  auto* const expl = root.value()->FirstChildElement("explanations");
   if (expl != nullptr) {  // Explanations are optional.
-    const Status expl_status = ParseExplanations(expl, &instruction);
+    const absl::Status expl_status = ParseExplanations(expl, &instruction);
     if (!expl_status.ok()) return expl_status;
   }
 
   return instruction;
 }
 
-StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path) {
+absl::StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path) {
   XmlDatabase database;
 
   const auto base_index = ParseXmlIndex(file::JoinPath(path, "index.xml"));
   if (!base_index.ok()) return base_index.status();
-  *database.mutable_base_index() = base_index.ValueOrDie();
+  *database.mutable_base_index() = base_index.value();
 
   const auto fp_simd_index =
       ParseXmlIndex(file::JoinPath(path, "fpsimdindex.xml"));
   if (!fp_simd_index.ok()) return fp_simd_index.status();
-  *database.mutable_fp_simd_index() = fp_simd_index.ValueOrDie();
+  *database.mutable_fp_simd_index() = fp_simd_index.value();
 
   for (const auto& index : {database.base_index(), database.fp_simd_index()}) {
     for (const auto& file : index.files()) {
@@ -610,11 +612,11 @@ StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path) {
           file::JoinPath(path, file.filename());
       const auto instruction = ParseXmlInstruction(instruction_filename);
       if (!instruction.ok()) {
-        return Annotate(
+        return AnnotateStatus(
             instruction.status(),
             absl::StrCat("while processing file:\n", file.DebugString()));
       }
-      *database.add_instructions() = instruction.ValueOrDie();
+      *database.add_instructions() = instruction.value();
     }
   }
 
@@ -622,7 +624,7 @@ StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path) {
 }
 
 XmlDatabase ParseXmlDatabaseOrDie(const std::string& path) {
-  return ParseXmlDatabase(path).ValueOrDie();
+  return ParseXmlDatabase(path).value();
 }
 
 }  // namespace xml

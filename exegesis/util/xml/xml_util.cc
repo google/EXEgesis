@@ -17,24 +17,18 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "tinyxml2.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
-#include "util/task/status_macros.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace xml {
 
 namespace {
 
-using ::exegesis::util::InternalError;
-using ::exegesis::util::NotFoundError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 using ::tinyxml2::XMLDocument;
 using ::tinyxml2::XMLElement;
 using ::tinyxml2::XMLError;
@@ -43,11 +37,11 @@ using ::tinyxml2::XMLPrinter;
 
 }  // namespace
 
-Status GetStatus(const XMLError& status) {
-  if (status == XMLError::XML_SUCCESS) return OkStatus();
+absl::Status GetStatus(const XMLError& status) {
+  if (status == XMLError::XML_SUCCESS) return absl::OkStatus();
   // Use a dummy document to print a user-friendly error string.
   XMLDocument dummy;
-  return InternalError(
+  return absl::InternalError(
       absl::StrCat("XML Error ", status, ": ", dummy.ErrorIDToName(status)));
 }
 
@@ -58,12 +52,12 @@ std::string DebugString(const XMLNode* node) {
   return printer.CStr();
 }
 
-StatusOr<XMLElement*> FindChild(XMLNode* node, const char* name) {
+absl::StatusOr<XMLElement*> FindChild(XMLNode* node, const char* name) {
   CHECK(node != nullptr);
   XMLElement* element = node->FirstChildElement(name);
   if (element != nullptr) return element;
-  return NotFoundError(absl::StrCat("Element <", name ? name : "",
-                                    "> not found in:\n", DebugString(node)));
+  return absl::NotFoundError(absl::StrCat(
+      "Element <", name ? name : "", "> not found in:\n", DebugString(node)));
 }
 
 std::vector<XMLElement*> FindChildren(XMLNode* node, const char* name) {
@@ -83,7 +77,8 @@ std::string ReadAttribute(const XMLElement* element, const char* name) {
   return value ? value : "";
 }
 
-StatusOr<int> ReadIntAttribute(const XMLElement* element, const char* name) {
+absl::StatusOr<int> ReadIntAttribute(const XMLElement* element,
+                                     const char* name) {
   CHECK(element != nullptr);
   CHECK(name != nullptr);
   int value = -1;
@@ -96,7 +91,7 @@ int ReadIntAttributeOrDefault(const XMLElement* element, const char* name,
   CHECK(element != nullptr);
   CHECK(name != nullptr);
   const auto value = ReadIntAttribute(element, name);
-  return value.ok() ? value.ValueOrDie() : default_value;
+  return value.ok() ? value.value() : default_value;
 }
 
 std::string ReadSimpleText(const XMLElement* element) {

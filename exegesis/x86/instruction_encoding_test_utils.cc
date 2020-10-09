@@ -18,6 +18,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -28,13 +29,10 @@
 #include "exegesis/x86/encoding_specification.h"
 #include "exegesis/x86/instruction_encoder.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
 
-using ::exegesis::util::StatusOr;
 using ::testing::MakeMatcher;
 using ::testing::Matcher;
 using ::testing::MatchResultListener;
@@ -76,7 +74,7 @@ bool DisassemblesToMatcher::MatchAndExplain(
     return false;
   }
 
-  const StatusOr<std::vector<uint8_t>> encoded_instruction_or_status =
+  const absl::StatusOr<std::vector<uint8_t>> encoded_instruction_or_status =
       EncodeInstruction(encoding_specification_, decoded_instruction);
   if (!encoded_instruction_or_status.ok()) {
     if (listener->IsInterested()) {
@@ -86,7 +84,7 @@ bool DisassemblesToMatcher::MatchAndExplain(
     return false;
   }
   const std::vector<uint8_t>& encoded_instruction =
-      encoded_instruction_or_status.ValueOrDie();
+      encoded_instruction_or_status.value();
 
   // TODO(ondrasej): If creating the disassembler is too costly, consider
   // allocating only one and then keeping the pointer until the end of the
@@ -101,7 +99,7 @@ bool DisassemblesToMatcher::MatchAndExplain(
   }
 
   const std::string actual_disassembly =
-      ConvertToCodeString(result.ValueOrDie().intel_syntax());
+      ConvertToCodeString(result.value().intel_syntax());
   const bool is_match =
       EqualsIgnoreCase(actual_disassembly, expected_disassembly_);
   if (!is_match) {

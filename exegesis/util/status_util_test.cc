@@ -14,49 +14,36 @@
 
 #include "exegesis/util/status_util.h"
 
+#include "absl/status/status.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
 
+using ::exegesis::testing::IsOk;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::error::FAILED_PRECONDITION;
-using ::exegesis::util::error::INVALID_ARGUMENT;
+using ::testing::AllOf;
+using ::testing::HasSubstr;
 
-TEST(UpdateStatusTest, UpdateOkWithOk) {
-  Status overall_status;
-  UpdateStatus(&overall_status, OkStatus());
-  EXPECT_OK(overall_status);
+TEST(AnnotateStatusTest, AnnotateOkStatus) {
+  const absl::Status status = AnnotateStatus(absl::OkStatus(), "Hello!");
+  EXPECT_THAT(status, IsOk());
 }
 
-TEST(UpdateStatusTest, UpdateOkWithError) {
-  constexpr char kErrorMessage[] = "An error!";
-  Status overall_status;
-  UpdateStatus(&overall_status, FailedPreconditionError(kErrorMessage));
-  EXPECT_THAT(overall_status, StatusIs(FAILED_PRECONDITION, kErrorMessage));
+TEST(AnnotateStatusTest, AnnotateWithEmptyMessage) {
+  const absl::Status status =
+      AnnotateStatus(absl::NotFoundError("Not found"), "");
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kNotFound, "Not found"));
 }
 
-TEST(UpdateStatusTest, UpdateErrorWithOk) {
-  constexpr char kErrorMessage[] = "There was already an error";
-  Status overall_status = FailedPreconditionError(kErrorMessage);
-  UpdateStatus(&overall_status, OkStatus());
-  EXPECT_THAT(overall_status, StatusIs(FAILED_PRECONDITION, kErrorMessage));
-}
-
-TEST(UpdateStatusTest, UpdateErrorWithError) {
-  constexpr char kFirstErrorMessage[] = "This is the first error message";
-  constexpr char kSecondErrorMessage[] = "This is the second error message";
-  Status overall_status = InvalidArgumentError(kFirstErrorMessage);
-  UpdateStatus(&overall_status, FailedPreconditionError(kSecondErrorMessage));
-  EXPECT_THAT(overall_status, StatusIs(INVALID_ARGUMENT, kFirstErrorMessage));
+TEST(AnnotateStatusTest, AnnotateWithNonEmptyMessage) {
+  const absl::Status status = AnnotateStatus(
+      absl::InvalidArgumentError("Ugly argument"), "Not so ugly");
+  EXPECT_THAT(status, StatusIs(absl::StatusCode::kInvalidArgument,
+                               AllOf(HasSubstr("Ugly argument"),
+                                     HasSubstr("Not so ugly"))));
 }
 
 }  // namespace

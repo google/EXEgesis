@@ -354,7 +354,7 @@ RegisterSetProto GetFpuAndMmxRegisters() {
         subfields {
           bit_range { lsb: 7 msb: 7 }
           name: "ES"
-          description: "Exception Summary Status"
+          description: "Exception Summary absl::Status"
         }
         subfields {
           bit_range { lsb: 8 msb: 10 }

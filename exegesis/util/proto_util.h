@@ -17,51 +17,48 @@
 
 #include <string>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "src/google/protobuf/message.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-
 // Reads a proto in text format from a file.
-Status ReadTextProto(const std::string& filename,
-                     ::google::protobuf::Message* message);
+absl::Status ReadTextProto(const std::string& filename,
+                           ::google::protobuf::Message* message);
 
 // Typed versions of the above.
 template <typename Proto>
-StatusOr<Proto> ReadTextProto(const std::string& filename) {
+absl::StatusOr<Proto> ReadTextProto(const std::string& filename) {
   Proto proto;
-  const Status read_status = ReadTextProto(filename, &proto);
+  const absl::Status read_status = ReadTextProto(filename, &proto);
   if (!read_status.ok()) return read_status;
   return proto;
 }
 
 template <typename Proto>
 Proto ReadTextProtoOrDie(const std::string& filename) {
-  return ReadTextProto<Proto>(filename).ValueOrDie();
+  return ReadTextProto<Proto>(filename).value();
 }
 
 // Reads a proto in binary format from a file.
-Status ReadBinaryProto(const std::string& filename,
-                       ::google::protobuf::Message* message);
+absl::Status ReadBinaryProto(const std::string& filename,
+                             ::google::protobuf::Message* message);
 
 // Typed versions of the above.
 template <typename Proto>
-StatusOr<Proto> ReadBinaryProto(const std::string& filename) {
+absl::StatusOr<Proto> ReadBinaryProto(const std::string& filename) {
   Proto proto;
-  const Status read_status = ReadBinaryProto(filename, &proto);
+  const absl::Status read_status = ReadBinaryProto(filename, &proto);
   if (!read_status.ok()) return read_status;
   return proto;
 }
 
 template <typename Proto>
 Proto ReadBinaryProtoOrDie(const std::string& filename) {
-  return ReadBinaryProto<Proto>(filename).ValueOrDie();
+  return ReadBinaryProto<Proto>(filename).value();
 }
 
 // Reads a proto in text format from a string.

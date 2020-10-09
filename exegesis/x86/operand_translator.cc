@@ -21,7 +21,6 @@
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 namespace x86 {

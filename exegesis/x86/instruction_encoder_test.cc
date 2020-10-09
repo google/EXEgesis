@@ -17,6 +17,7 @@
 #include <cstdint>
 
 #include "absl/memory/memory.h"
+#include "absl/status/statusor.h"
 #include "absl/types/span.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"
@@ -25,14 +26,12 @@
 #include "exegesis/x86/instruction_encoding_test_utils.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
 using ::exegesis::testing::IsOk;
-using ::exegesis::util::StatusOr;
 using ::testing::ElementsAreArray;
 using ::testing::Not;
 
@@ -450,10 +449,10 @@ void EncodeInstructionTest::TestInstructionEncoder(
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       decoded_instruction_str, &decoded_instruction));
 
-  const StatusOr<std::vector<uint8_t>> encoded_instruction_or_status =
+  const absl::StatusOr<std::vector<uint8_t>> encoded_instruction_or_status =
       EncodeInstruction(specification, decoded_instruction);
   ASSERT_OK(encoded_instruction_or_status.status());
-  EXPECT_THAT(encoded_instruction_or_status.ValueOrDie(),
+  EXPECT_THAT(encoded_instruction_or_status.value(),
               ElementsAreArray(expected_encoding));
   EXPECT_THAT(decoded_instruction,
               DisassemblesTo(specification, expected_instruction_format_str));

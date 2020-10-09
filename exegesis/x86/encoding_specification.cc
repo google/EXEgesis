@@ -25,6 +25,8 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -32,21 +34,15 @@
 #include "absl/strings/strip.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/proto/x86/instruction_encoding.pb.h"
+#include "exegesis/util/status_util.h"
 #include "exegesis/x86/instruction_encoding_constants.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status_macros.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 // The parser for the instruction encoding specification language used in the
 // Intel manuals.
@@ -62,7 +58,7 @@ class EncodingSpecificationParser {
       delete;
 
   // Parses the instruction data from string.
-  StatusOr<EncodingSpecification> ParseFromString(
+  absl::StatusOr<EncodingSpecification> ParseFromString(
       absl::string_view specification);
 
  private:
@@ -74,14 +70,14 @@ class EncodingSpecificationParser {
   // prefixes. Upon success, both methods advance 'specification' to the first
   // non-prefix byte. If the methods return a failure, the state of
   // 'specification' is undefined.
-  Status ParseLegacyPrefixes(absl::string_view* specification);
-  Status ParseVexOrEvexPrefix(absl::string_view* specification);
+  absl::Status ParseLegacyPrefixes(absl::string_view* specification);
+  absl::Status ParseVexOrEvexPrefix(absl::string_view* specification);
 
   // Parses the opcode of the instruction and its suffixes. Returns OK if the
   // opcode and the suffixes were parsed correctly, and if the specification
   // did not contain any additional data.
   // Expects that all prefixes were already consumed.
-  Status ParseOpcodeAndSuffixes(absl::string_view specification);
+  absl::Status ParseOpcodeAndSuffixes(absl::string_view specification);
 
   // The current state of the parser.
   EncodingSpecification specification_;
@@ -149,8 +145,8 @@ EncodingSpecificationParser::EncodingSpecificationParser()
       map_select_tokens_(std::begin(kMapSelectTokens),
                          std::end(kMapSelectTokens)) {}
 
-StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
-    absl::string_view specification) {
+absl::StatusOr<EncodingSpecification>
+EncodingSpecificationParser::ParseFromString(absl::string_view specification) {
   specification_.Clear();
   if (absl::StartsWith(specification, "VEX.") ||
       absl::StartsWith(specification, "EVEX")) {
@@ -162,7 +158,7 @@ StatusOr<EncodingSpecification> EncodingSpecificationParser::ParseFromString(
   return std::move(specification_);
 }
 
-Status EncodingSpecificationParser::ParseLegacyPrefixes(
+absl::Status EncodingSpecificationParser::ParseLegacyPrefixes(
     absl::string_view* specification) {
   CHECK(specification != nullptr);
   // A regexp for parsing the legacy prefixes. For more details on the format,
@@ -264,10 +260,10 @@ Status EncodingSpecificationParser::ParseLegacyPrefixes(
   if (has_mandatory_rex_prefix) {
     legacy_prefixes->set_rex_w_prefix(LegacyEncoding::PREFIX_IS_REQUIRED);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
+absl::Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
     absl::string_view* specification) {
   CHECK(specification != nullptr);
   // A regexp for parsing the VEX prefix specification. For more details on the
@@ -300,7 +296,7 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   if (!RE2::Consume(specification, *vex_prefix_parser, &prefix_type_str,
                     &vex_operand_directionality, &vex_l_usage_str,
                     &mandatory_prefix_str, RE2::Hex(&opcode_map), &vex_w_str)) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Could not parse the VEX prefix: '", *specification, "'"));
   }
 
@@ -317,7 +313,7 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
       gtl::FindOrDie(vex_operand_usage_tokens_, vex_operand_directionality));
   vex_prefix->set_vector_size(vector_size);
   if (vector_size == VEX_VECTOR_SIZE_512_BIT && prefix_type != EVEX_PREFIX) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The 512 bit vector size can be used only in an EVEX prefix");
   }
   vex_prefix->set_mandatory_prefix(
@@ -331,10 +327,10 @@ Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   // add it to the opcode.
   specification_.set_opcode(opcode_map);
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
+absl::Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
     absl::string_view specification) {
   VLOG(1) << "Parsing opcode and suffixes: " << specification;
   // We've already dealt with all possible prefixes. The rest are either
@@ -366,16 +362,17 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
   }
   specification_.set_opcode(opcode);
   if (num_opcode_bytes == 0) {
-    return InvalidArgumentError("The instruction did not have an opcode byte.");
+    return absl::InvalidArgumentError(
+        "The instruction did not have an opcode byte.");
   }
   if (specification_.has_vex_prefix() && num_opcode_bytes != 1) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Unexpected number of opcode bytes in a VEX-encoded instruction.");
   }
 
   if (specification.empty()) {
     // There is neither ModR/M byte nor an immediate value.
-    return OkStatus();
+    return absl::OkStatus();
   }
 
   VLOG(1) << "Parsing suffixes: " << specification;
@@ -436,7 +433,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
           specification_.add_immediate_value_bytes(8);
           break;
         default:
-          return InvalidArgumentError(absl::StrCat(
+          return absl::InvalidArgumentError(absl::StrCat(
               "Invalid immediate value size: ", immediate_value_size_str));
       }
     } else if (!code_offset_size_str.empty()) {
@@ -460,13 +457,13 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
           specification_.set_code_offset_bytes(10);
           break;
         default:
-          return InvalidArgumentError(absl::StrCat("Invalid code offset size: ",
-                                                   immediate_value_size_str));
+          return absl::InvalidArgumentError(absl::StrCat(
+              "Invalid code offset size: ", immediate_value_size_str));
       }
     } else if (!is4_suffix_str.empty()) {
       CHECK_EQ("/is4", is4_suffix_str);
       if (!specification_.has_vex_prefix()) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             "The VEX operand suffix /is4 is specified for an instruction that "
             "does not use the VEX prefix.");
       }
@@ -474,7 +471,7 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
     } else if (!vsib_suffix_str.empty()) {
       CHECK_EQ("/vsib", vsib_suffix_str);
       if (!specification_.has_vex_prefix()) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             "The VEX operand suffix /vsib is specified for an instruction that "
             "does not use the VEX prefix.");
       }
@@ -492,8 +489,8 @@ Status EncodingSpecificationParser::ParseOpcodeAndSuffixes(
   }
 
   specification = absl::StripAsciiWhitespace(specification);
-  return specification.empty() ? OkStatus()
-                               : InvalidArgumentError(absl::StrCat(
+  return specification.empty() ? absl::OkStatus()
+                               : absl::InvalidArgumentError(absl::StrCat(
                                      "The specification was not fully parsed: ",
                                      std::string(specification)));
 }
@@ -620,7 +617,7 @@ std::string GenerateVexPrefixEncodingSpec(
 
 }  // namespace
 
-StatusOr<EncodingSpecification> ParseEncodingSpecification(
+absl::StatusOr<EncodingSpecification> ParseEncodingSpecification(
     const std::string& specification) {
   EncodingSpecificationParser parser;
   return parser.ParseFromString(specification);

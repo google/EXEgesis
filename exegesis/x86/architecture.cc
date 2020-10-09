@@ -21,13 +21,9 @@
 #include "exegesis/x86/instruction_encoding.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 X86Architecture::X86Architecture(
     std::shared_ptr<const ArchitectureProto> architecture_proto)

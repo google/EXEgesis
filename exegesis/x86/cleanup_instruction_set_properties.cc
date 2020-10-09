@@ -18,6 +18,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
@@ -26,9 +27,6 @@
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 const absl::flat_hash_map<std::string, std::string>& GetMissingCpuFlags() {
   static const absl::flat_hash_map<std::string, std::string>* const
@@ -41,7 +39,7 @@ const absl::flat_hash_map<std::string, std::string>& GetMissingCpuFlags() {
 
 }  // namespace
 
-Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
+absl::Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
     const std::string* const feature_name =
@@ -54,7 +52,7 @@ Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
       instruction.set_feature_name(*feature_name);
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingCpuFlags, 1000);
 
@@ -136,7 +134,7 @@ const absl::flat_hash_map<std::string, int>& GetProtectionModesByEncoding() {
 
 }  // namespace
 
-Status AddProtectionModes(InstructionSetProto* instruction_set) {
+absl::Status AddProtectionModes(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
     const int* mode = FindByVendorSyntaxMnemonicOrNull(
@@ -152,11 +150,11 @@ Status AddProtectionModes(InstructionSetProto* instruction_set) {
       instruction.set_protection_mode(*mode);
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddProtectionModes, 1000);
 
-Status FixAvailableIn64Bits(InstructionSetProto* instruction_set) {
+absl::Status FixAvailableIn64Bits(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> kEncodingSpecifications = {
       // LAHF and SAHF
@@ -168,7 +166,7 @@ Status FixAvailableIn64Bits(InstructionSetProto* instruction_set) {
       instruction.set_available_in_64_bit(true);
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixAvailableIn64Bits, 100);
 

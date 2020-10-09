@@ -18,14 +18,12 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "exegesis/proto/x86/decoded_instruction.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::StatusOr;
 
 // Encodes an x86-64 instruction according to the provided encoding
 // specification and the values of the bits in 'decoded_instruction'. Returns
@@ -34,7 +32,7 @@ using ::exegesis::util::StatusOr;
 // sizes of the immediate values do not match or 'instruction_data' contains
 // data for the ModR/M byte even though the instruction does not use it
 // according to the binary specification.
-StatusOr<std::vector<uint8_t>> EncodeInstruction(
+absl::StatusOr<std::vector<uint8_t>> EncodeInstruction(
     const EncodingSpecification& specification,
     const DecodedInstruction& decoded_instruction);
 

@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/base/macros.h"
@@ -34,13 +35,14 @@
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
+#include "llvm/Support/Host.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/TargetRegistry.h"
 
 namespace exegesis {
 
-Disassembler::Disassembler(const std::string& triple_name)
-    : triple_name_(triple_name.c_str()) {
+Disassembler::Disassembler(std::string triple_name)
+    : triple_name_(std::move(triple_name)) {
   Init();
 }
 
@@ -118,7 +120,7 @@ absl::optional<std::pair<int, llvm::MCInst>> Disassembler::DisassembleToMCInst(
   const llvm::MCDisassembler::DecodeStatus decode_status =
       disasm_->getInstruction(
           inst, decode_size,
-          llvm::ArrayRef<uint8_t>{bytes.data(), bytes.size()}, 0, llvm::nulls(),
+          llvm::ArrayRef<uint8_t>{bytes.data(), bytes.size()}, 0,
           llvm::nulls());
   if (decode_status == llvm::MCDisassembler::Fail) return absl::nullopt;
   if (decode_status == llvm::MCDisassembler::SoftFail) {
@@ -132,7 +134,8 @@ int Disassembler::Disassemble(absl::Span<const uint8_t> bytes,
                               std::string* const llvm_mnemonic,
                               std::vector<std::string>* const llvm_operands,
                               std::string* const intel_instruction,
-                              std::string* const att_instruction) const {
+                              std::string* const att_instruction,
+                              llvm::MCInst* mcinst /* = nullptr */) const {
   *llvm_opcode = 0;
   llvm_mnemonic->clear();
   llvm_operands->clear();
@@ -143,19 +146,20 @@ int Disassembler::Disassemble(absl::Span<const uint8_t> bytes,
   if (!result) return 0;
   const int decode_size = result->first;
   const llvm::MCInst& instruction = result->second;
+  if (mcinst != nullptr) *mcinst = instruction;
 
   std::string tmp;
   tmp.clear();
   llvm::raw_string_ostream att_stream(tmp);
-  att_instruction_printer_->printInst(&instruction, att_stream, "",
-                                      *sub_target_info_);
+  att_instruction_printer_->printInst(&instruction, 0, "", *sub_target_info_,
+                                      att_stream);
   att_stream.flush();
   att_instruction->assign(tmp);
 
   tmp.clear();
   llvm::raw_string_ostream intel_stream(tmp);
-  intel_instruction_printer_->printInst(&instruction, intel_stream, "",
-                                        *sub_target_info_);
+  intel_instruction_printer_->printInst(&instruction, 0, "", *sub_target_info_,
+                                        intel_stream);
   intel_stream.flush();
   intel_instruction->assign(tmp);
 

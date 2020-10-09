@@ -42,7 +42,7 @@ TEST(ContextTest, Decomposition) {
   InstrDesc[3].SchedClass = 3;
   InstrDesc[4].SchedClass = 4;
   InstrInfo->InitMCInstrInfo(InstrDesc.data(), InstrNameIndices.data(),
-                             InstrNameData, InstrDesc.size());
+                             InstrNameData, nullptr, nullptr, InstrDesc.size());
   Context.InstrInfo = std::move(InstrInfo);
 
   llvm::MCSchedModel SchedModel;
@@ -126,7 +126,7 @@ TEST(ContextTest, Decomposition) {
   WriteLatencyEntries[1].Cycles = 4;
   WriteLatencyEntries[1].WriteResourceID = 0;
   Context.SubtargetInfo = absl::make_unique<llvm::MCSubtargetInfo>(
-      llvm::Triple(), /*CPU=*/"", /*FeatureString=*/"",
+      llvm::Triple(), /*CPU=*/"", /*TuneCPU=*/"", /*FeatureString=*/"",
       llvm::ArrayRef<llvm::SubtargetFeatureKV>(),
       llvm::ArrayRef<llvm::SubtargetSubTypeKV>(), WriteProcResEntries.data(),
       WriteLatencyEntries.data(),

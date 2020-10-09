@@ -26,8 +26,8 @@
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/xpdf_util.h"
 #include "exegesis/util/proto_util.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
-#include "util/task/status.h"
 
 ABSL_FLAG(std::string, exegesis_pdf_input_file, "",
           "filename or filename:start-end e.g. "

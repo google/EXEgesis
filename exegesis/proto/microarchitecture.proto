@@ -147,6 +147,10 @@ message MicroArchitectureProto {
 
   // The number of store buffers. Also known as "in-flight stores".
   int32 num_store_buffers = 36;
+
+  // The name that LLVM uses to refer to that microarchitecture.
+  string llvm_arch = 41;
+  string llvm_cpu = 42;
 }
 
 message MicroArchitecturesProto {

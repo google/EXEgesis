@@ -21,21 +21,18 @@
 #include <unordered_map>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace itineraries {
 
-using ::exegesis::util::Status;
-
 // Computes the itinerary of every instruction.
 // NOTE(bdb): Some instructions are not yet handled. For the supported
 // instructions, some addressing modes are not handled.
-Status ComputeItineraries(const InstructionSetProto& instruction_set,
-                          InstructionSetItinerariesProto* itineraries);
+absl::Status ComputeItineraries(const InstructionSetProto& instruction_set,
+                                InstructionSetItinerariesProto* itineraries);
 
 }  // namespace itineraries
 }  // namespace exegesis

@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/base/opcode.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
@@ -28,9 +29,6 @@
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 LegacyEncoding::PrefixUsage GetRexWUsage(const InstructionProto& instruction) {
   DCHECK(instruction.has_x86_encoding_specification());
@@ -51,11 +49,11 @@ void SetRexWUsage(InstructionProto* instruction,
 
 }  // namespace
 
-Status AddRexWPrefixUsage(InstructionSetProto* instruction_set) {
+absl::Status AddRexWPrefixUsage(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   AddPrefixUsageToLegacyInstructions(GetRexWUsage, SetRexWUsage,
                                      instruction_set);
-  return OkStatus();
+  return absl::OkStatus();
 }
 // NOTE(ondrasej): This cleanup must run right after parsing the encoding
 // specification.

@@ -17,10 +17,14 @@
 #include "absl/strings/str_cat.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace exegesis {
 namespace {
+
+using testing::Gt;
+using testing::SizeIs;
 
 TEST(MicroArchitectureDataTest, Works) {
   auto architecture_proto = std::make_shared<const ArchitectureProto>(
@@ -39,9 +43,10 @@ TEST(MicroArchitectureDataTest, Works) {
   const auto statusor_microarchitecture =
       MicroArchitectureData::ForMicroArchitectureId(architecture_proto, "hsw");
   ASSERT_TRUE(statusor_microarchitecture.ok());
-  const auto& microarchitecture = statusor_microarchitecture.ValueOrDie();
+  const auto& microarchitecture = statusor_microarchitecture.value();
   EXPECT_EQ(microarchitecture.instruction_set().instructions_size(), 1);
   EXPECT_EQ(microarchitecture.itineraries().microarchitecture_id(), "hsw");
+  EXPECT_THAT(GetMicroArchitecturesForArchitecture("x86_64"), SizeIs(Gt(5)));
 }
 
 }  // namespace

@@ -24,9 +24,9 @@ cc_library(
     hdrs = ["context.h"],
     deps = [
         "@com_google_absl//absl/container:flat_hash_map",
-        "@llvm_git//:codegen",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
+        "@llvm_git//:CodeGen",
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -62,8 +62,8 @@ cc_library(
         ":component",
         ":context",
         ":log",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
     ],
 )
 

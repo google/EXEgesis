@@ -30,14 +30,12 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/status/statusor.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::StatusOr;
 
 // Parses the instruction encoding specification from a string.
 //
@@ -46,7 +44,7 @@ using ::exegesis::util::StatusOr;
 //     ParseEncodingSpecification("F3 0F AE /3");
 // CHECK_OK(specification_or_status.status());
 // printf("%x\n", specification_or_status.ValueOrDie().opcode());
-StatusOr<EncodingSpecification> ParseEncodingSpecification(
+absl::StatusOr<EncodingSpecification> ParseEncodingSpecification(
     const std::string& specification);
 
 // Generates an encoding specification string of the format given in the Intel

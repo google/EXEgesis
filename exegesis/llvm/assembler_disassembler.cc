@@ -16,21 +16,17 @@
 
 #include <utility>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/llvm/assembler_disassembler.pb.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/strings.h"
 #include "glog/logging.h"
 #include "llvm/IR/InlineAsm.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace {
-
-using ::exegesis::util::InternalError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::StatusOr;
 
 // We're never actually running the assembled code on the host, so we use the
 // most complete CPU in terms of features so that we can assemble all
@@ -42,28 +38,27 @@ constexpr const char kMcpu[] = "cannonlake";
 AssemblerDisassembler::AssemblerDisassembler()
     : jit_(new JitCompiler(kMcpu)), disasm_(new Disassembler("")) {}
 
-StatusOr<AssemblerDisassemblerResult>
+absl::StatusOr<AssemblerDisassemblerResult>
 AssemblerDisassembler::AssembleDisassemble(
     const std::string& code, llvm::InlineAsm::AsmDialect asm_dialect) {
   const auto function = jit_->CompileInlineAssemblyToFunction(
       1, "\t" + code,
       /*loop_constraints=*/"", asm_dialect);
   if (!function.ok()) {
-    return InvalidArgumentError(
-        absl::StrCat("Could not assemble '", code,
-                     "': ", ToStringView(function.status().error_message())));
+    return absl::InvalidArgumentError(absl::StrCat(
+        "Could not assemble '", code, "': ", function.status().message()));
   }
-  if (function.ValueOrDie().size <= 0) {
-    return InvalidArgumentError(
+  if (function.value().size <= 0) {
+    return absl::InvalidArgumentError(
         absl::StrCat("Non-positive size for '", code, "'"));
   }
-  const auto data = reinterpret_cast<const uint8_t*>(function.ValueOrDie().ptr);
-  const std::vector<uint8_t> encoded_instruction(
-      data, data + function.ValueOrDie().size);
+  const auto data = reinterpret_cast<const uint8_t*>(function.value().ptr);
+  const std::vector<uint8_t> encoded_instruction(data,
+                                                 data + function.value().size);
   return Disassemble(encoded_instruction);
 }
 
-std::pair<StatusOr<AssemblerDisassemblerResult>,
+std::pair<absl::StatusOr<AssemblerDisassemblerResult>,
           AssemblerDisassemblerInterpretation>
 AssemblerDisassembler::AssembleDisassemble(
     const std::string& input,
@@ -73,7 +68,7 @@ AssemblerDisassembler::AssembleDisassemble(
         HUMAN_READABLE_BINARY_OR_INTEL_ASM: {
       const auto bytes_or_status = ParseHexString(input);
       if (bytes_or_status.ok()) {
-        return std::make_pair(Disassemble(bytes_or_status.ValueOrDie()),
+        return std::make_pair(Disassemble(bytes_or_status.value()),
                               HUMAN_READABLE_BINARY);
       }
       return std::make_pair(
@@ -91,21 +86,21 @@ AssemblerDisassembler::AssembleDisassemble(
       const auto bytes_or_status = ParseHexString(input);
       if (!bytes_or_status.ok()) {
         return std::make_pair(
-            InvalidArgumentError(absl::StrCat(
+            absl::InvalidArgumentError(absl::StrCat(
                 "Input '", input, "' is not in human readable binary format")),
             AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY);
       }
       return std::make_pair(
-          Disassemble(bytes_or_status.ValueOrDie()),
+          Disassemble(bytes_or_status.value()),
           AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY);
     }
     default:
-      return std::make_pair(InternalError("unreachable"),
+      return std::make_pair(absl::InternalError("unreachable"),
                             AssemblerDisassemblerInterpretation::INTEL_ASM);
   }
 }
 
-StatusOr<AssemblerDisassemblerResult> AssemblerDisassembler::Disassemble(
+absl::StatusOr<AssemblerDisassemblerResult> AssemblerDisassembler::Disassemble(
     const std::vector<uint8_t>& encoded_instruction) {
   AssemblerDisassemblerResult result;
   std::vector<std::string> llvm_operands;
@@ -116,7 +111,7 @@ StatusOr<AssemblerDisassemblerResult> AssemblerDisassembler::Disassemble(
       encoded_instruction, &llvm_opcode, result.mutable_llvm_mnemonic(),
       &llvm_operands, &intel_code, &att_code);
   if (binary_encoding_size_in_bytes == 0) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Could not disassemble: ",
                      ToHumanReadableHexString(encoded_instruction)));
   }

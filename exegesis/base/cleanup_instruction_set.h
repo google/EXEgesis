@@ -24,21 +24,19 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
-
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 // The type of all instruction database transforms.
 // InstructionSetTransformRawFunction is the type of the functions that can be
 // registered as a stransform using REGISTER_INSTRUCTION_SET_TRANSFORM.
 // InstructionSetTransform is a std::function wrapper around this type.
-using InstructionSetTransformRawFunction = Status(InstructionSetProto*);
-using InstructionSetTransform = std::function<Status(InstructionSetProto*)>;
+using InstructionSetTransformRawFunction = absl::Status(InstructionSetProto*);
+using InstructionSetTransform =
+    std::function<absl::Status(InstructionSetProto*)>;
 
 // The list of instruction database transforms indexed by their names.
 using InstructionSetTransformsByName =
@@ -61,15 +59,15 @@ std::vector<InstructionSetTransform> GetDefaultTransformPipeline();
 // diff of the changes made by the transform. The changes are returned as a
 // human-readable string; the returned string is empty if and only if the
 // transform did not make any changes to the proto.
-StatusOr<std::string> RunTransformWithDiff(
+absl::StatusOr<std::string> RunTransformWithDiff(
     const InstructionSetTransform& transform,
     InstructionSetProto* instruction_set);
 
 // Runs all transforms from 'pipeline' on the given instruction set proto.
-// Returns Status::OK if all transform succeeds; otherwise, stops on the first
-// transform that fails. The state of the instruction set proto after a failure
-// is undefined.
-Status RunTransformPipeline(
+// Returns absl::Status::OK if all transform succeeds; otherwise, stops on the
+// first transform that fails. The state of the instruction set proto after a
+// failure is undefined.
+absl::Status RunTransformPipeline(
     const std::vector<InstructionSetTransform>& pipeline,
     InstructionSetProto* instruction_set);
 
@@ -80,7 +78,7 @@ Status RunTransformPipeline(
 // 4. The binary encoding of the instruction.
 // This transform should be the last transform in the set, so that it cleans up
 // after the changes done by the other instructions.
-Status SortByVendorSyntax(InstructionSetProto* instruction_set);
+absl::Status SortByVendorSyntax(InstructionSetProto* instruction_set);
 
 // A registration mechanism for the instruction set pipeline. Registering the
 // transform will add it to the list returned by GetTransformsByName, and

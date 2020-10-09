@@ -17,22 +17,17 @@
 #include <tuple>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/util/proto_util.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
-
-using ::exegesis::util::InternalError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::NotFoundError;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 // Returns the registered providers.
 absl::flat_hash_map<std::string,
@@ -44,19 +39,19 @@ GetProviders() {
 }
 
 // Architecture provider for proto files.
-template <Status (*Read)(const std::string&,
-                         google::protobuf::Message* message)>
-StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProtoFromFile(
-    const std::string& id) {
+template <absl::Status (*Read)(const std::string&,
+                               google::protobuf::Message* message)>
+absl::StatusOr<std::shared_ptr<const ArchitectureProto>>
+GetArchitectureProtoFromFile(const std::string& id) {
   auto result = std::make_shared<ArchitectureProto>();
-  const Status read_status = Read(id, result.get());
+  const absl::Status read_status = Read(id, result.get());
   if (!read_status.ok()) return read_status;
   return std::shared_ptr<const ArchitectureProto>(result);
 }
 
 }  // namespace
 
-StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
+absl::StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
     const std::string& uri) {
   const auto sep = uri.find(':');
   // If sep is npos, source is the whole thing, and id is empty.
@@ -71,18 +66,18 @@ StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
   } else if (source == kRegisteredSource) {
     const auto* provider = gtl::FindOrNull(*GetProviders(), id);
     if (provider == nullptr) {
-      return NotFoundError(
+      return absl::NotFoundError(
           absl::StrCat("No ArchitectureProtoProvider registered for id '", id,
                        "'. Known ids are:\n",
                        absl::StrJoin(GetRegisteredArchitectureIds(), "\n")));
     }
     const auto proto_or_status = (*provider)->GetProto();
-    if (proto_or_status.ok() && proto_or_status.ValueOrDie() == nullptr) {
-      return InternalError("broken contract: GetProtoOrDie() != nullptr");
+    if (proto_or_status.ok() && proto_or_status.value() == nullptr) {
+      return absl::InternalError("broken contract: GetProtoOrDie() != nullptr");
     }
     return proto_or_status;
   }
-  return InvalidArgumentError(
+  return absl::InvalidArgumentError(
       absl::StrCat("Unknown source '", source,
                    "'. If you meant to read from a text file, use ",
                    kPbTxtSource, ":/path/to/file"));
@@ -90,10 +85,10 @@ StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
 
 std::shared_ptr<const ArchitectureProto> GetArchitectureProtoOrDie(
     const std::string& uri) {
-  const StatusOr<std::shared_ptr<const ArchitectureProto>>
+  const absl::StatusOr<std::shared_ptr<const ArchitectureProto>>
       architecture_or_status = GetArchitectureProto(uri);
   CHECK_OK(architecture_or_status.status());
-  return architecture_or_status.ValueOrDie();
+  return architecture_or_status.value();
 }
 
 std::vector<std::string> GetRegisteredArchitectureIds() {

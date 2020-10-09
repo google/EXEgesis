@@ -1547,9 +1547,9 @@ int CollectVmxOrSgxInstructions(
   bool is_leaf = false;
   if (MatchesFirstPagePattern(first_page, is_sgx, &is_leaf,
                               &instruction_name)) {
-    const InstructionType type =
-        !is_sgx ? InstructionType::VMX
-                : is_leaf ? InstructionType::LEAF_SGX : InstructionType::SGX;
+    const InstructionType type = !is_sgx   ? InstructionType::VMX
+                                 : is_leaf ? InstructionType::LEAF_SGX
+                                           : InstructionType::SGX;
     Pages result;
     result.push_back(&first_page);
     ++page_idx;

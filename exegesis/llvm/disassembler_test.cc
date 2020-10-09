@@ -15,6 +15,7 @@
 #include "exegesis/llvm/disassembler.h"
 
 #include "gtest/gtest.h"
+#include "lib/Target/X86/MCTargetDesc/X86MCTargetDesc.h"
 
 namespace exegesis {
 namespace {
@@ -212,7 +213,7 @@ TEST(DisassemblerTest, LoadSegmentLimitInstruction) {
       "00000000; 440F030C25FF7F0000; lsl r9d, word ptr [0x7fff]; lsll 0x7fff, "
       "%r9d; LSL32rm",
       disasm.DisassembleHexString("440F030C25FF7F0000"));
-  EXPECT_EQ("00000000; 4D0F03C9; lsl r9, r9d; lslq %r9d, %r9; LSL64rr",
+  EXPECT_EQ("00000000; 4D0F03C9; lsl r9, r9w; lslq %r9w, %r9; LSL64rr",
             disasm.DisassembleHexString("4D0F03C9"));
   EXPECT_EQ(
       "00000000; 4C0F030C25FF7F0000; lsl r9, word ptr [0x7fff];"
@@ -261,15 +262,15 @@ TEST(DisassemblerTest, Mov64BitImmediate) {
 TEST(DisassemblerTest, FpStatusAndEnvironment) {
   Disassembler disasm("");
   EXPECT_EQ(
-      "00000000; D92425FEFFFF7F; fldenv dword ptr [0x7ffffffe]; fldenv "
+      "00000000; D92425FEFFFF7F; fldenv [0x7ffffffe]; fldenv "
       "0x7ffffffe; FLDENVm",
       disasm.DisassembleHexString("D92425FEFFFF7F"));
   EXPECT_EQ(
-      "00000000; DD3425FEFFFF7F; fnsave dword ptr [0x7ffffffe]; fnsave "
+      "00000000; DD3425FEFFFF7F; fnsave [0x7ffffffe]; fnsave "
       "0x7ffffffe; FSAVEm",
       disasm.DisassembleHexString("DD3425FEFFFF7F"));
   EXPECT_EQ(
-      "00000000; D93425FEFFFF7F; fnstenv dword ptr [0x7ffffffe]; fnstenv "
+      "00000000; D93425FEFFFF7F; fnstenv [0x7ffffffe]; fnstenv "
       "0x7ffffffe; FSTENVm",
       disasm.DisassembleHexString("D93425FEFFFF7F"));
   EXPECT_EQ(
@@ -277,15 +278,15 @@ TEST(DisassemblerTest, FpStatusAndEnvironment) {
       "0x7ffffffe; FNSTSWm",
       disasm.DisassembleHexString("DD3C25FEFFFF7F"));
   EXPECT_EQ(
-      "00000000; DD2425FEFFFF7F; frstor dword ptr [0x7ffffffe]; frstor "
+      "00000000; DD2425FEFFFF7F; frstor [0x7ffffffe]; frstor "
       "0x7ffffffe; FRSTORm",
       disasm.DisassembleHexString("DD2425FEFFFF7F"));
   EXPECT_EQ(
-      "00000000; DD3425FEFFFF7F; fnsave dword ptr [0x7ffffffe]; fnsave "
+      "00000000; DD3425FEFFFF7F; fnsave [0x7ffffffe]; fnsave "
       "0x7ffffffe; FSAVEm",
       disasm.DisassembleHexString("DD3425FEFFFF7F"));
   EXPECT_EQ(
-      "00000000; D93425FEFFFF7F; fnstenv dword ptr [0x7ffffffe]; fnstenv "
+      "00000000; D93425FEFFFF7F; fnstenv [0x7ffffffe]; fnstenv "
       "0x7ffffffe; FSTENVm",
       disasm.DisassembleHexString("D93425FEFFFF7F"));
   EXPECT_EQ(
@@ -313,14 +314,16 @@ TEST(DisassemblerTest, TooShortABuffer) {
   std::vector<std::string> llvm_operands;
   std::string intel_instruction;
   std::string att_instruction;
+  llvm::MCInst mcinst;
   std::vector<uint8_t> full = {0x66, 0x0F, 0x2F, 0x0C, 0x25,
                                0xFF, 0x7F, 0x00, 0x00};
 
   // Sanity check.
   EXPECT_EQ(full.size(), disasm.Disassemble(full, &llvm_opcode, &llvm_mnemonic,
                                             &llvm_operands, &intel_instruction,
-                                            &att_instruction));
+                                            &att_instruction, &mcinst));
   EXPECT_EQ("COMISDrm", llvm_mnemonic);
+  EXPECT_EQ(mcinst.getOpcode(), llvm::X86::COMISDrm);
 
   // This one is empty.
   EXPECT_EQ(0,

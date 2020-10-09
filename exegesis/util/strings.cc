@@ -14,16 +14,15 @@
 
 #include "exegesis/util/strings.h"
 
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 
-using ::exegesis::util::StatusOr;
-
-StatusOr<std::vector<uint8_t>> ParseHexString(absl::string_view hex_string) {
+absl::StatusOr<std::vector<uint8_t>> ParseHexString(
+    absl::string_view hex_string) {
   std::vector<uint8_t> bytes;
   uint32_t encoded_byte;
   const RE2 byte_parser("(?:0x)?([0-9a-fA-F]{1,2}) *,? *");
@@ -32,7 +31,7 @@ StatusOr<std::vector<uint8_t>> ParseHexString(absl::string_view hex_string) {
     bytes.push_back(static_cast<uint8_t>(encoded_byte));
   }
   if (!hex_string.empty()) {
-    return util::InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Could not parse: ", hex_string));
   }
   return bytes;

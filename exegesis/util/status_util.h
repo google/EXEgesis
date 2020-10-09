@@ -15,15 +15,38 @@
 #ifndef EXEGESIS_UTIL_STATUS_UTIL_H_
 #define EXEGESIS_UTIL_STATUS_UTIL_H_
 
-#include "util/task/status.h"
+#include <string>
+
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 
 namespace exegesis {
 
-using ::exegesis::util::Status;
+#ifndef CHECK_OK
+#define CHECK_OK(status_expr)                  \
+  do {                                         \
+    const absl::Status status = (status_expr); \
+    CHECK(status.ok()) << status;              \
+  } while (false)
+#endif  // CHECK_OK
 
-// Updates the value of 'status': if 'status' was not OK, its old value is kept.
-// Otherwise, it is replaced with the value of 'new_status'.
-void UpdateStatus(Status* status, const Status& new_status);
+#ifndef RETURN_IF_ERROR
+#define RETURN_IF_ERROR(status_expr)   \
+  do {                                 \
+    const auto status = (status_expr); \
+    if (!status.ok()) return status;   \
+  } while (false)
+#endif  // RETURN_IF_ERROR
+
+inline absl::Status AnnotateStatus(const absl::Status& s,
+                                   absl::string_view msg) {
+  if (s.ok() || msg.empty()) return s;
+  const std::string annotated = s.message().empty()
+                                    ? std::string(msg)
+                                    : absl::StrCat(s.message(), "; ", msg);
+  return absl::Status(s.code(), annotated);
+}
 
 }  // namespace exegesis
 

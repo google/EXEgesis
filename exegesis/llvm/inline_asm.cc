@@ -16,6 +16,8 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "base/commandlineflags.h"
@@ -39,13 +41,8 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/SourceMgr.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
-
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::InternalError;
-using ::exegesis::util::InvalidArgumentError;
 
 // A memory manager that stores the size of the blocks it allocates. This is
 // used to retrieve get the size of generated code.
@@ -105,11 +102,11 @@ void JitCompiler::Init() {
   CHECK(function_type_ != nullptr);
 }
 
-StatusOr<VoidFunction> JitCompiler::CompileInlineAssemblyToFunction(
+absl::StatusOr<VoidFunction> JitCompiler::CompileInlineAssemblyToFunction(
     int num_iterations, const std::string& loop_code,
     const std::string& loop_constraints, llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
-  llvm::Value* loop_inline_asm =
+  llvm::InlineAsm* loop_inline_asm =
       AssembleInlineNativeCode(true, loop_code, loop_constraints, dialect);
   CHECK(loop_inline_asm != nullptr);
   const auto loop = WrapInlineAsmInLoopingFunction(num_iterations, nullptr,
@@ -117,23 +114,23 @@ StatusOr<VoidFunction> JitCompiler::CompileInlineAssemblyToFunction(
   if (!loop.ok()) {
     return loop.status();
   }
-  return CreatePointerToInlineAssemblyFunction(loop.ValueOrDie());
+  return CreatePointerToInlineAssemblyFunction(loop.value());
 }
 
-StatusOr<VoidFunction> JitCompiler::CompileInlineAssemblyToFunction(
+absl::StatusOr<VoidFunction> JitCompiler::CompileInlineAssemblyToFunction(
     int num_iterations, const std::string& init_code,
     const std::string& init_constraints, const std::string& loop_code,
     const std::string& loop_constraints, const std::string& cleanup_code,
     const std::string& cleanup_constraints,
     llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
-  llvm::Value* const init_inline_asm =
+  llvm::InlineAsm* const init_inline_asm =
       AssembleInlineNativeCode(true, init_code, init_constraints, dialect);
   CHECK(init_inline_asm != nullptr);
-  llvm::Value* const loop_inline_asm =
+  llvm::InlineAsm* const loop_inline_asm =
       AssembleInlineNativeCode(true, loop_code, loop_constraints, dialect);
   CHECK(loop_inline_asm != nullptr);
-  llvm::Value* const cleanup_inline_asm =
+  llvm::InlineAsm* const cleanup_inline_asm =
       AssembleInlineNativeCode(true, cleanup_code, init_constraints, dialect);
   CHECK(cleanup_inline_asm != nullptr);
 
@@ -142,25 +139,25 @@ StatusOr<VoidFunction> JitCompiler::CompileInlineAssemblyToFunction(
   if (!loop.ok()) {
     return loop.status();
   }
-  return CreatePointerToInlineAssemblyFunction(loop.ValueOrDie());
+  return CreatePointerToInlineAssemblyFunction(loop.value());
 }
 
-StatusOr<uint8_t*> JitCompiler::CompileInlineAssemblyFragment(
+absl::StatusOr<uint8_t*> JitCompiler::CompileInlineAssemblyFragment(
     const std::string& code, llvm::InlineAsm::AsmDialect dialect) {
   if (!initialized_) Init();
-  llvm::Value* inline_asm = AssembleInlineNativeCode(false, code, "", dialect);
+  llvm::InlineAsm* inline_asm =
+      AssembleInlineNativeCode(false, code, "", dialect);
   CHECK(inline_asm != nullptr);
   const auto loop =
       WrapInlineAsmInLoopingFunction(1, nullptr, inline_asm, nullptr);
   if (!loop.ok()) {
     return loop.status();
   }
-  const auto function =
-      CreatePointerToInlineAssemblyFunction(loop.ValueOrDie());
+  const auto function = CreatePointerToInlineAssemblyFunction(loop.value());
   if (!function.ok()) {
     return function.status();
   }
-  return reinterpret_cast<uint8_t*>(function.ValueOrDie().ptr);
+  return reinterpret_cast<uint8_t*>(function.value().ptr);
 }
 
 llvm::InlineAsm* JitCompiler::AssembleInlineNativeCode(
@@ -171,9 +168,9 @@ llvm::InlineAsm* JitCompiler::AssembleInlineNativeCode(
                               has_side_effects, false, dialect);
 }
 
-StatusOr<llvm::Function*> JitCompiler::WrapInlineAsmInLoopingFunction(
-    int num_iterations, llvm::Value* init_inline_asm,
-    llvm::Value* loop_inline_asm, llvm::Value* cleanup_inline_asm) {
+absl::StatusOr<llvm::Function*> JitCompiler::WrapInlineAsmInLoopingFunction(
+    int num_iterations, llvm::InlineAsm* init_inline_asm,
+    llvm::InlineAsm* loop_inline_asm, llvm::InlineAsm* cleanup_inline_asm) {
   if (!initialized_) Init();
   CHECK_GE(num_iterations, 1);
   constexpr char kModuleNameBase[] = "inline_assembly_module_";
@@ -186,7 +183,7 @@ StatusOr<llvm::Function*> JitCompiler::WrapInlineAsmInLoopingFunction(
   llvm::Function* const function = llvm::Function::Create(
       function_type_, llvm::Function::ExternalLinkage, function_name, module);
   if (function == nullptr) {
-    return InternalError("Could not create llvm Function object");
+    return absl::InternalError("Could not create llvm Function object");
   }
   llvm::BasicBlock* function_basic_block =
       llvm::BasicBlock::Create(*context_, "entry", function);
@@ -245,21 +242,21 @@ StatusOr<llvm::Function*> JitCompiler::WrapInlineAsmInLoopingFunction(
   std::string error_msg;
   ::llvm::raw_string_ostream os(error_msg);
   if (llvm::verifyFunction(*function, &os)) {
-    return InternalError(
+    return absl::InternalError(
         absl::StrCat("llvm::verifyFunction failed: ", os.str()));
   }
 
   return function;
 }
 
-StatusOr<VoidFunction> JitCompiler::CreatePointerToInlineAssemblyFunction(
+absl::StatusOr<VoidFunction> JitCompiler::CreatePointerToInlineAssemblyFunction(
     llvm::Function* function) {
   compile_errors_.clear();
   intercepted_unknown_symbols_.clear();
   if (!initialized_) Init();
   llvm::Module* const module = function->getParent();
   if (module == nullptr) {
-    return InternalError("Module not found");
+    return absl::InternalError("Module not found");
   }
   execution_engine_->addModule(std::unique_ptr<llvm::Module>(module));
 
@@ -270,17 +267,17 @@ StatusOr<VoidFunction> JitCompiler::CreatePointerToInlineAssemblyFunction(
   // NOTE(ondrasej): getFunctionAddress only works with MCJIT (and not with JIT
   // or the interpreter), but we don't care, because JIT and the interpreter
   // cannot execute inline assembly anyway.
-  const std::string function_name = function->getName();
+  const std::string function_name(function->getName());
   uint64_t function_ptr = execution_engine_->getFunctionAddress(function_name);
   if (function_ptr == 0) {
-    return FailedPreconditionError(
+    return absl::FailedPreconditionError(
         "getFunctionAddress returned nullptr. Are you sure you use MCJIT?");
   }
   if (!compile_errors_.empty()) {
-    return InvalidArgumentError(absl::StrJoin(compile_errors_, "; "));
+    return absl::InvalidArgumentError(absl::StrJoin(compile_errors_, "; "));
   }
   if (!intercepted_unknown_symbols_.empty()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("The following unknown symbols are referenced: '",
                      absl::StrJoin(intercepted_unknown_symbols_, "', '"), "'"));
   }

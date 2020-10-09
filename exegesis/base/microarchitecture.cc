@@ -18,16 +18,14 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
-
-using ::exegesis::util::NotFoundError;
-using ::exegesis::util::StatusOr;
 
 MicroArchitecture::MicroArchitecture(const MicroArchitectureProto& proto)
     : proto_(proto),
@@ -88,14 +86,22 @@ MicroArchitecturesById() {
   return result;
 }
 
+absl::flat_hash_map<std::string, std::vector<const MicroArchitecture*>>*
+MicroArchitecturesByArchitecture() {
+  static auto* const result =
+      new absl::flat_hash_map<std::string,
+                              std::vector<const MicroArchitecture*>>();
+  return result;
+}
+
 }  // namespace
 
-StatusOr<std::string> GetMicroArchitectureForCpuModelId(
+absl::StatusOr<std::string> GetMicroArchitectureForCpuModelId(
     const std::string& cpu_model_id) {
   const std::string* const microarchitecture_id =
       gtl::FindOrNull(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
   if (microarchitecture_id == nullptr) {
-    return NotFoundError(
+    return absl::NotFoundError(
         absl::StrCat("The CPU model ID was not found: ", cpu_model_id));
   }
   return *microarchitecture_id;
@@ -106,26 +112,38 @@ const std::string& GetMicroArchitectureIdForCpuModelOrDie(
   return gtl::FindOrDie(*MicroArchitectureIdByCpuModelId(), cpu_model_id);
 }
 
+const std::vector<const MicroArchitecture*>&
+GetMicroArchitecturesForArchitecture(const std::string& llvm_arch) {
+  static const auto* const kEmpty = new std::vector<const MicroArchitecture*>();
+  return ::exegesis::gtl::FindWithDefault(*MicroArchitecturesByArchitecture(),
+                                          llvm_arch, *kEmpty);
+}
+
 namespace internal {
 
 void RegisterMicroArchitectures::RegisterFromProto(
-    const MicroArchitecturesProto& microarchitectures) {
-  auto* const microarchitectures_by_id = MicroArchitecturesById();
-  auto* const microarchitecture_id_by_cpumodel_id =
-      MicroArchitectureIdByCpuModelId();
+    const MicroArchitecturesProto& proto) {
+  auto& microarchitectures_by_id = *MicroArchitecturesById();
+  auto& microarchitecture_id_by_cpumodel_id =
+      *MicroArchitectureIdByCpuModelId();
+  auto& microarchitectures_by_arch = *MicroArchitecturesByArchitecture();
   for (const MicroArchitectureProto& microarchitecture_proto :
-       microarchitectures.microarchitectures()) {
+       proto.microarchitectures()) {
     const std::string& microarchitecture_id = microarchitecture_proto.id();
     for (const std::string& model_id : microarchitecture_proto.model_ids()) {
-      gtl::InsertOrDie(microarchitecture_id_by_cpumodel_id, model_id,
+      gtl::InsertOrDie(&microarchitecture_id_by_cpumodel_id, model_id,
                        microarchitecture_id);
     }
-    const auto insert_result = microarchitectures_by_id->emplace(
-        microarchitecture_id,
-        absl::make_unique<MicroArchitecture>(microarchitecture_proto));
-    if (!insert_result.second) {
-      LOG(FATAL) << "Duplicate micro-architecture: " << microarchitecture_id;
+    auto microarchitecture =
+        absl::make_unique<MicroArchitecture>(microarchitecture_proto);
+    if (!microarchitecture_proto.llvm_arch().empty()) {
+      microarchitectures_by_arch[microarchitecture_proto.llvm_arch()].push_back(
+          microarchitecture.get());
     }
+    const auto insert_result = microarchitectures_by_id.emplace(
+        microarchitecture_id, std::move(microarchitecture));
+    CHECK(insert_result.second)
+        << "Duplicate micro-architecture: " << microarchitecture_id;
   }
 }
 
@@ -145,19 +163,21 @@ const MicroArchitecture& MicroArchitecture::FromIdOrDie(
   return *to_return;
 }
 
-StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroArchitectureId(
+absl::StatusOr<MicroArchitectureData>
+MicroArchitectureData::ForMicroArchitectureId(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
     const std::string& microarchitecture_id) {
   const auto* microarchitecture =
       MicroArchitecture::FromId(microarchitecture_id);
   if (microarchitecture == nullptr) {
-    return util::InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Unknown microarchitecture '", microarchitecture_id, "'"));
   }
   return ForMicroArchitecture(std::move(architecture_proto), microarchitecture);
 }
 
-StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroArchitecture(
+absl::StatusOr<MicroArchitectureData>
+MicroArchitectureData::ForMicroArchitecture(
     std::shared_ptr<const ArchitectureProto> architecture_proto,
     const MicroArchitecture* microarchitecture) {
   CHECK(microarchitecture);
@@ -172,7 +192,7 @@ StatusOr<MicroArchitectureData> MicroArchitectureData::ForMicroArchitecture(
     }
   }
 
-  return util::InvalidArgumentError(
+  return absl::InvalidArgumentError(
       absl::StrCat("No itineraries for microarchitecture '",
                    microarchitecture->proto().id(), "'"));
 }

@@ -9,7 +9,7 @@ cc_library(
         ":common",
         "//llvm_sim/framework:component",
         "//llvm_sim/framework:log_levels",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -29,7 +29,7 @@ cc_library(
     hdrs = ["common.h"],
     deps = [
         "//llvm_sim/framework:component",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -40,7 +40,7 @@ cc_library(
     deps = [
         ":common",
         "//llvm_sim/framework:component",
-        "@llvm_git//:machine_code",
+        "@llvm_git//:MC",
     ],
 )
 
@@ -53,8 +53,8 @@ cc_test(
         ":testing",
         "//llvm_sim/framework:context",
         "@com_google_googletest//:gtest_main",
-        "@llvm_git//:codegen",
-        "@llvm_git//:machine_code",
+        "@llvm_git//:CodeGen",
+        "@llvm_git//:MC",
     ],
 )
 
@@ -82,7 +82,7 @@ cc_library(
     deps = [
         ":common",
         "//llvm_sim/framework:component",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -105,7 +105,7 @@ cc_library(
     deps = [
         ":buffer",
         "//llvm_sim/framework:component",
-        "@llvm_git//:machine_code",
+        "@llvm_git//:MC",
     ],
 )
 
@@ -117,7 +117,7 @@ cc_test(
         ":testing",
         "//llvm_sim/framework:context",
         "@com_google_googletest//:gtest_main",
-        "@llvm_git//:machine_code",
+        "@llvm_git//:MC",
     ],
 )
 
@@ -127,7 +127,7 @@ cc_library(
     hdrs = ["issue_policy.h"],
     deps = [
         "@com_google_absl//absl/memory",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -159,7 +159,7 @@ cc_test(
         ":testing",
         "//llvm_sim/framework:context",
         "@com_google_googletest//:gtest_main",
-        "@llvm_git//:machine_code",
+        "@llvm_git//:MC",
     ],
 )
 
@@ -170,7 +170,7 @@ cc_library(
         ":buffer",
         ":common",
         "//llvm_sim/framework:component",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -193,8 +193,8 @@ cc_library(
     deps = [
         ":common",
         "//llvm_sim/framework:component",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -212,10 +212,10 @@ cc_test(
         ":testing",
         "//llvm_sim/framework:context",
         "@com_google_googletest//:gtest_main",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
-        "@llvm_git//:x86_target",  # buildcleaner: keep
-        "@llvm_git//:x86_target_info",  # buildcleaner: keep
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
+        "@llvm_git//:X86CodeGen",  # buildcleaner: keep
+        "@llvm_git//:X86Info",  # buildcleaner: keep
     ],
 )
 
@@ -228,7 +228,7 @@ cc_library(
         ":issue_policy",
         "//llvm_sim/framework:component",
         "@com_google_absl//absl/container:flat_hash_map",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -250,7 +250,7 @@ cc_library(
     deps = [
         ":common",
         "//llvm_sim/framework:component",
-        "@llvm_git//:machine_code",
+        "@llvm_git//:MC",
     ],
 )
 
@@ -272,7 +272,7 @@ cc_library(
     deps = [
         ":common",
         "//llvm_sim/framework:component",
-        "@llvm_git//:support",
+        "@llvm_git//:Support",
     ],
 )
 

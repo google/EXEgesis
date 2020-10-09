@@ -17,14 +17,12 @@
 
 #include <string>
 
+#include "absl/status/status.h"
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/x86/cpu_state.h"
 #include "llvm/IR/InlineAsm.h"
-#include "util/task/status.h"
 
 namespace exegesis {
-
-using ::exegesis::util::Status;
 
 // Run Perf on an assembly code string that is to be assembled using the
 // LLVM JIT assembler.
@@ -44,7 +42,7 @@ using ::exegesis::util::Status;
 //
 // 'constraints' contains the constraints on the assembly line, in a way similar
 // to the inline assembly syntax of gcc or LLVM.
-Status EvaluateAssemblyString(
+absl::Status EvaluateAssemblyString(
     llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
     int num_inner_iterations, const std::string& init_code,
     const std::string& prefix_code, const std::string& measured_code,
@@ -55,7 +53,7 @@ Status EvaluateAssemblyString(
 // Executes the given code, measuring the CPU state before and after execution
 // of 'code'. 'prefix_code' is run before measurements, and cleanup_code
 // afterwards.
-Status DebugCPUStateChange(
+absl::Status DebugCPUStateChange(
     llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
     const std::string& prefix_code, const std::string& code,
     const std::string& cleanup_code, const std::string& constraints,

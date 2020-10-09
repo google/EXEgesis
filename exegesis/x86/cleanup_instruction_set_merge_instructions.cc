@@ -19,21 +19,17 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/util/instruction_syntax.h"
-#include "exegesis/util/status_util.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::util::MessageDifferencer;
 
@@ -57,7 +53,7 @@ std::string VendorSyntaxMergeKey(const InstructionProto& instruction) {
 
 }  // namespace
 
-Status MergeVendorSyntax(InstructionSetProto* instruction_set) {
+absl::Status MergeVendorSyntax(InstructionSetProto* instruction_set) {
   constexpr int kIgnoredFields[] = {
       InstructionProto::kAttSyntaxFieldNumber,
       InstructionProto::kDescriptionFieldNumber,
@@ -83,7 +79,7 @@ Status MergeVendorSyntax(InstructionSetProto* instruction_set) {
     differencer.IgnoreField(field);
   }
 
-  Status status;
+  absl::Status status;
   absl::flat_hash_set<const InstructionProto*> instructions_to_remove;
   for (const auto& instructions_elem : instructions_by_encoding) {
     const std::vector<InstructionProto*>& instructions =
@@ -98,12 +94,10 @@ Status MergeVendorSyntax(InstructionSetProto* instruction_set) {
       std::string diff;
       differencer.ReportDifferencesToString(&diff);
       if (!differencer.Compare(canonical, merged)) {
-        UpdateStatus(
-            &status,
-            InvalidArgumentError(absl::StrCat(
-                "Merged instructions are not equivalent!\nCanonical:\n",
-                canonical.DebugString(), "\nMerged:\n", merged.DebugString(),
-                "\nDiff:\n", diff)));
+        status.Update(absl::InvalidArgumentError(absl::StrCat(
+            "Merged instructions are not equivalent!\nCanonical:\n",
+            canonical.DebugString(), "\nMerged:\n", merged.DebugString(),
+            "\nDiff:\n", diff)));
       }
       for (const InstructionFormat& vendor_syntax : merged.vendor_syntax()) {
         *canonical.add_vendor_syntax() = vendor_syntax;
@@ -123,7 +117,8 @@ Status MergeVendorSyntax(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(MergeVendorSyntax, kNotInDefaultPipeline);
 
-Status RemoveUselessOperandPermutations(InstructionSetProto* instruction_set) {
+absl::Status RemoveUselessOperandPermutations(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
 
   for (InstructionProto& instruction :
@@ -153,7 +148,7 @@ Status RemoveUselessOperandPermutations(InstructionSetProto* instruction_set) {
       vendor_syntax->erase(vendor_syntax->begin() + 1, vendor_syntax->end());
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveUselessOperandPermutations,
                                    kNotInDefaultPipeline);

@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc.
+// Copyright 2020 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTIL_TASK_STATUSOR_H_
-#define UTIL_TASK_STATUSOR_H_
+#ifndef THIRD_PARTY_EXEGESIS_UTIL_GTL_STL_UTIL_H_
+#define THIRD_PARTY_EXEGESIS_UTIL_GTL_STL_UTIL_H_
 
-#include "src/google/protobuf/stubs/statusor.h"
+#include <algorithm>
 
 namespace exegesis {
-namespace util {
+namespace gtl {
 
-using ::google::protobuf::util::StatusOr;
+template <typename T, typename P>
+void STLEraseAllFromSequenceIf(T* v, P pred) {
+  v->erase(std::remove_if(v->begin(), v->end(), pred), v->end());
+}
 
-}  // namespace util
+}  // namespace gtl
 }  // namespace exegesis
 
-#endif  // UTIL_TASK_STATUSOR_H_
+#endif  // THIRD_PARTY_EXEGESIS_UTIL_GTL_STL_UTIL_H_

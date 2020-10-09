@@ -25,16 +25,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "exegesis/base/cpu_info.h"
 #include "exegesis/proto/cpuid.pb.h"
 #include "exegesis/proto/x86/cpuid.pb.h"
 #include "util/gtl/map_util.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::StatusOr;
 
 // A wrapper around the CPUID dump proto for x86-64. Provides methods for
 // reading the dump of the host CPU, importing it from a text format, and for
@@ -56,9 +54,9 @@ class CpuIdDump {
   // without the 0x prefix. The line may contain additional text separated by a
   // space; such text, and all lines not matching the format are ignored by the
   // parser.
-  // Returns INVALID_ARGUMENT when the parsed dump is not valid (in the sense of
-  // CpuIdDump::IsValid).
-  static StatusOr<CpuIdDump> FromString(const std::string& source);
+  // Returns absl::StatusCode::kInvalidArgument when the parsed dump is not
+  // valid (in the sense of CpuIdDump::IsValid).
+  static absl::StatusOr<CpuIdDump> FromString(const std::string& source);
 
   // The default constructor creates an empty/invalid CPUID dump.
   CpuIdDump() {}

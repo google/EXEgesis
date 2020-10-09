@@ -18,6 +18,8 @@
 #include <utility>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/arm/xml/docvars.pb.h"
@@ -28,8 +30,6 @@
 #include "src/google/protobuf/util/message_differencer.h"
 #include "tinyxml2.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace arm {
@@ -38,11 +38,6 @@ namespace xml {
 namespace {
 
 using ::exegesis::arm::xml::dv::DocVars;
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::UnimplementedError;
 using ::exegesis::xml::FindChildren;
 using ::exegesis::xml::ReadAttribute;
 using ::google::protobuf::util::MessageDifferencer;
@@ -616,7 +611,7 @@ GetDocVarsEnumMapping() {
 
 }  // namespace
 
-StatusOr<DocVars> ParseDocVars(XMLNode* node) {
+absl::StatusOr<DocVars> ParseDocVars(XMLNode* node) {
   CHECK(node != nullptr);
 
   DocVars result;
@@ -646,13 +641,14 @@ StatusOr<DocVars> ParseDocVars(XMLNode* node) {
     // Now handle regular DocVar enum values using reflection.
     const auto* mapping = gtl::FindOrNull(GetDocVarsEnumMapping(), key);
     if (!mapping) {
-      return UnimplementedError(absl::StrCat("Unknown docvar key '", key, "'"));
+      return absl::UnimplementedError(
+          absl::StrCat("Unknown docvar key '", key, "'"));
     }
     const auto* desc = DocVars::descriptor()->FindFieldByNumber(mapping->first);
     const auto* enum_value = gtl::FindOrNull(mapping->second, value);
     if (!enum_value) {
       const auto& type = reflection->GetEnum(result, desc)->type()->name();
-      return UnimplementedError(
+      return absl::UnimplementedError(
           absl::StrCat("Bad value '", value, "' for ", type));
     }
     reflection->SetEnumValue(&result, desc, *enum_value);
@@ -661,17 +657,17 @@ StatusOr<DocVars> ParseDocVars(XMLNode* node) {
   return result;
 }
 
-Status DocVarsContains(const DocVars& docvars, const DocVars& subset) {
+absl::Status DocVarsContains(const DocVars& docvars, const DocVars& subset) {
   MessageDifferencer differencer;
   differencer.set_scope(MessageDifferencer::PARTIAL);
   differencer.set_repeated_field_comparison(MessageDifferencer::AS_SET);
   std::string diff;
   differencer.ReportDifferencesToString(&diff);
   if (!differencer.Compare(subset, docvars)) {
-    return FailedPreconditionError(
+    return absl::FailedPreconditionError(
         absl::StrCat("DocVars subset mismatch:\n", diff));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 }  // namespace xml

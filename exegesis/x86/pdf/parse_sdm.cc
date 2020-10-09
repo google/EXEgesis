@@ -96,6 +96,8 @@ ArchitectureProto ParseSdmOrDie(const std::string& input_spec,
   const auto requests = ParseRequestsOrDie(input_spec);
 
   ArchitectureProto architecture;
+  architecture.set_name("x86_64");
+  architecture.set_llvm_name("x86_64");
   InstructionSetProto* const full_instruction_set =
       architecture.mutable_instruction_set();
   for (int request_id = 0; request_id < requests.size(); ++request_id) {

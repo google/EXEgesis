@@ -20,17 +20,15 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/llvm/assembler_disassembler.pb.h"
 #include "exegesis/llvm/disassembler.h"
 #include "exegesis/llvm/inline_asm.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "llvm/IR/InlineAsm.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
-
-using ::exegesis::util::StatusOr;
 
 // An assembler-disassembler, which enables one to parse a line of assembly
 // code, and get the output from the LLVM disassembler in both the Intel and
@@ -43,19 +41,19 @@ class AssemblerDisassembler {
 
   // Assembles (but does not execute) the assembly code given in code, and fill
   // the fields in result.
-  StatusOr<AssemblerDisassemblerResult> AssembleDisassemble(
+  absl::StatusOr<AssemblerDisassemblerResult> AssembleDisassemble(
       const std::string& code, llvm::InlineAsm::AsmDialect asm_dialect);
 
   // Disassembles the binary code given in encoded_instruction
   // It is assumed that the memory pointed to by binary_code either holds the
   // whole instruction or at least is long enough so that the LLVM disassembler
   // stops within the bounds of the allocated memory.
-  StatusOr<AssemblerDisassemblerResult> Disassemble(
+  absl::StatusOr<AssemblerDisassemblerResult> Disassemble(
       const std::vector<uint8_t>& encoded_instruction);
 
   // Interprets the given input depending on 'interpretation'. The second
   // element of the result contains the interpretation that was used.
-  std::pair<StatusOr<AssemblerDisassemblerResult>,
+  std::pair<absl::StatusOr<AssemblerDisassemblerResult>,
             AssemblerDisassemblerInterpretation>
   AssembleDisassemble(const std::string& input,
                       AssemblerDisassemblerInterpretation interpretation);

@@ -14,18 +14,17 @@
 
 #include "exegesis/x86/cleanup_instruction_set_encoding.h"
 
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
 #include "exegesis/testing/test_util.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::google::protobuf::TextFormat;
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
@@ -725,7 +724,7 @@ TEST(ParseEncodingSpecificationsTest, ParseErrors) {
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
   EXPECT_THAT(ParseEncodingSpecifications(&instruction_set),
-              StatusIs(INVALID_ARGUMENT));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,

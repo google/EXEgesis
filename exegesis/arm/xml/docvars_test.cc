@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "absl/status/status.h"
 #include "exegesis/arm/xml/docvars.pb.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -32,8 +33,6 @@ using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOk;
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::FAILED_PRECONDITION;
-using ::exegesis::util::error::UNIMPLEMENTED;
 using ::testing::HasSubstr;
 using ::tinyxml2::XMLDocument;
 using ::tinyxml2::XMLElement;
@@ -85,9 +84,9 @@ TEST(DocVarsTest, ParseDocVars_UnimplementedKey) {
            &doc);
   XMLElement* element = doc.RootElement();
 
-  EXPECT_THAT(
-      ParseDocVars(element),
-      StatusIs(UNIMPLEMENTED, HasSubstr("Unknown docvar key 'bad-key'")));
+  EXPECT_THAT(ParseDocVars(element),
+              StatusIs(absl::StatusCode::kUnimplemented,
+                       HasSubstr("Unknown docvar key 'bad-key'")));
 }
 
 TEST(DocVarsTest, ParseDocVars_UnimplementedValue) {
@@ -101,9 +100,9 @@ TEST(DocVarsTest, ParseDocVars_UnimplementedValue) {
            &doc);
   XMLElement* element = doc.RootElement();
 
-  EXPECT_THAT(
-      ParseDocVars(element),
-      StatusIs(UNIMPLEMENTED, HasSubstr("Bad value 'bad-value' for RegType")));
+  EXPECT_THAT(ParseDocVars(element),
+              StatusIs(absl::StatusCode::kUnimplemented,
+                       HasSubstr("Bad value 'bad-value' for RegType")));
 }
 
 TEST(DocVarsTest, DocVarsContains) {
@@ -127,14 +126,17 @@ TEST(DocVarsTest, DocVarsContains) {
   EXPECT_THAT(DocVarsContains(superset, subset), IsOk());
   EXPECT_THAT(DocVarsContains(superset, superset), IsOk());
 
-  EXPECT_THAT(DocVarsContains(empty, subset), StatusIs(FAILED_PRECONDITION));
-  EXPECT_THAT(DocVarsContains(empty, superset), StatusIs(FAILED_PRECONDITION));
-  EXPECT_THAT(DocVarsContains(subset, superset), StatusIs(FAILED_PRECONDITION));
+  EXPECT_THAT(DocVarsContains(empty, subset),
+              StatusIs(absl::StatusCode::kFailedPrecondition));
+  EXPECT_THAT(DocVarsContains(empty, superset),
+              StatusIs(absl::StatusCode::kFailedPrecondition));
+  EXPECT_THAT(DocVarsContains(subset, superset),
+              StatusIs(absl::StatusCode::kFailedPrecondition));
 
   // Introduce a field with a different value.
   subset.set_datatype(dv::Datatype::DOUBLE);
   EXPECT_THAT(DocVarsContains(superset, subset),
-              StatusIs(FAILED_PRECONDITION,
+              StatusIs(absl::StatusCode::kFailedPrecondition,
                        HasSubstr("modified: datatype: DOUBLE -> SINGLE")));
 }
 

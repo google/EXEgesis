@@ -19,6 +19,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -33,27 +34,22 @@
 #include "exegesis/x86/instruction_set_utils.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-
 constexpr const uint8_t kModRmDirectAddressing = 0x3;
 
 void LogErrorAndUpdateStatus(const std::string& error_message,
                              const InstructionProto& instruction,
-                             Status* status) {
-  const Status error = InvalidArgumentError(absl::StrCat(
+                             absl::Status* status) {
+  const absl::Status error = absl::InvalidArgumentError(absl::StrCat(
       error_message, "\nInstruction:\n", instruction.DebugString()));
   // In case of the check cleanups, we want to print as many errors as possible
   // to make their analysis easier.
   LOG(WARNING) << error;
-  UpdateStatus(status, error);
+  status->Update(error);
 }
 
 // TODO(ondrasej): Delete following helpers once instruction_encoding.h has been
@@ -179,7 +175,7 @@ bool IsSpecialCaseOfInstruction(const InstructionProto& general,
 
 }  // namespace
 
-Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
+absl::Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr uint32_t kOpcodeUpperBytesMask = 0xffffff00;
   const absl::flat_hash_set<uint32_t> kAllowedUpperBytes = {0, 0x0f00, 0x0f3800,
@@ -188,7 +184,7 @@ Status CheckOpcodeFormat(InstructionSetProto* instruction_set) {
   // multi-byte opcode.
   const absl::flat_hash_set<uint32_t> kForbiddenOpcodes = {0x0f, 0x0f38,
                                                            0x0f3a};
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     if (!instruction.has_x86_encoding_specification()) {
       LogErrorAndUpdateStatus(
@@ -255,10 +251,10 @@ bool IsX87FpuInstruction(const InstructionProto& instruction) {
                                       instruction);
 }
 
-Status CheckOperands(const InstructionProto& instruction,
-                     absl::string_view format_name,
-                     const InstructionFormat& format) {
-  Status status;
+absl::Status CheckOperands(const InstructionProto& instruction,
+                           absl::string_view format_name,
+                           const InstructionFormat& format) {
+  absl::Status status;
   for (const InstructionOperand& operand : format.operands()) {
     if (!OperandNameAndTagsAreValid(operand)) {
       LogErrorAndUpdateStatus(absl::StrCat("Operand name or tags in ",
@@ -363,28 +359,28 @@ Status CheckOperands(const InstructionProto& instruction,
 
 }  // namespace
 
-Status CheckOperandInfo(InstructionSetProto* instruction_set) {
+absl::Status CheckOperandInfo(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kVendorSyntax[] = "InstructionProto.vendor_syntax";
-  Status status;
+  absl::Status status;
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     for (const InstructionFormat& vendor_syntax : instruction.vendor_syntax()) {
       // TODO(ondrasej): As of 2017-11-02, we fill the detailed fields only in
       // vendor_syntax. We should extend these checks to other fields as well
       // once we start populating them.
-      UpdateStatus(&status,
-                   CheckOperands(instruction, kVendorSyntax, vendor_syntax));
+      status.Update(CheckOperands(instruction, kVendorSyntax, vendor_syntax));
     }
   }
   return status;
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(CheckOperandInfo, 10000);
 
-Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
+absl::Status CheckSpecialCaseInstructions(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   absl::node_hash_map<uint32_t, std::vector<const InstructionProto*>>
       instructions_by_opcode;
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
 
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     if (!instruction.has_x86_encoding_specification()) {
@@ -423,9 +419,9 @@ Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(CheckSpecialCaseInstructions, 10000);
 
-Status CheckHasVendorSyntax(InstructionSetProto* instruction_set) {
+absl::Status CheckHasVendorSyntax(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  Status status;
+  absl::Status status;
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     if (instruction.vendor_syntax_size() == 0) {
       LogErrorAndUpdateStatus("Instruction does not have vendor syntax",

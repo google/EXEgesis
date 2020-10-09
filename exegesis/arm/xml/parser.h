@@ -17,23 +17,21 @@
 
 #include <string>
 
+#include "absl/status/statusor.h"
 #include "exegesis/arm/xml/parser.pb.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace arm {
 namespace xml {
 
-using ::exegesis::util::StatusOr;
-
 // Parses the specified XML database index file.
-StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename);
+absl::StatusOr<XmlIndex> ParseXmlIndex(const std::string& filename);
 
 // Parses the specified XML instruction file.
-StatusOr<XmlInstruction> ParseXmlInstruction(const std::string& filename);
+absl::StatusOr<XmlInstruction> ParseXmlInstruction(const std::string& filename);
 
 // Parses the ARM XML instruction database, reading files from the given path.
-StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path);
+absl::StatusOr<XmlDatabase> ParseXmlDatabase(const std::string& path);
 
 // Same as ParseXmlDatabase, but dies on errors.
 XmlDatabase ParseXmlDatabaseOrDie(const std::string& path);

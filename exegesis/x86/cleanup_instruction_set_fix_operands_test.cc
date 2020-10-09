@@ -14,18 +14,14 @@
 
 #include "exegesis/x86/cleanup_instruction_set_fix_operands.h"
 
+#include "absl/status/status.h"
 #include "exegesis/base/cleanup_instruction_set_test_utils.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::IsInvalidArgument;
-using ::exegesis::util::Status;
 
 TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
   constexpr char kInstructionSetProto[] = R"proto(
@@ -633,8 +629,8 @@ TEST(FixRegOperandsTest, UnexpectedMnemonic) {
   InstructionSetProto instruction_set;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
       kInstructionSetProto, &instruction_set));
-  const Status transform_status = FixRegOperands(&instruction_set);
-  EXPECT_TRUE(IsInvalidArgument(transform_status)) << transform_status;
+  const absl::Status transform_status = FixRegOperands(&instruction_set);
+  EXPECT_TRUE(absl::IsInvalidArgument(transform_status)) << transform_status;
 }
 
 TEST(RemoveImplicitST0OperandTest, NoRemoval) {

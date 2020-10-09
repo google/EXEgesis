@@ -65,7 +65,7 @@ MicroArchitectureData GetMicroArchitectureDataFromCommandLineFlags() {
              GetArchitectureProtoOrDie(
                  absl::GetFlag(FLAGS_exegesis_architecture)),
              absl::GetFlag(FLAGS_exegesis_microarchitecture))
-      .ValueOrDie();
+      .value();
 }
 
 }  // namespace exegesis

@@ -71,7 +71,7 @@ TEST(ComputeItinerariesTest, ADC) {
   itineraries.set_microarchitecture_id(microarchitecture.proto().id());
   itineraries.add_itineraries();
 
-  const Status status = ComputeItineraries(instruction_set, &itineraries);
+  const absl::Status status = ComputeItineraries(instruction_set, &itineraries);
 
   // Unfortunately, since computing itineraries is based on measurements, this
   // can sometimes fail.

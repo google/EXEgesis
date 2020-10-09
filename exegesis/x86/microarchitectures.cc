@@ -152,13 +152,20 @@ constexpr const char kSkylakeMicroArchitecture[] = R"proto(
 
 constexpr const char kSkylakeConsumerModels[] =
     R"proto(
-  id: "skl" model_ids: 'intel:06_4E' model_ids: 'intel:06_5E'
+  id: "skl"
+  llvm_arch: "x86_64"
+  llvm_cpu: "skylake"
+  model_ids: 'intel:06_4E'
+  model_ids: 'intel:06_5E'
     )proto";
 
-constexpr const char kSkylakeXeonModels[] = R"proto(
+constexpr const char kSkylakeXeonModels[] =
+    R"proto(
   id: "skx"
+  llvm_arch: "x86_64"
+  llvm_cpu: "skylake-avx512"
   model_ids: 'intel:06_55'
-)proto";
+    )proto";
 
 // The Haswell CPU microarchitecture.
 constexpr const char kHaswellMicroArchitecture[] = R"proto(
@@ -263,6 +270,8 @@ constexpr const char kHaswellMicroArchitecture[] = R"proto(
 
 constexpr const char kHaswellModels[] = R"proto(
   id: "hsw"
+  llvm_arch: "x86_64"
+  llvm_cpu: "haswell"
   model_ids: 'intel:06_3C'
   model_ids: 'intel:06_3F'
   model_ids: 'intel:06_45'
@@ -271,6 +280,8 @@ constexpr const char kHaswellModels[] = R"proto(
 
 constexpr const char kBroadwellModels[] = R"proto(
   id: "bdw"
+  llvm_arch: "x86_64"
+  llvm_cpu: "broadwell"
   model_ids: 'intel:06_3D'
   model_ids: 'intel:06_47'
   model_ids: 'intel:06_56'
@@ -346,12 +357,20 @@ constexpr const char kSandyBridgeMicroArchitecture[] = R"proto(
 
 constexpr const char kIvyBridgeModels[] =
     R"proto(
-  id: "ivb" model_ids: 'intel:06_3A' model_ids: 'intel:06_3E'
+  id: "ivb"
+  llvm_arch: "x86_64"
+  llvm_cpu: "ivybridge"
+  model_ids: 'intel:06_3A'
+  model_ids: 'intel:06_3E'
     )proto";
 
 constexpr const char kSandyBridgeModels[] =
     R"proto(
-  id: "snb" model_ids: 'intel:06_2A' model_ids: 'intel:06_2D'
+  llvm_arch: "x86_64"
+  llvm_cpu: "sandybridge"
+  id: "snb"
+  model_ids: 'intel:06_2A'
+  model_ids: 'intel:06_2D'
     )proto";
 
 constexpr const char kNehalemMicroArchitecture[] = R"proto(
@@ -421,8 +440,10 @@ constexpr const char kNehalemMicroArchitecture[] = R"proto(
   }
 )proto";
 
-constexpr const char kWestmireModels[] = R"proto(
+constexpr const char kWestmereModels[] = R"proto(
   id: "wsm"
+  llvm_arch: "x86_64"
+  llvm_cpu: "westmere"
   model_ids: 'intel:06_25'
   model_ids: 'intel:06_2C'
   model_ids: 'intel:06_2F'
@@ -430,6 +451,8 @@ constexpr const char kWestmireModels[] = R"proto(
 
 constexpr const char kNehalemModels[] = R"proto(
   id: "nhm"
+  llvm_arch: "x86_64"
+  llvm_cpu: "nehalem"
   model_ids: 'intel:06_1A'
   model_ids: 'intel:06_1E'
   model_ids: 'intel:06_1F'
@@ -455,7 +478,7 @@ const MicroArchitecturesProto& GetMicroArchitecturesProto() {
         absl::StrCat(kBroadwellModels, kHaswellMicroArchitecture),
         absl::StrCat(kIvyBridgeModels, kSandyBridgeMicroArchitecture),
         absl::StrCat(kSandyBridgeModels, kSandyBridgeMicroArchitecture),
-        absl::StrCat(kWestmireModels, kNehalemMicroArchitecture),
+        absl::StrCat(kWestmereModels, kNehalemMicroArchitecture),
         absl::StrCat(kNehalemModels, kNehalemMicroArchitecture),
         // NOTE(bdb): As of 2017-03-01 we do not need the itineraries of the
         // Core and Enhanced Core architectures.

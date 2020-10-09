@@ -12,3 +12,8 @@ cc_library(
         "@com_google_protobuf//:protobuf_lite",
     ],
 )
+
+cc_library(
+    name = "stl_util",
+    hdrs = ["stl_util.h"],
+)

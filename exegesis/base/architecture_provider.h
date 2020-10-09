@@ -24,14 +24,12 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
+#include "absl/status/statusor.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "glog/logging.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
-
-using ::exegesis::util::StatusOr;
 
 constexpr const char kPbTxtSource[] = "pbtxt";
 constexpr const char kPbSource[] = "pb";
@@ -50,7 +48,7 @@ constexpr const char kRegisteredSource[] = "registered";
 //     using REGISTER_ARCHITECTURE_PROTO_PROVIDER.
 // Returns an error status if the provider is not found or if it returns an
 // error. On success the result is guaranteed to be non-null.
-StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
+absl::StatusOr<std::shared_ptr<const ArchitectureProto>> GetArchitectureProto(
     const std::string& uri);
 
 // A version of GetArchitectureProto() that dies with a useful error message if
@@ -69,7 +67,7 @@ class ArchitectureProtoProvider {
   // This is a shared_ptr because some providers are going to hold singletons
   // while some others will relinquish ownership (and the proto itself is huge).
   // Returns an error on failure; never returns nullptr on success.
-  virtual StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto()
+  virtual absl::StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto()
       const = 0;
 
  protected:
@@ -89,7 +87,8 @@ class StringArchitectureProtoProvider : public ArchitectureProtoProvider {
     architecture_proto_ = std::move(architecture_proto);
   }
 
-  StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto() const override {
+  absl::StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto()
+      const override {
     return architecture_proto_;
   }
 

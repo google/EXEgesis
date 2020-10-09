@@ -20,6 +20,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -27,16 +28,10 @@
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 // Information about an operand that need to be modified when adding an
 // alternative. There is one instance of this struct for each alternative.
@@ -285,9 +280,9 @@ const absl::flat_hash_set<std::string> GetUnmodifiedOperandNames() {
 
 }  // namespace
 
-Status AddAlternatives(InstructionSetProto* instruction_set) {
+absl::Status AddAlternatives(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   const OperandAlternativeMap& alternatives_by_name =
       GetOperandAlternativesByName();
   const absl::flat_hash_set<std::string>& unmodified_operand_names =
@@ -313,7 +308,7 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
       // The only encoding that allows alternatives is modrm.rm. An operand with
       // alternatives anywhere else means that there is an error in the data.
       if (operand->encoding() != InstructionOperand::MODRM_RM_ENCODING) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             absl::StrCat("Instruction does not use modrm.rm encoding:\n",
                          instruction.DebugString()));
       }
@@ -322,7 +317,7 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
       // encoding.
       if (operand->addressing_mode() !=
           InstructionOperand::ANY_ADDRESSING_WITH_FLEXIBLE_REGISTERS) {
-        return InvalidArgumentError(absl::StrCat(
+        return absl::InvalidArgumentError(absl::StrCat(
             "The addressing mode does not allow splitting: ",
             InstructionOperand::AddressingMode_Name(operand->addressing_mode()),
             "\n", instruction.DebugString()));
@@ -355,7 +350,7 @@ Status AddAlternatives(InstructionSetProto* instruction_set) {
     const std::string error_message =
         absl::StrCat("Encountered unknown operand names: ",
                      absl::StrJoin(unknown_operand_names, ", "));
-    return InvalidArgumentError(error_message);
+    return absl::InvalidArgumentError(error_message);
   }
   return status;
 }

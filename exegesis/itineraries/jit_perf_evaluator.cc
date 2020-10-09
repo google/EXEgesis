@@ -19,19 +19,16 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/llvm/inline_asm.h"
 #include "exegesis/util/strings.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
-
-using util::OkStatus;
 
 std::string RepeatCode(int num_repeats, const std::string& code) {
   return absl::StrCat(".rept ", num_repeats, "\n", code, "\n.endr\n");
@@ -44,7 +41,7 @@ constexpr const PerfSubsystem::EventCategory kPerfEventCategories[] = {
     &PerfEventsProto::cycle_events, &PerfEventsProto::computation_events,
     &PerfEventsProto::memory_events, &PerfEventsProto::uops_events};
 
-Status EvaluateAssemblyString(
+absl::Status EvaluateAssemblyString(
     llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
     const int num_inner_iterations, const std::string& init_code,
     const std::string& prefix_code, const std::string& measured_code,
@@ -63,22 +60,22 @@ Status EvaluateAssemblyString(
       1, init_code, constraints, code, constraints, cleanup_code, constraints,
       dialect);
   if (!inline_asm_function.ok()) {
-    return util::UnknownError(absl::StrCat(
-        "Could not compile the measured code:",
-        ToStringView(inline_asm_function.status().error_message())));
+    return absl::UnknownError(
+        absl::StrCat("Could not compile the measured code:",
+                     inline_asm_function.status().message()));
   }
 
   PerfSubsystem perf_subsystem;
   for (const auto& events : kPerfEventCategories) {
     perf_subsystem.StartCollectingEvents(events);
-    inline_asm_function.ValueOrDie().CallOrDie();
+    inline_asm_function.value().CallOrDie();
     result->Accumulate(perf_subsystem.StopAndReadCounters());
   }
   result->SetScaleFactor(num_inner_iterations);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status DebugCPUStateChange(
+absl::Status DebugCPUStateChange(
     llvm::InlineAsm::AsmDialect dialect, const std::string& mcpu,
     const std::string& prefix_code, const std::string& code,
     const std::string& cleanup_code, const std::string& constraints,
@@ -105,9 +102,9 @@ Status DebugCPUStateChange(
   if (!inline_asm_function.ok()) {
     return inline_asm_function.status();
   }
-  inline_asm_function.ValueOrDie().CallOrDie();
+  inline_asm_function.value().CallOrDie();
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 }  // namespace exegesis

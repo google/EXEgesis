@@ -10,9 +10,10 @@ cc_library(
     hdrs = ["xml_util.h"],
     deps = [
         "//base",
-        "//util/task:status",
-        "//util/task:statusor",
+        "//exegesis/util:status_util",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
         "@tinyxml2_git//:tinyxml2",
@@ -25,7 +26,7 @@ cc_test(
     deps = [
         ":xml_util",
         "//exegesis/testing:test_util",
-        "//util/task:status",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
         "@tinyxml2_git//:tinyxml2",
     ],

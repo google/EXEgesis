@@ -18,19 +18,17 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_ALTERNATIVES_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_ALTERNATIVES_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
 
 // Replaces every instruction with a register/memory operand with one
 // corresponding instruction that has the register operand, and another one
 // with the memory operand. For example XOR r16,r/m16 will be replaced by the
 // two instructions XOR r16,r16 and XOR r16,m16.
-Status AddAlternatives(InstructionSetProto* instruction_set);
+absl::Status AddAlternatives(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

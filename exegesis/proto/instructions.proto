@@ -436,52 +436,9 @@ message MicroOperationProto {
 
 // The itinerary for an instruction.
 message ItineraryProto {
+  reserved 6 to 15;
   // This is useful to be able to read stored files more easily. For debug only.
   string llvm_mnemonic = 1;
-
-  // The latency is the number of cycles, after which the output of the
-  // instruction is ready, and any other instruction that uses this
-  // output can be sent for execution.
-
-  // The minimum latency for the instruction (for example for simple cases).
-  int32 min_latency = 6;
-
-  // The maximum latency for the instruction. For most of the basic instructions
-  // the minimum latency is equal to the maximum latency.
-  int32 max_latency = 7;
-
-  // For complex instructions like ENTER or REP CMPS, the latency can be
-  // proportional to the number of bytes treated by the instruction.
-  double proportional_latency_per_byte = 8;
-
-  // True if the latency is approximate. This is the case for complex
-  // micro-coded instructions.
-  bool latency_is_approximate = 9;
-
-  // The minimum throughput for the instruction (for example for simple cases).
-  int32 min_throughput = 10;
-
-  // The maximum throughput for the instruction. For most of the basic
-  // instructions the minimum throughput is equal to the maximum throughput.
-  int32 max_throughput = 11;
-
-  // For complex instructions like ENTER or REP CMPS, the throughput can be
-  // proportional to the number of bytes treated by the instruction.
-  double proportional_throughput_per_byte = 12;
-
-  // The number of micro-ops in the unfused domain, i.e. before macro-fusion
-  // occurs.
-  int32 num_uops_unfused_domain = 13;
-
-  // The number of micro-ops in the fused domain, i.e. after macro-fusion
-  // occurs. For most instructions, num_uops_unfused_domain >=
-  // num_uops_fused_domain.
-  int32 num_uops_fused_domain = 14;
-
-  // The following Boolean is true when the instruction is issued in
-  // a standard way to the different execution units, by opposition to
-  // micro-coded instructions.
-  bool standard_execution = 15;
 
   // An itinerary is an array of MicroOperations describing the
   // different steps that must be performed to execute the instruction.
@@ -507,6 +464,8 @@ message InstructionSetItinerariesProto {
 message ArchitectureProto {
   // e.g. "x86_64".
   string name = 5;
+  // The name by which LLVM knows this target, e.g. "x86_64", "aarch64".
+  string llvm_name = 7;
 
   // The unannotated instruction set after applying transforms.
   InstructionSetProto instruction_set = 1;

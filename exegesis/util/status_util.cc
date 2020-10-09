@@ -18,9 +18,7 @@
 
 namespace exegesis {
 
-using ::exegesis::util::Status;
-
-void UpdateStatus(Status* status, const Status& new_status) {
+void UpdateStatus(absl::Status* status, const absl::Status& new_status) {
   CHECK(status != nullptr);
   if (status->ok() && !new_status.ok()) *status = new_status;
 }

@@ -1,15 +1,14 @@
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 # ===== Abseil =====
 
 http_archive(
     name = "com_google_absl",
-    sha256 = "a8b00e4be7ad89a2c0a28b5fd8152fcb1972006560aca2ce85cb72b6985b577c",
-    strip_prefix = "abseil-cpp-c964fcffac27bd4a9ff67fe393410dd1146ef8b8",
+    sha256 = "38f5113dff685ddfd3bf53d1473a18dfcfe8de89ee7c9b3708e3a070274c6b38",
+    strip_prefix = "abseil-cpp-e63a5a61045e516b7b3dbca090e2b9ff1d057e46",
     urls = [
-        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/c964fcffac27bd4a9ff67fe393410dd1146ef8b8.tar.gz",
-        "https://github.com/abseil/abseil-cpp/archive/c964fcffac27bd4a9ff67fe393410dd1146ef8b8.tar.gz",
+        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/e63a5a61045e516b7b3dbca090e2b9ff1d057e46.tar.gz",
+        "https://github.com/abseil/abseil-cpp/archive/e63a5a61045e516b7b3dbca090e2b9ff1d057e46.tar.gz",
     ],
 )
 
@@ -70,11 +69,11 @@ http_archive(
 
 http_archive(
     name = "com_google_googletest",
-    sha256 = "774f5499dee0f9d2b583ce7fff62e575acce432b67a8396e86f3a87c90d2987e",
-    strip_prefix = "googletest-604ba376c3a407c6a40e39fbd0d5055c545f9898",
+    sha256 = "c08d14e829bf5e2ab3bda2cc80a061126f2a430fcecdb9e9c0fc8023fd39d9a5",
+    strip_prefix = "googletest-07f4869221012b16b7f9ee685d94856e1fc9f361",
     urls = [
-        "https://mirror.bazel.build/github.com/google/googletest/archive/604ba376c3a407c6a40e39fbd0d5055c545f9898.tar.gz",
-        "https://github.com/google/googletest/archive/604ba376c3a407c6a40e39fbd0d5055c545f9898.tar.gz",
+        "https://mirror.bazel.build/github.com/google/googletest/archive/07f4869221012b16b7f9ee685d94856e1fc9f361.tar.gz",
+        "https://github.com/google/googletest/archive/07f4869221012b16b7f9ee685d94856e1fc9f361.tar.gz",
     ],
 )
 
@@ -180,14 +179,14 @@ http_archive(
 http_archive(
     name = "llvm_git",
     build_file = "@//:llvm.BUILD",
-    sha256 = "fb0d9afef5277ed63a255678800e6beea574fe053498bd410ca70321e8672bd7",
-    strip_prefix = "llvm-project-be4704bd41a4dd8bb5c4dd5a614744c69fb3cf8e/llvm",
+    sha256 = "95b3a609cc0db719ea19daed2689a770f97aea974a3d2cf70468d3b067e8b068",
+    strip_prefix = "llvm-project-c10248829357fd90030ba091e01b6c253e5848f1/llvm",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm/llvm-project/archive/be4704bd41a4dd8bb5c4dd5a614744c69fb3cf8e.tar.gz",
-        "https://github.com/llvm/llvm-project/archive/be4704bd41a4dd8bb5c4dd5a614744c69fb3cf8e.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm/llvm-project/archive/c10248829357fd90030ba091e01b6c253e5848f1.tar.gz",
+        "https://github.com/llvm/llvm-project/archive/c10248829357fd90030ba091e01b6c253e5848f1.tar.gz",
     ],
 )
 
@@ -195,8 +194,8 @@ http_archive(
 
 http_file(
     name = "intel_sdm_pdf",
-    sha256 = "ff074d550b2fe444173981f2f0b808725dcd457e897aff35d82cc2653fd9f5c4",
-    urls = ["https://software.intel.com/sites/default/files/managed/39/c5/325462-sdm-vol-1-2abcd-3abcd.pdf"],
+    sha256 = "2b16c29d13aca1b98ea61f72ca0123649334564f90472db10067957b229e0dae",
+    urls = ["https://software.intel.com/content/dam/develop/public/us/en/documents/325462-sdm-vol-1-2abcd-3abcd.pdf"],
 )
 
 # ==============================================================================

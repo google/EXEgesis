@@ -20,26 +20,22 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "tinyxml2.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace xml {
 
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-
-// Transforms an XMLError code into a proper Status.
-Status GetStatus(const ::tinyxml2::XMLError& status);
+// Transforms an XMLError code into a proper absl::Status.
+absl::Status GetStatus(const ::tinyxml2::XMLError& status);
 
 // Returns the XML string representation of the given node.
 std::string DebugString(const ::tinyxml2::XMLNode* node);
 
 // Returns the first direct child element of node with the specified name.
 // If name is nullptr, finds the first child element regardless of its name.
-StatusOr<::tinyxml2::XMLElement*> FindChild(::tinyxml2::XMLNode* node,
-                                            const char* name);
+absl::StatusOr<::tinyxml2::XMLElement*> FindChild(::tinyxml2::XMLNode* node,
+                                                  const char* name);
 
 // Returns all direct children elements of node with the specified name.
 // If name is nullptr, finds all children elements regardless of their names.
@@ -53,8 +49,8 @@ std::string ReadAttribute(const ::tinyxml2::XMLElement* element,
 
 // Reads the specified attribute from the given element as an integer.
 // Returns an error if no such attribute is found or if it can't be parsed.
-StatusOr<int> ReadIntAttribute(const ::tinyxml2::XMLElement* element,
-                               const char* name);
+absl::StatusOr<int> ReadIntAttribute(const ::tinyxml2::XMLElement* element,
+                                     const char* name);
 
 // Reads the specified attribute from the given element as an integer.
 // Returns default_value if no such attribute is found or if it can't be parsed.

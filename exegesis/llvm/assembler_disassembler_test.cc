@@ -32,7 +32,7 @@ void CheckAssemblyDisassemblyOK(const std::string& asm_code,
   const auto result = asm_disasm.AssembleDisassemble(asm_code, asm_dialect);
   EXPECT_OK(result);
   EXPECT_THAT(
-      result.ValueOrDie(),
+      result.value(),
       IgnoringFields({"exegesis.AssemblerDisassemblerResult.llvm_opcode",
                       "exegesis.AssemblerDisassemblerResult.binary_encoding"},
                      EqualsProto(expected)));
@@ -48,7 +48,7 @@ void CheckDisassemblyOK(const std::string& binary,
             AssemblerDisassemblerInterpretation::HUMAN_READABLE_BINARY);
   EXPECT_OK(result.first);
   EXPECT_THAT(
-      result.first.ValueOrDie(),
+      result.first.value(),
       IgnoringFields({"exegesis.AssemblerDisassemblerResult.llvm_opcode",
                       "exegesis.AssemblerDisassemblerResult.binary_encoding"},
                      EqualsProto(expected)));

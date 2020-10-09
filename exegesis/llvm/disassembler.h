@@ -46,7 +46,7 @@ class Disassembler {
  public:
   // Creates a disassembler for triple_name. If triple_name is "", the
   // default one will be used.
-  explicit Disassembler(const std::string& triple_name);
+  explicit Disassembler(std::string triple_name);
 
   // Disassembles an instruction from a span of bytes. The return value is the
   // length of the disassembled instruction in bytes (or 0 on error). The values
@@ -59,11 +59,13 @@ class Disassembler {
   //   in Intel format.
   //   *att_instruction contains the x86 instruction (mnemonic and operands)
   //   in ATT format.
+  //   *mcinst, when mcinst is not nullptr, contains the MCInst object that
+  //   contains the data returned by the LLVM disassembler.
   int Disassemble(absl::Span<const uint8_t> bytes, unsigned* llvm_opcode,
                   std::string* llvm_mnemonic,
                   std::vector<std::string>* llvm_operands,
-                  std::string* intel_instruction,
-                  std::string* att_instruction) const;
+                  std::string* intel_instruction, std::string* att_instruction,
+                  llvm::MCInst* mcinst = nullptr) const;
 
   // Disassembles a hex string and returns a (possibly multi-line) string
   // containing: "Address; Hex code; Intel syntax; ATT syntax; LLVM Mnemonic"

@@ -16,6 +16,7 @@
 
 #include <random>
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/x86/microarchitectures.h"
@@ -28,7 +29,6 @@ namespace itineraries {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
-using ::exegesis::util::Status;
 using ::exegesis::x86::HaswellMicroArchitecture;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -301,7 +301,7 @@ void DecomposeRandomInstructions(const std::mt19937::result_type random_seed) {
       m.Add(errors, &measurements);
       const double uops_executed = m.GenerateNumUopsExecuted(num_uops);
       DecompositionSolver solver(microarchitecture);
-      const Status status = solver.Run(measurements, uops_executed);
+      const absl::Status status = solver.Run(measurements, uops_executed);
       if (!status.ok()) {
         ++num_errors;
         LOG(INFO) << status;

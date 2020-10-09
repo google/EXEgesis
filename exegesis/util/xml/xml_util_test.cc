@@ -16,11 +16,11 @@
 
 #include <string>
 
+#include "absl/status/status.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "tinyxml2.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace xml {
@@ -28,8 +28,6 @@ namespace {
 
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INTERNAL;
-using ::exegesis::util::error::NOT_FOUND;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
@@ -46,10 +44,12 @@ void ParseXML(const std::string& xml, XMLDocument* doc) {
 TEST(XmlUtilTest, CheckResult_Ok) {
   EXPECT_OK(GetStatus(::tinyxml2::XML_SUCCESS));
 
-  EXPECT_THAT(GetStatus(::tinyxml2::XML_NO_ATTRIBUTE),
-              StatusIs(INTERNAL, HasSubstr("XML_NO_ATTRIBUTE")));
-  EXPECT_THAT(GetStatus(::tinyxml2::XML_NO_TEXT_NODE),
-              StatusIs(INTERNAL, HasSubstr("XML_NO_TEXT_NODE")));
+  EXPECT_THAT(
+      GetStatus(::tinyxml2::XML_NO_ATTRIBUTE),
+      StatusIs(absl::StatusCode::kInternal, HasSubstr("XML_NO_ATTRIBUTE")));
+  EXPECT_THAT(
+      GetStatus(::tinyxml2::XML_NO_TEXT_NODE),
+      StatusIs(absl::StatusCode::kInternal, HasSubstr("XML_NO_TEXT_NODE")));
 }
 
 TEST(XmlUtilTest, DebugString) {
@@ -67,8 +67,8 @@ TEST(XmlUtilTest, DebugString) {
 TEST(XmlUtilTest, FindChild) {
   XMLDocument doc;
 
-  EXPECT_THAT(FindChild(&doc, nullptr), StatusIs(NOT_FOUND));
-  EXPECT_THAT(FindChild(&doc, "a"), StatusIs(NOT_FOUND));
+  EXPECT_THAT(FindChild(&doc, nullptr), StatusIs(absl::StatusCode::kNotFound));
+  EXPECT_THAT(FindChild(&doc, "a"), StatusIs(absl::StatusCode::kNotFound));
 
   XMLElement* element_1 = doc.NewElement("a");
   XMLElement* element_2 = doc.NewElement("b");
@@ -84,7 +84,7 @@ TEST(XmlUtilTest, FindChild) {
   EXPECT_THAT(FindChild(&doc, "b"), IsOkAndHolds(element_2));
   EXPECT_THAT(FindChild(&doc, "b"), IsOkAndHolds(Ne(element_4)));
   EXPECT_THAT(FindChild(&doc, "c"), IsOkAndHolds(element_3));
-  EXPECT_THAT(FindChild(&doc, "d"), StatusIs(NOT_FOUND));
+  EXPECT_THAT(FindChild(&doc, "d"), StatusIs(absl::StatusCode::kNotFound));
 }
 
 TEST(XmlUtilTest, FindChildren) {
@@ -128,9 +128,12 @@ TEST(XmlUtilTest, ReadIntAttribute) {
   EXPECT_THAT(ReadIntAttribute(element, "int"), IsOkAndHolds(42));
   EXPECT_THAT(ReadIntAttribute(element, "neg"), IsOkAndHolds(-3));
   EXPECT_THAT(ReadIntAttribute(element, "fp"), IsOkAndHolds(73));
-  EXPECT_THAT(ReadIntAttribute(element, "text"), StatusIs(INTERNAL));
-  EXPECT_THAT(ReadIntAttribute(element, "empty"), StatusIs(INTERNAL));
-  EXPECT_THAT(ReadIntAttribute(element, "absent"), StatusIs(INTERNAL));
+  EXPECT_THAT(ReadIntAttribute(element, "text"),
+              StatusIs(absl::StatusCode::kInternal));
+  EXPECT_THAT(ReadIntAttribute(element, "empty"),
+              StatusIs(absl::StatusCode::kInternal));
+  EXPECT_THAT(ReadIntAttribute(element, "absent"),
+              StatusIs(absl::StatusCode::kInternal));
 }
 
 TEST(XmlUtilTest, ReadIntAttributeOrDefault) {

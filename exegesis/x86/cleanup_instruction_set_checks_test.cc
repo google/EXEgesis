@@ -14,11 +14,11 @@
 
 #include "exegesis/x86/cleanup_instruction_set_checks.h"
 
+#include "absl/status/status.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
@@ -27,8 +27,6 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOk;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::Status;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::HasSubstr;
 using ::testing::Matcher;
 using ::testing::StartsWith;
@@ -145,7 +143,7 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
         ParseProtoFromStringOrDie<InstructionSetProto>(
             test_case.instruction_set);
     EXPECT_THAT(CheckOpcodeFormat(&instruction_set),
-                StatusIs(INVALID_ARGUMENT,
+                StatusIs(absl::StatusCode::kInvalidArgument,
                          HasSubstr(test_case.expected_error_message)));
   }
 }
@@ -153,7 +151,7 @@ TEST(CheckOpcodeFormatTest, InvalidOpcodes) {
 TEST(CheckOperandInfoTest, CheckInstructions) {
   static const struct {
     const char* instruction_set;
-    Matcher<Status> expected_status;
+    Matcher<absl::Status> expected_status;
   } kTestCases[] = {
       {// A valid instruction.
        R"proto(instructions {
@@ -256,7 +254,7 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                    }
                  }
                })proto",
-       StatusIs(INVALID_ARGUMENT,
+       StatusIs(absl::StatusCode::kInvalidArgument,
                 StartsWith("Operand encoding in InstructionProto.vendor_syntax "
                            "is not set"))},
       {// Missing operand addressing mode.
@@ -279,7 +277,7 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                    }
                  }
                })proto",
-       StatusIs(INVALID_ARGUMENT,
+       StatusIs(absl::StatusCode::kInvalidArgument,
                 StartsWith("Addressing mode in InstructionProto.vendor_syntax "
                            "is not set"))},
       {// Missing operand name + no tags.
@@ -302,7 +300,7 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                    }
                  }
                })proto",
-       StatusIs(INVALID_ARGUMENT,
+       StatusIs(absl::StatusCode::kInvalidArgument,
                 StartsWith("Operand name or tags in "
                            "InstructionProto.vendor_syntax are not valid"))},
       {// Missing register class.
@@ -326,7 +324,7 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                  }
                })proto",
        StatusIs(
-           INVALID_ARGUMENT,
+           absl::StatusCode::kInvalidArgument,
            StartsWith(
                "Register class in InstructionProto.vendor_syntax is not set"))},
       {// Missing usage.
@@ -350,7 +348,7 @@ TEST(CheckOperandInfoTest, CheckInstructions) {
                  }
                })proto",
        StatusIs(
-           INVALID_ARGUMENT,
+           absl::StatusCode::kInvalidArgument,
            StartsWith(
                "Operand usage in InstructionProto.vendor_syntax is not set"))},
   };
@@ -461,7 +459,7 @@ TEST(CheckSpecialCaseInstructionsTest, CoveredInstructions) {
         ParseProtoFromStringOrDie<InstructionSetProto>(
             test_case.instruction_set);
     EXPECT_THAT(CheckSpecialCaseInstructions(&instruction_set),
-                StatusIs(INVALID_ARGUMENT,
+                StatusIs(absl::StatusCode::kInvalidArgument,
                          HasSubstr(test_case.expected_error_message)));
   }
 }
@@ -664,7 +662,7 @@ TEST(CheckSpecialCaseInstructions, NotCoveredInstructions) {
 TEST(CheckHasVendorSyntaxTest, CheckSyntax) {
   const struct {
     const char* instruction_set;
-    Matcher<Status> status_matcher;
+    Matcher<absl::Status> status_matcher;
   } kTestCases[] = {
       {"", IsOk()},
       {R"proto(
@@ -708,7 +706,7 @@ TEST(CheckHasVendorSyntaxTest, CheckSyntax) {
          }
          instructions { x86_encoding_specification { opcode: 0xD361 } }
        )proto",
-       StatusIs(INVALID_ARGUMENT)},
+       StatusIs(absl::StatusCode::kInvalidArgument)},
   };
   for (const auto& test_case : kTestCases) {
     InstructionSetProto instruction_set =

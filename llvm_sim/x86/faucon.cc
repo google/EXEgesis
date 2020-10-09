@@ -144,8 +144,8 @@ void PrintPortPressures(const GlobalContext& Context,
       }
       std::string InstrString;
       llvm::raw_string_ostream OS(InstrString);
-      AsmPrinter.printInst(&BlockContext.GetInstruction(InstrIdx), OS, "",
-                           *Context.SubtargetInfo);
+      AsmPrinter.printInst(&BlockContext.GetInstruction(InstrIdx), 0, "",
+                           *Context.SubtargetInfo, OS);
       OS.flush();
       Table.SetTrailingValue(CurTableRow, InstrString);
     }

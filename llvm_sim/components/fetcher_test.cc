@@ -64,10 +64,20 @@ class FetcherTest : public ::testing::Test {
     InstrDesc_[2].Size = 0;  // Variable size.
     InstrDesc_[3].Size = 0;  // Variable size.
     auto InstrInfo = absl::make_unique<llvm::MCInstrInfo>();
-    InstrInfo->InitMCInstrInfo(InstrDesc_.data(), nullptr, nullptr,
-                               InstrDesc_.size());
+    InstrInfo->InitMCInstrInfo(InstrDesc_.data(), nullptr, nullptr, nullptr,
+                               nullptr, InstrDesc_.size());
     Context_.InstrInfo = std::move(InstrInfo);
     Context_.CodeEmitter = absl::make_unique<TestMCCodeEmitter>();
+
+    // A nullptr is dereferenced if SubtargetInfo is not valid.
+    Context_.SubtargetInfo = absl::make_unique<llvm::MCSubtargetInfo>(
+        llvm::Triple(), /*CPU=*/"", /*TuneCPU=*/"", /*FeatureString=*/"",
+        llvm::ArrayRef<llvm::SubtargetFeatureKV>(),
+        llvm::ArrayRef<llvm::SubtargetSubTypeKV>(),
+        /*MCWriteProcResEntry=*/nullptr,
+        /*MCWriteLatencyEntry=*/nullptr,
+        /*ReadAdvanceEntries=*/nullptr, /*InstrStages=*/nullptr,
+        /*OperandCycles=*/nullptr, /*ForwardingPaths=*/nullptr);
   }
 
   llvm::MCInst Inst4ByteFixed_;

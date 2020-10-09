@@ -14,13 +14,13 @@
 
 #include "exegesis/base/architecture_provider.h"
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace {
@@ -28,9 +28,6 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::INVALID_ARGUMENT;
-using ::exegesis::util::error::NOT_FOUND;
 using ::testing::HasSubstr;
 using ::testing::Pointee;
 
@@ -62,7 +59,8 @@ class TestProvider : public ArchitectureProtoProvider {
   ~TestProvider() override {}
 
  private:
-  StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto() const override {
+  absl::StatusOr<std::shared_ptr<const ArchitectureProto>> GetProto()
+      const override {
     const auto result = std::make_shared<ArchitectureProto>();
     result->set_name("an_id");
     return std::shared_ptr<const ArchitectureProto>(result);
@@ -80,15 +78,15 @@ TEST(ArchitectureProtoProviderTest, TestRegistration) {
 TEST(ArchitectureProtoProviderDeathTest, UnknownSource) {
   constexpr char kUri[] = "unknown_source";
   EXPECT_THAT(GetArchitectureProto(kUri),
-              StatusIs(INVALID_ARGUMENT, HasSubstr(kUri)));
+              StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr(kUri)));
   ASSERT_DEATH(GetArchitectureProtoOrDie(kUri), kUri);
 }
 
 TEST(ArchitectureProtoProviderDeathTest, UnknownProvider) {
   constexpr char kSource[] = ":does_not_exist";
   const std::string uri = absl::StrCat(kRegisteredSource, kSource);
-  EXPECT_THAT(GetArchitectureProto(uri),
-              StatusIs(NOT_FOUND, HasSubstr("test:provider")));
+  EXPECT_THAT(GetArchitectureProto(uri), StatusIs(absl::StatusCode::kNotFound,
+                                                  HasSubstr("test:provider")));
   ASSERT_DEATH(GetArchitectureProtoOrDie(uri), "test:provider");
 }
 
@@ -99,7 +97,7 @@ TEST(ArchitectureProtoProviderTest, TestRegisteredProviders) {
 
 TEST(StringArchitectureProtoProviderTest, TestProvider) {
   StringArchitectureProtoProvider<kTestArchitectureProto> provider;
-  const StatusOr<std::shared_ptr<const ArchitectureProto>> architecture =
+  const absl::StatusOr<std::shared_ptr<const ArchitectureProto>> architecture =
       provider.GetProto();
   EXPECT_THAT(architecture,
               IsOkAndHolds(Pointee(EqualsProto(kTestArchitectureProto))));

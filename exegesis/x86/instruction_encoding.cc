@@ -28,9 +28,12 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "exegesis/util/bits.h"
 #include "exegesis/util/category_util.h"
 #include "exegesis/util/instruction_syntax.h"
@@ -38,17 +41,11 @@
 #include "glog/logging.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 using ::google::protobuf::RepeatedField;
 
 }  // namespace
@@ -134,9 +131,9 @@ InstructionOperand::AddressingMode ConvertToInstructionOperandAddressingMode(
 
 namespace {
 
-Status InvalidEvexVectorLengthError(uint32_t expected_evex_ll_bits,
-                                    uint32_t actual_evex_ll_bits) {
-  return InvalidArgumentError(
+absl::Status InvalidEvexVectorLengthError(uint32_t expected_evex_ll_bits,
+                                          uint32_t actual_evex_ll_bits) {
+  return absl::InvalidArgumentError(
       absl::StrCat("The instruction encoding specification prescribes that the "
                    "vector length bits are set to ",
                    expected_evex_ll_bits, ", but the actual value is ",
@@ -145,9 +142,9 @@ Status InvalidEvexVectorLengthError(uint32_t expected_evex_ll_bits,
 
 }  // namespace
 
-Status ValidateVectorSizeBits(VexVectorSize vector_size_specification,
-                              uint32_t vector_length_or_rounding_bits,
-                              VexPrefixType prefix_type) {
+absl::Status ValidateVectorSizeBits(VexVectorSize vector_size_specification,
+                                    uint32_t vector_length_or_rounding_bits,
+                                    VexPrefixType prefix_type) {
   switch (vector_size_specification) {
     case VEX_VECTOR_SIZE_IS_IGNORED:
     case VEX_VECTOR_SIZE_BIT_IS_ZERO:
@@ -169,7 +166,7 @@ Status ValidateVectorSizeBits(VexVectorSize vector_size_specification,
       break;
     case VEX_VECTOR_SIZE_512_BIT:
       if (prefix_type != EVEX_PREFIX) {
-        return FailedPreconditionError(
+        return absl::FailedPreconditionError(
             "The 512-bit vector length is not supported by the VEX prefix.");
       }
       if (vector_length_or_rounding_bits != kEvexPrefixVectorLength512Bits) {
@@ -182,27 +179,27 @@ Status ValidateVectorSizeBits(VexVectorSize vector_size_specification,
       // we still need to keep the default case, because the proto compiler adds
       // sentinel values that force the type of the enum to be int32_t but that
       // do not have any real meaning.
-      return FailedPreconditionError(
+      return absl::FailedPreconditionError(
           absl::StrCat("Unexpected value of the vector length in the encoding "
                        "specification: ",
                        vector_size_specification));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status ValidateVexWBit(VexPrefixEncodingSpecification::VexWUsage vex_w_usage,
-                       bool vex_w_bit) {
+absl::Status ValidateVexWBit(
+    VexPrefixEncodingSpecification::VexWUsage vex_w_usage, bool vex_w_bit) {
   switch (vex_w_usage) {
     case VexPrefixEncodingSpecification::VEX_W_IS_ZERO:
       if (vex_w_bit) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             "The instruction specification prescribes that the vex.w bit is "
             "set to zero but the instruction sets it to one.");
       }
       break;
     case VexPrefixEncodingSpecification::VEX_W_IS_ONE:
       if (!vex_w_bit) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             "The instruction specification prescribes that the vex.w bit is "
             "set to one but the instruction sets it to zero.");
       }
@@ -215,17 +212,18 @@ Status ValidateVexWBit(VexPrefixEncodingSpecification::VexWUsage vex_w_usage,
       // we still need to keep the default case, because the proto compiler adds
       // sentinel values that force the type of the enum to be int32_t but that
       // do not have any real meaning.
-      return FailedPreconditionError(absl::StrCat(
+      return absl::FailedPreconditionError(absl::StrCat(
           "Unexpected value of the VEX.w bit in the encoding specification: ",
           vex_w_usage));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status ValidateEvexBBit(const VexPrefixEncodingSpecification& vex_specification,
-                        const DecodedInstruction& decoded_instruction) {
+absl::Status ValidateEvexBBit(
+    const VexPrefixEncodingSpecification& vex_specification,
+    const DecodedInstruction& decoded_instruction) {
   if (vex_specification.prefix_type() != EVEX_PREFIX) {
-    return FailedPreconditionError("The prefix is not an EVEX prefix.");
+    return absl::FailedPreconditionError("The prefix is not an EVEX prefix.");
   }
   const bool evex_b_bit =
       decoded_instruction.evex_prefix().broadcast_or_control();
@@ -240,10 +238,10 @@ Status ValidateEvexBBit(const VexPrefixEncodingSpecification& vex_specification,
     // interpretation allowed by vex_specification is a broadcast, and
     // decoded_instruction uses direct addressing. In both cases the EVEX.b bit
     // must be set to zero.
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The instance of the instruction does not use the EVEX.b bit.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 EvexBInterpretation GetUsedEvexBInterpretation(
@@ -297,11 +295,11 @@ EvexBInterpretation GetUsedEvexBInterpretation(
   }
 }
 
-Status ValidateEvexOpmask(
+absl::Status ValidateEvexOpmask(
     const VexPrefixEncodingSpecification& vex_specification,
     const DecodedInstruction& decoded_instruction) {
   if (vex_specification.prefix_type() != EVEX_PREFIX) {
-    return FailedPreconditionError(
+    return absl::FailedPreconditionError(
         "The instruction does not use the EVEX prefix.");
   }
   const EvexPrefix& evex = decoded_instruction.evex_prefix();
@@ -310,7 +308,7 @@ Status ValidateEvexOpmask(
     case EVEX_OPMASK_IS_NOT_USED:
       // The opmask is not used. All of EVEX.aaa and EVEX.z must be set to zero.
       if (evex.opmask_register() != 0) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             "The instruction does not support opmasks.");
       }
       break;
@@ -319,7 +317,7 @@ Status ValidateEvexOpmask(
       break;
     case EVEX_OPMASK_IS_REQUIRED:
       if (evex.opmask_register() == 0) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             "The instruction does not allow using k0 as opmask register.");
       }
       break;
@@ -328,27 +326,27 @@ Status ValidateEvexOpmask(
       // e.g. the lower and the upper bounds of the enum. They should never
       // occur in real data.
       LOG(FATAL) << "Invalid vex_specification.opmask_usage() value.";
-      return FailedPreconditionError(
+      return absl::FailedPreconditionError(
           "Invalid vex_specification.opmask_usage() value.");
   }
   // Validate the EVEX.z bit.
   if (evex.z() && vex_specification.masking_operation() !=
                       EVEX_MASKING_MERGING_AND_ZEROING) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The instruction does not support zeroing or it does not support "
         "masking at all.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status ValidateVexRegisterOperandBits(
+absl::Status ValidateVexRegisterOperandBits(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     uint32_t vex_register_operand) {
   // A convenience shortcut: 0 is the default value of inverted_register_operand
   // in the proto; allowing it even when the register is not used and accounting
   // for it in the encoder makes all test cases that do not use the register
   // operand shorter and easier to read.
-  if (vex_register_operand == 0) return OkStatus();
+  if (vex_register_operand == 0) return absl::OkStatus();
   // Both VEX and EVEX contain the prefix in 1's complement, and when it's not
   // used, all the bits must be set to 1. However, the EVEX prefix uses 5 bits
   // for encoding registers, while the VEX prefix uses only 4 bits, thus the
@@ -359,10 +357,10 @@ Status ValidateVexRegisterOperandBits(
       vex_prefix_specification.prefix_type() == VEX_PREFIX ? 15 : 31;
   const int min_value = operand_is_used ? 0 : max_value;
   if (vex_register_operand < min_value || vex_register_operand > max_value) {
-    return InvalidArgumentError(absl::StrCat(
+    return absl::InvalidArgumentError(absl::StrCat(
         "Invalid VEX/EVEX prefix operand index: ", vex_register_operand));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 namespace {
@@ -759,7 +757,7 @@ std::vector<DecodedInstruction> GenerateEncodingExamples(
     const InstructionProto& instruction) {
   EncodingSpecification specification =
       ParseEncodingSpecification(instruction.raw_encoding_specification())
-          .ValueOrDie();
+          .value();
   DecodedInstruction base = BaseDecodedInstruction(specification);
   // Setting the modrm.reg and VEX prefix operands is not really necessary - the
   // default 0's would be just fine, but we assign a different value here, to
@@ -1225,12 +1223,12 @@ bool PrefixesAndOpcodeMatchSpecification(
   return true;
 }
 
-const RegisterIndex kInvalidRegisterIndex(-1);
+constexpr RegisterIndex kInvalidRegisterIndex(-1);
 
 namespace {
 
-const std::pair<RegisterIndex, std::initializer_list<const char*>>
-    kRegisters[] = {
+const auto* const kRegisters =
+    new std::vector<std::pair<RegisterIndex, std::vector<absl::string_view>>>{
         {RegisterIndex(0), {"al", "ax", "eax", "rax", "es", "cr0", "dr0"}},
         {RegisterIndex(1), {"cl", "cx", "ecx", "rcx", "cs", "dr1"}},
         {RegisterIndex(2), {"dl", "dx", "edx", "rdx", "ss", "cr2", "dr2"}},
@@ -1277,10 +1275,10 @@ absl::flat_hash_map<std::string, RegisterIndex>* MakeRegisterList() {
   }
 
   // Add the registers with special names.
-  for (const auto& registers : kRegisters) {
+  for (const auto& registers : *kRegisters) {
     const RegisterIndex current_register_index = registers.first;
-    const std::initializer_list<const char*>& register_names = registers.second;
-    for (const char* const register_name : register_names) {
+    const std::vector<absl::string_view>& register_names = registers.second;
+    for (const absl::string_view register_name : register_names) {
       (*register_list)[register_name] = current_register_index;
     }
   }
@@ -1436,17 +1434,18 @@ inline void SetVexSuffixOperand(RegisterIndex register_index,
 
 }  // namespace
 
-Status SetOperandToRegister(const InstructionFormat& instruction_format,
-                            int operand_position, RegisterIndex register_index,
-                            DecodedInstruction* instruction) {
+absl::Status SetOperandToRegister(const InstructionFormat& instruction_format,
+                                  int operand_position,
+                                  RegisterIndex register_index,
+                                  DecodedInstruction* instruction) {
   CHECK(instruction != nullptr);
   if (operand_position < 0 ||
       operand_position >= instruction_format.operands_size()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Invalid operand position: ", operand_position));
   }
   if (register_index < 0 || register_index > kMaxX86RegisterIndex) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Invalid register index: ", register_index.value()));
   }
 
@@ -1456,7 +1455,7 @@ Status SetOperandToRegister(const InstructionFormat& instruction_format,
   switch (operand_encoding) {
     case InstructionOperand::OPCODE_ENCODING:
       if (register_index > kMaxX86LegacyRegisterIndex) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             absl::StrCat("Only legacy registers can be encoded in the opcode. "
                          "Register index: ",
                          register_index.value()));
@@ -1477,7 +1476,7 @@ Status SetOperandToRegister(const InstructionFormat& instruction_format,
       break;
     case InstructionOperand::IMPLICIT_ENCODING:
     case InstructionOperand::IMMEDIATE_VALUE_ENCODING:
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Operands of type ",
                        InstructionOperand::Encoding_Name(operand_encoding),
                        " can't be assigned."));
@@ -1489,7 +1488,7 @@ Status SetOperandToRegister(const InstructionFormat& instruction_format,
                  << InstructionOperand::Encoding_Name(operand_encoding);
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 namespace {
@@ -1538,17 +1537,18 @@ bool HasMemoryOperand(const InstructionFormat& instruction_format) {
 
 #define RETURN_ERROR_IF_NO_MEMORY_OPERAND(instruction_format)         \
   if (!HasMemoryOperand(instruction_format)) {                        \
-    return InvalidArgumentError(                                      \
+    return absl::InvalidArgumentError(                                \
         "The instruction does not have an explicit memory operand."); \
   }
 #define RETURN_ERROR_IF_OUT_OF_RANGE(register_index, min_value, max_value) \
   if ((register_index) < (min_value) || (register_index) > (max_value)) {  \
-    return InvalidArgumentError("The instruction index is out of range."); \
+    return absl::InvalidArgumentError(                                     \
+        "The instruction index is out of range.");                         \
   }
 
-Status SetOperandToMemoryAbsolute(const InstructionFormat& instruction_format,
-                                  uint32_t absolute_address,
-                                  DecodedInstruction* instruction) {
+absl::Status SetOperandToMemoryAbsolute(
+    const InstructionFormat& instruction_format, uint32_t absolute_address,
+    DecodedInstruction* instruction) {
   CHECK(instruction != nullptr);
   RETURN_ERROR_IF_NO_MEMORY_OPERAND(instruction_format);
   // The escape values used for the absolute addressing by absolute address
@@ -1563,19 +1563,19 @@ Status SetOperandToMemoryAbsolute(const InstructionFormat& instruction_format,
   SetModRmRmValue(kModRmRmRegisterIndex, instruction);
   SetSibBaseValue(kSibBaseRegisterIndex, instruction);
   SetSibIndexValue(kSibIndexRegisterIndex, instruction);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status SetOperandToMemoryBase(const InstructionFormat& instruction_format,
-                              RegisterIndex base_register,
-                              DecodedInstruction* instruction) {
+absl::Status SetOperandToMemoryBase(const InstructionFormat& instruction_format,
+                                    RegisterIndex base_register,
+                                    DecodedInstruction* instruction) {
   CHECK(instruction != nullptr);
   RETURN_ERROR_IF_NO_MEMORY_OPERAND(instruction_format);
   RETURN_ERROR_IF_OUT_OF_RANGE(base_register, 0,
                                kMaxX86GeneralPurposeRegisterIndex);
   const int base_register_base_bits = base_register.value() & 7;
   if (base_register_base_bits == 4 || base_register_base_bits == 5) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Register indices 4, 5, 12, and 13 cannot be encoded using only "
         "the ModR/M byte.");
   }
@@ -1583,12 +1583,12 @@ Status SetOperandToMemoryBase(const InstructionFormat& instruction_format,
   modrm->set_addressing_mode(ModRm::INDIRECT);
   instruction->clear_sib();
   SetModRmRmValue(base_register, instruction);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status SetOperandToMemoryBaseSib(const InstructionFormat& instruction_format,
-                                 RegisterIndex base_register,
-                                 DecodedInstruction* instruction) {
+absl::Status SetOperandToMemoryBaseSib(
+    const InstructionFormat& instruction_format, RegisterIndex base_register,
+    DecodedInstruction* instruction) {
   CHECK(instruction != nullptr);
   RETURN_ERROR_IF_NO_MEMORY_OPERAND(instruction_format);
   RETURN_ERROR_IF_OUT_OF_RANGE(base_register, 0,
@@ -1600,7 +1600,7 @@ Status SetOperandToMemoryBaseSib(const InstructionFormat& instruction_format,
   // sib.base == 5 serves as an escape value for indirect addressing with an
   // absolute address.
   if (base_register == 5 || base_register == 13) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Register indices 5 and 13 cannot be used as base register when "
         "encoding the address with the SIB byte.");
   }
@@ -1610,10 +1610,10 @@ Status SetOperandToMemoryBaseSib(const InstructionFormat& instruction_format,
   SetSibBaseValue(base_register, instruction);
   SetSibIndexValue(kSibIndexRegisterIndex, instruction);
   instruction->mutable_sib()->set_scale(0);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status SetOperandToMemoryRelativeToRip(
+absl::Status SetOperandToMemoryRelativeToRip(
     const InstructionFormat& instruction_format, int32_t displacement,
     DecodedInstruction* instruction) {
   CHECK(instruction != nullptr);
@@ -1624,11 +1624,11 @@ Status SetOperandToMemoryRelativeToRip(
   SetModRmRmValue(kRipRelativeAddressingRegisterIndex, instruction);
   modrm->set_address_displacement(static_cast<uint32_t>(displacement));
   instruction->clear_sib();
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 template <typename DisplacementType>
-Status SetOperandToMemoryBaseAndDisplacement(
+absl::Status SetOperandToMemoryBaseAndDisplacement(
     const InstructionFormat& instruction_format, RegisterIndex base_register,
     DisplacementType displacement, DecodedInstruction* instruction) {
   CHECK(instruction != nullptr);
@@ -1641,7 +1641,7 @@ Status SetOperandToMemoryBaseAndDisplacement(
       typename std::make_unsigned<DisplacementType>::type;
 
   if (base_register == 4 || base_register == 12) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Register indices 4 and 12 cannot be encoded using only the ModR/M "
         "byte.");
   }
@@ -1658,19 +1658,19 @@ Status SetOperandToMemoryBaseAndDisplacement(
   instruction->clear_sib();
   SetModRmRmValue(base_register, instruction);
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Explicitly instantiate the template function for int8_t and int32_t (the only
 // types supported by the x86 and x86-64 instruction encoding).
-Status SetOperandToMemoryBaseAnd8BitDisplacement(
+absl::Status SetOperandToMemoryBaseAnd8BitDisplacement(
     const InstructionFormat& instruction_format, RegisterIndex base_register,
     int8_t displacement, DecodedInstruction* instruction) {
   return SetOperandToMemoryBaseAndDisplacement<int8_t>(
       instruction_format, base_register, displacement, instruction);
 }
 
-Status SetOperandToMemoryBaseAnd32BitDisplacement(
+absl::Status SetOperandToMemoryBaseAnd32BitDisplacement(
     const InstructionFormat& instruction_format, RegisterIndex base_register,
     int32_t displacement, DecodedInstruction* instruction) {
   return SetOperandToMemoryBaseAndDisplacement<int32_t>(

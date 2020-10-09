@@ -18,27 +18,23 @@
 #include <string>
 
 #include "absl/algorithm/container.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "exegesis/base/opcode.h"
 #include "exegesis/util/bits.h"
+#include "exegesis/util/status_util.h"
 #include "exegesis/util/strings.h"
 #include "exegesis/x86/instruction_encoding.h"
 #include "glog/logging.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status_macros.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
 using ::absl::c_linear_search;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::NotFoundError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 using X86InstructionIndex = X86Architecture::InstructionIndex;
 
@@ -118,7 +114,7 @@ void InstructionParser::Reset() {
   specification_ = nullptr;
 }
 
-StatusOr<DecodedInstruction> InstructionParser::ConsumeBinaryEncoding(
+absl::StatusOr<DecodedInstruction> InstructionParser::ConsumeBinaryEncoding(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   Reset();
@@ -179,7 +175,7 @@ bool InstructionParser::ConsumeAddressSizeOverridePrefixIfNeeded(
   return false;
 }
 
-Status InstructionParser::ConsumePrefixes(
+absl::Status InstructionParser::ConsumePrefixes(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
 
@@ -254,43 +250,43 @@ Status InstructionParser::ConsumePrefixes(
         } else {
           // The current byte is not a prefix byte. In such case, we need to
           // for the following parser.
-          return OkStatus();
+          return absl::OkStatus();
         }
     }
     if (!consumed_first_byte) encoded_instruction->remove_prefix(1);
   }
 
-  return InvalidArgumentError(
+  return absl::InvalidArgumentError(
       "Reached the end of the instruction before parsing the opcode.");
 }
 
-Status InstructionParser::ParseRexPrefix(uint8_t prefix_byte) {
+absl::Status InstructionParser::ParseRexPrefix(uint8_t prefix_byte) {
   CHECK(IsRexPrefixByte(prefix_byte)) << "Not a REX prefix: " << prefix_byte;
   constexpr int kRexWBit = 3;
   constexpr int kRexRBit = 2;
   constexpr int kRexXBit = 1;
   constexpr int kRexBBit = 0;
   if (instruction_.has_vex_prefix()) {
-    return InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
+    return absl::InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
   }
   LegacyPrefixes* const legacy_prefixes =
       instruction_.mutable_legacy_prefixes();
   if (legacy_prefixes->has_rex()) {
-    return InvalidArgumentError("Multiple REX prefixes were provided.");
+    return absl::InvalidArgumentError("Multiple REX prefixes were provided.");
   }
   RexPrefix* const rex_prefix = legacy_prefixes->mutable_rex();
   rex_prefix->set_w(IsNthBitSet(prefix_byte, kRexWBit));
   rex_prefix->set_r(IsNthBitSet(prefix_byte, kRexRBit));
   rex_prefix->set_x(IsNthBitSet(prefix_byte, kRexXBit));
   rex_prefix->set_b(IsNthBitSet(prefix_byte, kRexBBit));
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::ConsumeVexPrefix(
+absl::Status InstructionParser::ConsumeVexPrefix(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   if (encoded_instruction->empty()) {
-    return InvalidArgumentError("The VEX prefix is incomplete.");
+    return absl::InvalidArgumentError("The VEX prefix is incomplete.");
   }
   const uint8_t vex_prefix_byte = ConsumeFront(encoded_instruction);
 
@@ -299,7 +295,7 @@ Status InstructionParser::ConsumeVexPrefix(
     case kThreeByteVexPrefixEscapeByte: {
       // This is the three-byte VEX (0xC4) prefix.
       if (encoded_instruction->size() < 2) {
-        return InvalidArgumentError("The VEX prefix is incomplete.");
+        return absl::InvalidArgumentError("The VEX prefix is incomplete.");
       }
       const uint8_t first_data_byte = ConsumeFront(encoded_instruction);
       vex_prefix->set_not_b(IsNthBitSet(first_data_byte, 5));
@@ -320,7 +316,7 @@ Status InstructionParser::ConsumeVexPrefix(
     case kTwoByteVexPrefixEscapeByte: {
       // This is the two-byte VEX prefix.
       if (encoded_instruction->empty()) {
-        return InvalidArgumentError("The VEX prefix is incomplete.");
+        return absl::InvalidArgumentError("The VEX prefix is incomplete.");
       }
       const uint8_t data_byte = ConsumeFront(encoded_instruction);
       vex_prefix->set_not_b(true);
@@ -335,17 +331,17 @@ Status InstructionParser::ConsumeVexPrefix(
               GetBitRange(data_byte, 0, 2)));
     } break;
     default:
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrFormat("Not a VEX prefix byte: %x", vex_prefix_byte));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::ConsumeEvexPrefix(
+absl::Status InstructionParser::ConsumeEvexPrefix(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   if (encoded_instruction->size() < 4) {
-    return InvalidArgumentError("The EVEX prefix is incomplete.");
+    return absl::InvalidArgumentError("The EVEX prefix is incomplete.");
   }
   CHECK(IsEvexPrefixByte(encoded_instruction->front()));
   encoded_instruction->remove_prefix(1);
@@ -359,7 +355,7 @@ Status InstructionParser::ConsumeEvexPrefix(
   evex_prefix->set_map_select(
       static_cast<VexEncoding::MapSelect>(GetBitRange(first_data_byte, 0, 2)));
   if (GetBitRange(first_data_byte, 2, 4) != 0) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Invalid EVEX prefix: the reserved bits in the first data byte are not "
         "set to 0.");
   }
@@ -369,7 +365,7 @@ Status InstructionParser::ConsumeEvexPrefix(
   evex_prefix->set_mandatory_prefix(static_cast<VexEncoding::MandatoryPrefix>(
       GetBitRange(second_data_byte, 0, 2)));
   if (!IsNthBitSet(second_data_byte, 2)) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Invalid EVEX prefix: the reserved bit in the second data byte is not "
         "set to 1.");
   }
@@ -382,14 +378,14 @@ Status InstructionParser::ConsumeEvexPrefix(
       inverted_register_operand | (IsNthBitSet(third_data_byte, 3) << 4);
   evex_prefix->set_inverted_register_operand(inverted_register_operand);
   evex_prefix->set_opmask_register(GetBitRange(third_data_byte, 0, 3));
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::ConsumeOpcode(
+absl::Status InstructionParser::ConsumeOpcode(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   if (encoded_instruction->empty()) {
-    return InvalidArgumentError("The opcode is missing.");
+    return absl::InvalidArgumentError("The opcode is missing.");
   }
 
   uint32_t opcode_value = ConsumeFront(encoded_instruction);
@@ -410,7 +406,7 @@ Status InstructionParser::ConsumeOpcode(
         opcode_value = 0x0f3a00 | opcode_value;
         break;
       default:
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             absl::StrCat("Invalid vex.map_select value ", map_select));
     }
   } else {
@@ -455,11 +451,11 @@ Status InstructionParser::ConsumeOpcode(
   // ModR/M byte this lookup is final.
   specification_ = GetEncodingSpecification(opcode_value, false);
   if (specification_ == nullptr) {
-    return NotFoundError(absl::StrCat("The instruction was not found: ",
-                                      instruction_.ShortDebugString()));
+    return absl::NotFoundError(absl::StrCat("The instruction was not found: ",
+                                            instruction_.ShortDebugString()));
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 const EncodingSpecification* InstructionParser::GetEncodingSpecification(
@@ -504,18 +500,18 @@ const EncodingSpecification* InstructionParser::GetEncodingSpecification(
   return specification;
 }
 
-Status InstructionParser::ConsumeModRmAndSIBIfNeeded(
+absl::Status InstructionParser::ConsumeModRmAndSIBIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
 
   const Opcode opcode(instruction_.opcode());
   if (specification_->modrm_usage() == EncodingSpecification::NO_MODRM_USAGE) {
-    return OkStatus();
+    return absl::OkStatus();
   }
 
   if (encoded_instruction->empty()) {
-    return InvalidArgumentError("The ModR/M byte is missing.");
+    return absl::InvalidArgumentError("The ModR/M byte is missing.");
   }
 
   ModRm* const modrm = instruction_.mutable_modrm();
@@ -533,7 +529,7 @@ Status InstructionParser::ConsumeModRmAndSIBIfNeeded(
       modrm->addressing_mode() != ModRm::DIRECT && modrm->rm_operand() == 0x4;
   if (has_sib) {
     if (encoded_instruction->empty()) {
-      return InvalidArgumentError("The SIB byte is missing");
+      return absl::InvalidArgumentError("The SIB byte is missing");
     }
     const uint8_t sib_byte = ConsumeFront(encoded_instruction);
 
@@ -585,7 +581,7 @@ Status InstructionParser::ConsumeModRmAndSIBIfNeeded(
   // that the size of the data is verified in advance, so this should not cause
   // any problems in this respect.
   if (encoded_instruction->size() < num_displacement_bytes) {
-    return InvalidArgumentError(absl::StrCat(
+    return absl::InvalidArgumentError(absl::StrCat(
         "Displacement bytes are missing - expected ", num_displacement_bytes,
         "found ", encoded_instruction->size()));
   }
@@ -610,14 +606,14 @@ Status InstructionParser::ConsumeModRmAndSIBIfNeeded(
   // Reload the specification according to modrm and sib fields.
   specification_ = GetEncodingSpecification(instruction_.opcode(), true);
   if (specification_ == nullptr) {
-    return NotFoundError(absl::StrCat("The instruction was not found: ",
-                                      instruction_.ShortDebugString()));
+    return absl::NotFoundError(absl::StrCat("The instruction was not found: ",
+                                            instruction_.ShortDebugString()));
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::ConsumeImmediateValuesIfNeeded(
+absl::Status InstructionParser::ConsumeImmediateValuesIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
@@ -625,33 +621,34 @@ Status InstructionParser::ConsumeImmediateValuesIfNeeded(
   for (const uint32_t immediate_value_bytes :
        specification_->immediate_value_bytes()) {
     if (encoded_instruction->size() < immediate_value_bytes) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           "The immediate value is missing or incomplete");
     }
     instruction_.add_immediate_value(
         ConsumeBytes(encoded_instruction, immediate_value_bytes));
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::ConsumeCodeOffsetIfNeeded(
+absl::Status InstructionParser::ConsumeCodeOffsetIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
 
   if (specification_->code_offset_bytes()) {
     if (encoded_instruction->size() < specification_->code_offset_bytes()) {
-      return InvalidArgumentError("The code offset is missing or incomplete");
+      return absl::InvalidArgumentError(
+          "The code offset is missing or incomplete");
     }
     *instruction_.mutable_code_offset() =
         ConsumeBytes(encoded_instruction, specification_->code_offset_bytes());
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::ConsumeVexSuffixIfNeeded(
+absl::Status InstructionParser::ConsumeVexSuffixIfNeeded(
     absl::Span<const uint8_t>* encoded_instruction) {
   CHECK(encoded_instruction != nullptr);
   DCHECK(specification_ != nullptr);
@@ -661,30 +658,30 @@ Status InstructionParser::ConsumeVexSuffixIfNeeded(
   if (specification_->has_vex_prefix() &&
       specification_->vex_prefix().has_vex_operand_suffix()) {
     if (encoded_instruction->empty()) {
-      return InvalidArgumentError("The VEX suffix is missing");
+      return absl::InvalidArgumentError("The VEX suffix is missing");
     }
     const uint8_t vex_suffix = ConsumeFront(encoded_instruction);
     instruction_.mutable_vex_prefix()->set_vex_suffix_value(vex_suffix);
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status InstructionParser::AddLockOrRepPrefix(
+absl::Status InstructionParser::AddLockOrRepPrefix(
     LegacyEncoding::LockOrRepPrefix prefix) {
   if (instruction_.has_vex_prefix()) {
-    return InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
+    return absl::InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
   }
   LegacyPrefixes* const legacy_prefixes =
       instruction_.mutable_legacy_prefixes();
   if (legacy_prefixes->lock_or_rep() != LegacyEncoding::NO_LOCK_OR_REP_PREFIX) {
-    return InvalidArgumentError(absl::StrCat(
+    return absl::InvalidArgumentError(absl::StrCat(
         "Multiple lock or repeat prefixes were found: ",
         LegacyEncoding::LockOrRepPrefix_Name(legacy_prefixes->lock_or_rep()),
         " and ", LegacyEncoding::LockOrRepPrefix_Name(prefix)));
   }
   legacy_prefixes->set_lock_or_rep(prefix);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionParser::AddSegmentOverridePrefix(
@@ -698,9 +695,9 @@ void InstructionParser::AddSegmentOverridePrefix(
   instruction_.set_segment_override(prefix);
 }
 
-Status InstructionParser::AddOperandSizeOverridePrefix() {
+absl::Status InstructionParser::AddOperandSizeOverridePrefix() {
   if (instruction_.has_vex_prefix()) {
-    return InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
+    return absl::InvalidArgumentError(kErrorMessageVexAndLegacyPrefixes);
   }
   LegacyPrefixes* const legacy_prefixes =
       instruction_.mutable_legacy_prefixes();
@@ -711,7 +708,7 @@ Status InstructionParser::AddOperandSizeOverridePrefix() {
   }
   legacy_prefixes->set_operand_size_override(
       LegacyEncoding::OPERAND_SIZE_OVERRIDE);
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 void InstructionParser::AddAddressSizeOverridePrefix() {

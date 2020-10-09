@@ -21,6 +21,8 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/x86/decoded_instruction.pb.h"
@@ -30,7 +32,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
@@ -39,11 +40,6 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::Code;
-using ::exegesis::util::error::INVALID_ARGUMENT;
-using ::exegesis::util::error::NOT_FOUND;
 using ::testing::HasSubstr;
 using ::testing::UnorderedElementsAreArray;
 
@@ -56,7 +52,7 @@ class InstructionParserTest : public ::testing::Test {
       const std::string& encoding_specification_str,
       const std::string& expected_encoded_instruction_proto);
   void ParseInstructionAndCheckError(absl::Span<const uint8_t> binary_encoding,
-                                     Code expected_error_code,
+                                     absl::StatusCode expected_error_code,
                                      const std::string& expected_error_message);
 
   void SetUp() override {
@@ -613,11 +609,12 @@ void InstructionParserTest::ParseInstructionAndCheckResult(
   ASSERT_FALSE(indices.empty());
   const EncodingSpecification& encoding_specification =
       architecture_->encoding_specification(indices.front());
-  const StatusOr<std::vector<uint8_t>> exegesis_binary_encoding_or_status =
-      EncodeInstruction(encoding_specification, expected_decoded_instruction);
+  const absl::StatusOr<std::vector<uint8_t>>
+      exegesis_binary_encoding_or_status = EncodeInstruction(
+          encoding_specification, expected_decoded_instruction);
   ASSERT_OK(exegesis_binary_encoding_or_status.status());
   const std::vector<uint8_t>& exegesis_binary_encoding =
-      exegesis_binary_encoding_or_status.ValueOrDie();
+      exegesis_binary_encoding_or_status.value();
   // The following line compares the bytes in the binary encoding with the
   // ordering ignored. Ideally, we'd like to compare the bytes including the
   // ordering, but the encoding specification does not prescribe a fixed order
@@ -650,7 +647,8 @@ void InstructionParserTest::ParseInstructionAndCheckResult(
 }
 
 void InstructionParserTest::ParseInstructionAndCheckError(
-    absl::Span<const uint8_t> binary_encoding, Code expected_error_code,
+    absl::Span<const uint8_t> binary_encoding,
+    absl::StatusCode expected_error_code,
     const std::string& expected_error_message) {
   InstructionParser instruction_parser(architecture_.get());
   EXPECT_THAT(instruction_parser.ParseBinaryEncoding(binary_encoding),
@@ -722,7 +720,8 @@ TEST_F(InstructionParserTest, ParseNopWithAddressSizeOverride) {
 }
 
 TEST_F(InstructionParserTest, RepeatedLockGroupPrefix) {
-  ParseInstructionAndCheckError({0xf0, 0xf2, 0x90}, INVALID_ARGUMENT,
+  ParseInstructionAndCheckError({0xf0, 0xf2, 0x90},
+                                absl::StatusCode::kInvalidArgument,
                                 "Multiple lock or repeat prefixes were found");
 }
 
@@ -1224,10 +1223,11 @@ TEST_F(InstructionParserTest, ParseMultipleImmediateValues) {
 
 TEST_F(InstructionParserTest, MissingOrIncompleteImmediateValue) {
   // ADC imm8 [the immediate value is missing]
-  ParseInstructionAndCheckError({0x14}, INVALID_ARGUMENT,
+  ParseInstructionAndCheckError({0x14}, absl::StatusCode::kInvalidArgument,
                                 "The immediate value is missing or incomplete");
   // ADC imm16 [the second byte of the immediate value is missing]
-  ParseInstructionAndCheckError({0x66, 0x15, 0xab}, INVALID_ARGUMENT,
+  ParseInstructionAndCheckError({0x66, 0x15, 0xab},
+                                absl::StatusCode::kInvalidArgument,
                                 "The immediate value is missing or incomplete");
 }
 
@@ -1256,7 +1256,8 @@ TEST_F(InstructionParserTest, ParseVexSuffix) {
 
 TEST_F(InstructionParserTest, MissingVexSuffix) {
   ParseInstructionAndCheckError({0xc4, 0xe3, 0x69, 0x4b, 0xcb},
-                                INVALID_ARGUMENT, "The VEX suffix is missing");
+                                absl::StatusCode::kInvalidArgument,
+                                "The VEX suffix is missing");
 }
 
 TEST_F(InstructionParserTest, ParseEvexPrefix) {
@@ -1305,7 +1306,7 @@ TEST_F(InstructionParserTest, ParseEvexPrefix) {
   // The same instruction as above, but one of the reserved bits in the EVEX
   // prefix is set incorrectly.
   ParseInstructionAndCheckError({0x62, 0xf5, 0xef, 0x89, 0x10, 0xcb},
-                                INVALID_ARGUMENT, "");
+                                absl::StatusCode::kInvalidArgument, "");
 }
 
 TEST_F(InstructionParserTest, OperandEncodedInOpcode) {
@@ -1334,8 +1335,8 @@ TEST_F(InstructionParserTest, OperandEncodedInOpcode) {
   // Instruction with unknown opcode, even after trimming least significant 3
   // bits.
   ParseInstructionAndCheckError(
-      {0x48, 0xCE, 0x86, 0x86, 0x99, 0x0E, 0x00, 0x00, 0x00, 0x00}, NOT_FOUND,
-      "");
+      {0x48, 0xCE, 0x86, 0x86, 0x99, 0x0E, 0x00, 0x00, 0x00, 0x00},
+      absl::StatusCode::kNotFound, "");
 }
 
 TEST_F(InstructionParserTest, MultipleInstructionsWithSimilarOpcode) {

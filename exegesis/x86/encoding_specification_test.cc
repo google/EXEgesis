@@ -28,8 +28,6 @@
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
@@ -38,7 +36,6 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOk;
 using ::exegesis::testing::IsOkAndHolds;
-using ::exegesis::util::StatusOr;
 using ::testing::Not;
 using ::testing::ResultOf;
 using ::testing::UnorderedElementsAreArray;

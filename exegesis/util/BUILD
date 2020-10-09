@@ -138,9 +138,9 @@ cc_library(
     hdrs = ["proto_util.h"],
     deps = [
         "//base",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
         "@com_google_protobuf//:protobuf_lite",
@@ -156,8 +156,8 @@ cc_test(
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/testing:test_util",
         "//file/base:path",
-        "//util/task:status",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
@@ -172,8 +172,9 @@ cc_library(
     hdrs = ["status_util.h"],
     deps = [
         "//base",
-        "//util/task:status",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf_lite",
     ],
 )
@@ -185,7 +186,7 @@ cc_test(
     deps = [
         ":status_util",
         "//exegesis/testing:test_util",
-        "//util/task:status",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -198,9 +199,8 @@ cc_library(
     hdrs = ["strings.h"],
     deps = [
         "//base",
-        "//util/task:status",
-        "//util/task:statusor",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_protobuf//:protobuf_lite",
@@ -215,7 +215,7 @@ cc_test(
     deps = [
         ":strings",
         "//exegesis/testing:test_util",
-        "//util/task:status",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

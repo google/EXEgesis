@@ -94,7 +94,7 @@ std::unique_ptr<GlobalContext> GlobalContext::CreateMutable(
     llvm::StringRef TripleName, llvm::StringRef CpuName) {
   std::string ErrorMsg;
   const auto* const Target =
-      llvm::TargetRegistry::lookupTarget(TripleName, ErrorMsg);
+      llvm::TargetRegistry::lookupTarget(std::string(TripleName), ErrorMsg);
   if (!Target) {
     llvm::errs() << "cannot create target for triple '" << TripleName
                  << "': " << ErrorMsg << "\n";

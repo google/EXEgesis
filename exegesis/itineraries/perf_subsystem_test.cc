@@ -341,7 +341,7 @@ TEST(PerfSubsystemTest, ADDSDrm) {
 #ifndef MEMORY_SANITIZER
 TEST(PerfSubsystemTest, ADDSDrmSize) {
   double memory;
-  asm volatile("movsd %%xmm0,%[memory]" : [ memory ] "=m"(memory) : :);
+  asm volatile("movsd %%xmm0,%[memory]" : [memory] "=m"(memory) : :);
   EXPECT_NE("", absl::StrFormat("%.17g", memory));
 }
 #endif

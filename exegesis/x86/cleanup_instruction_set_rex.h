@@ -15,13 +15,11 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_REX_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_REX_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
 
 // Adds missing REX.W prefix usage to the instructions: it groups legacy
 // instructions by their opcodes/opcode extensions, and then in each group:
@@ -30,7 +28,7 @@ using ::exegesis::util::Status;
 // - if the group does not contain a REX.W instruction, it sets 'REX.W is
 //   ignored' to all instructions in the group.
 // - it does not modify instructions that already have other REX.W usage set.
-Status AddRexWPrefixUsage(InstructionSetProto* instruction_set);
+absl::Status AddRexWPrefixUsage(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

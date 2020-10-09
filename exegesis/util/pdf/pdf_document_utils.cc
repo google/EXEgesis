@@ -23,9 +23,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/util/proto_util.h"
+#include "exegesis/util/status_util.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace pdf {

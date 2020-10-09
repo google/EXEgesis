@@ -30,6 +30,8 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -45,6 +47,7 @@
 #include "exegesis/llvm/inline_asm.h"
 #include "exegesis/util/category_util.h"
 #include "exegesis/util/instruction_syntax.h"
+#include "exegesis/util/status_util.h"
 #include "exegesis/x86/cpu_state.h"
 #include "exegesis/x86/operand_translator.h"
 #include "glog/logging.h"
@@ -55,20 +58,10 @@
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/text_format.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
-#include "util/task/status_macros.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace itineraries {
 namespace {
-
-using ::exegesis::util::InternalError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
 
 const absl::flat_hash_set<std::string>* const kExcludedInstructions =
     new absl::flat_hash_set<std::string>({
@@ -256,8 +249,9 @@ class ComputeItinerariesHelper {
                            const MicroArchitecture& microarchitecture,
                            const Parameters& parameters);
 
-  Status ComputeItineraries(const InstructionSetProto& instruction_set,
-                            InstructionSetItinerariesProto* itineraries) const;
+  absl::Status ComputeItineraries(
+      const InstructionSetProto& instruction_set,
+      InstructionSetItinerariesProto* itineraries) const;
 
  private:
   class Stats {
@@ -351,12 +345,12 @@ class ComputeItinerariesHelper {
   static std::string MakeCleanupCode(uint8* fx_state_buffer);
 
   // Computes the itineraries for the update code.
-  StatusOr<PortMaskCount> ComputeUpdateCodeMicroOps() const;
+  absl::StatusOr<PortMaskCount> ComputeUpdateCodeMicroOps() const;
 
-  Status ComputeOneItinerary(const InstructionProto& instruction,
-                             const PortMaskCount& update_code_micro_ops,
-                             ItineraryProto* const itinerary,
-                             Stats* const stats) const;
+  absl::Status ComputeOneItinerary(const InstructionProto& instruction,
+                                   const PortMaskCount& update_code_micro_ops,
+                                   ItineraryProto* const itinerary,
+                                   Stats* const stats) const;
 
   const MicroArchitecture& microarchitecture_;
   const CpuInfo& cpu_info_;
@@ -481,8 +475,8 @@ bool TouchesMemory(const InstructionFormat& asm_syntax) {
   return false;
 }
 
-StatusOr<PortMaskCount> ComputeItinerariesHelper::ComputeUpdateCodeMicroOps()
-    const {
+absl::StatusOr<PortMaskCount>
+ComputeItinerariesHelper::ComputeUpdateCodeMicroOps() const {
   PerfResult result;
   CHECK_OK(EvaluateAssemblyString(
       llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.inner_iterations,
@@ -491,7 +485,7 @@ StatusOr<PortMaskCount> ComputeItinerariesHelper::ComputeUpdateCodeMicroOps()
       /*suffix_code=*/"", cleanup_code_, constraints_, &result));
   const ObservationVector observation = CreateObservationVector(result);
   DecompositionSolver solver(microarchitecture_);
-  const Status status = solver.Run(observation);
+  const absl::Status status = solver.Run(observation);
   if (!status.ok()) {
     return status;
   }
@@ -506,22 +500,22 @@ StatusOr<PortMaskCount> ComputeItinerariesHelper::ComputeUpdateCodeMicroOps()
 // Subtract the micro-ops in rhs (represented by their PortMasks) from those in
 // lhs. Returns a bad status if lhs does not contain at least the micro-ops in
 // rhs.
-Status SubtractMicroOpsFrom(PortMaskCount rhs,
-                            DecompositionSolver::MicroOps* const lhs) {
+absl::Status SubtractMicroOpsFrom(PortMaskCount rhs,
+                                  DecompositionSolver::MicroOps* const lhs) {
   RemoveIf(lhs, [&rhs](const MicroOperationProto* op) {
     return --rhs[PortMask(op->port_mask())] >= 0;
   });
   for (const auto& remaining_count : rhs) {
     if (remaining_count.second > 0) {
-      return InternalError(
+      return absl::InternalError(
           absl::StrCat("The measured code does not include the update code ",
                        remaining_count.first.ToString()));
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status ComputeItinerariesHelper::ComputeOneItinerary(
+absl::Status ComputeItinerariesHelper::ComputeOneItinerary(
     const InstructionProto& instruction,
     const PortMaskCount& update_code_micro_ops, ItineraryProto* const itinerary,
     Stats* const stats) const {
@@ -537,23 +531,23 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
       !cpu_info_.SupportsFeature(instruction.feature_name())) {
     LOG(INFO) << "Ignoring instruction " << instruction.llvm_mnemonic()
               << " with unsupported feature " << instruction.feature_name();
-    return OkStatus();
+    return absl::OkStatus();
   }
   // TODO(courbet): read this from cpuinfo.
   if (!instruction.available_in_64_bit()) {
     LOG(INFO) << "Ignoring instruction " << instruction.llvm_mnemonic()
               << " (!available_in_64_bit)";
-    return OkStatus();
+    return absl::OkStatus();
   }
   if (microarchitecture_.IsProtectedMode(instruction.protection_mode())) {
     LOG(INFO) << "Ignoring instruction " << instruction.llvm_mnemonic()
               << " requiring lower protection mode";
-    return OkStatus();
+    return absl::OkStatus();
   }
   if (kExcludedInstructions->contains(mnemonic)) {
     LOG(INFO) << "Ignoring blacklisted instruction "
               << ConvertToCodeString(vendor_syntax);
-    return OkStatus();
+    return absl::OkStatus();
   }
   if (mnemonic == "MOV" &&
       (kExcludedMovOperands->contains(vendor_syntax.operands(0).name()) ||
@@ -561,7 +555,7 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
        vendor_syntax.operands(0).name() == "Sreg")) {
     LOG(INFO) << "Ignoring instruction with unsupported operands "
               << ConvertToCodeString(vendor_syntax);
-    return OkStatus();
+    return absl::OkStatus();
   }
   const InstructionFormat asm_syntax = x86::InstantiateOperands(instruction);
   const std::string measured_code = ConvertToCodeString(asm_syntax);
@@ -601,7 +595,7 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
   if (result.HasTiming("ild_stall.lcp") &&
       result.GetScaledOrDie("ild_stall.lcp") > 0.1) {
     stats->IncrementDecodeStallsErrors();
-    return InternalError(
+    return absl::InternalError(
         absl::StrCat("Instruction stalls decode pipeline: ", measured_code));
   }
 
@@ -614,7 +608,7 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
               << solver.DebugString();
     *itinerary->mutable_micro_ops() = solver.GetMicroOps();
     if (touches_memory) {
-      const Status status = SubtractMicroOpsFrom(
+      const absl::Status status = SubtractMicroOpsFrom(
           update_code_micro_ops, itinerary->mutable_micro_ops());
       if (!status.ok()) {
         stats->IncrementSubtractUpdateCodeErrors();
@@ -627,29 +621,29 @@ Status ComputeItinerariesHelper::ComputeOneItinerary(
                                             .WithMicroOpLatencies(false)
                                             .WithMicroOpDependencies(false));
     }
-    return OkStatus();
+    return absl::OkStatus();
   } else {
     stats->IncrementUnsolvedProblems();
-    return InternalError(absl::StrCat("Could not decompose instruction ",
-                                      measured_code,
-                                      " into micro-operations."));
+    return absl::InternalError(absl::StrCat("Could not decompose instruction ",
+                                            measured_code,
+                                            " into micro-operations."));
   }
 }
 
-Status ComputeItinerariesHelper::ComputeItineraries(
+absl::Status ComputeItinerariesHelper::ComputeItineraries(
     const InstructionSetProto& instruction_set,
     InstructionSetItinerariesProto* const itineraries) const {
-  const StatusOr<PortMaskCount> update_code_micro_ops =
+  const absl::StatusOr<PortMaskCount> update_code_micro_ops =
       ComputeUpdateCodeMicroOps();
   if (!update_code_micro_ops.ok()) {
-    return InternalError("Failed to compute update code micro-ops");
+    return absl::InternalError("Failed to compute update code micro-ops");
   }
 
   Stats stats;
-  Status global_status;
+  absl::Status global_status;
   for (int i = 0; i < instruction_set.instructions_size(); ++i) {
-    const Status status = ComputeOneItinerary(
-        instruction_set.instructions(i), update_code_micro_ops.ValueOrDie(),
+    const absl::Status status = ComputeOneItinerary(
+        instruction_set.instructions(i), update_code_micro_ops.value(),
         itineraries->mutable_itineraries(i), &stats);
     if (!status.ok()) {
       LOG(ERROR) << status;
@@ -663,8 +657,9 @@ Status ComputeItinerariesHelper::ComputeItineraries(
 
 }  // namespace
 
-Status ComputeItineraries(const InstructionSetProto& instruction_set,
-                          InstructionSetItinerariesProto* const itineraries) {
+absl::Status ComputeItineraries(
+    const InstructionSetProto& instruction_set,
+    InstructionSetItinerariesProto* const itineraries) {
   CHECK(itineraries != nullptr);
   CHECK_EQ(instruction_set.instructions_size(),
            itineraries->itineraries_size());
@@ -678,15 +673,15 @@ Status ComputeItineraries(const InstructionSetProto& instruction_set,
   const MicroArchitecture* const microarchitecture =
       MicroArchitecture::FromId(host_microarchitecture_id);
   if (microarchitecture == nullptr) {
-    return InternalError(absl::StrCat("Nothing known about host CPU model id '",
-                                      host_cpu_model_id,
-                                      "', cannot compute itineraries."));
+    return absl::InternalError(
+        absl::StrCat("Nothing known about host CPU model id '",
+                     host_cpu_model_id, "', cannot compute itineraries."));
   }
 
   // We can only guarantee that the computed itineraries are going to be valid
   // for the host microarchitecture.
   if (microarchitecture->proto().id() != itineraries->microarchitecture_id()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         absl::StrCat("Host CPU model id '", host_cpu_model_id,
                      "' is not the requested microarchitecture ('",
                      microarchitecture->proto().id(), "' vs '",

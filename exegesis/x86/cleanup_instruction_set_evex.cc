@@ -19,6 +19,7 @@
 #include <unordered_set>
 
 #include "absl/container/node_hash_set.h"
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -27,18 +28,13 @@
 #include "exegesis/util/instruction_syntax.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 using ::google::protobuf::RepeatedPtrField;
 
-Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
+absl::Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kBroadcast32Bit[] = "m32bcst";
   constexpr char kBroadcast64Bit[] = "m64bcst";
@@ -84,11 +80,11 @@ Status AddEvexBInterpretation(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexBInterpretation, 5500);
 
-Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
+absl::Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   // The list of instructions that do not allow using k0 as opmask. This
   // behavior is specified only in the free-text description of the instruction,
@@ -130,7 +126,7 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
     if (!supports_opmask) {
       // The instruction does not support opmasks.
       if (supports_zeroing) {
-        return InvalidArgumentError(absl::StrCat(
+        return absl::InvalidArgumentError(absl::StrCat(
             "Instructopn supports zeroing without also supporting opmasks: ",
             instruction.DebugString()));
       }
@@ -144,7 +140,7 @@ Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
                                           ? EVEX_MASKING_MERGING_AND_ZEROING
                                           : EVEX_MASKING_MERGING_ONLY);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexOpmaskUsage, 5500);
 
@@ -186,7 +182,7 @@ void RemovePseudoOperandTags(InstructionOperand* operand) {
 
 }  // namespace
 
-Status AddEvexPseudoOperands(InstructionSetProto* instruction_set) {
+absl::Status AddEvexPseudoOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
@@ -222,7 +218,7 @@ Status AddEvexPseudoOperands(InstructionSetProto* instruction_set) {
     }
     vendor_syntax->mutable_operands()->Swap(&updated_operands);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddEvexPseudoOperands, 5500);
 

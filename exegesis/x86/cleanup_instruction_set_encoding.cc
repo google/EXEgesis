@@ -20,6 +20,8 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -33,18 +35,12 @@
 #include "re2/re2.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
-#include "util/task/status_macros.h"
 
 namespace exegesis {
 namespace x86 {
 
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
-
-Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
+absl::Status AddMissingMemoryOffsetEncoding(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kAddressSizeOverridePrefix[] = "67 ";
   constexpr char k32BitImmediateValueSuffix[] = " id";
@@ -73,7 +69,7 @@ Status AddMissingMemoryOffsetEncoding(InstructionSetProto* instruction_set) {
   for (InstructionProto& new_instruction : new_instructions) {
     instruction_set->add_instructions()->Swap(&new_instruction);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingMemoryOffsetEncoding, 1000);
 
@@ -97,7 +93,7 @@ void AddRexWPrefixToInstructionProto(InstructionProto* instruction) {
 
 }  // namespace
 
-Status FixEncodingSpecificationOfPopFsAndGs(
+absl::Status FixEncodingSpecificationOfPopFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kPopInstruction[] = "POP";
@@ -138,11 +134,11 @@ Status FixEncodingSpecificationOfPopFsAndGs(
     new_pop_instruction.Swap(instruction_set->add_instructions());
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfPopFsAndGs, 1000);
 
-Status FixEncodingSpecificationOfPushFsAndGs(
+absl::Status FixEncodingSpecificationOfPushFsAndGs(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kPushInstruction[] = "PUSH";
@@ -173,11 +169,11 @@ Status FixEncodingSpecificationOfPushFsAndGs(
   for (InstructionProto& new_push_instruction : new_push_instructions) {
     new_push_instruction.Swap(instruction_set->add_instructions());
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfPushFsAndGs, 1000);
 
-Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
+absl::Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
     InstructionSetProto* instruction_set) {
   constexpr const char* const kEncodingSpecifications[] = {
       "0F 90", "0F 91", "0F 92", "0F 93", "0F 93", "0F 94",
@@ -213,18 +209,19 @@ Status FixAndCleanUpEncodingSpecificationsOfSetInstructions(
     }
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     FixAndCleanUpEncodingSpecificationsOfSetInstructions, 1000);
 
-Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
+absl::Status FixEncodingSpecificationOfXBegin(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kXBeginEncodingSpecification[] = "C7 F8";
   const absl::flat_hash_map<std::string, std::string>
       kOperandToEncodingSpecification = {{"rel16", "66 C7 F8 cw"},
                                          {"rel32", "C7 F8 cd"}};
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     if (instruction.raw_encoding_specification() ==
@@ -232,7 +229,7 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
       const InstructionFormat& vendor_syntax =
           GetUniqueVendorSyntaxOrDie(instruction);
       if (vendor_syntax.operands_size() != 1) {
-        status = util::InvalidArgumentError(
+        status = absl::InvalidArgumentError(
             "Unexpected number of arguments of a XBEGIN instruction: ");
         LOG(ERROR) << status;
         continue;
@@ -240,7 +237,7 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
       if (!gtl::FindCopy(kOperandToEncodingSpecification,
                          vendor_syntax.operands(0).name(),
                          instruction.mutable_raw_encoding_specification())) {
-        status = InvalidArgumentError(
+        status = absl::InvalidArgumentError(
             absl::StrCat("Unexpected argument of a XBEGIN instruction: ",
                          vendor_syntax.operands(0).name()));
         LOG(ERROR) << status;
@@ -252,7 +249,7 @@ Status FixEncodingSpecificationOfXBegin(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecificationOfXBegin, 1000);
 
-Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
+absl::Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
   const RE2 fix_w0_regexp("^(VEX[^ ]*\\.)0 ");
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
@@ -263,11 +260,11 @@ Status FixEncodingSpecifications(InstructionSetProto* instruction_set) {
 
     instruction.set_raw_encoding_specification(specification);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixEncodingSpecifications, 1000);
 
-Status DropModRmModDetailsFromEncodingSpecifications(
+absl::Status DropModRmModDetailsFromEncodingSpecifications(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const RE2 drop_mod_rm_mod_regexp(R"( *\(mod.*\)$)");
@@ -277,12 +274,12 @@ Status DropModRmModDetailsFromEncodingSpecifications(
                  drop_mod_rm_mod_regexp, "");
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     DropModRmModDetailsFromEncodingSpecifications, 1000);
 
-Status AddMissingModRmAndImmediateSpecification(
+absl::Status AddMissingModRmAndImmediateSpecification(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kFullModRmSuffix[] = "/r";
@@ -306,10 +303,10 @@ Status AddMissingModRmAndImmediateSpecification(
   const auto maybe_fix = [](const absl::flat_hash_set<std::string>& mnemonics,
                             const absl::string_view suffix,
                             InstructionProto* instruction) {
-    Status status = OkStatus();
+    absl::Status status = absl::OkStatus();
     if (ContainsVendorSyntaxMnemonic(mnemonics, *instruction)) {
       if (instruction->raw_encoding_specification().empty()) {
-        status = InvalidArgumentError(absl::StrCat(
+        status = absl::InvalidArgumentError(absl::StrCat(
             "The instruction does not have binary encoding specification: ",
             instruction->DebugString()));
       }
@@ -331,12 +328,12 @@ Status AddMissingModRmAndImmediateSpecification(
     RETURN_IF_ERROR(
         maybe_fix(kMissingVSibInstructionMnemonics, kVSibSuffix, &instruction));
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingModRmAndImmediateSpecification,
                                    1000);
 
-Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
+absl::Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_map<std::string, std::string> kReplacements = {
       {"REX + 0F B2 /r", "REX.W + 0F B2 /r"},
@@ -352,22 +349,23 @@ Status FixRexPrefixSpecification(InstructionSetProto* instruction_set) {
     instruction.set_raw_encoding_specification(
         *replacement_raw_encoding_specification);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixRexPrefixSpecification, 1000);
 
-Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
+absl::Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
-    const StatusOr<EncodingSpecification> encoding_specification_or_status =
-        ParseEncodingSpecification(instruction.raw_encoding_specification());
+    const absl::StatusOr<EncodingSpecification>
+        encoding_specification_or_status = ParseEncodingSpecification(
+            instruction.raw_encoding_specification());
     if (encoding_specification_or_status.ok()) {
       *instruction.mutable_x86_encoding_specification() =
-          encoding_specification_or_status.ValueOrDie();
+          encoding_specification_or_status.value();
     } else {
-      UpdateStatus(&status, encoding_specification_or_status.status());
+      status.Update(encoding_specification_or_status.status());
       LOG(WARNING) << "Could not parse encoding specification: "
                    << instruction.raw_encoding_specification();
     }
@@ -378,7 +376,7 @@ Status ParseEncodingSpecifications(InstructionSetProto* instruction_set) {
 // specification cleanups, but before running any other transform.
 REGISTER_INSTRUCTION_SET_TRANSFORM(ParseEncodingSpecifications, 1010);
 
-Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
+absl::Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_map<std::string, std::string> kReplacements = {
@@ -431,14 +429,14 @@ Status ConvertEncodingSpecificationOfX87FpuWithDirectAddressing(
     instruction.set_raw_encoding_specification(
         *replacement_raw_encoding_specification);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 // We must convert the encoding specifications after running all other encoding
 // specification cleanups, but before running any other transform.
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     ConvertEncodingSpecificationOfX87FpuWithDirectAddressing, 1005);
 
-Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set) {
+absl::Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kStrEncoding[] = "0F 00 /1";
 
@@ -452,7 +450,7 @@ Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set) {
     }
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddRexWPrefixedVersionOfStr, 1000);
 

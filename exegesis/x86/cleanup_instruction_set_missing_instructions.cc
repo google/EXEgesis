@@ -14,19 +14,16 @@
 
 #include "exegesis/x86/cleanup_instruction_set_missing_instructions.h"
 
+#include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "exegesis/base/cleanup_instruction_set.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/proto_util.h"
 #include "glog/logging.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 void AddInstructionGroup(absl::string_view instruction_group_proto,
                          absl::string_view instruction_proto,
@@ -43,7 +40,7 @@ void AddInstructionGroup(absl::string_view instruction_group_proto,
 
 }  // namespace
 
-Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set) {
+absl::Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kFfreepMnemonic[] = "FFREEP";
   constexpr char kFfreepInstructionProto[] = R"proto(
@@ -67,12 +64,12 @@ Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set) {
     short_description: "Free Floating-Point Register and Pop.")proto";
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     if (HasMnemonicInVendorSyntax(instruction, kFfreepMnemonic)) {
-      return OkStatus();
+      return absl::OkStatus();
     }
   }
   AddInstructionGroup(kFfreepInstructionGroupProto, kFfreepInstructionProto,
                       instruction_set);
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingFfreepInstruction, 0);
 

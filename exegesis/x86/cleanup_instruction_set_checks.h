@@ -20,13 +20,11 @@
 #ifndef THIRD_PARTY_EXEGESIS_EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_CHECKS_H_
 #define THIRD_PARTY_EXEGESIS_EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_CHECKS_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::Status;
 
 // Checks that the opcodes of all instructions have the correct format, i.e. one
 // of the following applies:
@@ -34,18 +32,18 @@ using ::exegesis::util::Status;
 // * The opcode has two bytes, and the first byte is 0F.
 // * The opcode has three bytes, and the first two bytes are either 0F 38 or
 //   0F 3A.
-Status CheckOpcodeFormat(InstructionSetProto* instruction_set);
+absl::Status CheckOpcodeFormat(InstructionSetProto* instruction_set);
 
 // Checks that all operands of all instructions have the all their properties
 // filled.
-Status CheckOperandInfo(InstructionSetProto* instruction_set);
+absl::Status CheckOperandInfo(InstructionSetProto* instruction_set);
 
 // Checks that no instruction with a multi-byte opcode is a special case of
 // another instruction with a shorter opcode and a ModR/M byte specification.
-Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set);
+absl::Status CheckSpecialCaseInstructions(InstructionSetProto* instruction_set);
 
 // Checks that all instructions have at least one vendor syntax.
-Status CheckHasVendorSyntax(InstructionSetProto* instruction_set);
+absl::Status CheckHasVendorSyntax(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
@@ -29,7 +30,6 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INTERNAL;
 using ::testing::HasSubstr;
 
 const char kTestDataPath[] = "/__main__/exegesis/arm/xml/testdata/";
@@ -63,7 +63,8 @@ TEST(ParserTest, ParseXmlIndex) {
 
 TEST(ParserTest, ParseXmlIndex_Missing) {
   EXPECT_THAT(ParseXmlIndex(GetFilePath("missing.xml")),
-              StatusIs(INTERNAL, HasSubstr("XML_ERROR_FILE_NOT_FOUND")));
+              StatusIs(absl::StatusCode::kInternal,
+                       HasSubstr("XML_ERROR_FILE_NOT_FOUND")));
 }
 
 TEST(ParserTest, ParseXmlInstruction) {
@@ -240,7 +241,8 @@ TEST(ParserTest, ParseXmlInstructionWithConstraints) {
 
 TEST(ParserTest, ParseXmlInstruction_Missing) {
   EXPECT_THAT(ParseXmlInstruction(GetFilePath("missing.xml")),
-              StatusIs(INTERNAL, HasSubstr("XML_ERROR_FILE_NOT_FOUND")));
+              StatusIs(absl::StatusCode::kInternal,
+                       HasSubstr("XML_ERROR_FILE_NOT_FOUND")));
 }
 
 TEST(ParserTest, ParseXmlDatabase) {

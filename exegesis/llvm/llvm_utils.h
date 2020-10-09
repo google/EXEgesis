@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
@@ -35,11 +36,8 @@
 #include "llvm/MC/MCTargetOptions.h"
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetOptions.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
-
-using ::exegesis::util::StatusOr;
 
 // Ensures that LLVM subsystems were initialized for instruction scheduling.
 // This function can be called safely multiple times, all calls except for the
@@ -56,7 +54,7 @@ void MarkLLVMInitialized();
 // program or the default LLVM target for the current architecture; the target
 // is the target for the triple returned by GetNormalizedLLVMTripleName. The
 // returned pointer is not owned by the caller and it must not be deleted.
-StatusOr<const llvm::Target*> GetLLVMTarget();
+absl::StatusOr<const llvm::Target*> GetLLVMTarget();
 
 // Returns normalized LLVM Triple name based on the current platform and the
 // command-line flags.
@@ -135,7 +133,7 @@ llvm::ArrayRef<ValueType> MakeArrayRef(absl::Span<const ValueType> span) {
 
 // Parses the asm dialect from a human-readable string representation. Accepted
 // values are "att" and "intel".
-StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
+absl::StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
     const std::string& asm_dialect_name);
 
 // Wrapper around LLVM InitTargetOptionsFromCodeGenFlags to avoid linker issues.

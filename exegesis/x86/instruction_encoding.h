@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/x86/decoded_instruction.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
@@ -33,15 +34,9 @@
 #include "exegesis/util/bits.h"
 #include "exegesis/util/index_type.h"
 #include "exegesis/x86/instruction_encoding_constants.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
-
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 // Returns true if evex_b_interpretation is a value broadcast. Otherwise,
 // returns false.
@@ -103,66 +98,69 @@ bool ModRmRequiresSib(const ModRm& modrm);
 
 // Validates the mandatory prefix bits in the VEX or EVEX prefix. Returns an
 // error when the mandatory prefix in the specification differs from the
-// mandatory prefix in the encoding. Otherwise, returns Status::OK.
+// mandatory prefix in the encoding. Otherwise, returns absl::Status::OK.
 template <typename PrefixType>
-Status ValidateMandatoryPrefixBits(
+absl::Status ValidateMandatoryPrefixBits(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     const PrefixType& prefix) {
   if (vex_prefix_specification.mandatory_prefix() !=
       prefix.mandatory_prefix()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The mandatory prefix in the specification does not match the "
         "mandatory prefix in the instruction.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Validates the map select bits in the VEX or EVEX prefix. Returns an error
 // when the map select bits in the prefix differ from the map select in the
 // specification, or if they are VexPrefix::UNDEFINED_MAP_SELECT. Otherwise,
-// returns Status::OK.
+// returns absl::Status::OK.
 template <typename PrefixType>
-Status ValidateMapSelectBits(
+absl::Status ValidateMapSelectBits(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     const PrefixType& prefix) {
   if (vex_prefix_specification.map_select() != prefix.map_select()) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "The opcode map selector in the specification does not match the "
         "opcode map selector in the instruction.");
   }
   if (prefix.map_select() == VexEncoding::UNDEFINED_OPERAND_MAP) {
-    return InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "UNDEFINED_OPERAND_MAP must not be used in the encoding.");
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-// Validates the vector length bits of a VEX or EVEX prefix. Returns Status::OK
-// if the bits conform to the specification, and InvalidArgumentError otherwise.
-// Returns a FailedPreconditionError if the vector length from the specification
-// is not supported by the selected prefix type or if it is not valid.
-Status ValidateVectorSizeBits(VexVectorSize vector_size_specification,
-                              uint32_t vector_length_or_rounding_bits,
-                              VexPrefixType prefix_type);
+// Validates the vector length bits of a VEX or EVEX prefix. Returns
+// absl::Status::OK if the bits conform to the specification, and
+// absl::InvalidArgumentError otherwise. Returns a absl::FailedPreconditionError
+// if the vector length from the specification is not supported by the selected
+// prefix type or if it is not valid.
+absl::Status ValidateVectorSizeBits(VexVectorSize vector_size_specification,
+                                    uint32_t vector_length_or_rounding_bits,
+                                    VexPrefixType prefix_type);
 
 // Validates the register operand encoded in the VEX or EVEX prefix. Returns an
 // error when vex_operand_usage does not allow adding an operand and the operand
-// bits is different from all zeros and all ones. Otherwise, returns Status::OK.
-Status ValidateVexRegisterOperandBits(
+// bits is different from all zeros and all ones. Otherwise, returns
+// absl::Status::OK.
+absl::Status ValidateVexRegisterOperandBits(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     uint32_t vex_register_operand);
 
-// Validates the (e)vex.w bit of a VEX or EVEX prefix. Returns Status::OK if the
-// bit conforms to the specification, and InvalidArgumentError otherwise.
-// Returns a FailedPreconditionError if the (e)vex.w usage specification is not
-// valid.
-Status ValidateVexWBit(VexPrefixEncodingSpecification::VexWUsage vex_w_usage,
-                       bool vex_w_bit);
+// Validates the (e)vex.w bit of a VEX or EVEX prefix. Returns absl::Status::OK
+// if the bit conforms to the specification, and absl::InvalidArgumentError
+// otherwise. Returns a absl::FailedPreconditionError if the (e)vex.w usage
+// specification is not valid.
+absl::Status ValidateVexWBit(
+    VexPrefixEncodingSpecification::VexWUsage vex_w_usage, bool vex_w_bit);
 
-// Validates the EVEX.b bit of an EVEX prefix. Returns Status::OK if the bit
-// conforms to the specification, and InvalidArgumentError otherwise. Returns
-// a FailedPreconditionError if the specification is not for an EVEX prefix.
-Status ValidateEvexBBit(
+// Validates the EVEX.b bit of an EVEX prefix. Returns absl::Status::OK if the
+// bit conforms to the specification, and absl::InvalidArgumentError otherwise.
+// Returns a absl::FailedPreconditionError if the specification is not for an
+// EVEX prefix.
+absl::Status ValidateEvexBBit(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     const DecodedInstruction& decoded_instruction);
 
@@ -175,10 +173,11 @@ EvexBInterpretation GetUsedEvexBInterpretation(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     const DecodedInstruction& decoded_instruction);
 
-// Validates the EVEX.aaa bits of an EVEX prefix. Returns Status::OK if the bits
-// conform to the specification, and InvalidArgumentError otherwise. Returns a
-// FailedPreconditionError if the specification is not for an EVEX prefix.
-Status ValidateEvexOpmask(
+// Validates the EVEX.aaa bits of an EVEX prefix. Returns absl::Status::OK if
+// the bits conform to the specification, and absl::InvalidArgumentError
+// otherwise. Returns a absl::FailedPreconditionError if the specification is
+// not for an EVEX prefix.
+absl::Status ValidateEvexOpmask(
     const VexPrefixEncodingSpecification& vex_prefix_specification,
     const DecodedInstruction& decoded_instruction);
 
@@ -264,9 +263,10 @@ RegisterIndex GetRegisterIndex(std::string register_name);
 // its prefix data structures set up properly.
 // The function returns an error if the operand cannot be assigned, or if the
 // operand or register index are not valid.
-Status SetOperandToRegister(const InstructionFormat& instruction_format,
-                            int operand_position, RegisterIndex register_index,
-                            DecodedInstruction* instruction);
+absl::Status SetOperandToRegister(const InstructionFormat& instruction_format,
+                                  int operand_position,
+                                  RegisterIndex register_index,
+                                  DecodedInstruction* instruction);
 
 // Functions for assigning a memory location to operands. There is one function
 // for each addressing mode supported by the x86-64 architecture. Note that the
@@ -278,9 +278,9 @@ Status SetOperandToRegister(const InstructionFormat& instruction_format,
 // Assigns the operand encoded in modrm.rm to a memory location addressed
 // indirectly by an absolute address provided encoded in the instruction. This
 // encoding uses both the ModR/M and the SIB bytes.
-Status SetOperandToMemoryAbsolute(const InstructionFormat& instruction_format,
-                                  uint32_t absolute_address,
-                                  DecodedInstruction* instruction);
+absl::Status SetOperandToMemoryAbsolute(
+    const InstructionFormat& instruction_format, uint32_t absolute_address,
+    DecodedInstruction* instruction);
 
 // Assigns the operand encoded in modrm.rm to a memory location addressed
 // indirectly by the absolute address in 'base_register'; the operand is encoded
@@ -289,9 +289,9 @@ Status SetOperandToMemoryAbsolute(const InstructionFormat& instruction_format,
 // and for RIP-relative addressing, and they can't be used as base registers
 // with this function. However, they can be encoded through the SIB byte.
 // Assembly example: MOV CX, [RBX]
-Status SetOperandToMemoryBase(const InstructionFormat& instruction_format,
-                              RegisterIndex base_register,
-                              DecodedInstruction* instruction);
+absl::Status SetOperandToMemoryBase(const InstructionFormat& instruction_format,
+                                    RegisterIndex base_register,
+                                    DecodedInstruction* instruction);
 
 // Assigns the operand encoded in modrm.rm to a memory location addressed
 // indirectly by the absolute address in 'base_register'; the operand is encoded
@@ -300,16 +300,16 @@ Status SetOperandToMemoryBase(const InstructionFormat& instruction_format,
 // address; on the other hand, this encoding is the only way how to encode
 // indirect addressing by RSP and R12.
 // Assembly example: MOV CX, [RSP]
-Status SetOperandToMemoryBaseSib(const InstructionFormat& instruction_format,
-                                 RegisterIndex base_register,
-                                 DecodedInstruction* instruction);
+absl::Status SetOperandToMemoryBaseSib(
+    const InstructionFormat& instruction_format, RegisterIndex base_register,
+    DecodedInstruction* instruction);
 
 // Assigns the operand encoded in modrm.rm to a memory location addressed
 // indirectly by RIP and a 32-bit displacement; the operand is encoded only
 // through the ModR/M byte (addressing mode is INDIRECT, and modrm.rm operand is
 // set to 5), without the use of the SIB byte.
 // Assembly example: MOV CX, [RIP - 64]
-Status SetOperandToMemoryRelativeToRip(
+absl::Status SetOperandToMemoryRelativeToRip(
     const InstructionFormat& instruction_format, int32_t displacement,
     DecodedInstruction* instruction);
 
@@ -320,10 +320,10 @@ Status SetOperandToMemoryRelativeToRip(
 // values for the SIB byte, and they can't be used as base registers with this
 // function. However, they can be encoded through the SIB byte.
 // Assembly example: MOV CX, [RBX + 12]
-Status SetOperandToMemoryBaseAnd8BitDisplacement(
+absl::Status SetOperandToMemoryBaseAnd8BitDisplacement(
     const InstructionFormat& instruction_format, RegisterIndex base_register,
     int8_t displacement, DecodedInstruction* instruction);
-Status SetOperandToMemoryBaseAnd32BitDisplacement(
+absl::Status SetOperandToMemoryBaseAnd32BitDisplacement(
     const InstructionFormat& instruction_format, RegisterIndex base_register,
     int32_t displacement, DecodedInstruction* instruction);
 

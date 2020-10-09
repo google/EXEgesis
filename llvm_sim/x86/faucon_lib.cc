@@ -102,8 +102,7 @@ std::vector<llvm::MCInst> ParseMCInsts(const GlobalContext& Context,
                                            *Context.LLVMContext));
   llvm::MCInst Inst;
   uint64_t InstSize = 0;
-  while (Disasm->getInstruction(Inst, InstSize, CodeBytes, 0, llvm::nulls(),
-                                llvm::nulls()) ==
+  while (Disasm->getInstruction(Inst, InstSize, CodeBytes, 0, llvm::nulls()) ==
          llvm::MCDisassembler::Success) {
     Result.push_back(Inst);
     CodeBytes = CodeBytes.drop_front(InstSize);
@@ -134,7 +133,7 @@ class MCInstStreamer : public llvm::MCStreamer {
 
   // Implementation of the llvm::MCStreamer interface. We only care about
   // instructions.
-  void EmitInstruction(
+  void emitInstruction(
       const llvm::MCInst& instruction,
       const llvm::MCSubtargetInfo& mc_subtarget_info) override {
     Result_->push_back(instruction);
@@ -142,16 +141,16 @@ class MCInstStreamer : public llvm::MCStreamer {
 
  private:
   // We only care about instructions, we don't implement this part of the API.
-  void EmitCommonSymbol(llvm::MCSymbol* symbol, uint64_t size,
+  void emitCommonSymbol(llvm::MCSymbol* symbol, uint64_t size,
                         unsigned byte_alignment) override {}
-  bool EmitSymbolAttribute(llvm::MCSymbol* symbol,
+  bool emitSymbolAttribute(llvm::MCSymbol* symbol,
                            llvm::MCSymbolAttr attribute) override {
     return false;
   }
-  void EmitValueToAlignment(unsigned byte_alignment, int64_t value,
+  void emitValueToAlignment(unsigned byte_alignment, int64_t value,
                             unsigned value_size,
                             unsigned max_bytes_to_emit) override {}
-  void EmitZerofill(llvm::MCSection* section, llvm::MCSymbol* symbol,
+  void emitZerofill(llvm::MCSection* section, llvm::MCSymbol* symbol,
                     uint64_t size, unsigned byte_alignment,
                     llvm::SMLoc Loc) override {}
 
@@ -411,8 +410,8 @@ void WriteTraceLine(const GlobalContext& Context,
   {
     llvm::raw_string_ostream SOS(Disassembly);
     expandtabs_raw_ostream ETOS(SOS, 4);
-    AsmPrinter.printInst(&BlockContext.GetInstruction(BBIndex), ETOS, "",
-                         *Context.SubtargetInfo);
+    AsmPrinter.printInst(&BlockContext.GetInstruction(BBIndex), 0, "",
+                         *Context.SubtargetInfo, ETOS);
   }
 
   // First write the iteration, index and disassembly.

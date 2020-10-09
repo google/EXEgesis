@@ -19,11 +19,12 @@
 #include <unordered_set>
 #include <utility>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/proto_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
@@ -31,8 +32,6 @@ namespace {
 
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::UnorderedElementsAreArray;
@@ -112,7 +111,7 @@ TEST(CpuIdDumpTest, DefaultConstructor) {
 }
 
 TEST(CpuIdDumpTest, VendorAndBrandString) {
-  const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(R"(
+  const absl::StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(R"(
       CPUID 00000000: 00000016-756E6547-6C65746E-49656E69
       CPUID 00000001: 000906E9-00100800-7FFAFBBF-BFEBFBFF
       CPUID 00000007: 00000000-029C6FBF-00000000-00000000
@@ -128,7 +127,7 @@ TEST(CpuIdDumpTest, VendorAndBrandString) {
       CPUID 80000004: 382E3320-7A484730-00000000-00000000
       )");
   ASSERT_OK(dump_or_status.status());
-  const CpuIdDump& dump = dump_or_status.ValueOrDie();
+  const CpuIdDump& dump = dump_or_status.value();
   ASSERT_TRUE(dump.IsValid());
   EXPECT_EQ(dump.GetVendorString(), "GenuineIntel");
   EXPECT_EQ(dump.GetProcessorBrandString(),
@@ -172,13 +171,15 @@ TEST(CpuIdDumpTest, FromProto) {
 
 TEST(CpuIdDumpTest, FromEmptyString) {
   constexpr char kDump[] = R"()";
-  EXPECT_THAT(CpuIdDump::FromString(kDump), StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(CpuIdDump::FromString(kDump),
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST(CpuIdDumpTest, FromString) {
-  const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(kDumpString);
+  const absl::StatusOr<CpuIdDump> dump_or_status =
+      CpuIdDump::FromString(kDumpString);
   ASSERT_OK(dump_or_status.status());
-  const CpuIdDump& dump = dump_or_status.ValueOrDie();
+  const CpuIdDump& dump = dump_or_status.value();
 
   EXPECT_EQ(dump.GetVendorString(), "GenuineIntel");
 
@@ -194,9 +195,10 @@ TEST(CpuIdDumpTest, FromString) {
 void TestToCpuInfo(
     const std::string& dump_string, const std::string& expected_cpu_model,
     const std::initializer_list<const char*>& expected_features) {
-  const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(dump_string);
+  const absl::StatusOr<CpuIdDump> dump_or_status =
+      CpuIdDump::FromString(dump_string);
   ASSERT_OK(dump_or_status.status());
-  const CpuIdDump& dump = dump_or_status.ValueOrDie();
+  const CpuIdDump& dump = dump_or_status.value();
   ASSERT_TRUE(dump.IsValid());
   const CpuInfo cpu_info = dump.ToCpuInfo();
   EXPECT_EQ(cpu_info.cpu_model_id(), expected_cpu_model);
@@ -303,9 +305,10 @@ TEST(CpuIdDumpTest, ToString) {
       "CPUID 80000002: 65746E49-2952286C-6E655020-6D756974\n"
       "CPUID 80000003: 20295228-20555043-30363447-20402030\n"
       "CPUID 80000008: 00003027-00000000-00000000-00000000";
-  const StatusOr<CpuIdDump> dump_or_status = CpuIdDump::FromString(kDumpString);
+  const absl::StatusOr<CpuIdDump> dump_or_status =
+      CpuIdDump::FromString(kDumpString);
   ASSERT_OK(dump_or_status.status());
-  const CpuIdDump& dump = dump_or_status.ValueOrDie();
+  const CpuIdDump& dump = dump_or_status.value();
   ASSERT_TRUE(dump.IsValid());
   EXPECT_EQ(dump.ToString(), kExpectedDumpString);
 }

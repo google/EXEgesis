@@ -49,8 +49,8 @@ class ReorderBufferTest : public ::testing::Test {
     InstrDesc_[3].SchedClass = 3;
     InstrDesc_[4].SchedClass = 4;
     auto InstrInfo = absl::make_unique<llvm::MCInstrInfo>();
-    InstrInfo->InitMCInstrInfo(InstrDesc_.data(), nullptr, nullptr,
-                               InstrDesc_.size());
+    InstrInfo->InitMCInstrInfo(InstrDesc_.data(), nullptr, nullptr, nullptr,
+                               nullptr, InstrDesc_.size());
     Context_.InstrInfo = std::move(InstrInfo);
 
     // Setup resources: P0 and P1. TODO(courbet): Add a P01 when supported.

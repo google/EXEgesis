@@ -149,9 +149,9 @@ class TestMCInstPrinter : public llvm::MCInstPrinter {
       : llvm::MCInstPrinter(*Context.AsmInfo, *Context.InstrInfo,
                             *Context.RegisterInfo) {}
 
-  void printInst(const llvm::MCInst *MI, llvm::raw_ostream &OS,
-                 llvm::StringRef Annot,
-                 const llvm::MCSubtargetInfo &STI) override {
+  void printInst(const llvm::MCInst *MI, uint64_t Addresss,
+                 llvm::StringRef Annot, const llvm::MCSubtargetInfo &STI,
+                 llvm::raw_ostream &OS) override {
     OS << "instruction";
   }
 

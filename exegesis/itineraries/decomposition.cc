@@ -24,6 +24,8 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -35,17 +37,12 @@
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/text_format.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace itineraries {
 
 using ::absl::c_linear_search;
-using ::exegesis::util::Status;
 using ::operations_research::MPConstraint;
-using ::operations_research::MPModelProto;
 using ::operations_research::MPObjective;
 using ::operations_research::MPSolver;
 using ::operations_research::MPVariable;
@@ -69,7 +66,7 @@ DecompositionSolver::DecompositionSolver(
       solver_(new MPSolver("DecompositionLPForInstruction",
                            MPSolver::GLPK_MIXED_INTEGER_PROGRAMMING)) {}
 
-Status DecompositionSolver::Run(const ObservationVector& observations) {
+absl::Status DecompositionSolver::Run(const ObservationVector& observations) {
   absl::flat_hash_map<std::string, double> key_val;
   for (const auto& observation : observations.observations()) {
     key_val[observation.event_name()] = observation.measurement();
@@ -92,14 +89,14 @@ Status DecompositionSolver::Run(const ObservationVector& observations) {
   return Run(measurements, uops_retired);
 }
 
-Status DecompositionSolver::Run(const std::vector<double>& measurements,
-                                double uops_retired) {
+absl::Status DecompositionSolver::Run(const std::vector<double>& measurements,
+                                      double num_uops) {
   const double kMaxError = 1.0;
 
-  if (uops_retired > 50.0) {
-    return util::InternalError(
+  if (num_uops > 50.0) {
+    return absl::InternalError(
         absl::StrCat("Too many uops to solve the problem",
-                     absl::StrFormat("%.17g", uops_retired)));
+                     absl::StrFormat("%.17g", num_uops)));
   }
   // Compute the maximum number of uops per port mask. This enables us to
   // create less variables and to make the model easier to solve.
@@ -266,8 +263,8 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
 
   // num_uops_ = \sum_{mask,n} is_used_[mask][n]
   // num_uops_ >= floor(uops_retired)
-  num_uops_ = solver_->MakeNumVar(floor(uops_retired), MPSolver::infinity(),
-                                  "num_uops_");
+  num_uops_ =
+      solver_->MakeNumVar(floor(num_uops), MPSolver::infinity(), "num_uops_");
   MPConstraint* const num_ops_equality =
       solver_->MakeRowConstraint(0, 0, "num_uops_eq_sum_is_used_sub_mask_n");
   num_ops_equality->SetCoefficient(num_uops_, -1.0);
@@ -315,23 +312,23 @@ Status DecompositionSolver::Run(const std::vector<double>& measurements,
   switch (solver_->Solve()) {
     case MPSolver::OPTIMAL:
       FillInResults();
-      return util::OkStatus();
+      return absl::OkStatus();
     case MPSolver::FEASIBLE:
-      return util::InternalError("Model is not optimal.");
+      return absl::InternalError("Model is not optimal.");
     case MPSolver::INFEASIBLE:
-      return util::InternalError("Model is infeasible.");
+      return absl::InternalError("Model is infeasible.");
     case MPSolver::UNBOUNDED:
-      return util::InternalError("Model is unbounded.");
+      return absl::InternalError("Model is unbounded.");
     case MPSolver::ABNORMAL:
-      return util::InternalError("Abnormal computation.");
+      return absl::InternalError("Abnormal computation.");
     case MPSolver::MODEL_INVALID:
-      return util::InternalError("Invalid model.");
+      return absl::InternalError("Invalid model.");
     case MPSolver::NOT_SOLVED:
-      return util::InternalError("Not solved.");
+      return absl::InternalError("Not solved.");
       // No default case as we want the compiler to check for the complete
       // treatment of all the cases.
   }
-  return util::InternalError("Never reached.");
+  return absl::InternalError("Never reached.");
 }
 
 void DecompositionSolver::FillInResults() {

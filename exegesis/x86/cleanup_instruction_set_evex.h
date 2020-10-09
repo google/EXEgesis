@@ -18,28 +18,26 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_EVEX_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 
-using ::exegesis::util::Status;
-
 // Adds the EVEX.b bit interpretation field to all instructions in the
 // instruction set.
-Status AddEvexBInterpretation(InstructionSetProto* instruction_set);
+absl::Status AddEvexBInterpretation(InstructionSetProto* instruction_set);
 
 // Adds the opmask-related fields to the encoding specifications of all
 // instructions in the instruction set.
-Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set);
+absl::Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set);
 
 // Moves the AVX-512 embedded-rounding and suppress-all-exceptions tags {er} and
 // {sae} to a separate operand, to match the syntax used by actual instruction.
 // This is necessary, because the SDM lists these as properties of the last
 // operand of the instruction, but the assembly syntax for these instructions
 // introduces by the manual puts a comma between them and the last operand.
-Status AddEvexPseudoOperands(InstructionSetProto* instruction_set);
+absl::Status AddEvexPseudoOperands(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

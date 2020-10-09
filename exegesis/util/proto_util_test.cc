@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <string>
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"
 #include "file/base/path.h"
@@ -24,14 +25,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace {
 
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::FAILED_PRECONDITION;
 
 TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
   constexpr char kExpected[] = "llvm_mnemonic: 'ADD32mr'";
@@ -48,7 +47,7 @@ TEST(ProtoUtilTest, ReadWriteTextProtoOrDie) {
 TEST(ProtoUtilTest, ReadTextProtoFromFileThatDoesNotExist) {
   constexpr char kFileName[] = "/invalid_dir/invalid_file.pb.txt";
   EXPECT_THAT(ReadTextProto<InstructionProto>(kFileName),
-              StatusIs(FAILED_PRECONDITION));
+              StatusIs(absl::StatusCode::kFailedPrecondition));
 }
 
 TEST(ProtoUtilTest, ParseProtoFromStringOrDie) {

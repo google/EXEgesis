@@ -22,19 +22,16 @@
 #include <unordered_map>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "exegesis/base/port_mask.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/microarchitecture.pb.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-
 // Returns the microarchitecture id for a CPU model id.
-StatusOr<std::string> GetMicroArchitectureForCpuModelId(
+absl::StatusOr<std::string> GetMicroArchitectureForCpuModelId(
     const std::string& cpu_model_id);
 const std::string& GetMicroArchitectureIdForCpuModelOrDie(
     const std::string& cpu_model_id);
@@ -78,6 +75,10 @@ class MicroArchitecture {
   const std::vector<PortMask> port_masks_;
 };
 
+// Returns all the microarchitectures for an LLVM architecture.
+const std::vector<const MicroArchitecture*>&
+GetMicroArchitecturesForArchitecture(const std::string& llvm_arch);
+
 // Registers a list of micro-architectures to make them and their CPU models
 // available through MicroArchitecture::FromId, and CpuModel::FromId. The macro
 // takes a single parameter 'provider'. This must be a callable object (e.g.
@@ -108,20 +109,15 @@ class MicroArchitectureData {
  public:
   // Creates a MicroArchitectureData pack from an ArchitectureProto and a
   // microarchitecture_id.
-  static StatusOr<MicroArchitectureData> ForMicroArchitectureId(
+  static absl::StatusOr<MicroArchitectureData> ForMicroArchitectureId(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
       const std::string& microarchitecture_id);
 
   // TODO(ondrasej): Remove this method when the microarchitecture data is
   // merged with the ArchitectureProto.
-  static StatusOr<MicroArchitectureData> ForMicroArchitecture(
+  static absl::StatusOr<MicroArchitectureData> ForMicroArchitecture(
       std::shared_ptr<const ArchitectureProto> architecture_proto,
       const MicroArchitecture* microarchitecture);
-
-  // StatusOr<T> requires T to be default-constructible.
-  // TODO(courbet): Remove when StatusOr is fixed.
-  MicroArchitectureData()
-      : microarchitecture_(nullptr), itineraries_(nullptr) {}
 
   std::shared_ptr<const ArchitectureProto> architecture() const {
     return architecture_proto_;

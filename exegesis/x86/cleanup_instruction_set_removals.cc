@@ -22,6 +22,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -34,17 +35,12 @@
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
 
 using ::absl::c_linear_search;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 using ::google::protobuf::RepeatedPtrField;
 using ::google::protobuf::util::MessageDifferencer;
 
@@ -55,7 +51,7 @@ std::string MakeKey(absl::string_view group_name,
 
 }  // namespace
 
-Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
+absl::Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   absl::flat_hash_set<std::string> visited_instructions;
 
@@ -73,11 +69,12 @@ Status RemoveDuplicateInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      remove_instruction_if_visited),
                       instructions->end());
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateInstructions, 4000);
 
-Status RemoveEmptyInstructionGroups(InstructionSetProto* instruction_set) {
+absl::Status RemoveEmptyInstructionGroups(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
 
   // Map of instruction group name+short_description to the group proto and a
@@ -127,11 +124,11 @@ Status RemoveEmptyInstructionGroups(InstructionSetProto* instruction_set) {
     ++group_idx;
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveEmptyInstructionGroups, 8000);
 
-Status RemoveLegacyVersionsOfInstructions(
+absl::Status RemoveLegacyVersionsOfInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> kEncodingSpecifications = {"C9",
@@ -156,15 +153,15 @@ Status RemoveLegacyVersionsOfInstructions(
   for (const std::string& encoding : kEncodingSpecifications) {
     if (found_legacy_version.contains(encoding) &&
         !found_64bit_version.contains(encoding)) {
-      return InvalidArgumentError(absl::StrCat(
+      return absl::InvalidArgumentError(absl::StrCat(
           "The 64-bit version of the instruction was not found: ", encoding));
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveLegacyVersionsOfInstructions, 0);
 
-Status RemoveInstructionsWaitingForFpuSync(
+absl::Status RemoveInstructionsWaitingForFpuSync(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   // NOTE(ondrasej): The space after the opcode is important, because with it,
@@ -180,11 +177,12 @@ Status RemoveInstructionsWaitingForFpuSync(
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_fwait_for_sync),
                       instructions->end());
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveInstructionsWaitingForFpuSync, 0);
 
-Status RemoveNonEncodableInstructions(InstructionSetProto* instruction_set) {
+absl::Status RemoveNonEncodableInstructions(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -194,13 +192,14 @@ Status RemoveNonEncodableInstructions(InstructionSetProto* instruction_set) {
                        return !instruction.available_in_64_bit();
                      }),
       instructions->end());
-  return OkStatus();
+  return absl::OkStatus();
 }
 // NOTE(ondrasej): We can remove the non-encodable instructions only after
 // fixing up the availability in 64-bits for LAHF and SAHF.
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveNonEncodableInstructions, 110);
 
-Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
+absl::Status RemoveRepAndRepneInstructions(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   // NOTE(ondrasej): We're comparing the REP prefix without the space after it.
   // This will match also the REPE and REPNE prefixes. On the other hand, there
@@ -216,7 +215,7 @@ Status RemoveRepAndRepneInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      uses_rep_or_repne),
                       instructions->end());
-  return OkStatus();
+  return absl::OkStatus();
 }
 // TODO(ondrasej): In addition to removing them, we should also add an attribute
 // saying whether the REP/REPE/REPNE prefix is allowed.
@@ -256,7 +255,8 @@ const absl::flat_hash_set<std::string>* const kRemovedEncodingSpecifications =
 const absl::flat_hash_set<std::string>* const kRemovedMnemonics =
     new absl::flat_hash_set<std::string>({"XLAT"});
 
-Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
+absl::Status RemoveSpecialCaseInstructions(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();
@@ -271,11 +271,11 @@ Status RemoveSpecialCaseInstructions(InstructionSetProto* instruction_set) {
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
                                      is_special_case_instruction),
                       instructions->end());
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveSpecialCaseInstructions, 0);
 
-Status RemoveDuplicateInstructionsWithRexPrefix(
+absl::Status RemoveDuplicateInstructionsWithRexPrefix(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   // NOTE(ondrasej): We need to store a copy of the instruction protos, not
@@ -289,7 +289,7 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
     const std::string& specification = instruction.raw_encoding_specification();
     instructions_by_encoding[specification].push_back(instruction);
   }
-  Status result = OkStatus();
+  absl::Status result = absl::OkStatus();
   const auto is_duplicate_instruction_with_rex =
       [&](const InstructionProto& instruction) {
         static constexpr char kRexPrefixRegex[] = R"(REX *\+ *)";
@@ -310,11 +310,11 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
         // FixRexPrefixSpecification() which runs in the default pipeline
         // before this transform, and they should not cause any failures here.
         if (other_instructions == nullptr) {
-          const Status error = InvalidArgumentError(absl::StrCat(
+          const absl::Status error = absl::InvalidArgumentError(absl::StrCat(
               "Instruction does not have a version without the REX prefix: ",
               instruction.raw_encoding_specification()));
           LOG(WARNING) << error;
-          UpdateStatus(&result, error);
+          result.Update(error);
           return false;
         }
         for (const InstructionProto& other : *other_instructions) {
@@ -324,11 +324,11 @@ Status RemoveDuplicateInstructionsWithRexPrefix(
             return true;
           }
         }
-        const Status error = InvalidArgumentError(
+        const absl::Status error = absl::InvalidArgumentError(
             absl::StrCat("The REX and the non-REX versions differ: ",
                          instruction.raw_encoding_specification()));
         LOG(WARNING) << error;
-        UpdateStatus(&result, error);
+        result.Update(error);
         return false;
       };
   instructions->erase(std::remove_if(instructions->begin(), instructions->end(),
@@ -360,7 +360,7 @@ bool InstructionIsMovFromSRegWithOperand(absl::string_view operand_name,
 
 }  // namespace
 
-Status RemoveDuplicateMovFromSReg(InstructionSetProto* instruction_set) {
+absl::Status RemoveDuplicateMovFromSReg(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static constexpr char k32BitOperand[] = "r16/r32/m16";
   static constexpr char k64BitOperand[] = "r64/m16";
@@ -385,13 +385,13 @@ Status RemoveDuplicateMovFromSReg(InstructionSetProto* instruction_set) {
       new_instructions_end != instructions->end();
   instructions->erase(new_instructions_end, instructions->end());
   return (removed_32_bit_version && !has_64_bit_version)
-             ? InvalidArgumentError(
+             ? absl::InvalidArgumentError(
                    "The 64-bit version of REX.W + 8C /r was not found")
-             : OkStatus();
+             : absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveDuplicateMovFromSReg, 0);
 
-Status RemoveX87InstructionsWithGeneralVersions(
+absl::Status RemoveX87InstructionsWithGeneralVersions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> kRemovedEncodingSpecifications = {
@@ -407,7 +407,7 @@ Status RemoveX87InstructionsWithGeneralVersions(
                      }),
       instructions->end());
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveX87InstructionsWithGeneralVersions, 0);
 

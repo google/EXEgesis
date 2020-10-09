@@ -19,13 +19,11 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
-
-using ::exegesis::util::StatusOr;
 
 // Parses the given hexadecimal string in several possible formats:
 // * each byte is encoded as one or two hexadecimal digits,
@@ -36,7 +34,8 @@ using ::exegesis::util::StatusOr;
 // Example input formats:
 // * 0x0,0x1,0x2,0x3
 // * 00 AB 01 BC
-StatusOr<std::vector<uint8_t>> ParseHexString(absl::string_view hex_string);
+absl::StatusOr<std::vector<uint8_t>> ParseHexString(
+    absl::string_view hex_string);
 
 // Converts the given block of binary data to a human-readable string format.
 // This function produces a sequence of two-letter hexadecimal codes separated
@@ -71,15 +70,9 @@ std::string ToPastableHexString(const Range& binary_data) {
   return buffer;
 }
 
-// Converts a string-like data type to absl::string_view.
-template <typename StringType>
-absl::string_view ToStringView(const StringType& text) {
-  return absl::string_view(text.data(), text.size());
-}
-
 // Converts a string-like data type to ::google::protobuf::StringPiece
 template <typename StringType>
-::google::protobuf::StringPiece ToStringPiece(const StringType& text) {
+absl::string_view ToStringPiece(const StringType& text) {
   return {text.data(), text.size()};
 }
 

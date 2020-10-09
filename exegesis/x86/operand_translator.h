@@ -21,8 +21,8 @@
 #ifndef EXEGESIS_X86_OPERAND_TRANSLATOR_H_
 #define EXEGESIS_X86_OPERAND_TRANSLATOR_H_
 
+#include "absl/status/statusor.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {

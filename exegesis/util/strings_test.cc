@@ -14,18 +14,17 @@
 
 #include "exegesis/util/strings.h"
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 namespace {
 
 using ::exegesis::testing::IsOkAndHolds;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::error::INVALID_ARGUMENT;
 using ::testing::ElementsAreArray;
 
 void CheckInput(const std::string& hex_string,
@@ -38,9 +37,10 @@ void CheckInput(const std::string& hex_string,
 void CheckError(const std::string& hex_string,
                 const std::string& expected_unparsed_part) {
   SCOPED_TRACE(absl::StrCat("hex_string = ", hex_string));
-  EXPECT_THAT(ParseHexString(hex_string),
-              StatusIs(INVALID_ARGUMENT, absl::StrCat("Could not parse: ",
-                                                      expected_unparsed_part)));
+  EXPECT_THAT(
+      ParseHexString(hex_string),
+      StatusIs(absl::StatusCode::kInvalidArgument,
+               absl::StrCat("Could not parse: ", expected_unparsed_part)));
 }
 
 TEST(ParseHexStringTest, TestEmptyString) { CheckInput("", {}); }

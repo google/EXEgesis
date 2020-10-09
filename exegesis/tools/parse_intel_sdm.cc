@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdlib>
 #include <string>
 
 #include "absl/flags/flag.h"
@@ -22,9 +23,9 @@
 #include "exegesis/base/transform_factory.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/proto_util.h"
+#include "exegesis/util/status_util.h"
 #include "exegesis/x86/pdf/parse_sdm.h"
 #include "glog/logging.h"
-#include "util/task/status.h"
 
 ABSL_FLAG(std::string, exegesis_input_spec, "",
           "Input spec: List of files and ranges to process in the form "

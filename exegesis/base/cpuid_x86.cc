@@ -19,6 +19,8 @@
 #endif  //  __x86_64__
 
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
@@ -26,7 +28,6 @@
 #include "exegesis/util/structured_register.h"
 #include "glog/logging.h"
 #include "re2/re2.h"
-#include "util/task/canonical_errors.h"
 
 namespace exegesis {
 namespace x86 {
@@ -41,9 +42,6 @@ namespace x86 {
 // are relevant to this library:
 // * ExtendedFeatureRegisters.ecx.prefetchw1() is marked as reserved on AMD.
 // * The bits used to indicate AVX512 support are marked as reserved on AMD.
-
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::StatusOr;
 
 CpuIdEntryProto MakeCpuIdEntry(uint32_t leaf, uint32_t subleaf, uint32_t eax,
                                uint32_t ebx, uint32_t ecx, uint32_t edx) {
@@ -352,7 +350,7 @@ void AddHostCpuIdEntriesFromSeed(uint32_t seed, X86CpuIdDumpProto* dump_proto) {
 constexpr char CpuIdDump::kVendorStringAMD[];
 constexpr char CpuIdDump::kVendorStringIntel[];
 
-StatusOr<CpuIdDump> CpuIdDump::FromString(const std::string& source) {
+absl::StatusOr<CpuIdDump> CpuIdDump::FromString(const std::string& source) {
   static const LazyRE2 regex = {
       " *CPUID +([0-9a-fA-F]+): +"
       "([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)-([0-9a-fA-F]+)(?: .*)?"};
@@ -374,7 +372,8 @@ StatusOr<CpuIdDump> CpuIdDump::FromString(const std::string& source) {
     }
   }
   if (!dump.IsValid()) {
-    return InvalidArgumentError("Leaf 0 was not found in the parsed dump.");
+    return absl::InvalidArgumentError(
+        "Leaf 0 was not found in the parsed dump.");
   }
   return dump;
 }

@@ -18,6 +18,8 @@
 #include <initializer_list>
 #include <memory>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/testing/test_util.h"
@@ -27,8 +29,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "src/google/protobuf/text_format.h"
-#include "util/task/status.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
@@ -36,12 +36,6 @@ namespace {
 
 using ::exegesis::testing::EqualsProto;
 using ::exegesis::testing::StatusIs;
-using ::exegesis::util::Status;
-using ::exegesis::util::StatusOr;
-using ::exegesis::util::error::Code;
-using ::exegesis::util::error::FAILED_PRECONDITION;
-using ::exegesis::util::error::INVALID_ARGUMENT;
-using ::exegesis::util::error::OK;
 using ::testing::UnorderedPointwise;
 
 // Pull the values of the enums defined in the VexPrefixEncodingSpecification
@@ -173,11 +167,12 @@ TEST(ValidateMandatoryPrefixBitsTest, TestVexAndEvex) {
   constexpr struct {
     VexEncoding::MandatoryPrefix mandatory_prefix_in_specification;
     VexEncoding::MandatoryPrefix mandatory_prefix_in_prefix;
-    Code expected_status_code;
+    absl::StatusCode expected_status_code;
   } kInputs[] = {
-      {VexEncoding::NO_MANDATORY_PREFIX, VexEncoding::NO_MANDATORY_PREFIX, OK},
+      {VexEncoding::NO_MANDATORY_PREFIX, VexEncoding::NO_MANDATORY_PREFIX,
+       absl::StatusCode::kOk},
       {VexEncoding::NO_MANDATORY_PREFIX, VexEncoding::MANDATORY_PREFIX_REPE,
-       INVALID_ARGUMENT}};
+       absl::StatusCode::kInvalidArgument}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(absl::StrCat(
         "{",
@@ -203,14 +198,16 @@ TEST(ValidateMapSelectBits, TestVexAndEvex) {
   constexpr struct {
     VexEncoding::MapSelect map_select_in_specification;
     VexEncoding::MapSelect map_select_in_prefix;
-    Code expected_status_code;
-  } kInputs[] = {{VexEncoding::MAP_SELECT_0F, VexEncoding::MAP_SELECT_0F, OK},
-                 {VexEncoding::MAP_SELECT_0F3A, VexEncoding::MAP_SELECT_0F38,
-                  INVALID_ARGUMENT},
-                 {VexEncoding::UNDEFINED_OPERAND_MAP,
-                  VexEncoding::MAP_SELECT_0F, INVALID_ARGUMENT},
-                 {VexEncoding::UNDEFINED_OPERAND_MAP,
-                  VexEncoding::UNDEFINED_OPERAND_MAP, INVALID_ARGUMENT}};
+    absl::StatusCode expected_status_code;
+  } kInputs[] = {
+      {VexEncoding::MAP_SELECT_0F, VexEncoding::MAP_SELECT_0F,
+       absl::StatusCode::kOk},
+      {VexEncoding::MAP_SELECT_0F3A, VexEncoding::MAP_SELECT_0F38,
+       absl::StatusCode::kInvalidArgument},
+      {VexEncoding::UNDEFINED_OPERAND_MAP, VexEncoding::MAP_SELECT_0F,
+       absl::StatusCode::kInvalidArgument},
+      {VexEncoding::UNDEFINED_OPERAND_MAP, VexEncoding::UNDEFINED_OPERAND_MAP,
+       absl::StatusCode::kInvalidArgument}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(absl::StrCat(
         "{", VexEncoding::MapSelect_Name(input.map_select_in_specification),
@@ -234,26 +231,27 @@ TEST(ValidateVectorSizeBitsTest, Test) {
     VexVectorSize vector_size;
     uint32_t vector_length_bits;
     VexPrefixType prefix_type;
-    Code expected_status_code;
-  } kInputs[] = {{VEX_VECTOR_SIZE_128_BIT, kEvexPrefixVectorLength128BitsOrZero,
-                  VEX_PREFIX, OK},
-                 {VEX_VECTOR_SIZE_BIT_IS_ZERO,
-                  kEvexPrefixVectorLength128BitsOrZero, VEX_PREFIX, OK},
-                 {VEX_VECTOR_SIZE_IS_IGNORED,
-                  kEvexPrefixVectorLength128BitsOrZero, VEX_PREFIX, OK},
-                 {VEX_VECTOR_SIZE_IS_IGNORED, kEvexPrefixVectorLength512Bits,
-                  VEX_PREFIX, INVALID_ARGUMENT},
-                 {VEX_VECTOR_SIZE_512_BIT, kEvexPrefixVectorLength512Bits,
-                  VEX_PREFIX, FAILED_PRECONDITION},
-                 {VEX_VECTOR_SIZE_512_BIT, kEvexPrefixVectorLength512Bits,
-                  EVEX_PREFIX, OK},
-                 {VEX_VECTOR_SIZE_256_BIT, kEvexPrefixVectorLength512Bits,
-                  VEX_PREFIX, INVALID_ARGUMENT}};
+    absl::StatusCode expected_status_code;
+  } kInputs[] = {
+      {VEX_VECTOR_SIZE_128_BIT, kEvexPrefixVectorLength128BitsOrZero,
+       VEX_PREFIX, absl::StatusCode::kOk},
+      {VEX_VECTOR_SIZE_BIT_IS_ZERO, kEvexPrefixVectorLength128BitsOrZero,
+       VEX_PREFIX, absl::StatusCode::kOk},
+      {VEX_VECTOR_SIZE_IS_IGNORED, kEvexPrefixVectorLength128BitsOrZero,
+       VEX_PREFIX, absl::StatusCode::kOk},
+      {VEX_VECTOR_SIZE_IS_IGNORED, kEvexPrefixVectorLength512Bits, VEX_PREFIX,
+       absl::StatusCode::kInvalidArgument},
+      {VEX_VECTOR_SIZE_512_BIT, kEvexPrefixVectorLength512Bits, VEX_PREFIX,
+       absl::StatusCode::kFailedPrecondition},
+      {VEX_VECTOR_SIZE_512_BIT, kEvexPrefixVectorLength512Bits, EVEX_PREFIX,
+       absl::StatusCode::kOk},
+      {VEX_VECTOR_SIZE_256_BIT, kEvexPrefixVectorLength512Bits, VEX_PREFIX,
+       absl::StatusCode::kInvalidArgument}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(absl::StrCat("{", VexVectorSize_Name(input.vector_size), ", ",
                               input.vector_length_bits, ", ",
                               VexPrefixType_Name(input.prefix_type), "}"));
-    const Status validation_status = ValidateVectorSizeBits(
+    const absl::Status validation_status = ValidateVectorSizeBits(
         input.vector_size, input.vector_length_bits, input.prefix_type);
     EXPECT_THAT(validation_status, StatusIs(input.expected_status_code));
   }
@@ -263,18 +261,18 @@ TEST(ValidateVexWBitTest, Test) {
   constexpr struct {
     VexPrefixEncodingSpecification::VexWUsage vex_w_usage;
     bool vex_w_bit;
-    Code expected_status_code;
-  } kInputs[] = {{kVexWIsOne, true, OK},
-                 {kVexWIsOne, false, INVALID_ARGUMENT},
-                 {kVexWIsZero, true, INVALID_ARGUMENT},
-                 {kVexWIsZero, false, OK},
-                 {kVexWIsIgnored, true, OK},
-                 {kVexWIsIgnored, false, OK}};
+    absl::StatusCode expected_status_code;
+  } kInputs[] = {{kVexWIsOne, true, absl::StatusCode::kOk},
+                 {kVexWIsOne, false, absl::StatusCode::kInvalidArgument},
+                 {kVexWIsZero, true, absl::StatusCode::kInvalidArgument},
+                 {kVexWIsZero, false, absl::StatusCode::kOk},
+                 {kVexWIsIgnored, true, absl::StatusCode::kOk},
+                 {kVexWIsIgnored, false, absl::StatusCode::kOk}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(absl::StrCat(
         "{", VexPrefixEncodingSpecification::VexWUsage_Name(input.vex_w_usage),
         ", ", input.vex_w_bit, ", ", input.expected_status_code));
-    const Status validation_status =
+    const absl::Status validation_status =
         ValidateVexWBit(input.vex_w_usage, input.vex_w_bit);
     EXPECT_THAT(validation_status, StatusIs(input.expected_status_code));
   }
@@ -339,41 +337,42 @@ TEST(ValidateEvexBBitTest, Test) {
   constexpr struct {
     const char* vex_prefix_specification;
     const char* decoded_instruction;
-    Code expected_status_code;
+    absl::StatusCode expected_status_code;
   } kInputs[] = {
       {"prefix_type: VEX_PREFIX", "evex_prefix { broadcast_or_control: true }",
-       FAILED_PRECONDITION},
+       absl::StatusCode::kFailedPrecondition},
       {"prefix_type: VEX_PREFIX", "evex_prefix { broadcast_or_control: true }",
-       FAILED_PRECONDITION},
-      {"prefix_type: EVEX_PREFIX", "evex_prefix {}", OK},
+       absl::StatusCode::kFailedPrecondition},
+      {"prefix_type: EVEX_PREFIX", "evex_prefix {}", absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX", "evex_prefix { broadcast_or_control: true }",
-       INVALID_ARGUMENT},
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX "
        "evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST ",
-       "evex_prefix {}", OK},
+       "evex_prefix {}", absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX "
        "evex_b_interpretations: EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL ",
-       "evex_prefix { broadcast_or_control: true } ", OK},
+       "evex_prefix { broadcast_or_control: true } ", absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX "
        "evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST ",
-       "evex_prefix { broadcast_or_control: true } ", INVALID_ARGUMENT},
+       "evex_prefix { broadcast_or_control: true } ",
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX "
        "evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST ",
        "evex_prefix { broadcast_or_control: true } "
        "modrm { addressing_mode: INDIRECT }",
-       OK},
+       absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX "
        "evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST "
        "evex_b_interpretations: EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS ",
        "evex_prefix { broadcast_or_control: true } "
        "modrm { addressing_mode: INDIRECT } ",
-       OK},
+       absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX "
        "evex_b_interpretations: EVEX_B_ENABLES_32_BIT_BROADCAST "
        "evex_b_interpretations: EVEX_B_ENABLES_SUPPRESS_ALL_EXCEPTIONS ",
        "evex_prefix { broadcast_or_control: true } "
        "modrm { addressing_mode: DIRECT } ",
-       OK}};
+       absl::StatusCode::kOk}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(
         absl::StrCat("Specification:\n", input.vex_prefix_specification));
@@ -394,34 +393,40 @@ TEST(ValidateEvexOpmaskTest, Test) {
   constexpr struct {
     const char* vex_prefix_specification;
     const char* decoded_instruction;
-    Code expected_status_code;
+    absl::StatusCode expected_status_code;
   } kInputs[] = {
-      {"prefix_type: VEX_PREFIX", "vex_prefix {}", FAILED_PRECONDITION},
+      {"prefix_type: VEX_PREFIX", "vex_prefix {}",
+       absl::StatusCode::kFailedPrecondition},
       {"prefix_type: VEX_PREFIX", "evex_prefix { opmask_register: 1 }",
-       FAILED_PRECONDITION},
-      {"prefix_type: EVEX_PREFIX", "evex_prefix {}", OK},
+       absl::StatusCode::kFailedPrecondition},
+      {"prefix_type: EVEX_PREFIX", "evex_prefix {}", absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_NOT_USED",
-       "evex_prefix { opmask_register: 1 }", INVALID_ARGUMENT},
+       "evex_prefix { opmask_register: 1 }",
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_NOT_USED",
-       "evex_prefix { opmask_register: 0 z: true }", INVALID_ARGUMENT},
+       "evex_prefix { opmask_register: 0 z: true }",
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_OPTIONAL "
        "masking_operation: EVEX_MASKING_MERGING_ONLY",
-       "evex_prefix { opmask_register: 1 z: false }", OK},
+       "evex_prefix { opmask_register: 1 z: false }", absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_REQUIRED "
        "masking_operation: EVEX_MASKING_MERGING_ONLY",
-       "evex_prefix { opmask_register: 1 z: false }", OK},
+       "evex_prefix { opmask_register: 1 z: false }", absl::StatusCode::kOk},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_REQUIRED "
        "masking_operation: EVEX_MASKING_MERGING_ONLY",
-       "evex_prefix { opmask_register: 0 z: false }", INVALID_ARGUMENT},
+       "evex_prefix { opmask_register: 0 z: false }",
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_OPTIONAL "
        "masking_operation: EVEX_MASKING_MERGING_ONLY",
-       "evex_prefix { opmask_register: 1 z: true }", INVALID_ARGUMENT},
+       "evex_prefix { opmask_register: 1 z: true }",
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_REQUIRED "
        "masking_operation: EVEX_MASKING_MERGING_AND_ZEROING",
-       "evex_prefix { opmask_register: 0 z: true }", INVALID_ARGUMENT},
+       "evex_prefix { opmask_register: 0 z: true }",
+       absl::StatusCode::kInvalidArgument},
       {"prefix_type: EVEX_PREFIX opmask_usage: EVEX_OPMASK_IS_OPTIONAL "
        "masking_operation: EVEX_MASKING_MERGING_AND_ZEROING",
-       "evex_prefix { opmask_register: 0 z: true }", OK}};
+       "evex_prefix { opmask_register: 0 z: true }", absl::StatusCode::kOk}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(
         absl::StrCat("Specification:\n", input.vex_prefix_specification));
@@ -443,21 +448,30 @@ TEST(ValidateVexRegisterOperandBitsTest, Test) {
     VexPrefixType prefix_type;
     VexOperandUsage operand_usage;
     uint32_t operand_bits;
-    Code expected_status_code;
+    absl::StatusCode expected_status_code;
   } kInputs[] = {
-      {VEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 0, OK},
-      {EVEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 0, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 1, INVALID_ARGUMENT},
-      {EVEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 15, INVALID_ARGUMENT},
-      {VEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 15, OK},
-      {EVEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 31, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_DESTINATION_REGISTER, 22, INVALID_ARGUMENT},
-      {EVEX_PREFIX, VEX_OPERAND_IS_DESTINATION_REGISTER, 22, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_FIRST_SOURCE_REGISTER, 0, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_FIRST_SOURCE_REGISTER, 1, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_FIRST_SOURCE_REGISTER, 15, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_SECOND_SOURCE_REGISTER, 4, OK},
-      {VEX_PREFIX, VEX_OPERAND_IS_DESTINATION_REGISTER, 4, OK}};
+      {VEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 0, absl::StatusCode::kOk},
+      {EVEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 0, absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 1,
+       absl::StatusCode::kInvalidArgument},
+      {EVEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 15,
+       absl::StatusCode::kInvalidArgument},
+      {VEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 15, absl::StatusCode::kOk},
+      {EVEX_PREFIX, VEX_OPERAND_IS_NOT_USED, 31, absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_DESTINATION_REGISTER, 22,
+       absl::StatusCode::kInvalidArgument},
+      {EVEX_PREFIX, VEX_OPERAND_IS_DESTINATION_REGISTER, 22,
+       absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_FIRST_SOURCE_REGISTER, 0,
+       absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_FIRST_SOURCE_REGISTER, 1,
+       absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_FIRST_SOURCE_REGISTER, 15,
+       absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_SECOND_SOURCE_REGISTER, 4,
+       absl::StatusCode::kOk},
+      {VEX_PREFIX, VEX_OPERAND_IS_DESTINATION_REGISTER, 4,
+       absl::StatusCode::kOk}};
   for (const auto& input : kInputs) {
     SCOPED_TRACE(absl::StrCat("{", VexOperandUsage_Name(input.operand_usage),
                               ", ", input.operand_bits, ", ",
@@ -2802,9 +2816,9 @@ void SetOperandToRegisterTest::TestSetOperandError(
   DecodedInstruction instruction;
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       instruction_format_proto, &instruction_format));
-  const Status set_operand_status = SetOperandToRegister(
+  const absl::Status set_operand_status = SetOperandToRegister(
       instruction_format, operand_position, register_index, &instruction);
-  EXPECT_THAT(set_operand_status, StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(set_operand_status, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_F(SetOperandToRegisterTest, InvalidOperandPosition) {
@@ -3046,9 +3060,9 @@ void SetOperandToMemoryAbsoluteTest::TestSetOperandError(
   DecodedInstruction instruction;
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       instruction_format_proto, &instruction_format));
-  const Status set_operand_status =
+  const absl::Status set_operand_status =
       SetOperandToMemoryAbsolute(instruction_format, 0x123456, &instruction);
-  EXPECT_THAT(set_operand_status, StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(set_operand_status, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_F(SetOperandToMemoryAbsoluteTest, LegacyInstruction) {
@@ -3113,9 +3127,9 @@ void SetOperandToMemoryBaseTest::TestSetOperandError(
   DecodedInstruction instruction;
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       instruction_format_proto, &instruction_format));
-  const Status set_operand_status =
+  const absl::Status set_operand_status =
       SetOperandToMemoryBase(instruction_format, register_index, &instruction);
-  EXPECT_THAT(set_operand_status, StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(set_operand_status, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_F(SetOperandToMemoryBaseTest, LegacyInstruction) {
@@ -3257,9 +3271,9 @@ void SetOperandToMemoryBaseSibTest::TestSetOperandError(
   DecodedInstruction instruction;
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       instruction_format_proto, &instruction_format));
-  const Status set_operand_status = SetOperandToMemoryBaseSib(
+  const absl::Status set_operand_status = SetOperandToMemoryBaseSib(
       instruction_format, base_register, &instruction);
-  EXPECT_THAT(set_operand_status, StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(set_operand_status, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_F(SetOperandToMemoryBaseSibTest, LegacyInstruction) {
@@ -3388,9 +3402,9 @@ void SetOperandToMemoryRelativeToRipTest::TestSetOperandError(
   DecodedInstruction instruction;
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       instruction_format_proto, &instruction_format));
-  const Status set_operand_status =
+  const absl::Status set_operand_status =
       SetOperandToMemoryRelativeToRip(instruction_format, 12345, &instruction);
-  EXPECT_THAT(set_operand_status, StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(set_operand_status, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_F(SetOperandToMemoryRelativeToRipTest, LegacyInstruction) {
@@ -3445,7 +3459,7 @@ class SetOperandToMemoryBaseAndDisplacementTest : public SetOperandTestBase {
                            RegisterIndex register_index);
 
   // Calls the appropriate SetOperandToMemoryBaseAndDisplacement function.
-  virtual Status SetOperandToMemoryBaseAndDisplacement(
+  virtual absl::Status SetOperandToMemoryBaseAndDisplacement(
       const InstructionFormat& instruction_format, RegisterIndex base_register,
       DisplacementType displacement, DecodedInstruction* instruction) = 0;
 };
@@ -3479,15 +3493,15 @@ void SetOperandToMemoryBaseAndDisplacementTest<DisplacementType>::
   DecodedInstruction instruction;
   ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       instruction_format_proto, &instruction_format));
-  const Status set_operand_status = SetOperandToMemoryBaseAndDisplacement(
+  const absl::Status set_operand_status = SetOperandToMemoryBaseAndDisplacement(
       instruction_format, register_index, 123, &instruction);
-  EXPECT_THAT(set_operand_status, StatusIs(INVALID_ARGUMENT));
+  EXPECT_THAT(set_operand_status, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 class SetOperandToMemoryBaseAnd8BitDisplacementTest
     : public SetOperandToMemoryBaseAndDisplacementTest<int8_t> {
  protected:
-  Status SetOperandToMemoryBaseAndDisplacement(
+  absl::Status SetOperandToMemoryBaseAndDisplacement(
       const InstructionFormat& instruction_format, RegisterIndex base_register,
       DisplacementType displacement, DecodedInstruction* instruction) override {
     return SetOperandToMemoryBaseAnd8BitDisplacement(
@@ -3638,7 +3652,7 @@ TEST_F(SetOperandToMemoryBaseAnd8BitDisplacementTest, InvalidOperandIndex) {
 class SetOperandToMemoryBaseAnd32BitDisplacementTest
     : public SetOperandToMemoryBaseAndDisplacementTest<int32_t> {
  protected:
-  Status SetOperandToMemoryBaseAndDisplacement(
+  absl::Status SetOperandToMemoryBaseAndDisplacement(
       const InstructionFormat& instruction_format, RegisterIndex base_register,
       DisplacementType displacement, DecodedInstruction* instruction) override {
     return SetOperandToMemoryBaseAnd32BitDisplacement(

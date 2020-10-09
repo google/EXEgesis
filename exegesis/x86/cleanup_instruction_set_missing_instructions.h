@@ -17,17 +17,15 @@
 #ifndef EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_MISSING_INSTRUCTIONS_H_
 #define EXEGESIS_X86_CLEANUP_INSTRUCTION_SET_MISSING_INSTRUCTIONS_H_
 
+#include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
-#include "util/task/status.h"
 
 namespace exegesis {
 namespace x86 {
 
-using ::exegesis::util::Status;
-
 // Adds the undocumented instruction FFREEP. For more information about the
 // instruction see https://www.pagetable.com/?p=16.
-Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set);
+absl::Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set);
 
 }  // namespace x86
 }  // namespace exegesis

@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "glog/logging.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/IR/DerivedTypes.h"
@@ -30,11 +31,8 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/SourceMgr.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
-
-using ::exegesis::util::StatusOr;
 
 // Represents a function that takes no arguments and does not return any value.
 struct VoidFunction {
@@ -70,7 +68,7 @@ class JitCompiler {
   // a loop of 'num_iterations' around 'loop_code'. Registers touched by
   // 'constraints' are saved, and the compiler assumes that the function does
   // have side effects.
-  StatusOr<VoidFunction> CompileInlineAssemblyToFunction(
+  absl::StatusOr<VoidFunction> CompileInlineAssemblyToFunction(
       int num_iterations, const std::string& loop_code,
       const std::string& loop_constraints, llvm::InlineAsm::AsmDialect dialect);
 
@@ -81,7 +79,7 @@ class JitCompiler {
   // code generator still has some freedom in how it allocates the registers,
   // and their values might not be preserved between the initialization and the
   // loop unless they are properly annotated in both sets of constraints.
-  StatusOr<VoidFunction> CompileInlineAssemblyToFunction(
+  absl::StatusOr<VoidFunction> CompileInlineAssemblyToFunction(
       int num_iterations, const std::string& init_code,
       const std::string& init_constraints, const std::string& loop_code,
       const std::string& loop_constraints, const std::string& cleanup_code,
@@ -92,7 +90,7 @@ class JitCompiler {
   // 'code'. This is not a function, and it should not be cast and
   // called: Registers are not saved, and the compiler assumes that
   // the code does not have side effects.
-  StatusOr<uint8_t*> CompileInlineAssemblyFragment(
+  absl::StatusOr<uint8_t*> CompileInlineAssemblyFragment(
       const std::string& code, llvm::InlineAsm::AsmDialect dialect);
 
   // Returns an object usable by the LLVM IR that corresponds to the inline
@@ -109,14 +107,14 @@ class JitCompiler {
   // assembly that is called once at the beginning (resp. at the end) of the
   // function to initialize (resp. clean up) the memory and the registers. Any
   // of these two values can be null to disable this feature.
-  StatusOr<llvm::Function*> WrapInlineAsmInLoopingFunction(
-      int num_iterations, llvm::Value* init_inline_asm,
-      llvm::Value* loop_inline_asm, llvm::Value* cleanup_inline_asm);
+  absl::StatusOr<llvm::Function*> WrapInlineAsmInLoopingFunction(
+      int num_iterations, llvm::InlineAsm* init_inline_asm,
+      llvm::InlineAsm* loop_inline_asm, llvm::InlineAsm* cleanup_inline_asm);
 
   // Builds and compiles a void() function that executes the LLVM IR function
   // passed in function. Compiles the function using 'execution_engine_',
   // and returns a pointer to the compiled function.
-  StatusOr<VoidFunction> CreatePointerToInlineAssemblyFunction(
+  absl::StatusOr<VoidFunction> CreatePointerToInlineAssemblyFunction(
       llvm::Function* function);
 
   // For debugging purposes. Dumps all the modules in the current object.

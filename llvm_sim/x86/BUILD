@@ -57,13 +57,13 @@ cc_test(
         "//llvm_sim/framework:log_levels",
         "//llvm_sim/framework:simulator",
         "@com_google_googletest//:gtest_main",
-        "@llvm_git//:codegen",
-        "@llvm_git//:ir",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
-        "@llvm_git//:x86_target",  # buildcleaner: keep
-        "@llvm_git//:x86_target_asm_parser",  # buildcleaner: keep
-        "@llvm_git//:x86_target_info",  # buildcleaner: keep
+        "@llvm_git//:CodeGen",
+        "@llvm_git//:Core",
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
+        "@llvm_git//:X86AsmParser",  # buildcleaner: keep
+        "@llvm_git//:X86CodeGen",  # buildcleaner: keep
+        "@llvm_git//:X86Info",  # buildcleaner: keep
     ],
 )
 
@@ -75,12 +75,12 @@ cc_library(
         ":constants",
         "//llvm_sim/framework:context",
         "//llvm_sim/framework:log",
-        "@llvm_git//:ir",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:machine_code_disassembler",
-        "@llvm_git//:machine_code_parser",
-        "@llvm_git//:object",
-        "@llvm_git//:support",
+        "@llvm_git//:Core",
+        "@llvm_git//:MC",
+        "@llvm_git//:MCDisassembler",
+        "@llvm_git//:MCParser",
+        "@llvm_git//:Object",
+        "@llvm_git//:Support",
     ],
 )
 
@@ -95,11 +95,11 @@ cc_test(
         ":constants",
         ":faucon_lib",
         "@com_google_googletest//:gtest_main",
-        "@llvm_git//:support",
-        "@llvm_git//:x86_target",  # buildcleaner: keep
-        "@llvm_git//:x86_target_asm_parser",  # buildcleaner: keep
-        "@llvm_git//:x86_target_disassembler",  # buildcleaner: keep
-        "@llvm_git//:x86_target_info",  # buildcleaner: keep
+        "@llvm_git//:Support",
+        "@llvm_git//:X86AsmParser",  # buildcleaner: keep
+        "@llvm_git//:X86CodeGen",  # buildcleaner: keep
+        "@llvm_git//:X86Disassembler",  # buildcleaner: keep
+        "@llvm_git//:X86Info",  # buildcleaner: keep
     ],
 )
 
@@ -112,11 +112,11 @@ cc_binary(
         ":haswell",
         "//llvm_sim/analysis:inverse_throughput",
         "//llvm_sim/analysis:port_pressure",
-        "@llvm_git//:machine_code",
-        "@llvm_git//:support",
-        "@llvm_git//:x86_target",  # buildcleaner: keep
-        "@llvm_git//:x86_target_asm_parser",  # buildcleaner: keep
-        "@llvm_git//:x86_target_disassembler",  # buildcleaner: keep
-        "@llvm_git//:x86_target_info",  # buildcleaner: keep
+        "@llvm_git//:MC",
+        "@llvm_git//:Support",
+        "@llvm_git//:X86AsmParser",  # buildcleaner: keep
+        "@llvm_git//:X86CodeGen",  # buildcleaner: keep
+        "@llvm_git//:X86Disassembler",  # buildcleaner: keep
+        "@llvm_git//:X86Info",  # buildcleaner: keep
     ],
 )

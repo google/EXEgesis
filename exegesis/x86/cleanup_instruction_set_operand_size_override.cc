@@ -25,6 +25,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -35,18 +36,10 @@
 #include "exegesis/x86/encoding_specification.h"
 #include "glog/logging.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
-#include "util/task/status_macros.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 // Mnemonics of 16-bit string instructions that take no operands.
 const char* const k16BitInstructionsWithImplicitOperands[] = {
@@ -76,7 +69,7 @@ void SetOperandSizeOverrideUsage(InstructionProto* instruction,
 
 }  // namespace
 
-Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
+absl::Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> string_instructions(
@@ -88,12 +81,12 @@ Status AddOperandSizeOverrideToInstructionsWithImplicitOperands(
       AddOperandSizeOverrideToInstructionProto(&instruction);
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     AddOperandSizeOverrideToInstructionsWithImplicitOperands, 3000);
 
-Status AddOperandSizeOverrideToSpecialCaseInstructions(
+absl::Status AddOperandSizeOverrideToSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> k16BitOperands = {"r16", "r/m16"};
@@ -124,7 +117,7 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
       const InstructionFormat& vendor_syntax =
           GetUniqueVendorSyntaxOrDie(instruction);
       if (operand_index >= vendor_syntax.operands_size()) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             absl::StrCat("Unexpected number of operands of instruction: ",
                          instruction.raw_encoding_specification()));
       }
@@ -139,7 +132,7 @@ Status AddOperandSizeOverrideToSpecialCaseInstructions(
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     AddOperandSizeOverrideToSpecialCaseInstructions, 3000);
@@ -173,7 +166,8 @@ std::string FormatAllInstructions(
 
 }  // namespace
 
-Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
+absl::Status AddOperandSizeOverridePrefix(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   absl::node_hash_map<std::string, std::vector<InstructionProto*>>
       instructions_by_raw_encoding_specification;
@@ -186,12 +180,12 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
     const std::string& raw_encoding_specification =
         instruction.raw_encoding_specification();
     if (raw_encoding_specification.empty()) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("No binary encoding specification for instruction:\n",
                        instruction.DebugString()));
     }
     if (!instruction.has_x86_encoding_specification()) {
-      return FailedPreconditionError(absl::StrCat(
+      return absl::FailedPreconditionError(absl::StrCat(
           "Instruction does not have a parsed encoding spcification:\n",
           instruction.DebugString()));
     }
@@ -263,22 +257,23 @@ Status AddOperandSizeOverridePrefix(InstructionSetProto* instruction_set) {
     }
   }
 
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefix, 5000);
 
-Status AddOperandSizeOverridePrefixUsage(InstructionSetProto* instruction_set) {
+absl::Status AddOperandSizeOverridePrefixUsage(
+    InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   AddPrefixUsageToLegacyInstructions(GetOperandSizeOverrideUsage,
                                      SetOperandSizeOverrideUsage,
                                      instruction_set);
-  return OkStatus();
+  return absl::OkStatus();
 }
 // This transform must run after all mandatory operand size overrides are added
 // to the encoding specifications.
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandSizeOverridePrefixUsage, 5010);
 
-Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
+absl::Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const absl::flat_hash_set<std::string> k16BitOperands = {"r16", "r/m16"};
@@ -301,7 +296,7 @@ Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
       const InstructionFormat& vendor_syntax =
           GetVendorSyntaxWithMostOperandsOrDie(instruction);
       if (operand_index >= vendor_syntax.operands_size()) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             absl::StrCat("Unexpected number of operands of instruction: ",
                          instruction.raw_encoding_specification()));
       }
@@ -321,7 +316,7 @@ Status AddOperandSizeOverrideVersionForSpecialCaseInstructions(
     AddOperandSizeOverrideToInstructionProto(&instruction);
     *instruction_set->add_instructions() = instruction;
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(
     AddOperandSizeOverrideVersionForSpecialCaseInstructions, 3000);

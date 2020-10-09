@@ -23,6 +23,8 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/base/cleanup_instruction_set.h"
@@ -36,19 +38,10 @@
 #include "glog/logging.h"
 #include "re2/re2.h"
 #include "util/gtl/map_util.h"
-#include "util/task/canonical_errors.h"
-#include "util/task/status.h"
-#include "util/task/status_macros.h"
-#include "util/task/statusor.h"
 
 namespace exegesis {
 namespace x86 {
 namespace {
-
-using ::exegesis::util::FailedPreconditionError;
-using ::exegesis::util::InvalidArgumentError;
-using ::exegesis::util::OkStatus;
-using ::exegesis::util::Status;
 
 using EncodingMap =
     absl::flat_hash_map<std::string, InstructionOperand::Encoding>;
@@ -896,18 +889,18 @@ bool IsImplicitOperandEncoding(const InstructionOperand::Encoding& encoding) {
 }
 
 // Tries to remove one occurrence of the operand encoding of 'operand' from
-// 'available_encodings'. If it is removed, returns Status::OK. If
+// 'available_encodings'. If it is removed, returns absl::Status::OK. If
 // 'available_encodings' does not contain such an encoding, returns an error
 // status with an appropriate error message.
-Status EraseOperandEncoding(
+absl::Status EraseOperandEncoding(
     const InstructionProto& instruction, const InstructionOperand& operand,
     InstructionOperandEncodingMultiset* available_encodings) {
   const InstructionOperand::Encoding encoding = operand.encoding();
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   if (!IsImplicitOperandEncoding(encoding)) {
     const auto iterator = available_encodings->find(encoding);
     if (iterator == available_encodings->end()) {
-      status = InvalidArgumentError(absl::StrCat(
+      status = absl::InvalidArgumentError(absl::StrCat(
           "Operand '", operand.name(), "' encoded using ",
           InstructionOperand::Encoding_Name(encoding),
           " is not specified in the encoding specification: ",
@@ -933,7 +926,7 @@ Status EraseOperandEncoding(
 //
 // Returns an error if the addressing mode for an operand is not known, or the
 // uniquely determined enoding does not appear in 'available_encodings'.
-Status AssignOperandPropertiesWhereUniquelyDetermined(
+absl::Status AssignOperandPropertiesWhereUniquelyDetermined(
     const InstructionProto& instruction, InstructionFormat* vendor_syntax,
     InstructionOperandEncodingMultiset* available_encodings,
     std::vector<int>* operands_with_no_encoding) {
@@ -948,7 +941,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
   static const ValueSizeMap* const value_size_map = new ValueSizeMap(
       std::begin(kOperandValueSizeBitsMap), std::end(kOperandValueSizeBitsMap));
 
-  Status status = OkStatus();
+  absl::Status status = absl::OkStatus();
   for (int operand_index = 0; operand_index < vendor_syntax->operands_size();
        ++operand_index) {
     InstructionOperand* const operand =
@@ -958,7 +951,7 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       InstructionOperand::AddressingMode addressing_mode;
       if (!gtl::FindCopy(*addressing_mode_map, operand->name(),
                          &addressing_mode)) {
-        status = InvalidArgumentError(absl::StrCat(
+        status = absl::InvalidArgumentError(absl::StrCat(
             "Could not determine addressing mode of operand: ", operand->name(),
             ", instruction ", vendor_syntax->mnemonic(), " (",
             instruction.raw_encoding_specification(), ")"));
@@ -974,8 +967,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
     }
 
     if (operand->encoding() != InstructionOperand::ANY_ENCODING) {
-      UpdateStatus(&status, EraseOperandEncoding(instruction, *operand,
-                                                 available_encodings));
+      status.Update(
+          EraseOperandEncoding(instruction, *operand, available_encodings));
     } else {
       // If there is only one way how an operand can be encoded, we assign this
       // encoding to the operand and remove it from the list of available
@@ -984,8 +977,8 @@ Status AssignOperandPropertiesWhereUniquelyDetermined(
       InstructionOperand::Encoding operand_encoding;
       if (gtl::FindCopy(*encoding_map, operand->name(), &operand_encoding)) {
         operand->set_encoding(operand_encoding);
-        UpdateStatus(&status, EraseOperandEncoding(instruction, *operand,
-                                                   available_encodings));
+        status.Update(
+            EraseOperandEncoding(instruction, *operand, available_encodings));
       } else {
         operands_with_no_encoding->push_back(operand_index);
       }
@@ -1031,7 +1024,7 @@ inline bool AssignEncodingIfAvailable(
 // like the heuristics are good enough to let us assign the operands as we need
 // them, and so far, we do not need to know the exact matching of operand
 // positions and encodings, only what encodings are used.
-Status AssignEncodingByEncodingScheme(
+absl::Status AssignEncodingByEncodingScheme(
     const InstructionProto& instruction,
     const std::vector<int>& operands_with_no_encoding,
     InstructionFormat* vendor_syntax,
@@ -1072,20 +1065,20 @@ Status AssignEncodingByEncodingScheme(
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // Assigns the remaining available encodings to the remaining unassigned
 // operands on a first come first served basis. Assumes that there are enough
 // available encodings for all remaining operands.
-Status AssignEncodingRandomlyFromAvailableEncodings(
+absl::Status AssignEncodingRandomlyFromAvailableEncodings(
     const InstructionProto& instruction, InstructionFormat* vendor_syntax,
     InstructionOperandEncodingMultiset* available_encodings) {
   CHECK(vendor_syntax != nullptr);
   for (InstructionOperand& operand : *vendor_syntax->mutable_operands()) {
     if (operand.encoding() == InstructionOperand::ANY_ENCODING) {
       if (available_encodings->empty()) {
-        return InvalidArgumentError(
+        return absl::InvalidArgumentError(
             absl::StrCat("No available encodings for instruction:\n",
                          instruction.DebugString()));
       }
@@ -1093,12 +1086,12 @@ Status AssignEncodingRandomlyFromAvailableEncodings(
       available_encodings->erase(available_encodings->begin());
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 }  // namespace
 
-Status AddVmxOperandInfo(InstructionSetProto* instruction_set) {
+absl::Status AddVmxOperandInfo(InstructionSetProto* instruction_set) {
   static constexpr LazyRE2 kRegex = {R"(.*/[r0-7])"};
 
   CHECK(instruction_set != nullptr);
@@ -1112,13 +1105,13 @@ Status AddVmxOperandInfo(InstructionSetProto* instruction_set) {
           absl::StrCat(instruction.raw_encoding_specification(), " /r");
     }
   }
-  return util::OkStatus();
+  return absl::OkStatus();
 }
 // We want this to run early so that VMX instructions' operands will benefit
 // from other cleanups.
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddVmxOperandInfo, 999);
 
-Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set) {
+absl::Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set) {
   static constexpr char kDescriptionForVmfunc[] = "VM Function to be invoked.";
   static constexpr char kVmfuncOpcode[] = "NP 0F 01 D4";
   CHECK(instruction_set != nullptr);
@@ -1140,11 +1133,11 @@ Status FixVmFuncOperandInfo(InstructionSetProto* instruction_set) {
       break;
     }
   }
-  return util::OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(FixVmFuncOperandInfo, 998);
 
-Status AddMovdir64BOperandInfo(InstructionSetProto* instruction_set) {
+absl::Status AddMovdir64BOperandInfo(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr absl::string_view kMovdir64B = "66 0F 38 F8 /r";
   constexpr int kExpectedNumOperands = 2;
@@ -1154,14 +1147,14 @@ Status AddMovdir64BOperandInfo(InstructionSetProto* instruction_set) {
     InstructionFormat& vendor_syntax =
         *GetOrAddUniqueVendorSyntaxOrDie(&instruction);
     if (vendor_syntax.operands_size() != kExpectedNumOperands) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Unexpected number of operands of MOVDIR64B: ",
                        vendor_syntax.operands_size()));
     }
     InstructionOperand& destination_operand =
         *vendor_syntax.mutable_operands(0);
     if (destination_operand.name() != kDestinationOperandName) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Unexpected MOVDIR64B destination operand name: ",
                        destination_operand.name()));
     }
@@ -1172,11 +1165,11 @@ Status AddMovdir64BOperandInfo(InstructionSetProto* instruction_set) {
     destination_operand.set_register_class(
         RegisterProto::INVALID_REGISTER_CLASS);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMovdir64BOperandInfo, 999);
 
-Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set) {
+absl::Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr absl::string_view kUmonitorEncoding = "F3 0F AE /6";
   constexpr absl::string_view kUmonitorMnemonic = "UMONITOR";
@@ -1191,14 +1184,14 @@ Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set) {
     // them.
     if (vendor_syntax.mnemonic() != kUmonitorMnemonic) continue;
     if (vendor_syntax.operands_size() != kExpectedNumOperands) {
-      return InvalidArgumentError(
+      return absl::InvalidArgumentError(
           absl::StrCat("Unexpected number of operands of UMONITOR: ",
                        vendor_syntax.operands_size()));
     }
     InstructionOperand& destination_operand =
         *vendor_syntax.mutable_operands(0);
     if (destination_operand.name() != kOperandName) {
-      return InvalidArgumentError(absl::StrCat(
+      return absl::InvalidArgumentError(absl::StrCat(
           "Unexpected UMONITOR operand name: ", destination_operand.name()));
     }
     destination_operand.set_name("mem");
@@ -1208,11 +1201,11 @@ Status AddUmonitorOperandInfo(InstructionSetProto* instruction_set) {
     destination_operand.set_register_class(
         RegisterProto::INVALID_REGISTER_CLASS);
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddUmonitorOperandInfo, 999);
 
-Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
+absl::Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   const RegisterClassMap register_class_map(std::begin(kRegisterClassMap),
                                             std::end(kRegisterClassMap));
@@ -1223,7 +1216,7 @@ Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
         const RegisterProto::RegisterClass* const register_class =
             gtl::FindOrNull(register_class_map, operand.name());
         if (register_class == nullptr) {
-          return InvalidArgumentError(
+          return absl::InvalidArgumentError(
               absl::StrCat("Unexpected operand name:", operand.name(),
                            "\nInstruction:", instruction.DebugString()));
         } else {
@@ -1232,7 +1225,7 @@ Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
 // We are running this after alternatives transform has ran. Because an
@@ -1241,11 +1234,11 @@ Status AddRegisterClassToOperands(InstructionSetProto* instruction_set) {
 // register to perform indirect accessing.
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddRegisterClassToOperands, 7000);
 
-Status AddOperandInfoToSyntax(const InstructionProto& instruction,
-                              InstructionFormat* vendor_syntax) {
+absl::Status AddOperandInfoToSyntax(const InstructionProto& instruction,
+                                    InstructionFormat* vendor_syntax) {
   CHECK(vendor_syntax != nullptr);
   if (!instruction.has_x86_encoding_specification()) {
-    return FailedPreconditionError(absl::StrCat(
+    return absl::FailedPreconditionError(absl::StrCat(
         "Instruction does not have a parsed encoding specification: ",
         instruction.DebugString()));
   }
@@ -1296,17 +1289,17 @@ Status AddOperandInfoToSyntax(const InstructionProto& instruction,
       }
       // We don't have enough available encodings to encode all the
       // operands.
-      const Status status = InvalidArgumentError(absl::StrCat(
+      const absl::Status status = absl::InvalidArgumentError(absl::StrCat(
           "There are more operands remaining than available encodings: ",
           instruction.DebugString()));
       LOG(ERROR) << status;
       return status;
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status AddOperandInfo(InstructionSetProto* instruction_set) {
+absl::Status AddOperandInfo(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
     for (InstructionFormat& vendor_syntax :
@@ -1314,17 +1307,17 @@ Status AddOperandInfo(InstructionSetProto* instruction_set) {
       RETURN_IF_ERROR(AddOperandInfoToSyntax(instruction, &vendor_syntax));
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddOperandInfo, 4000);
 
-Status AddMissingOperandUsageToOperand(const InstructionProto& instruction,
-                                       int operand_pos,
-                                       InstructionOperand* operand) {
+absl::Status AddMissingOperandUsageToOperand(
+    const InstructionProto& instruction, int operand_pos,
+    InstructionOperand* operand) {
   CHECK(operand != nullptr);
   if (operand->usage() != InstructionOperand::USAGE_UNKNOWN) {
     // Nothing to do.
-    return OkStatus();
+    return absl::OkStatus();
   }
   if (operand->encoding() == InstructionOperand::IMMEDIATE_VALUE_ENCODING) {
     // An immediate can only be read from.
@@ -1333,7 +1326,7 @@ Status AddMissingOperandUsageToOperand(const InstructionProto& instruction,
     // A VEX encoded operand is always a source unless explicitly marked as a
     // destination. See table table 2-9 of the SDM volume 2 for details.
     if (operand_pos == 0) {
-      return InvalidArgumentError(absl::StrCat(
+      return absl::InvalidArgumentError(absl::StrCat(
           "Unexpected VEX.vvvv operand without usage specification "
           "at position 0:\n",
           instruction.DebugString()));
@@ -1355,10 +1348,10 @@ Status AddMissingOperandUsageToOperand(const InstructionProto& instruction,
     operand->set_usage(InstructionOperand::USAGE_READ);
   }
   // TODO(courbet): Add usage information for X87.
-  return OkStatus();
+  return absl::OkStatus();
 }
 
-Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
+absl::Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
     for (InstructionFormat& vendor_syntax :
@@ -1371,11 +1364,11 @@ Status AddMissingOperandUsage(InstructionSetProto* instruction_set) {
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsage, 8000);
 
-Status AddMissingOperandUsageToVblendInstructions(
+absl::Status AddMissingOperandUsageToVblendInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   static const LazyRE2 kVblendRegexp = {"VP?BLENDV?P?[DSB]"};
@@ -1390,12 +1383,12 @@ Status AddMissingOperandUsageToVblendInstructions(
       }
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingOperandUsageToVblendInstructions,
                                    8000);
 
-Status AddMissingVexVOperandUsage(InstructionSetProto* instruction_set) {
+absl::Status AddMissingVexVOperandUsage(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   for (auto& instruction : *instruction_set->mutable_instructions()) {
     EncodingSpecification* const encoding_specification =
@@ -1443,7 +1436,7 @@ Status AddMissingVexVOperandUsage(InstructionSetProto* instruction_set) {
         LOG(FATAL) << "Unexpected VEX operand usage: " << vex_operand->usage();
     }
   }
-  return OkStatus();
+  return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddMissingVexVOperandUsage, 3900);
 
