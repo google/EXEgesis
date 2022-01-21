@@ -21,7 +21,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/proto/pdf/pdf_document.pb.h"
 #include "exegesis/util/pdf/geometry.h"
 #include "exegesis/util/pdf/pdf_document_parser.h"
@@ -211,13 +213,20 @@ BoundingBox GetBoundingBox(const float x, const float y, const float dx,
 
 // Converts the unicode data from xpdf into a string.
 std::string GetUtf8String(Unicode* u, int uLen) {
-  CHECK_EQ(uLen, 1);
-  char buffer[UTFmax];
-  const int length = runetochar(buffer, reinterpret_cast<Rune*>(u));
-  const std::string output(buffer, length);
   // TODO(gchatelet): Moves this in the parser configuration.
-  if (output == "—") return "-";
-  if (output == "–") return "-";
+  constexpr absl::string_view kDashes[] = {"—", "–"};
+  std::string output;
+  output.reserve(uLen * UTFmax);
+  for (int i = 0; i < uLen; ++i) {
+    char buffer[UTFmax];
+    const int length = runetochar(buffer, reinterpret_cast<Rune*>(u));
+    const absl::string_view buffer_view(buffer, length);
+    if (absl::c_linear_search(kDashes, buffer_view)) {
+      output.push_back('-');
+    } else {
+      output.append(buffer, buffer + length);
+    }
+  }
   return output;
 }
 

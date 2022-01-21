@@ -28,32 +28,31 @@ using ::exegesis::testing::EqualsProto;
 class InstructionSetTest : public ::testing::Test {
  protected:
   InstructionSetTest()
-      : instruction_set_(
-            ParseProtoFromStringOrDie<InstructionSetProto>((R"proto(
-              instructions { vendor_syntax { mnemonic: 'AAA' } }
-              instructions {
-                vendor_syntax {
-                  mnemonic: 'SCAS'
-                  operands { name: 'm8' }
-                }
-                encoding_scheme: 'NP'
-                raw_encoding_specification: 'AE'
-              }
-              instructions {
-                vendor_syntax {
-                  mnemonic: 'INS'
-                  operands { name: 'm8' }
-                }
-                encoding_scheme: 'NP'
-                raw_encoding_specification: '6C'
-              })proto"))) {}
+      : instruction_set_(ParseProtoFromStringOrDie<InstructionSetProto>((R"pb(
+          instructions { vendor_syntax { mnemonic: 'AAA' } }
+          instructions {
+            vendor_syntax {
+              mnemonic: 'SCAS'
+              operands { name: 'm8' }
+            }
+            encoding_scheme: 'NP'
+            raw_encoding_specification: 'AE'
+          }
+          instructions {
+            vendor_syntax {
+              mnemonic: 'INS'
+              operands { name: 'm8' }
+            }
+            encoding_scheme: 'NP'
+            raw_encoding_specification: '6C'
+          })pb"))) {}
 
   InstructionSetProto instruction_set_;
 };
 
 TEST_F(InstructionSetTest, RestrictToMnemonicRange) {
   RestrictToMnemonicRange("A", "INS", &instruction_set_);
-  constexpr const char kExpected[] = R"proto(
+  constexpr const char kExpected[] = R"pb(
     instructions { vendor_syntax { mnemonic: 'AAA' } }
     instructions {
       vendor_syntax {
@@ -62,13 +61,13 @@ TEST_F(InstructionSetTest, RestrictToMnemonicRange) {
       }
       encoding_scheme: 'NP'
       raw_encoding_specification: '6C'
-    })proto";
+    })pb";
   EXPECT_THAT(instruction_set_, EqualsProto(kExpected));
 }
 
 TEST_F(InstructionSetTest, RestrictToMnemonicRangeNoop) {
   RestrictToMnemonicRange("A", "SCAS", &instruction_set_);
-  constexpr const char kExpected[] = R"proto(
+  constexpr const char kExpected[] = R"pb(
     instructions { vendor_syntax { mnemonic: 'AAA' } }
     instructions {
       vendor_syntax {
@@ -85,13 +84,13 @@ TEST_F(InstructionSetTest, RestrictToMnemonicRangeNoop) {
       }
       encoding_scheme: 'NP'
       raw_encoding_specification: '6C'
-    })proto";
+    })pb";
   EXPECT_THAT(instruction_set_, EqualsProto(kExpected));
 }
 
 TEST_F(InstructionSetTest, RestrictToIndex) {
   RestrictToIndexRange(1, 2, &instruction_set_, nullptr);
-  constexpr const char kExpected[] = R"proto(
+  constexpr const char kExpected[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SCAS'
@@ -100,7 +99,7 @@ TEST_F(InstructionSetTest, RestrictToIndex) {
       encoding_scheme: 'NP'
       raw_encoding_specification: 'AE'
     }
-  )proto";
+  )pb";
   EXPECT_THAT(instruction_set_, EqualsProto(kExpected));
 }
 

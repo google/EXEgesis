@@ -40,14 +40,14 @@ TEST(ExtractLine, no_segment) {
 }
 
 TEST(ExtractLine, one_segment) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"pb(
     characters {
       codepoint: 0x00000049
       utf8: "I"
       font_size: 24.0
       orientation: EAST
       bounding_box: { left: 202.92 top: 165.84 right: 209.328 bottom: 189.84 }
-    })proto");
+    })pb");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 1);
   EXPECT_THAT(page.segments(0).character_indices(), ElementsAreArray({0}));
@@ -57,7 +57,7 @@ TEST(ExtractLine, one_segment) {
 }
 
 TEST(ExtractLine, connect_forward) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"pb(
     number: 1
     width: 612
     height: 792
@@ -82,14 +82,14 @@ TEST(ExtractLine, connect_forward) {
       }
       fill_color_hash: 1
     }
-  )proto");
+  )pb");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 1);
   ASSERT_THAT(page.segments(0).character_indices(), ElementsAreArray({0, 1}));
 }
 
 TEST(ExtractLine, connect_bottom_top) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"pb(
     number: 1
     width: 612
     height: 792
@@ -119,7 +119,7 @@ TEST(ExtractLine, connect_bottom_top) {
       }
       fill_color_hash: 1
     }
-  )proto");
+  )pb");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 1);
   ASSERT_THAT(page.segments(0).character_indices(), ElementsAreArray({0, 1}));
@@ -129,7 +129,7 @@ TEST(ExtractLine, connect_bottom_top) {
 }
 
 TEST(ExtractLine, do_not_connect) {
-  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"proto(
+  PdfPage page = ParseProtoFromStringOrDie<PdfPage>(R"pb(
     number: 1
     width: 612
     height: 792
@@ -154,7 +154,7 @@ TEST(ExtractLine, do_not_connect) {
       }
       fill_color_hash: 1
     }
-  )proto");
+  )pb");
   Cluster(&page);
   ASSERT_EQ(page.segments().size(), 2);
   ASSERT_THAT(page.segments(0).character_indices(), ElementsAreArray({0}));

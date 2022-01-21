@@ -16,10 +16,11 @@
 
 #include <sstream>
 
+#include "absl/flags/flag.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "llvm/MC/MCInstPrinter.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm_sim/x86/constants.h"
 
@@ -149,6 +150,9 @@ class TestMCInstPrinter : public llvm::MCInstPrinter {
       : llvm::MCInstPrinter(*Context.AsmInfo, *Context.InstrInfo,
                             *Context.RegisterInfo) {}
 
+  std::pair<const char *, uint64_t> getMnemonic(const llvm::MCInst *MI) {
+    return std::make_pair("0", 0);
+  }
   void printInst(const llvm::MCInst *MI, uint64_t Addresss,
                  llvm::StringRef Annot, const llvm::MCSubtargetInfo &STI,
                  llvm::raw_ostream &OS) override {

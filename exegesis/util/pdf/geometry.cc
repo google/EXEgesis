@@ -161,6 +161,13 @@ float OverlapRatio(const Span& a, const Span& b) {
   return union_size == 0.0f ? 0.0f : intersection_size / union_size;
 }
 
+float SpaceBetween(const Span& a, const Span& b) {
+  const bool a_is_lower = a.min < b.min;
+  const Span& lower = a_is_lower ? a : b;
+  const Span& upper = a_is_lower ? b : a;
+  return std::max(0.0f, upper.min - lower.max);
+}
+
 Span GetSpan(const BoundingBox& box, const Orientation orientation) {
   const Vec2F direction = GetDirectionVector(orientation);
   CHECK_EQ(direction.norm_square(), 1);

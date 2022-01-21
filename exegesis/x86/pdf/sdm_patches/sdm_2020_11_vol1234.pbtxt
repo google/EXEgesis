@@ -1,25 +1,10 @@
 document_id {
-  title: "Intel\302\256 64 and IA-32 Architectures Software Developers Manual, Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D and 4"
-  creation_date: "D:20181102142930Z"
-  modification_date: "D:20181102150251-07\'00\'"
+  title: "Intel(R) 64 and IA-32 Architectures Software Developer\'s Manual, Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D, and 4"
+  creation_date: "D:20201114183838Z"
+  modification_date: "D:20201116195913Z"
 }
 pages {
-  page_number: 694
-  patches {
-    row: 3
-    col: 2
-    expected: "M"
-    replacement: "D"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: "M"
-    replacement: "D"
-  }
-}
-pages {
-  page_number: 829
+  page_number: 861
   patches {
     row: 5
     expected: "VEX.LIG.F2.0F.W0 2D /r 1\nVCVTSD2SI r32, xmm1/m64"
@@ -32,7 +17,7 @@ pages {
   }
 }
 pages {
-  page_number: 839
+  page_number: 871
   patches {
     row: 5
     expected: "VEX.LIG.F3.0F.W0 2D /r 1\nVCVTSS2SI r32, xmm1/m32"
@@ -45,7 +30,7 @@ pages {
   }
 }
 pages {
-  page_number: 850
+  page_number: 882
   patches {
     row: 5
     expected: "VEX.LIG.F2.0F.W0 2C /r 1\nVCVTTSD2SI r32, xmm1/m64"
@@ -58,7 +43,7 @@ pages {
   }
 }
 pages {
-  page_number: 852
+  page_number: 884
   patches {
     row: 5
     expected: "VEX.LIG.F3.0F.W0 2C /r 1\nVCVTTSS2SI r32, xmm1/m32"
@@ -71,7 +56,7 @@ pages {
   }
 }
 pages {
-  page_number: 883
+  page_number: 917
   patches {
     row: 3
     col: 2
@@ -80,52 +65,7 @@ pages {
   }
 }
 pages {
-  page_number: 965
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTCW*"
-    replacement: "FNSTCW m2byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 967
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTENV*"
-    replacement: "FNSTENV m14/28byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m14/28byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 969
-  patches {
-    row: 5
-    col: 1
-    expected: "FNSTSW*"
-    replacement: "FNSTSW m2byte"
-  }
-  patches {
-    row: 5
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 1001
+  page_number: 1035
   patches {
     row: 1
     expected: "FYL2XP1-Compute y \342\210\227 log2"
@@ -139,7 +79,7 @@ pages {
   }
 }
 pages {
-  page_number: 1023
+  page_number: 1064
   patches {
     row: 11
     col: 1
@@ -154,7 +94,7 @@ pages {
   }
 }
 pages {
-  page_number: 1065
+  page_number: 1112
   patches {
     row: 11
     col: 2
@@ -175,7 +115,7 @@ pages {
   }
 }
 pages {
-  page_number: 1073
+  page_number: 1121
   patches {
     row: 3
     expected: "VEX.L1.0F.W0 4A /r \nKADDW k1, k2, k3"
@@ -198,7 +138,7 @@ pages {
   }
 }
 pages {
-  page_number: 1074
+  page_number: 1122
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 41 /r \nKANDB k1, k2, k3"
@@ -216,7 +156,7 @@ pages {
   }
 }
 pages {
-  page_number: 1075
+  page_number: 1123
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
@@ -234,7 +174,7 @@ pages {
   }
 }
 pages {
-  page_number: 1079
+  page_number: 1127
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
@@ -252,7 +192,7 @@ pages {
   }
 }
 pages {
-  page_number: 1089
+  page_number: 1137
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
@@ -270,7 +210,7 @@ pages {
   }
 }
 pages {
-  page_number: 1090
+  page_number: 1138
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
@@ -288,7 +228,22 @@ pages {
   }
 }
 pages {
-  page_number: 1183
+  page_number: 1216
+  patches {
+    row: 5
+    col: 5
+    expected: "1"
+    remove_cell: true
+  }
+  patches {
+    row: 8
+    col: 5
+    expected: "1"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 1232
   patches {
     row: 11
     expected: "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
@@ -296,7 +251,7 @@ pages {
   }
 }
 pages {
-  page_number: 1195
+  page_number: 1248
   patches {
     row: 21
     expected: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
@@ -304,7 +259,7 @@ pages {
   }
 }
 pages {
-  page_number: 1212
+  page_number: 1265
   patches {
     row: 12
     col: 2
@@ -313,7 +268,7 @@ pages {
   }
 }
 pages {
-  page_number: 1284
+  page_number: 1338
   patches {
     row: 7
     col: 4
@@ -322,7 +277,7 @@ pages {
   }
 }
 pages {
-  page_number: 1343
+  page_number: 1397
   patches {
     row: 7
     expected: "VEX.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
@@ -330,7 +285,7 @@ pages {
   }
 }
 pages {
-  page_number: 1477
+  page_number: 1531
   patches {
     row: 14
     expected: "VEX.128.66.0F 38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
@@ -338,7 +293,7 @@ pages {
   }
 }
 pages {
-  page_number: 1478
+  page_number: 1532
   patches {
     row: 2
     expected: "EVEX.128.66.0F38 30.WIG /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
@@ -346,7 +301,7 @@ pages {
   }
 }
 pages {
-  page_number: 1530
+  page_number: 1584
   patches {
     row: 3
     col: 1
@@ -355,7 +310,7 @@ pages {
   }
 }
 pages {
-  page_number: 1613
+  page_number: 1667
   patches {
     row: 2
     col: 3
@@ -364,30 +319,31 @@ pages {
   }
 }
 pages {
-  page_number: 1729
+  page_number: 1773
   patches {
     row: 3
-    col: 1
-    expected: "RM0"
-    replacement: "RMI"
+    expected: "F3 0F 01 EA (mod!=11, /5, \nRM=010)\nSAVEPREVSSP"
+    replacement: "F3 0F 01 EA\nSAVEPREVSSP"
   }
 }
 pages {
-  page_number: 1801
+  page_number: 1870
   patches {
     row: 3
-    expected: "A8"
-    replacement: "A8 ib"
-  }
-  patches {
-    row: 3
-    col: 1
-    expected: "ib"
-    remove_cell: true
+    expected: "66 0F AE /6\nTPAUSE r32, <edx>, <eax>"
+    replacement: "66 0F AE /6\nTPAUSE r32"
   }
 }
 pages {
-  page_number: 1884
+  page_number: 1881
+  patches {
+    row: 3
+    expected: "F2 0F AE /6\nUMWAIT r32, <edx>, <eax>"
+    replacement: "F2 0F AE /6\nUMWAIT r32"
+  }
+}
+pages {
+  page_number: 1960
   patches {
     row: 4
     expected: "EVEX.256.0F.W1 78 02 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
@@ -395,7 +351,7 @@ pages {
   }
 }
 pages {
-  page_number: 2150
+  page_number: 2230
   patches {
     row: 8
     expected: "VPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
@@ -403,7 +359,7 @@ pages {
   }
 }
 pages {
-  page_number: 2182
+  page_number: 2273
   patches {
     row: 12
     expected: "EVEX.512.66.0F3A.W0 04 /r \nibVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
@@ -411,7 +367,7 @@ pages {
   }
 }
 pages {
-  page_number: 2190
+  page_number: 2281
   patches {
     row: 3
     expected: "VEX.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
@@ -419,7 +375,7 @@ pages {
   }
 }
 pages {
-  page_number: 2328
+  page_number: 2438
   patches {
     row: 3
     expected: "EVEX.LIG.66.0F3A.W1 57\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
@@ -427,7 +383,7 @@ pages {
   }
 }
 pages {
-  page_number: 2332
+  page_number: 2442
   patches {
     row: 3
     expected: "EVEX.LIG.66.0F3A.W0 57 /r \n/ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
@@ -435,7 +391,7 @@ pages {
   }
 }
 pages {
-  page_number: 2396
+  page_number: 2513
   patches {
     row: 3
     col: 2
@@ -502,7 +458,7 @@ pages {
   }
 }
 pages {
-  page_number: 2484
+  page_number: 2600
   patches {
     row: 3
     expected: "EVEX.LLIG.F2.0F38.W0 9B /r\nV4FMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
@@ -512,5 +468,35 @@ pages {
     row: 4
     expected: "EVEX.LLIG.F2.0F38.W0 AB /r\nV4FNMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
     replacement: "EVEX.DDS.LIG.F2.0F38.W0 AB /r\nV4FNMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
+  }
+}
+pages {
+  page_number: 4425
+  patches {
+    row: 6
+    col: 3
+    expected: "Address of the destination EPC page \n(In, EA)"
+    replacement: "Address of the destination EPC page (In, EA); Address of the SECS page (In, EA)"
+  }
+  patches {
+    row: 6
+    col: 4
+    expected: "Address of the SECS page (In, EA)"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 4444
+  patches {
+    row: 6
+    col: 4
+    expected: "Address of AEP (In)"
+    replacement: "Address of AEP (In); Address of IP following EENTER (Out)"
+  }
+  patches {
+    row: 6
+    col: 5
+    expected: "Address of IP following \nEENTER (Out)"
+    remove_cell: true
   }
 }

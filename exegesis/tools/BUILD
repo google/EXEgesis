@@ -130,6 +130,7 @@ cc_binary(
         "//exegesis/util/pdf:xpdf_util",
         "//util/gtl:map_util",
         "@com_github_glog_glog//:glog",
+        "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/flags:flag",

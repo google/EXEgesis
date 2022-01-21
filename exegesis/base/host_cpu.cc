@@ -25,6 +25,8 @@ namespace {
 CpuIdDumpProto GetHostCpuIdDumpOrDie() {
 #ifdef __x86_64__
   const x86::CpuIdDump dump = x86::CpuIdDump::FromHost();
+  // NOTE(ondrasej): The CPUID instruction is available on all x86-64 CPUs, and
+  // the following CHECK() should never fail under normal circumstances.
   CHECK(dump.IsValid());
   return dump.dump_proto();
 #else

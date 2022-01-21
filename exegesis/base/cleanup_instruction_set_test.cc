@@ -46,7 +46,7 @@ TEST(GetDefaultTransformPipelineTest, ReturnedVectorIsNotEmpty) {
 }
 
 TEST(RunTransformWithDiffTest, NoDifference) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FMUL'
@@ -55,7 +55,7 @@ TEST(RunTransformWithDiffTest, NoDifference) {
       }
       feature_name: 'X87'
       raw_encoding_specification: 'D8 C8+i'
-    })proto";
+    })pb";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -76,7 +76,7 @@ absl::Status DeleteSecondInstruction(InstructionSetProto* instruction_set) {
 }
 
 TEST(RunTransformWithDiffTest, WithDifference) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SCAS'
@@ -102,7 +102,7 @@ TEST(RunTransformWithDiffTest, WithDifference) {
       }
       encoding_scheme: 'NP'
       raw_encoding_specification: '6D'
-    })proto";
+    })pb";
   constexpr char kExpectedDiff[] =
       "deleted: instructions[1]: { vendor_syntax { mnemonic: \"INS\" operands "
       "{ name: \"m8\" } operands { name: \"DX\" } } encoding_scheme: \"NP\" "
@@ -121,7 +121,7 @@ absl::Status ReturnErrorInsteadOfTransforming(
 }
 
 TEST(RunTransformWithDiffTest, WithError) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FMUL'
@@ -130,7 +130,7 @@ TEST(RunTransformWithDiffTest, WithError) {
       }
       feature_name: 'X87'
       raw_encoding_specification: 'D8 C8+i'
-    })proto";
+    })pb";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -140,7 +140,7 @@ TEST(RunTransformWithDiffTest, WithError) {
 }
 
 TEST(SortByVendorSyntaxTest, Sort) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SCAS'
@@ -271,8 +271,8 @@ TEST(SortByVendorSyntaxTest, Sort) {
           }
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "ENCLS" }
       available_in_64_bit: true
@@ -403,7 +403,7 @@ TEST(SortByVendorSyntaxTest, Sort) {
         operands { name: "zmm2" }
         operands { name: "zmm3" }
       }
-    })proto";
+    })pb";
   TestTransform(SortByVendorSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

@@ -29,7 +29,7 @@ using ::exegesis::testing::StatusIs;
 using ::testing::HasSubstr;
 
 TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VPCMPEQQ'
@@ -65,8 +65,8 @@ TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
         operands { name: 'ymm3/m256' }
       }
       raw_encoding_specification: 'VEX.NDS.256.66.0F38.WIG 29 /r'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VPCMPEQQ'
@@ -84,13 +84,13 @@ TEST(RemoveDuplicateInstructionsTest, RemoveThem) {
         operands { name: 'ymm3/m256' }
       }
       raw_encoding_specification: 'VEX.NDS.256.66.0F38.WIG 29 /r'
-    })proto";
+    })pb";
   TestTransform(RemoveDuplicateInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveDuplicateInstructionsTest, NoRemoval) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VPCMPEQQ'
@@ -108,13 +108,13 @@ TEST(RemoveDuplicateInstructionsTest, NoRemoval) {
         operands { name: 'xmm3/m128' }
       }
       raw_encoding_specification: 'VEX.NDS.128.66.0F38.WIG 29 /r'
-    })proto";
+    })pb";
   TestTransform(RemoveDuplicateInstructions, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroups) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'AAA' }
       instruction_group_index: 2
@@ -135,9 +135,9 @@ TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroups) {
     instruction_groups { name: 'GROUP_C' description: 'No instructions' }
     instruction_groups { name: 'GROUP_B' description: 'Non-empty, should be 1' }
     instruction_groups { name: 'GROUP_A' description: 'Non-empty, should be 0' }
-  )proto";
+  )pb";
 
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'AAA' }
       instruction_group_index: 1
@@ -157,14 +157,14 @@ TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroups) {
     instruction_groups { name: 'GROUP_A' description: 'Non-empty, should be 0' }
     instruction_groups { name: 'GROUP_B' description: 'Non-empty, should be 1' }
     instruction_groups { name: 'GROUP_D' description: 'Non-empty, should be 2' }
-  )proto";
+  )pb";
 
   TestTransform(RemoveEmptyInstructionGroups, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroupsSameName) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'AAA' }
       instruction_group_index: 2
@@ -194,9 +194,9 @@ TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroupsSameName) {
       name: 'GROUP'
       short_description: 'Non-empty, should be 0'
     }
-  )proto";
+  )pb";
 
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'AAA' }
       instruction_group_index: 1
@@ -225,14 +225,14 @@ TEST(RemoveEmptyInstructionGroupsTest, RemoveAndResortGroupsSameName) {
       name: 'GROUP'
       short_description: 'Non-empty, should be 2'
     }
-  )proto";
+  )pb";
 
   TestTransform(RemoveEmptyInstructionGroups, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveEmptyInstructionGroupsTest, NoRemoval) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'AAA' }
       instruction_group_index: 2
@@ -252,14 +252,14 @@ TEST(RemoveEmptyInstructionGroupsTest, NoRemoval) {
     instruction_groups { name: 'GROUP_0' description: 'Has some instructions' }
     instruction_groups { name: 'GROUP_1' description: 'Has some instructions' }
     instruction_groups { name: 'GROUP_2' description: 'Has some instructions' }
-  )proto";
+  )pb";
 
   TestTransform(RemoveEmptyInstructionGroups, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 TEST(RemoveLegacyVersionsOfInstructionsTest, RemoveSomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "LEAVE" }
       syntax { mnemonic: "leave" }
@@ -293,8 +293,8 @@ TEST(RemoveLegacyVersionsOfInstructionsTest, RemoveSomeInstructions) {
         }
       }
     }
-  )proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+  )pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "LEAVE" }
       syntax { mnemonic: "leave" }
@@ -311,13 +311,13 @@ TEST(RemoveLegacyVersionsOfInstructionsTest, RemoveSomeInstructions) {
         }
       }
     }
-  )proto";
+  )pb";
   TestTransform(RemoveLegacyVersionsOfInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveInstructionsWaitingForFpuSyncTest, RemoveSomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'FCHS' }
       raw_encoding_specification: 'D9 E0'
@@ -336,8 +336,8 @@ TEST(RemoveInstructionsWaitingForFpuSyncTest, RemoveSomeInstructions) {
         operands { name: 'm108byte' }
       }
       raw_encoding_specification: 'DD /6'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'FCHS' }
       raw_encoding_specification: 'D9 E0'
@@ -352,13 +352,13 @@ TEST(RemoveInstructionsWaitingForFpuSyncTest, RemoveSomeInstructions) {
         operands { name: 'm108byte' }
       }
       raw_encoding_specification: 'DD /6'
-    })proto";
+    })pb";
   TestTransform(RemoveInstructionsWaitingForFpuSync, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveRepAndRepneInstructionsTest, RemoveSomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'REP STOS'
@@ -399,8 +399,8 @@ TEST(RemoveRepAndRepneInstructionsTest, RemoveSomeInstructions) {
     instructions {
       vendor_syntax { mnemonic: 'CMPSB' }
       raw_encoding_specification: 'A6'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SCAS'
@@ -418,13 +418,13 @@ TEST(RemoveRepAndRepneInstructionsTest, RemoveSomeInstructions) {
     instructions {
       vendor_syntax { mnemonic: 'CMPSB' }
       raw_encoding_specification: 'A6'
-    })proto";
+    })pb";
   TestTransform(RemoveRepAndRepneInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'AAS' }
       available_in_64_bit: false
@@ -451,8 +451,8 @@ TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
       }
       available_in_64_bit: false
       raw_encoding_specification: '66 48+rw'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'CALL'
@@ -466,13 +466,13 @@ TEST(RemoveNonEncodableInstructionsTest, RemoveSomeInstructions) {
       vendor_syntax { mnemonic: 'CLTS' }
       raw_encoding_specification: '0F 06'
       available_in_64_bit: true
-    })proto";
+    })pb";
   TestTransform(RemoveNonEncodableInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FUCOM'
@@ -506,8 +506,8 @@ TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
     instructions {
       vendor_syntax { mnemonic: 'FADDP' }
       raw_encoding_specification: 'DE C1'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FUCOM'
@@ -529,13 +529,13 @@ TEST(RemoveSpecialCaseInstructionsTest, RemoveSomeInstructions) {
         operands { name: 'ST(i)' }
       }
       raw_encoding_specification: 'DD C0+i'
-    })proto";
+    })pb";
   TestTransform(RemoveSpecialCaseInstructions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveDuplicateInstructionsWithRexPrefixTest, RemoveSomeInstructions) {
-  const char kInstructionSetProto[] = R"proto(
+  const char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADC"
@@ -561,8 +561,8 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, RemoveSomeInstructions) {
       }
       raw_encoding_specification: "REX + 80 /2 ib"
       instruction_group_index: 4
-    })proto";
-  const char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  const char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADC"
@@ -579,14 +579,14 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, RemoveSomeInstructions) {
         operands { name: "imm8" }
       }
       raw_encoding_specification: "80 /2 ib"
-    })proto";
+    })pb";
   TestTransform(RemoveDuplicateInstructionsWithRexPrefix, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
   constexpr const char* kInstructionSets[] = {
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "LSS"
@@ -604,8 +604,8 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
           }
           raw_encoding_specification: "REX + 0F B2 /r"
           instruction_group_index: 197
-        })proto",
-      R"proto(
+        })pb",
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "ADC"
@@ -614,7 +614,7 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
           }
           raw_encoding_specification: "REX + 80 /2 ib"
           instruction_group_index: 4
-        })proto"};
+        })pb"};
   for (const char* const instruction_set_source : kInstructionSets) {
     SCOPED_TRACE(instruction_set_source);
     InstructionSetProto instruction_set =
@@ -625,7 +625,7 @@ TEST(RemoveDuplicateInstructionsWithRexPrefixTest, FailsIfNotDuplicate) {
 }
 
 TEST(RemoveDuplicateMovFromSRegTest, Remove) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADC"
@@ -666,8 +666,8 @@ TEST(RemoveDuplicateMovFromSRegTest, Remove) {
         operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
       }
       raw_encoding_specification: "REX.W + 8C /r"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADC"
@@ -692,14 +692,14 @@ TEST(RemoveDuplicateMovFromSRegTest, Remove) {
         operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
       }
       raw_encoding_specification: "REX.W + 8C /r"
-    })proto";
+    })pb";
   TestTransform(RemoveDuplicateMovFromSReg, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveDuplicateMovFromSRegTest, FailsWhenNotDuplicate) {
   InstructionSetProto instruction_set =
-      ParseProtoFromStringOrDie<InstructionSetProto>(R"proto(
+      ParseProtoFromStringOrDie<InstructionSetProto>(R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "ADC"
@@ -716,20 +716,20 @@ TEST(RemoveDuplicateMovFromSRegTest, FailsWhenNotDuplicate) {
             operands { name: "Sreg" register_class: SPECIAL_REGISTER_SEGMENT }
           }
           raw_encoding_specification: "REX.W + 8C /r"
-        })proto");
+        })pb");
   EXPECT_THAT(
       RemoveDuplicateMovFromSReg(&instruction_set),
       StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr("was not found")));
 }
 
 TEST(RemoveX87InstructionsWithGeneralVersionsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions { raw_encoding_specification: "D8 D0+i" }
     instructions { raw_encoding_specification: "D8 D1" }
-    instructions { raw_encoding_specification: "D8 /2" })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "D8 /2" })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions { raw_encoding_specification: "D8 D0+i" }
-    instructions { raw_encoding_specification: "D8 /2" })proto";
+    instructions { raw_encoding_specification: "D8 /2" })pb";
   TestTransform(RemoveX87InstructionsWithGeneralVersions, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

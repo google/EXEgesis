@@ -73,8 +73,6 @@ void JitCompiler::Init() {
   initialized_ = true;
   EnsureLLVMWasInitialized();
   context_.reset(new llvm::LLVMContext());
-  context_->setInlineAsmDiagnosticHandler(
-      &JitCompiler::HandleInlineAsmDiagnostic, this);
   context_->setDiagnosticHandlerCallBack(&JitCompiler::HandleDiagnostic, this,
                                          /*RespectFilters=*/true);
   module_ = new llvm::Module("Temp Module for JIT", *context_);
@@ -295,15 +293,6 @@ void JitCompiler::HandleDiagnostic(const llvm::DiagnosticInfo& diagnostic,
       error_message_ostream);
   diagnostic.print(error_message_printer);
   self->compile_errors_.push_back(error_message);
-}
-
-void JitCompiler::HandleInlineAsmDiagnostic(
-    const llvm::SMDiagnostic& diagnostic, void* context, unsigned loc_cookie) {
-  JitCompiler* const self = static_cast<JitCompiler*>(context);
-  std::string error_message;
-  llvm::raw_string_ostream error_message_ostream(error_message);
-  diagnostic.print(nullptr, error_message_ostream);
-  self->compile_errors_.push_back(error_message_ostream.str());
 }
 
 }  // namespace exegesis

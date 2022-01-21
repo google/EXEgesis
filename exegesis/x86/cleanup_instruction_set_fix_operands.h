@@ -122,12 +122,13 @@ absl::Status FixRegOperands(InstructionSetProto* instruction_set);
 // Note that this transform depends on the results of RenameOperands.
 absl::Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set);
 
-// Removes the implicit xmm0 operand. The operand is added automatically by the
-// LLVM assembler, but it is encoded neither in the ModR/M byte nor in the
-// opcode of the instruction (using the "+i" encoding), and it does not appear
-// in the LLVM disassembly. The Intel manual uses a special name <XMM0> for the
-// implicit use of the operand, and this transform matches it only by its name.
-absl::Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set);
+// Removes the implicit operands that are specified as <operand-name> in the
+// SDM. These operands are added automatically by the LLVM assembler, but they
+// are encoded neither in the ModR/M byte nor in the opcode of the instruction
+// (using the "+i" encoding), and they do not appear in the LLVM disassembly.
+// Since the Intel SDM uses the <> notation only in this case, we match the
+// operands by name.
+absl::Status RemoveImplicitOperands(InstructionSetProto* instruction_set);
 
 // Inspects the operands of the instructions and renames them so that the names
 // are consistent across types of operands. All of these renamings are either

@@ -1,14 +1,14 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # ===== Abseil =====
 
 http_archive(
     name = "com_google_absl",
-    sha256 = "38f5113dff685ddfd3bf53d1473a18dfcfe8de89ee7c9b3708e3a070274c6b38",
-    strip_prefix = "abseil-cpp-e63a5a61045e516b7b3dbca090e2b9ff1d057e46",
+    sha256 = "a4567ff02faca671b95e31d315bab18b42b6c6f1a60e91c6ea84e5a2142112c2",
+    strip_prefix = "abseil-cpp-20211102.0",
     urls = [
-        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/e63a5a61045e516b7b3dbca090e2b9ff1d057e46.tar.gz",
-        "https://github.com/abseil/abseil-cpp/archive/e63a5a61045e516b7b3dbca090e2b9ff1d057e46.tar.gz",
+        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.zip",
+        "https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.zip",
     ],
 )
 
@@ -21,13 +21,15 @@ http_archive(
 
 # ===== re2 =====
 
+# NOTE(ondrasej): The commit for the RE2 library must be taken from the Abseil
+# branch so that RE2 works correctly with absl::string_view.
 http_archive(
     name = "com_googlesource_code_re2",
-    sha256 = "5306526bcdf35ff34c67913bef8f7b15a3960f4f0ab3a2b6a260af4f766902d4",
-    strip_prefix = "re2-c4f65071cc07eb34d264b25f7b9bbb679c4d5a5a",
+    sha256 = "fb002599c6620611368933083b4cff031a32c8a98638877fe097f56142646ba9",
+    strip_prefix = "re2-e8cb5ecb8ee1066611aa937a42fa10514edf30fb",
     urls = [
-        "https://mirror.bazel.build/github.com/google/re2/archive/c4f65071cc07eb34d264b25f7b9bbb679c4d5a5a.tar.gz",
-        "https://github.com/google/re2/archive/c4f65071cc07eb34d264b25f7b9bbb679c4d5a5a.tar.gz",
+        "https://mirror.bazel.build/github.com/google/re2/archive/e8cb5ecb8ee1066611aa937a42fa10514edf30fb.zip",
+        "https://github.com/google/re2/archive/e8cb5ecb8ee1066611aa937a42fa10514edf30fb.zip",
     ],
 )
 
@@ -36,34 +38,62 @@ http_archive(
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "2ddbc2f0c30e8f9ee7cc8281707859827c143a1dc088f74d38aca66fe6b664a2",
-    strip_prefix = "protobuf-93a18cf2be6d590d23f34757a32133306e290ca9",
+    strip_prefix = "protobuf-3.19.3",
+    sha256 = "6b6bf5cd8d0cca442745c4c3c9f527c83ad6ef35a405f64db5215889ac779b42",
     urls = [
-        "https://mirror.bazel.build/github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
-        "https://github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
+        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/refs/tags/v3.19.3.zip",
+        "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.19.3.zip",
     ],
 )
-
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
-protobuf_deps()
 
 http_archive(
     name = "com_google_protobuf_cc",
-    sha256 = "2ddbc2f0c30e8f9ee7cc8281707859827c143a1dc088f74d38aca66fe6b664a2",
-    strip_prefix = "protobuf-93a18cf2be6d590d23f34757a32133306e290ca9",
+    strip_prefix = "protobuf-3.19.3",
+    sha256 = "6b6bf5cd8d0cca442745c4c3c9f527c83ad6ef35a405f64db5215889ac779b42",
     urls = [
-        "https://mirror.bazel.build/github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
-        "https://github.com/google/protobuf/archive/93a18cf2be6d590d23f34757a32133306e290ca9.tar.gz",
+        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/refs/tags/v3.19.3.zip",
+        "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.19.3.zip",
     ],
 )
 
-# Required by protobuf.
+http_archive(
+    name = "rules_cc",
+    sha256 = "08f3b5c25eba2f7fb51db25692c2b9df6c557e0d8084bd8dc5e936d239f7641d",
+    strip_prefix = "rules_cc-22532c537959149599e79df29808176345784cc1",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_cc/archive/22532c537959149599e79df29808176345784cc1.tar.gz",
+        "https://github.com/bazelbuild/rules_cc/archive/22532c537959149599e79df29808176345784cc1.tar.gz",
+    ],
+)
+
+# rules_proto defines abstract rules for building Protocol Buffers.
+http_archive(
+    name = "rules_proto",
+    sha256 = "20b240eba17a36be4b0b22635aca63053913d5c1ee36e16be36499d167a2f533",
+    strip_prefix = "rules_proto-11bf7c25e666dd7ddacbcd4d4c4a9de7a25175f8",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_proto/archive/11bf7c25e666dd7ddacbcd4d4c4a9de7a25175f8.tar.gz",
+        "https://github.com/bazelbuild/rules_proto/archive/11bf7c25e666dd7ddacbcd4d4c4a9de7a25175f8.tar.gz",
+    ],
+)
+
 http_archive(
     name = "bazel_skylib",
-    sha256 = "bbccf674aa441c266df9894182d80de104cabd19be98be002f6d478aaa31574d",
-    strip_prefix = "bazel-skylib-2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
-    urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2169ae1c374aab4a09aa90e65efe1a3aad4e279b.tar.gz"],
+    sha256 = "fc64d71583f383157e3e5317d24e789f942bc83c76fde7e5981cadc097a3c3cc",
+    strip_prefix = "bazel-skylib-1.1.1",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/archive/refs/tags/1.1.1.zip",
+        "https://github.com/bazelbuild/bazel-skylib/archive/refs/tags/1.1.1.zip",
+    ],
 )
+
+load("@rules_cc//cc:repositories.bzl", "rules_cc_dependencies", "rules_cc_toolchains")
+rules_cc_dependencies()
+rules_cc_toolchains()
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+rules_proto_dependencies()
+rules_proto_toolchains()
 
 # ===== googletest =====
 
@@ -179,23 +209,28 @@ http_archive(
 http_archive(
     name = "llvm_git",
     build_file = "@//:llvm.BUILD",
-    sha256 = "95b3a609cc0db719ea19daed2689a770f97aea974a3d2cf70468d3b067e8b068",
-    strip_prefix = "llvm-project-c10248829357fd90030ba091e01b6c253e5848f1/llvm",
+    sha256 = "a84450dd5c585c69ccf82e6e1e877d689bc9366221b955e2b2c8f02a47a4639a",
+    strip_prefix = "llvm-project-579c4921c0105698617cc1e1b86a9ecf3b4717ce/llvm",
     urls = [
         # Please don't refactor out the SHA; if URLs aren't greppable,
         # we can't offer you an asynchronous mirroring service that
         # allows this huge archive to download in one second.
-        "https://mirror.bazel.build/github.com/llvm/llvm-project/archive/c10248829357fd90030ba091e01b6c253e5848f1.tar.gz",
-        "https://github.com/llvm/llvm-project/archive/c10248829357fd90030ba091e01b6c253e5848f1.tar.gz",
+        "https://mirror.bazel.build/github.com/llvm/llvm-project/archive/579c4921c0105698617cc1e1b86a9ecf3b4717ce.tar.gz",
+        "https://github.com/llvm/llvm-project/archive/579c4921c0105698617cc1e1b86a9ecf3b4717ce.tar.gz",
     ],
 )
 
-# ===== Intel SDM =====
-
-http_file(
-    name = "intel_sdm_pdf",
-    sha256 = "2b16c29d13aca1b98ea61f72ca0123649334564f90472db10067957b229e0dae",
-    urls = ["https://software.intel.com/content/dam/develop/public/us/en/documents/325462-sdm-vol-1-2abcd-3abcd.pdf"],
+http_archive(
+    name = "llvm_git_bazel_overlay",
+    sha256 = "a84450dd5c585c69ccf82e6e1e877d689bc9366221b955e2b2c8f02a47a4639a",
+    strip_prefix = "llvm-project-579c4921c0105698617cc1e1b86a9ecf3b4717ce/utils/bazel/llvm-project-overlay/llvm",
+    urls = [
+        # Please don't refactor out the SHA; if URLs aren't greppable,
+        # we can't offer you an asynchronous mirroring service that
+        # allows this huge archive to download in one second.
+        "https://mirror.bazel.build/github.com/llvm/llvm-project/archive/579c4921c0105698617cc1e1b86a9ecf3b4717ce.tar.gz",
+        "https://github.com/llvm/llvm-project/archive/579c4921c0105698617cc1e1b86a9ecf3b4717ce.tar.gz",
+    ],
 )
 
 # ==============================================================================

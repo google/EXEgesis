@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <map>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -276,8 +277,9 @@ bool RewritePatch(const absl::flat_hash_map<size_t, size_t>& block_mapping,
 
 // Takes a mapping from pages to PdfPagePatch and write it as a
 // PdfDocumentChanges.
-void SetPatches(const std::map<size_t, std::vector<PdfPagePatch>>& page_patches,
-                const PdfDocumentId& document_id, PdfDocumentChanges* patches) {
+void SetPatches(
+    const absl::btree_map<size_t, std::vector<PdfPagePatch>>& page_patches,
+    const PdfDocumentId& document_id, PdfDocumentChanges* patches) {
   *patches->mutable_document_id() = document_id;
   for (const auto& page_patch_pair : page_patches) {
     auto* page_patch = patches->add_pages();
@@ -405,8 +407,8 @@ void TransferPatches(const PdfDocumentChanges& changes, const PdfDocument& from,
   LOG(INFO) << "Finding text block matches";
   const auto block_mapping = GetBlockMapping(index_in.hashes, index_out.hashes);
   LOG(INFO) << "Processing patches";
-  std::map<size_t, std::vector<PdfPagePatch>> successful_page_patches;
-  std::map<size_t, std::vector<PdfPagePatch>> failed_page_patches;
+  absl::btree_map<size_t, std::vector<PdfPagePatch>> successful_page_patches;
+  absl::btree_map<size_t, std::vector<PdfPagePatch>> failed_page_patches;
   for (const auto& page_changes : changes.pages()) {
     const size_t patch_in_page = page_changes.page_number();
     for (const auto& patch : page_changes.patches()) {

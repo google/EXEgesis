@@ -14,6 +14,7 @@
 
 #include "exegesis/x86/pdf/intel_sdm_extractor.h"
 
+#include "absl/flags/flag.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
 #include "exegesis/util/pdf/pdf_document_parser.h"

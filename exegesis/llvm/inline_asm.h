@@ -129,8 +129,6 @@ class JitCompiler {
 
   static void HandleDiagnostic(const llvm::DiagnosticInfo& diagnostic,
                                void* context);
-  static void HandleInlineAsmDiagnostic(const llvm::SMDiagnostic& diagnostic,
-                                        void* context, unsigned loc_cookie);
 
   const std::string mcpu_;
 

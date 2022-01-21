@@ -19,8 +19,10 @@
 #include <cmath>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
@@ -31,7 +33,7 @@
 #include "util/graph/connected_components.h"
 #include "util/gtl/map_util.h"
 
-ABSL_FLAG(double, exegesis_pdf_max_character_distance, 0.9,
+ABSL_FLAG(double, exegesis_pdf_max_character_distance, 0.5,
           "The maximal distance of two characters to be considered part of "
           "the same cell. The value is a multiplier; the real distance is "
           "obtained by multiplying the font size with this coefficient.");
@@ -111,7 +113,7 @@ class Characters {
 };
 
 std::vector<Indices> GetClusters(DenseConnectedComponentsFinder* finder) {
-  std::map<int, Indices> all_indices;
+  absl::btree_map<int, Indices> all_indices;
   const std::vector<int> component_ids = finder->GetComponentIds();
   for (size_t i = 0; i < component_ids.size(); ++i) {
     all_indices[component_ids[i]].push_back(i);
@@ -129,24 +131,33 @@ std::vector<Indices> GetClusters(DenseConnectedComponentsFinder* finder) {
 void ClusterCharacters(const Characters& all, PdfTextSegments* segments) {
   // Returns FLT_MAX if characters[b] is not on the same line, backward or too
   // far away from characters[a].
-  const auto GetCharacterDistance = [&all](size_t index_a,
-                                           size_t index_b) -> float {
+  const auto GetCharacterSpacing = [&all](size_t index_a,
+                                          size_t index_b) -> float {
     const auto& a = all.Get(index_a);
     const auto& b = all.Get(index_b);
     const bool same_orientation = a.orientation() == b.orientation();
+    if (!same_orientation) return FLT_MAX;
     const Vec2F a2b = GetVector(a, b);
     const float forward_distance = a2b.dot_product(GetForwardDirection(a));
     const float sideways_distance = a2b.dot_product(GetSidewaysDirection(a));
     const bool same_line = fabs(forward_distance) > fabs(sideways_distance);
-    const bool within_distance =
+    if (!same_line) return FLT_MAX;
+
+    // Compute the space between the bounding boxes of the two characters. This
+    // is more reliable than the distance of the centers of the characters,
+    // because it is not affected by the width of the characters when a
+    // proportional font is used.
+    const auto a_span = GetSpan(a.bounding_box(), a.orientation());
+    const auto b_span = GetSpan(b.bounding_box(), b.orientation());
+    const float spacing = SpaceBetween(a_span, b_span);
+
+    const bool within_spacing =
         forward_distance > 0 &&
-        forward_distance <
-            absl::GetFlag(FLAGS_exegesis_pdf_max_character_distance) *
-                a.font_size();
-    if (same_line && same_orientation && within_distance) {
-      return forward_distance;
-    }
-    return FLT_MAX;
+        spacing < absl::GetFlag(FLAGS_exegesis_pdf_max_character_distance) *
+                      a.font_size();
+    if (!within_spacing) return FLT_MAX;
+
+    return forward_distance;
   };
 
   DenseConnectedComponentsFinder components;
@@ -157,10 +168,10 @@ void ClusterCharacters(const Characters& all, PdfTextSegments* segments) {
     float min_distance = FLT_MAX;
     size_t candidate_index = 0;
     for (size_t j : all.GetCandidates(i)) {
-      const float distance = GetCharacterDistance(i, j);
-      if (distance < min_distance) {
+      const float spacing = GetCharacterSpacing(i, j);
+      if (spacing < min_distance) {
         candidate_index = j;
-        min_distance = distance;
+        min_distance = spacing;
       }
     }
     if (min_distance < FLT_MAX) {
@@ -195,7 +206,7 @@ void ClusterCharacters(const Characters& all, PdfTextSegments* segments) {
       Union(character.bounding_box(), bounding_box);
     }
     if (!segment.text().empty()) {
-      segment.Swap(segments->Add());
+      segments->Add(std::move(segment));
     }
   }
 }
@@ -348,7 +359,7 @@ void ClusterSegments(Segments* segments, PdfTextBlocks* blocks) {
       text->append(segment.text());
       Union(segment.bounding_box(), bounding_box);
     }
-    block.Swap(blocks->Add());
+    blocks->Add(std::move(block));
   }
 }
 
@@ -430,7 +441,7 @@ void ClusterColumns(const Blocks& row_blocks, PdfTextBlocks* output) {
     }
     // Removing trailing whitespace.
     while (!text->empty() && std::isspace(text->back())) text->pop_back();
-    output_block.Swap(output->Add());
+    output->Add(std::move(output_block));
   }
 }
 
@@ -487,7 +498,7 @@ void ClusterRows(const Blocks& page_blocks, PdfTextTableRows* rows) {
       }
       Union(block.bounding_box(), bounding_box);
     }
-    row.Swap(rows->Add());
+    rows->Add(std::move(row));
   }
 }
 }  // namespace

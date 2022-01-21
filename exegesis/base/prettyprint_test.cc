@@ -24,13 +24,13 @@ namespace {
 
 TEST(PrettyPrintTest, CpuModel) {
   const MicroArchitecture microarchitecture(
-      ParseProtoFromStringOrDie<MicroArchitectureProto>(R"proto(
+      ParseProtoFromStringOrDie<MicroArchitectureProto>(R"pb(
         id: 'hsw'
         port_masks { port_numbers: [ 0, 1, 5, 6 ] }
         port_masks { port_numbers: [ 2, 3, 7 ] }
         protected_mode { user_modes: 3 }
         model_ids: 'intel:06_3F'
-      )proto"));
+      )pb"));
   EXPECT_EQ(PrettyPrintMicroArchitecture(microarchitecture), "hsw");
   EXPECT_EQ(PrettyPrintMicroArchitecture(
                 microarchitecture, PrettyPrintOptions().WithCpuDetails(true)),
@@ -42,7 +42,7 @@ TEST(PrettyPrintTest, CpuModel) {
 
 TEST(PrettyPrintSyntaxTest, Avx512) {
   const InstructionFormat proto =
-      ParseProtoFromStringOrDie<InstructionFormat>(R"proto(
+      ParseProtoFromStringOrDie<InstructionFormat>(R"pb(
         mnemonic: "V4FMADDPS"
         operands {
           addressing_mode: DIRECT_ADDRESSING
@@ -68,13 +68,13 @@ TEST(PrettyPrintSyntaxTest, Avx512) {
           value_size_bits: 128
           name: "m128"
           usage: USAGE_READ
-        })proto");
+        })pb");
   EXPECT_EQ(PrettyPrintSyntax(proto), "V4FMADDPS zmm1 {k1} {z}, zmm2+3, m128");
 }
 
 TEST(PrettyPrintTest, Instruction) {
   const InstructionProto proto =
-      ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+      ParseProtoFromStringOrDie<InstructionProto>(R"pb(
         description: "Blah"
         llvm_mnemonic: "VBROADCASTF128"
         vendor_syntax {
@@ -119,7 +119,7 @@ TEST(PrettyPrintTest, Instruction) {
             map_select: MAP_SELECT_0F38
             vex_w_usage: VEX_W_IS_ZERO
           }
-        })proto");
+        })pb");
   EXPECT_EQ(PrettyPrintInstruction(proto, PrettyPrintOptions()),
             "VBROADCASTF128 ymm1, m128\n"
             "llvm: VBROADCASTF128");
@@ -133,7 +133,7 @@ TEST(PrettyPrintTest, Instruction) {
 
 TEST(PrettyPrintTest, MultipleSyntaxes) {
   const InstructionProto proto =
-      ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+      ParseProtoFromStringOrDie<InstructionProto>(R"pb(
         vendor_syntax {
           mnemonic: "JZ"
           operands {
@@ -172,7 +172,7 @@ TEST(PrettyPrintTest, MultipleSyntaxes) {
             operand_size_override_prefix: PREFIX_IS_IGNORED
           }
           code_offset_bytes: 4
-        })proto");
+        })pb");
   EXPECT_EQ(PrettyPrintSyntaxes(proto.vendor_syntax()), "JZ rel32\nJE rel32");
   EXPECT_EQ(PrettyPrintInstruction(
                 proto, PrettyPrintOptions().WithAlternativeSyntax(true)),
@@ -186,18 +186,17 @@ TEST(PrettyPrintTest, MultipleSyntaxes) {
 }
 
 TEST(PrettyPrintTest, Itinerary) {
-  const ItineraryProto proto =
-      ParseProtoFromStringOrDie<ItineraryProto>(R"proto(
-        micro_ops {
-          port_mask { port_numbers: [ 0, 1, 5, 6 ] }
-          latency: 2
-        }
-        micro_ops { port_mask { port_numbers: [ 2, 3, 7 ] } }
-        micro_ops {
-          port_mask { port_numbers: [ 4 ] }
-          dependencies: [ 0, 1 ]
-        }
-      )proto");
+  const ItineraryProto proto = ParseProtoFromStringOrDie<ItineraryProto>(R"pb(
+    micro_ops {
+      port_mask { port_numbers: [ 0, 1, 5, 6 ] }
+      latency: 2
+    }
+    micro_ops { port_mask { port_numbers: [ 2, 3, 7 ] } }
+    micro_ops {
+      port_mask { port_numbers: [ 4 ] }
+      dependencies: [ 0, 1 ]
+    }
+  )pb");
   EXPECT_EQ(PrettyPrintItinerary(proto, PrettyPrintOptions()),
             "  P0156 (lat:2)\n"
             "  P237 (lat:0)\n"
@@ -205,18 +204,17 @@ TEST(PrettyPrintTest, Itinerary) {
 }
 
 TEST(PrettyPrintTest, ItineraryOneLine) {
-  const ItineraryProto proto =
-      ParseProtoFromStringOrDie<ItineraryProto>(R"proto(
-        micro_ops {
-          port_mask { port_numbers: [ 0, 1, 5, 6 ] }
-          latency: 2
-        }
-        micro_ops { port_mask { port_numbers: [ 2, 3, 7 ] } }
-        micro_ops {
-          port_mask { port_numbers: [ 4 ] }
-          dependencies: [ 0, 1 ]
-        }
-      )proto");
+  const ItineraryProto proto = ParseProtoFromStringOrDie<ItineraryProto>(R"pb(
+    micro_ops {
+      port_mask { port_numbers: [ 0, 1, 5, 6 ] }
+      latency: 2
+    }
+    micro_ops { port_mask { port_numbers: [ 2, 3, 7 ] } }
+    micro_ops {
+      port_mask { port_numbers: [ 4 ] }
+      dependencies: [ 0, 1 ]
+    }
+  )pb");
   EXPECT_EQ(PrettyPrintItinerary(proto, PrettyPrintOptions()
                                             .WithItinerariesOnOneLine(true)
                                             .WithMicroOpLatencies(false)

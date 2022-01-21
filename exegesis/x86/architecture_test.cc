@@ -38,7 +38,7 @@ namespace {
 using ::testing::Contains;
 using ::testing::UnorderedElementsAreArray;
 
-constexpr char kArchitectureProto[] = R"proto(
+constexpr char kArchitectureProto[] = R"pb(
   instruction_set {
     instructions {
       llvm_mnemonic: "BLSMSK64rr"
@@ -431,7 +431,7 @@ constexpr char kArchitectureProto[] = R"proto(
         immediate_value_bytes: 1
       }
     }
-  })proto";
+  })pb";
 
 class X86ArchitectureTest : public ::testing::Test {
  protected:
@@ -457,8 +457,7 @@ TEST_F(X86ArchitectureTest, GetOpcodesReturnsAllOpcodes) {
     const EncodingSpecification& encoding_specification =
         architecture_->encoding_specification(i);
     const Opcode opcode = Opcode(encoding_specification.opcode());
-    EXPECT_TRUE(gtl::ContainsKey(opcodes, opcode))
-        << "Opcode was missing: " << opcode;
+    EXPECT_TRUE(opcodes.contains(opcode)) << "Opcode was missing: " << opcode;
   }
 }
 
@@ -499,71 +498,71 @@ TEST_F(X86ArchitectureTest, GetInstructionIndex) {
       {"opcode: 0x15", "15 id", "15 id"},
       // movl $0x12345678, %ecx
       // To check we can resolve opcodes that encode an operand.
-      {R"proto(opcode: 0xB9 immediate_value: "xV4\022")proto", "B8+ rd id",
+      {R"pb(opcode: 0xB9 immediate_value: "xV4\022")pb", "B8+ rd id",
        "B8+ rd id"},
       {"opcode: 148", "90+rd", "90+rd"},
       {"opcode: 22", nullptr, nullptr},
-      {R"proto(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
-               opcode: 0x15)proto",
+      {R"pb(legacy_prefixes { operand_size_override: OPERAND_SIZE_OVERRIDE }
+            opcode: 0x15)pb",
        "66 15 iw", "66 15 iw"},
-      {R"proto(
+      {R"pb(
          legacy_prefixes { rex { w: true } }
-         opcode: 0x15)proto",
+         opcode: 0x15)pb",
        "REX.W + 15 id", "REX.W + 15 id"},
-      {R"proto(vex_prefix {
-                 not_b: true
-                 not_r: true
-                 not_x: true
-                 w: true
-                 map_select: MAP_SELECT_0F38
-               }
-               opcode: 0x0f38f3
-               modrm { register_operand: 2 addressing_mode: DIRECT }
-       )proto",
+      {R"pb(vex_prefix {
+              not_b: true
+              not_r: true
+              not_x: true
+              w: true
+              map_select: MAP_SELECT_0F38
+            }
+            opcode: 0x0f38f3
+            modrm { register_operand: 2 addressing_mode: DIRECT }
+       )pb",
        "VEX.NDD.LZ.0F38.W1 F3 /2", "VEX.NDD.LZ.0F38.W1 F3 /2"},
-      {R"proto(vex_prefix {
-                 not_b: true
-                 not_r: true
-                 not_x: true
-                 w: true
-                 map_select: MAP_SELECT_0F38
-               }
-               opcode: 0x0f38f3
-               modrm { register_operand: 7 })proto",
+      {R"pb(vex_prefix {
+              not_b: true
+              not_r: true
+              not_x: true
+              w: true
+              map_select: MAP_SELECT_0F38
+            }
+            opcode: 0x0f38f3
+            modrm { register_operand: 7 })pb",
        nullptr, "VEX.NDD.LZ.0F38.W1 F3 /2"},
       // The opcode 0x14 always uses 8-bit values. Prefixes affecting the size
       // of the instruction are ignored.
-      {R"proto(legacy_prefixes { rex { w: true } }
-               opcode: 0x14)proto",
+      {R"pb(legacy_prefixes { rex { w: true } }
+            opcode: 0x14)pb",
        "14 ib", "14 ib"},
-      {R"proto(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 use_256_bit_vector_length: true
-               }
-               opcode: 0x0ffe)proto",
+      {R"pb(vex_prefix {
+              mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              map_select: MAP_SELECT_0F
+              use_256_bit_vector_length: true
+            }
+            opcode: 0x0ffe)pb",
        "VEX.NDS.256.66.0F.WIG FE /r", "VEX.NDS.256.66.0F.WIG FE /r"},
-      {R"proto(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 use_256_bit_vector_length: true
-                 w: true
-               }
-               opcode: 0x0ffe)proto",
+      {R"pb(vex_prefix {
+              mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              map_select: MAP_SELECT_0F
+              use_256_bit_vector_length: true
+              w: true
+            }
+            opcode: 0x0ffe)pb",
        "VEX.NDS.256.66.0F.WIG FE /r", "VEX.NDS.256.66.0F.WIG FE /r"},
-      {R"proto(vex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-               }
-               opcode: 0x0ffe)proto",
+      {R"pb(vex_prefix {
+              mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              map_select: MAP_SELECT_0F
+            }
+            opcode: 0x0ffe)pb",
        "VEX.NDS.128.66.0F.WIG FE /r", "VEX.NDS.128.66.0F.WIG FE /r"},
-      {R"proto(evex_prefix {
-                 mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
-                 map_select: MAP_SELECT_0F
-                 w: true
-                 vector_length_or_rounding: 0
-               }
-               opcode: 0x0f58)proto",
+      {R"pb(evex_prefix {
+              mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
+              map_select: MAP_SELECT_0F
+              w: true
+              vector_length_or_rounding: 0
+            }
+            opcode: 0x0f58)pb",
        "EVEX.NDS.128.66.0F.W1 58 /r", "EVEX.NDS.128.66.0F.W1 58 /r"}};
   for (const auto test_case : kTestCases) {
     SCOPED_TRACE(absl::StrCat("test_case.encoded_instruction_proto:\n",

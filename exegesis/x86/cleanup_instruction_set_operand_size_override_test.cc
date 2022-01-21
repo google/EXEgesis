@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'STOSQ' }
       raw_encoding_specification: 'REX.W + AB'
@@ -52,8 +52,8 @@ TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
         legacy_prefixes { rex_w_prefix: PREFIX_IS_NOT_PERMITTED }
         immediate_value_bytes: 2
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'STOSQ' }
       raw_encoding_specification: 'REX.W + AB'
@@ -86,14 +86,14 @@ TEST(AddOperandSizeOverrideToInstructionsWithImplicitOperandsTest, AddPrefix) {
         legacy_prefixes { rex_w_prefix: PREFIX_IS_NOT_PERMITTED }
         immediate_value_bytes: 2
       }
-    })proto";
+    })pb";
   TestTransform(AddOperandSizeOverrideToInstructionsWithImplicitOperands,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(AddOperandSizeOverrideVersionForSpecialCaseInstructions,
      AddInstructionWithPrefix) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "MOV"
@@ -144,8 +144,8 @@ TEST(AddOperandSizeOverrideVersionForSpecialCaseInstructions,
       }
       raw_encoding_specification: "D3 /7"
       x86_encoding_specification { legacy_prefixes {} }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "MOV"
@@ -227,13 +227,13 @@ TEST(AddOperandSizeOverrideVersionForSpecialCaseInstructions,
       x86_encoding_specification {
         legacy_prefixes { operand_size_override_prefix: PREFIX_IS_REQUIRED }
       }
-    })proto";
+    })pb";
   TestTransform(AddOperandSizeOverrideVersionForSpecialCaseInstructions,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SMSW'
@@ -367,8 +367,8 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
         modrm_usage: FULL_MODRM
       }
     }
-  )proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+  )pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SMSW'
@@ -508,13 +508,13 @@ TEST(AddOperandSizeOverrideToSpecialCaseInstructionsTest, AddPrefix) {
         }
         modrm_usage: FULL_MODRM
       }
-    })proto";
+    })pb";
   TestTransform(AddOperandSizeOverrideToSpecialCaseInstructions,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -676,8 +676,8 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
       x86_encoding_specification {
         legacy_prefixes { rex_w_prefix: PREFIX_IS_IGNORED }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -848,13 +848,13 @@ TEST(AddOperandSizeOverridePrefixTest, AddPrefix) {
       x86_encoding_specification {
         legacy_prefixes { rex_w_prefix: PREFIX_IS_IGNORED }
       }
-    })proto";
+    })pb";
   TestTransform(AddOperandSizeOverridePrefix, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddOperandSizeOverridePrefixUsageTest, AddUsage) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -1036,8 +1036,8 @@ TEST(AddOperandSizeOverridePrefixUsageTest, AddUsage) {
         opcode: 4002
         legacy_prefixes { rex_w_prefix: PREFIX_IS_IGNORED }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -1234,7 +1234,7 @@ TEST(AddOperandSizeOverridePrefixUsageTest, AddUsage) {
           operand_size_override_prefix: PREFIX_IS_IGNORED
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddOperandSizeOverridePrefixUsage, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

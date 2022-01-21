@@ -24,7 +24,7 @@ namespace x86 {
 namespace {
 
 TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'MOVS'
@@ -56,8 +56,8 @@ TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
         operands { name: 'm64' }
       }
       raw_encoding_specification: 'REX.W + A7'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'MOVS'
@@ -97,13 +97,13 @@ TEST(FixOperandsOfCmpsAndMovsTest, Instructions) {
         operands { name: 'QWORD PTR [RDI]' usage: USAGE_READ }
       }
       raw_encoding_specification: 'REX.W + A7'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfCmpsAndMovs, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfInsAndOutsTest, Ins) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'INS'
@@ -119,8 +119,8 @@ TEST(FixOperandsOfInsAndOutsTest, Ins) {
         operands { name: 'DX' }
       }
       raw_encoding_specification: '6D'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'INS'
@@ -136,13 +136,13 @@ TEST(FixOperandsOfInsAndOutsTest, Ins) {
         operands { name: 'DX' usage: USAGE_READ }
       }
       raw_encoding_specification: '6D'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfInsAndOuts, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfInsAndOutsTest, Outs) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'OUTS'
@@ -158,8 +158,8 @@ TEST(FixOperandsOfInsAndOutsTest, Outs) {
         operands { name: 'm32' usage: USAGE_READ }
       }
       raw_encoding_specification: '6F'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'OUTS'
@@ -175,13 +175,13 @@ TEST(FixOperandsOfInsAndOutsTest, Outs) {
         operands { name: 'DWORD PTR [RSI]' usage: USAGE_READ }
       }
       raw_encoding_specification: '6F'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfInsAndOuts, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfLddquTest, FixOperands) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "LDDQU"
@@ -197,8 +197,8 @@ TEST(FixOperandsOfLddquTest, FixOperands) {
       legacy_instruction: true
       encoding_scheme: "RM"
       raw_encoding_specification: "F2 0F F0 /r"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "LDDQU"
@@ -214,21 +214,21 @@ TEST(FixOperandsOfLddquTest, FixOperands) {
       legacy_instruction: true
       encoding_scheme: "RM"
       raw_encoding_specification: "F2 0F F0 /r"
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfLddqu, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfLodsScasAndStosTest, Scas) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SCAS'
         operands { name: 'm8' }
       }
       raw_encoding_specification: 'AE'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SCAS'
@@ -240,13 +240,13 @@ TEST(FixOperandsOfLodsScasAndStosTest, Scas) {
         }
       }
       raw_encoding_specification: 'AE'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfLodsScasAndStos, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfLodsScasAndStosTest, Stos) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STOS'
@@ -278,8 +278,8 @@ TEST(FixOperandsOfLodsScasAndStosTest, Stos) {
     instructions {
       vendor_syntax { mnemonic: 'STOSB' }
       raw_encoding_specification: 'AA'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STOS'
@@ -331,13 +331,13 @@ TEST(FixOperandsOfLodsScasAndStosTest, Stos) {
     instructions {
       vendor_syntax { mnemonic: 'STOSB' }
       raw_encoding_specification: 'AA'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfLodsScasAndStos, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfLodsAndStosTest, Lods) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'LODS'
@@ -369,8 +369,8 @@ TEST(FixOperandsOfLodsAndStosTest, Lods) {
     instructions {
       vendor_syntax { mnemonic: 'LODSB' }
       raw_encoding_specification: 'AC'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'LODS'
@@ -422,13 +422,13 @@ TEST(FixOperandsOfLodsAndStosTest, Lods) {
     instructions {
       vendor_syntax { mnemonic: 'LODSB' }
       raw_encoding_specification: 'AC'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfLodsScasAndStos, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfSgdtAndSidtTest, FixOperands) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "SGDT"
@@ -452,8 +452,8 @@ TEST(FixOperandsOfSgdtAndSidtTest, FixOperands) {
         }
       }
       raw_encoding_specification: "0F 01/7"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "SGDT"
@@ -477,13 +477,13 @@ TEST(FixOperandsOfSgdtAndSidtTest, FixOperands) {
         }
       }
       raw_encoding_specification: "0F 01/7"
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfSgdtAndSidt, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixOperandsOfVMovqTest, FixOperand) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VMOVQ'
@@ -507,8 +507,8 @@ TEST(FixOperandsOfVMovqTest, FixOperand) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: 'VEX.128.F3.0F.WIG 7E /r'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VMOVQ'
@@ -532,13 +532,13 @@ TEST(FixOperandsOfVMovqTest, FixOperand) {
         operands { name: 'xmm2/m64' }
       }
       raw_encoding_specification: 'VEX.128.F3.0F.WIG 7E /r'
-    })proto";
+    })pb";
   TestTransform(FixOperandsOfVMovq, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixRegOperandsTest, FixOperand) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'LAR'
@@ -570,8 +570,8 @@ TEST(FixRegOperandsTest, FixOperand) {
         operands { name: 'mm' }
       }
       raw_encoding_specification: 'REX.W + 0F 7E /r'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'LAR'
@@ -611,13 +611,13 @@ TEST(FixRegOperandsTest, FixOperand) {
         operands { name: 'r32' }
       }
       raw_encoding_specification: '0F 02 /r'
-    })proto";
+    })pb";
   TestTransform(FixRegOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixRegOperandsTest, UnexpectedMnemonic) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'LARfoo'
@@ -625,7 +625,7 @@ TEST(FixRegOperandsTest, UnexpectedMnemonic) {
         operands { name: 'r32' }
       }
       raw_encoding_specification: '0F 02 /r'
-    })proto";
+    })pb";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
       kInstructionSetProto, &instruction_set));
@@ -634,7 +634,7 @@ TEST(FixRegOperandsTest, UnexpectedMnemonic) {
 }
 
 TEST(RemoveImplicitST0OperandTest, NoRemoval) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FCMOVE'
@@ -646,13 +646,13 @@ TEST(RemoveImplicitST0OperandTest, NoRemoval) {
     instructions {
       vendor_syntax { mnemonic: 'FCOM' }
       raw_encoding_specification: 'D8 D1'
-    })proto";
+    })pb";
   TestTransform(RemoveImplicitST0Operand, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 TEST(RemoveImplicitST0OperandTest, RemoveSomeOperands) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FCMOVE'
@@ -672,8 +672,8 @@ TEST(RemoveImplicitST0OperandTest, RemoveSomeOperands) {
     instructions {
       vendor_syntax { mnemonic: 'FCOM' }
       raw_encoding_specification: 'D8 D1'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FCMOVE'
@@ -692,13 +692,13 @@ TEST(RemoveImplicitST0OperandTest, RemoveSomeOperands) {
     instructions {
       vendor_syntax { mnemonic: 'FCOM' }
       raw_encoding_specification: 'D8 D1'
-    })proto";
+    })pb";
   TestTransform(RemoveImplicitST0Operand, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveImplicitXmm0OperandTest, NoRemoval) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMADD132PD'
@@ -707,15 +707,15 @@ TEST(RemoveImplicitXmm0OperandTest, NoRemoval) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: 'VEX.DDS.128.66.0F38.W1 98 /r'
-    })proto";
-  TestTransform(RemoveImplicitXmm0Operand, kInstructionSetProto,
+    })pb";
+  TestTransform(RemoveImplicitOperands, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 // NOTE(ondrasej): All instructions using the implicit XMM0 use it as the last
 // operand. Thus, we do not test any other case.
 TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'BLENDVPS'
@@ -724,8 +724,8 @@ TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
         operands { name: '<XMM0>' }
       }
       raw_encoding_specification: '66 0F 38 14 /r'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'BLENDVPS'
@@ -733,13 +733,13 @@ TEST(RemoveImplicitXmm0OperandTest, RemoveLastOperand) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: '66 0F 38 14 /r'
-    })proto";
-  TestTransform(RemoveImplicitXmm0Operand, kInstructionSetProto,
+    })pb";
+  TestTransform(RemoveImplicitOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RenameOperandsTest, NoRenaming) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FADD'
@@ -755,12 +755,12 @@ TEST(RenameOperandsTest, NoRenaming) {
         operands { name: 'r8' }
       }
       raw_encoding_specification: '88 /r'
-    })proto";
+    })pb";
   TestTransform(RenameOperands, kInstructionSetProto, kInstructionSetProto);
 }
 
 TEST(RenameOperandsTest, InstructionWithST) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FADD'
@@ -768,8 +768,8 @@ TEST(RenameOperandsTest, InstructionWithST) {
         operands { name: 'ST' }
       }
       raw_encoding_specification: 'DE C0+i'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FADD'
@@ -777,28 +777,28 @@ TEST(RenameOperandsTest, InstructionWithST) {
         operands { name: 'ST(0)' }
       }
       raw_encoding_specification: 'DE C0+i'
-    })proto";
+    })pb";
   TestTransform(RenameOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RenameOperandsTest, InstructionWithM80Dec) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FBLD'
         operands { name: 'm80dec' }
       }
       raw_encoding_specification: 'DF /4'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FBLD'
         operands { name: 'm80bcd' }
       }
       raw_encoding_specification: 'DF /4'
-    })proto";
+    })pb";
   TestTransform(RenameOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

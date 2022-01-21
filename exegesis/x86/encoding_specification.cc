@@ -115,6 +115,7 @@ const std::pair<const char*, VexVectorSize> kVectorSizeTokens[] = {
     {"256", VEX_VECTOR_SIZE_256_BIT},
     {"512", VEX_VECTOR_SIZE_512_BIT},
     {"LIG", VEX_VECTOR_SIZE_IS_IGNORED},
+    {"LLIG", VEX_VECTOR_SIZE_IS_IGNORED},
     {"LIG.128", VEX_VECTOR_SIZE_128_BIT}};
 const std::pair<const char*, VexEncoding::MandatoryPrefix>
     kMandatoryPrefixTokens[] = {
@@ -277,9 +278,9 @@ absl::Status EncodingSpecificationParser::ParseVexOrEvexPrefix(
   static constexpr char kVexPrefixRegexp[] =
       "(E?VEX)"                    // The VEX prefix.
       "(?: *\\. *(NDS|NDD|DDS))?"  // The directionality of the operand(s).
-      "(?: *\\. *(LIG|LZ|L0|L1|LIG\\.128|128|256|512))?"  // Interpretation of
-                                                          // the VEX and EVEX
-                                                          // L/L' bits.
+      "(?: *\\. *(L?LIG|LZ|L0|L1|LIG\\.128|128|256|512))?"  // Interpretation of
+                                                            // the VEX and EVEX
+                                                            // L/L' bits.
       "(?: *\\. *(66|F2|F3))?"     // The mandatory prefixes.
       " *\\. *(0F|0F3A|0F38)"      // The opcode prefix based on VEX.mmmmm.
       "(?: *\\. *(W0|W1|WIG))? ";  // Interpretation of the VEX.W bit.

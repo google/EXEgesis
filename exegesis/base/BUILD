@@ -77,6 +77,7 @@ cc_test(
         ":architecture_provider",
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
@@ -95,7 +96,6 @@ cc_library(
         "//exegesis/proto:instructions_cc_proto",
         "//exegesis/util:instruction_syntax",
         "//exegesis/util:status_util",
-        "//util/gtl:map_util",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/flags:flag",
@@ -195,7 +195,6 @@ cc_library(
     deps = [
         "//base",
         "//exegesis/proto:microarchitecture_cc_proto",
-        "//util/gtl:map_util",
         "@com_github_glog_glog//:glog",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",

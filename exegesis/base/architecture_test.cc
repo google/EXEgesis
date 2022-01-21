@@ -35,7 +35,7 @@ using ::exegesis::testing::EqualsProto;
 using ::testing::Contains;
 using ::testing::HasSubstr;
 
-const char kArchitectureProto[] = R"proto(
+const char kArchitectureProto[] = R"pb(
   instruction_set {
     instructions {
       llvm_mnemonic: 'ADD8rm'
@@ -77,7 +77,7 @@ const char kArchitectureProto[] = R"proto(
       encoding_scheme: 'MR'
       description: 'Move r16 to r16/m16.'
     }
-  })proto";
+  })pb";
 
 bool CompareProtosByLLVMMnemonic(const InstructionProto& left,
                                  const InstructionProto& right) {
@@ -163,7 +163,7 @@ TEST_F(ArchitectureTest, GetInstructionIndicesByRawEncodingSpecification) {
 }
 
 TEST(PrintInstructionSetProtoProtoTest, PrintZeroIndexedGroup) {
-  constexpr char kArchitectureProto[] = R"proto(
+  constexpr char kArchitectureProto[] = R"pb(
     instructions {
       description: "Enter VMX root operation."
       vendor_syntax {
@@ -172,7 +172,7 @@ TEST(PrintInstructionSetProtoProtoTest, PrintZeroIndexedGroup) {
       }
       raw_encoding_specification: "F3 0F C7 /6"
       instruction_group_index: 0
-    })proto";
+    })pb";
   const InstructionSetProto proto =
       ParseProtoFromStringOrDie<InstructionSetProto>(kArchitectureProto);
 

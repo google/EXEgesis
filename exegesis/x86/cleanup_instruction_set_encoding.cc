@@ -26,6 +26,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "exegesis/base/cleanup_instruction_set.h"
+#include "exegesis/proto/instructions.pb.h"
 #include "exegesis/proto/x86/encoding_specification.pb.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/status_util.h"
@@ -453,6 +454,18 @@ absl::Status AddRexWPrefixedVersionOfStr(InstructionSetProto* instruction_set) {
   return absl::OkStatus();
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(AddRexWPrefixedVersionOfStr, 1000);
+
+absl::Status NormalizeEncodingSpecificationLigFlag(
+    InstructionSetProto* instruction_set) {
+  CHECK(instruction_set != nullptr);
+  for (InstructionProto& instruction :
+       *instruction_set->mutable_instructions()) {
+    absl::StrReplaceAll({{".LLIG.", ".LIG."}},
+                        instruction.mutable_raw_encoding_specification());
+  }
+  return absl::OkStatus();
+}
+REGISTER_INSTRUCTION_SET_TRANSFORM(NormalizeEncodingSpecificationLigFlag, 1000);
 
 }  // namespace x86
 }  // namespace exegesis

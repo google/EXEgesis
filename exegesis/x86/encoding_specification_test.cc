@@ -69,23 +69,23 @@ TEST(EncodingSpecificationParserTest, NoPrefixAndNoSuffix) {
 }
 
 TEST(EncodingSpecificationParserTest, NPPrefix) {
-  CheckParser("NP 0F 58 /r", R"proto(
+  CheckParser("NP 0F 58 /r", R"pb(
     legacy_prefixes { operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED }
     modrm_usage: FULL_MODRM
-    opcode: 0x0f58)proto");
-  CheckParser("NP REX.W + 0F AE /1", R"proto(
+    opcode: 0x0f58)pb");
+  CheckParser("NP REX.W + 0F AE /1", R"pb(
     opcode: 4014
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
     modrm_opcode_extension: 1
     legacy_prefixes {
       rex_w_prefix: PREFIX_IS_REQUIRED
       operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
-    })proto");
-  CheckParser("NFx 0F C7 /6", R"proto(
+    })pb");
+  CheckParser("NFx 0F C7 /6", R"pb(
     opcode: 0x0fc7
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
     modrm_opcode_extension: 6
-    legacy_prefixes {})proto");
+    legacy_prefixes {})pb");
 }
 
 TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
@@ -105,27 +105,27 @@ TEST(EncodingSpecificationParserTest, RexPrefixAndOpcode) {
 }
 
 TEST(EncodingSpecificationParserTest, RexRPrefix) {
-  CheckParser("REX.R + 0F 20 /0", R"proto(
+  CheckParser("REX.R + 0F 20 /0", R"pb(
     legacy_prefixes {}
     opcode: 0x0f20
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
-    modrm_opcode_extension: 0)proto");
+    modrm_opcode_extension: 0)pb");
 }
 
 TEST(EncodingSpecificationParserTest, MultiplePrefixes) {
-  CheckParser("F2 REX 0F 38 F0 /r", R"proto(
+  CheckParser("F2 REX 0F 38 F0 /r", R"pb(
     legacy_prefixes { has_mandatory_repne_prefix: true }
     opcode: 0x0f38f0
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, RegisterInOpcode) {
   for (const char* const specification :
        {"40+rd", "40 +rd", "40+ rd", "40 + rd", "40 +rw", "40 +rb"}) {
-    CheckParser(specification, R"proto(
+    CheckParser(specification, R"pb(
       legacy_prefixes {}
       opcode: 0x40
-      operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE)proto");
+      operand_in_opcode: GENERAL_PURPOSE_REGISTER_IN_OPCODE)pb");
   }
   for (const char* const specification :
        {"0F C8+rd", "0F C8 +rd", "0F C8+ rd", "0F C8 + rd"}) {
@@ -138,29 +138,29 @@ TEST(EncodingSpecificationParserTest, RegisterInOpcode) {
 TEST(EncodingSpecificationParserTest, FpStackRegisterInOpcode) {
   for (const char* const specification :
        {"DD D0+i", "DD D0 +i", "DD D0+ i", "DD D0 + i"}) {
-    CheckParser(specification, R"proto(
+    CheckParser(specification, R"pb(
       legacy_prefixes {}
       opcode: 0xddd0
-      operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE)proto");
+      operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE)pb");
   }
 }
 
 TEST(EncodingSpecificationParserTest, ModRm) {
-  CheckParser("FF /2", R"proto(
+  CheckParser("FF /2", R"pb(
     legacy_prefixes {}
     opcode: 0xff
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
-    modrm_opcode_extension: 2)proto");
-  CheckParser("0F AE /1", R"proto(
+    modrm_opcode_extension: 2)pb");
+  CheckParser("0F AE /1", R"pb(
     legacy_prefixes {}
     opcode: 0x0FAE
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
-    modrm_opcode_extension: 1)proto");
+    modrm_opcode_extension: 1)pb");
   CheckParser("10 /r",
-              R"proto(
+              R"pb(
                 legacy_prefixes {}
                 opcode: 0x10
-                modrm_usage: FULL_MODRM)proto");
+                modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, ModRmMemorySuffix) {
@@ -175,39 +175,39 @@ TEST(EncodingSpecificationParserTest, ModRmMemorySuffix) {
 
 TEST(EncodingSpecificationParserTest, ImmediateValue) {
   CheckParser("D5 ib",
-              R"proto(
+              R"pb(
                 legacy_prefixes {}
                 opcode: 0xd5
-                immediate_value_bytes: 1)proto");
+                immediate_value_bytes: 1)pb");
   CheckParser("15 iw",
-              R"proto(
+              R"pb(
                 legacy_prefixes {}
                 opcode: 0x15
-                immediate_value_bytes: 2)proto");
+                immediate_value_bytes: 2)pb");
   CheckParser("15 id",
-              R"proto(
+              R"pb(
                 legacy_prefixes {}
                 opcode: 0x15
-                immediate_value_bytes: 4)proto");
-  CheckParser("C8 iw ib", R"proto(
+                immediate_value_bytes: 4)pb");
+  CheckParser("C8 iw ib", R"pb(
     legacy_prefixes {}
     opcode: 0xc8
     immediate_value_bytes: 2
-    immediate_value_bytes: 1)proto");
+    immediate_value_bytes: 1)pb");
 }
 
 TEST(EncodingSpecificationParserTest, ModRmAndImmediateValue) {
-  CheckParser("81 /1 iw", R"proto(
+  CheckParser("81 /1 iw", R"pb(
     legacy_prefixes {}
     opcode: 0x81
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
     modrm_opcode_extension: 1
-    immediate_value_bytes: 2)proto");
-  CheckParser("0F C2 /r ib", R"proto(
+    immediate_value_bytes: 2)pb");
+  CheckParser("0F C2 /r ib", R"pb(
     legacy_prefixes {}
     opcode: 0x0fc2
     modrm_usage: FULL_MODRM
-    immediate_value_bytes: 1)proto");
+    immediate_value_bytes: 1)pb");
 }
 
 TEST(EncodingSpecificationParserTest, CodeOffset) {
@@ -219,45 +219,45 @@ TEST(EncodingSpecificationParserTest, CodeOffset) {
 }
 
 TEST(EncodingSpecificationParserTest, MandatoryOperandSizeOverridePrefix) {
-  CheckParser("66 0F 58 /r", R"proto(
+  CheckParser("66 0F 58 /r", R"pb(
     legacy_prefixes { operand_size_override_prefix: PREFIX_IS_REQUIRED }
     opcode: 0x0f58
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, MandatoryAddressSizeOverridePrefix) {
-  CheckParser("67 A0 id", R"proto(
+  CheckParser("67 A0 id", R"pb(
     legacy_prefixes { has_mandatory_address_size_override_prefix: true }
     opcode: 0xa0
-    immediate_value_bytes: 4)proto");
+    immediate_value_bytes: 4)pb");
 }
 
 TEST(EncodingSpecificationParserTest, MandatoryRepnePrefix) {
-  CheckParser("F2 0F 58 /r", R"proto(
+  CheckParser("F2 0F 58 /r", R"pb(
     legacy_prefixes { has_mandatory_repne_prefix: true }
     opcode: 0x0f58
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, VexNoSuffix) {
-  CheckParser("VEX.128.0F.WIG 77", R"proto(
+  CheckParser("VEX.128.0F.WIG 77", R"pb(
     vex_prefix {
       vector_size: VEX_VECTOR_SIZE_128_BIT
       prefix_type: VEX_PREFIX
       map_select: MAP_SELECT_0F
     }
-    opcode: 0x0f77)proto");
-  CheckParser("VEX.256.0F.WIG 77", R"proto(
+    opcode: 0x0f77)pb");
+  CheckParser("VEX.256.0F.WIG 77", R"pb(
     vex_prefix {
       vector_size: VEX_VECTOR_SIZE_256_BIT
       prefix_type: VEX_PREFIX
       map_select: MAP_SELECT_0F
     }
-    opcode: 0x0f77)proto");
+    opcode: 0x0f77)pb");
 }
 
 TEST(EncodingSpecificationParserTest, VexLig128) {
-  CheckParser("VEX.DDS.LIG.128.66.0F38.W1 99 /r", R"proto(
+  CheckParser("VEX.DDS.LIG.128.66.0F38.W1 99 /r", R"pb(
     vex_prefix {
       prefix_type: VEX_PREFIX
       vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
@@ -267,24 +267,24 @@ TEST(EncodingSpecificationParserTest, VexLig128) {
       vex_w_usage: VEX_W_IS_ONE
     }
     opcode: 0x0f3899
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, VexLSynonyms) {
-  CheckParser("VEX.L0.0F.WIG 77", R"proto(
+  CheckParser("VEX.L0.0F.WIG 77", R"pb(
     vex_prefix {
       vector_size: VEX_VECTOR_SIZE_BIT_IS_ZERO
       prefix_type: VEX_PREFIX
       map_select: MAP_SELECT_0F
     }
-    opcode: 0x0f77)proto");
-  CheckParser("VEX.L1.0F.WIG 77", R"proto(
+    opcode: 0x0f77)pb");
+  CheckParser("VEX.L1.0F.WIG 77", R"pb(
     vex_prefix {
       vector_size: VEX_VECTOR_SIZE_BIT_IS_ONE
       prefix_type: VEX_PREFIX
       map_select: MAP_SELECT_0F
     }
-    opcode: 0x0f77)proto");
+    opcode: 0x0f77)pb");
 }
 
 TEST(EncodingSpecificationParserTest, Vex512) {
@@ -294,7 +294,7 @@ TEST(EncodingSpecificationParserTest, Vex512) {
 }
 
 TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
-  CheckParser("VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"proto(
+  CheckParser("VEX.NDS.LZ.F3.0F38.W1 F5 /r", R"pb(
     vex_prefix {
       prefix_type: VEX_PREFIX
       vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
@@ -304,8 +304,8 @@ TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
       vex_w_usage: VEX_W_IS_ONE
     }
     opcode: 0x0f38f5
-    modrm_usage: FULL_MODRM)proto");
-  CheckParser("VEX.DDS.128.66.0F38.W1 98 /r", R"proto(
+    modrm_usage: FULL_MODRM)pb");
+  CheckParser("VEX.DDS.128.66.0F38.W1 98 /r", R"pb(
     vex_prefix {
       prefix_type: VEX_PREFIX
       vex_operand_usage: VEX_OPERAND_IS_SECOND_SOURCE_REGISTER
@@ -315,8 +315,8 @@ TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
       vex_w_usage: VEX_W_IS_ONE
     }
     opcode: 0x0f3898
-    modrm_usage: FULL_MODRM)proto");
-  CheckParser("VEX.NDD.128.66.0F.WIG 72 /6 ib", R"proto(
+    modrm_usage: FULL_MODRM)pb");
+  CheckParser("VEX.NDD.128.66.0F.WIG 72 /6 ib", R"pb(
     vex_prefix {
       prefix_type: VEX_PREFIX
       vex_operand_usage: VEX_OPERAND_IS_DESTINATION_REGISTER
@@ -328,11 +328,11 @@ TEST(EncodingSpecificationParserTest, VexOperandSpecifiedInPrefix) {
     opcode: 0x0f72
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
     modrm_opcode_extension: 6
-    immediate_value_bytes: 1)proto");
+    immediate_value_bytes: 1)pb");
 }
 
 TEST(EncodingSpecificationParserTest, VexOperandSuffixByte) {
-  CheckParser("VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"proto(
+  CheckParser("VEX.NDS.128.66.0F3A.W0 4B /r /is4", R"pb(
     vex_prefix {
       prefix_type: VEX_PREFIX
       vex_operand_usage: VEX_OPERAND_IS_FIRST_SOURCE_REGISTER
@@ -343,11 +343,11 @@ TEST(EncodingSpecificationParserTest, VexOperandSuffixByte) {
       has_vex_operand_suffix: true
     }
     opcode: 0x0f3a4b
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
-  CheckParser("EVEX.128.66.0F38.W0 92 /vsib", R"proto(
+  CheckParser("EVEX.128.66.0F38.W0 92 /vsib", R"pb(
     vex_prefix {
       prefix_type: EVEX_PREFIX
       vector_size: VEX_VECTOR_SIZE_128_BIT
@@ -357,8 +357,8 @@ TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
       vsib_usage: VSIB_USED
     }
     opcode: 0x0f3892
-    modrm_usage: FULL_MODRM)proto");
-  CheckParser("EVEX.128.66.0F38.W0 92 /r /vsib", R"proto(
+    modrm_usage: FULL_MODRM)pb");
+  CheckParser("EVEX.128.66.0F38.W0 92 /r /vsib", R"pb(
     vex_prefix {
       prefix_type: EVEX_PREFIX
       vector_size: VEX_VECTOR_SIZE_128_BIT
@@ -368,8 +368,8 @@ TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
       vsib_usage: VSIB_USED
     }
     opcode: 0x0f3892
-    modrm_usage: FULL_MODRM)proto");
-  CheckParser("EVEX.128.66.0F38.W0 92 /5 /vsib", R"proto(
+    modrm_usage: FULL_MODRM)pb");
+  CheckParser("EVEX.128.66.0F38.W0 92 /5 /vsib", R"pb(
     vex_prefix {
       prefix_type: EVEX_PREFIX
       vector_size: VEX_VECTOR_SIZE_128_BIT
@@ -380,11 +380,11 @@ TEST(EncodingSpecificationParserTest, VSibSuffixByte) {
     }
     opcode: 0x0f3892
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
-    modrm_opcode_extension: 5)proto");
+    modrm_opcode_extension: 5)pb");
 }
 
 TEST(EncodingSpecificationParserTest, EvexPrefixWithModRm) {
-  CheckParser("EVEX.LIG.66.0F.W1 2F /r", R"proto(
+  CheckParser("EVEX.LIG.66.0F.W1 2F /r", R"pb(
     vex_prefix {
       prefix_type: EVEX_PREFIX
       mandatory_prefix: MANDATORY_PREFIX_OPERAND_SIZE_OVERRIDE
@@ -392,8 +392,8 @@ TEST(EncodingSpecificationParserTest, EvexPrefixWithModRm) {
       vex_w_usage: VEX_W_IS_ONE
     }
     opcode: 0x0f2f
-    modrm_usage: FULL_MODRM)proto");
-  CheckParser("EVEX.128.0F.W0 29 /r", R"proto(
+    modrm_usage: FULL_MODRM)pb");
+  CheckParser("EVEX.128.0F.W0 29 /r", R"pb(
     vex_prefix {
       prefix_type: EVEX_PREFIX
       map_select: MAP_SELECT_0F
@@ -401,11 +401,11 @@ TEST(EncodingSpecificationParserTest, EvexPrefixWithModRm) {
       vex_w_usage: VEX_W_IS_ZERO
     }
     opcode: 0x0f29
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, EvexLig512) {
-  CheckParser("EVEX.512.0F.W0 29 /r", R"proto(
+  CheckParser("EVEX.512.0F.W0 29 /r", R"pb(
     vex_prefix {
       prefix_type: EVEX_PREFIX
       map_select: MAP_SELECT_0F
@@ -413,18 +413,18 @@ TEST(EncodingSpecificationParserTest, EvexLig512) {
       vex_w_usage: VEX_W_IS_ZERO
     }
     opcode: 0x0f29
-    modrm_usage: FULL_MODRM)proto");
+    modrm_usage: FULL_MODRM)pb");
 }
 
 TEST(EncodingSpecificationParserTest, ShadowStackPointer) {
-  CheckParser("F3 REX.W 0F AE /05", R"proto(
+  CheckParser("F3 REX.W 0F AE /05", R"pb(
     opcode: 0x0fae
     modrm_usage: OPCODE_EXTENSION_IN_MODRM
     modrm_opcode_extension: 5
     legacy_prefixes {
       has_mandatory_repe_prefix: true
       rex_w_prefix: PREFIX_IS_REQUIRED
-    })proto");
+    })pb");
 }
 
 TEST(GetAvailableEncodingsTest, GetEncodings) {

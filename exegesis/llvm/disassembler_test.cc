@@ -225,15 +225,15 @@ TEST(DisassemblerTest, PUnpackInstructions) {
   Disassembler disasm("");
   EXPECT_EQ(
       "00000000; 0F603425FF7F0000; punpcklbw mm6, dword ptr [0x7fff]; "
-      "punpcklbw 0x7fff, %mm6; MMX_PUNPCKLBWirm",
+      "punpcklbw 0x7fff, %mm6; MMX_PUNPCKLBWrm",
       disasm.DisassembleHexString("0F603425FF7F0000"));
   EXPECT_EQ(
       "00000000; 0F623425FEFFFF7F; punpckldq mm6, dword ptr [0x7ffffffe]; "
-      "punpckldq 0x7ffffffe, %mm6; MMX_PUNPCKLDQirm",
+      "punpckldq 0x7ffffffe, %mm6; MMX_PUNPCKLDQrm",
       disasm.DisassembleHexString("0F623425FEFFFF7F"));
   EXPECT_EQ(
       "00000000; 0F613425FEFFFF7F; punpcklwd mm6, dword ptr [0x7ffffffe]; "
-      "punpcklwd 0x7ffffffe, %mm6; MMX_PUNPCKLWDirm",
+      "punpcklwd 0x7ffffffe, %mm6; MMX_PUNPCKLWDrm",
       disasm.DisassembleHexString("0F613425FEFFFF7F"));
 }
 

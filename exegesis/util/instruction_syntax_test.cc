@@ -30,7 +30,7 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 using ::testing::Pointee;
 
-const char kInstructionWithSingleSyntax[] = R"proto(
+const char kInstructionWithSingleSyntax[] = R"pb(
   vendor_syntax {
     mnemonic: "STMXCSR"
     operands {
@@ -55,9 +55,9 @@ const char kInstructionWithSingleSyntax[] = R"proto(
       rex_w_prefix: PREFIX_IS_NOT_PERMITTED
       operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
     }
-  })proto";
+  })pb";
 
-constexpr char kInstructionWithMultipleSyntaxes[] = R"proto(
+constexpr char kInstructionWithMultipleSyntaxes[] = R"pb(
   llvm_mnemonic: "STOSB"
   vendor_syntax { mnemonic: "STOSB" }
   vendor_syntax {
@@ -89,8 +89,8 @@ constexpr char kInstructionWithMultipleSyntaxes[] = R"proto(
       rex_w_prefix: PREFIX_IS_IGNORED
       operand_size_override_prefix: PREFIX_IS_IGNORED
     }
-  })proto";
-constexpr char kInstructionWithNoSyntaxes[] = R"proto(
+  })pb";
+constexpr char kInstructionWithNoSyntaxes[] = R"pb(
   llvm_mnemonic: "STOSB"
   available_in_64_bit: true
   legacy_instruction: true
@@ -103,7 +103,7 @@ constexpr char kInstructionWithNoSyntaxes[] = R"proto(
       rex_w_prefix: PREFIX_IS_IGNORED
       operand_size_override_prefix: PREFIX_IS_IGNORED
     }
-  })proto";
+  })pb";
 
 TEST(InstructionSyntaxTest, BuildFromStrings) {
   constexpr struct {
@@ -120,88 +120,88 @@ TEST(InstructionSyntaxTest, BuildFromStrings) {
        "mnemonic: 'XOR' operands { name: 'RAX' } operands { name: 'RBX' } ",
        "XOR RAX, RBX"},
       {"VADDPD xmm1,xmm2,xmm3/m128",
-       R"proto(mnemonic: 'VADDPD'
-               operands { name: 'xmm1' }
-               operands { name: 'xmm2' }
-               operands { name: 'xmm3/m128' })proto",
+       R"pb(mnemonic: 'VADDPD'
+            operands { name: 'xmm1' }
+            operands { name: 'xmm2' }
+            operands { name: 'xmm3/m128' })pb",
        "VADDPD xmm1, xmm2, xmm3/m128"},
       {"\tVAESDEC\txmm1,xmm2,xmm3/m128",
-       R"proto(mnemonic: 'VAESDEC'
-               operands { name: 'xmm1' }
-               operands { name: 'xmm2' }
-               operands { name: 'xmm3/m128' })proto",
+       R"pb(mnemonic: 'VAESDEC'
+            operands { name: 'xmm1' }
+            operands { name: 'xmm2' }
+            operands { name: 'xmm3/m128' })pb",
        "VAESDEC xmm1, xmm2, xmm3/m128"},
       {"   VFMADD132PDy ymm1, ymm2,  ymm3   ",
-       R"proto(mnemonic: 'VFMADD132PDy'
-               operands { name: 'ymm1' }
-               operands { name: 'ymm2' }
-               operands { name: 'ymm3' })proto",
+       R"pb(mnemonic: 'VFMADD132PDy'
+            operands { name: 'ymm1' }
+            operands { name: 'ymm2' }
+            operands { name: 'ymm3' })pb",
        "VFMADD132PDy ymm1, ymm2, ymm3"},
       {"LOCK MOV", "mnemonic: 'LOCK MOV' ", "LOCK MOV"},
       {"REPNE MOVS", "mnemonic: 'REPNE MOVS' ", "REPNE MOVS"},
       {"REP MOVS BYTE PTR [RDI], BYTE PTR [RSI]",
-       R"proto(mnemonic: 'REP MOVS'
-               operands { name: 'BYTE PTR [RDI]' }
-               operands { name: 'BYTE PTR [RSI]' })proto",
+       R"pb(mnemonic: 'REP MOVS'
+            operands { name: 'BYTE PTR [RDI]' }
+            operands { name: 'BYTE PTR [RSI]' })pb",
        "REP MOVS BYTE PTR [RDI], BYTE PTR [RSI]"},
       {"REP ", "mnemonic: 'REP' ", "REP"},
       {"vpgatherqq %ymm2, (%rsp,%ymm12,8), %ymm1",
-       R"proto(mnemonic: 'vpgatherqq'
-               operands { name: '%ymm2' }
-               operands { name: '(%rsp,%ymm12,8)' }
-               operands { name: '%ymm1' })proto",
+       R"pb(mnemonic: 'vpgatherqq'
+            operands { name: '%ymm2' }
+            operands { name: '(%rsp,%ymm12,8)' }
+            operands { name: '%ymm1' })pb",
        "vpgatherqq %ymm2, (%rsp,%ymm12,8), %ymm1"},
       {"VPADDB xmm1 {k1} {z}, xmm2, XMMWORD PTR [RSI]",
-       R"proto(mnemonic: 'VPADDB'
-               operands {
-                 name: 'xmm1'
-                 tags { name: 'k1' }
-                 tags { name: 'z' }
-               }
-               operands { name: 'xmm2' }
-               operands { name: 'XMMWORD PTR [RSI]' })proto",
+       R"pb(mnemonic: 'VPADDB'
+            operands {
+              name: 'xmm1'
+              tags { name: 'k1' }
+              tags { name: 'z' }
+            }
+            operands { name: 'xmm2' }
+            operands { name: 'XMMWORD PTR [RSI]' })pb",
        "VPADDB xmm1 {k1} {z}, xmm2, XMMWORD PTR [RSI]"},
       {"VPADDB xmmword ptr [RSI + 4*RBP - 69] {k1} {z}, xmm2, xmm3",
-       R"proto(mnemonic: 'VPADDB'
-               operands {
-                 name: 'xmmword ptr [RSI + 4*RBP - 69]'
-                 tags { name: 'k1' }
-                 tags { name: 'z' }
-               }
-               operands { name: 'xmm2' }
-               operands { name: 'xmm3' })proto",
+       R"pb(mnemonic: 'VPADDB'
+            operands {
+              name: 'xmmword ptr [RSI + 4*RBP - 69]'
+              tags { name: 'k1' }
+              tags { name: 'z' }
+            }
+            operands { name: 'xmm2' }
+            operands { name: 'xmm3' })pb",
        "VPADDB xmmword ptr [RSI + 4*RBP - 69] {k1} {z}, xmm2, xmm3"},
       {"vpaddb %xmm3, %xmm2, -69(%rsi, %rbp, 4) {k1} {z}",
-       R"proto(mnemonic: 'vpaddb'
-               operands { name: '%xmm3' }
-               operands { name: '%xmm2' }
-               operands {
-                 name: '-69(%rsi, %rbp, 4)'
-                 tags { name: 'k1' }
-                 tags { name: 'z' }
-               })proto",
+       R"pb(mnemonic: 'vpaddb'
+            operands { name: '%xmm3' }
+            operands { name: '%xmm2' }
+            operands {
+              name: '-69(%rsi, %rbp, 4)'
+              tags { name: 'k1' }
+              tags { name: 'z' }
+            })pb",
        "vpaddb %xmm3, %xmm2, -69(%rsi, %rbp, 4) {k1} {z}"},
       {"VCMPSD k1 {k2}, xmm2, xmm3, {sae}, 0x11",
-       R"proto(mnemonic: 'VCMPSD'
-               operands {
-                 name: 'k1'
-                 tags { name: 'k2' }
-               }
-               operands { name: 'xmm2' }
-               operands { name: 'xmm3' }
-               operands { tags { name: 'sae' } }
-               operands { name: '0x11' })proto",
+       R"pb(mnemonic: 'VCMPSD'
+            operands {
+              name: 'k1'
+              tags { name: 'k2' }
+            }
+            operands { name: 'xmm2' }
+            operands { name: 'xmm3' }
+            operands { tags { name: 'sae' } }
+            operands { name: '0x11' })pb",
        "VCMPSD k1 {k2}, xmm2, xmm3, {sae}, 0x11"},
       {"VADDPD zmm1 {k1} {z}, zmm2, zmm3, {rd-sae}",
-       R"proto(mnemonic: "VADDPD"
-               operands {
-                 name: "zmm1"
-                 tags { name: "k1" }
-                 tags { name: "z" }
-               }
-               operands { name: "zmm2" }
-               operands { name: "zmm3" }
-               operands { tags { name: "rd-sae" } })proto",
+       R"pb(mnemonic: "VADDPD"
+            operands {
+              name: "zmm1"
+              tags { name: "k1" }
+              tags { name: "z" }
+            }
+            operands { name: "zmm2" }
+            operands { name: "zmm3" }
+            operands { tags { name: "rd-sae" } })pb",
        "VADDPD zmm1 {k1} {z}, zmm2, zmm3, {rd-sae}"}};
   for (const auto& test_case : kTestCases) {
     const InstructionFormat proto = ParseAssemblyStringOrDie(test_case.input);

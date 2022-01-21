@@ -75,7 +75,7 @@ RegisterSetProto GetDebugRegisters() {
 }
 
 RegisterSetProto GetFlagsRegisters() {
-  constexpr char kFlagsRegisters[] = R"proto(
+  constexpr char kFlagsRegisters[] = R"pb(
     register_groups {
       name: "RFLAGS group"
       description: "The flags registers"
@@ -301,12 +301,12 @@ RegisterSetProto GetFlagsRegisters() {
           name: "reserved"
         }
       }
-    })proto";
+    })pb";
   return ParseProtoFromStringOrDie<RegisterSetProto>(kFlagsRegisters);
 }
 
 RegisterSetProto GetFpuAndMmxRegisters() {
-  constexpr char kX87FpuStatusAndControlRegisters[] = R"proto(
+  constexpr char kX87FpuStatusAndControlRegisters[] = R"pb(
     register_groups {
       name: "FPU status word"
       description: "The x87 FPU status word."
@@ -442,7 +442,7 @@ RegisterSetProto GetFpuAndMmxRegisters() {
           name: "reserved"
         }
       }
-    })proto";
+    })pb";
   RegisterSetProto register_set = MakeRegistersFromBaseNameAndIndices(
       {{"ST", "", 0, 79, 0, "FPU",
         RegisterProto::FLOATING_POINT_STACK_REGISTER},
@@ -455,7 +455,7 @@ RegisterSetProto GetFpuAndMmxRegisters() {
 
 RegisterSetProto GetMpxRegisters() {
   constexpr const char kMpxStatusAndControlRegisters[] =
-      R"proto(
+      R"pb(
     register_groups {
       name: "BNDCFGU group"
       description: "The MPX userspace control register"
@@ -536,7 +536,7 @@ RegisterSetProto GetMpxRegisters() {
           description: "Address Bound Directory Entry - Linear address"
         }
       }
-    })proto";
+    })pb";
   RegisterSetProto mpx_registers = MakeRegistersFromBaseNameAndIndices(
       {{"", "", 0, 127, 0, "MPX", RegisterProto::SPECIAL_REGISTER_MPX_BOUNDS}},
       "BND", 0, 4, 0);
@@ -561,7 +561,7 @@ RegisterSetProto GetSegmentRegisters() {
 
 // Returns a RegisterSetProto that contains definitions of the XMM* registers.
 RegisterSetProto GetXmmRegisters() {
-  static constexpr char kXmmControlRegister[] = R"proto(
+  static constexpr char kXmmControlRegister[] = R"pb(
     register_groups {
       name: "MXCSR group"
       description: "The SIMD floating point operation control register."
@@ -651,7 +651,7 @@ RegisterSetProto GetXmmRegisters() {
           name: "reserved"
         }
       }
-    })proto";
+    })pb";
   RegisterSetProto register_set =
       ParseProtoFromStringOrDie<RegisterSetProto>(kXmmControlRegister);
   register_set.MergeFrom(MakeRegistersFromBaseNameAndIndices(
@@ -670,7 +670,7 @@ RegisterSetProto GetXmmRegisters() {
 }
 
 RegisterSetProto GetMemoryControlRegisters() {
-  static constexpr char kRegisterSet[] = R"proto(
+  static constexpr char kRegisterSet[] = R"pb(
     register_groups {
       name: "GDTR group"
       description: "The Global Descriptor Table Register group"
@@ -706,7 +706,7 @@ RegisterSetProto GetMemoryControlRegisters() {
         register_class: SPECIAL_REGISTER_MEMORY
         position_in_group { lsb: 0 msb: 63 }
       }
-    })proto";
+    })pb";
   return ParseProtoFromStringOrDie<RegisterSetProto>(kRegisterSet);
 }
 

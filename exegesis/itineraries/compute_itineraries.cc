@@ -45,6 +45,7 @@
 #include "exegesis/itineraries/jit_perf_evaluator.h"
 #include "exegesis/itineraries/perf_subsystem.h"
 #include "exegesis/llvm/inline_asm.h"
+#include "exegesis/proto/instructions.pb.h"
 #include "exegesis/util/category_util.h"
 #include "exegesis/util/instruction_syntax.h"
 #include "exegesis/util/status_util.h"
@@ -192,13 +193,15 @@ const absl::flat_hash_set<std::string>* const kExcludedInstructions =
         "LOOPNE",
     });
 
-ObservationVector CreateObservationVector(const PerfResult& perf_result) {
+absl::StatusOr<ObservationVector> CreateObservationVector(
+    const PerfResult& perf_result) {
   ObservationVector observations;
 
   bool at_least_one_non_zero = false;
   for (const auto& name : perf_result.Keys()) {
     // Make all the events look like Haswell events.
     // TODO(bdb): This should depend on CPUInfo.
+    // TODO(ondrasej): Replace this with measurements from llvm-exegesis.
     std::string key = name;
     absl::StrReplaceAll(
         {{"uops_dispatched_port:port_", "uops_executed_port:port_"},
@@ -213,7 +216,10 @@ ObservationVector CreateObservationVector(const PerfResult& perf_result) {
     observation->set_measurement(measurement);
     at_least_one_non_zero = at_least_one_non_zero || measurement != 0.0;
   }
-  CHECK(at_least_one_non_zero);
+  if (!at_least_one_non_zero) {
+    return absl::FailedPreconditionError(
+        "All measurements were zero. Are perf counters supported on the host?");
+  }
   return observations;
 }
 
@@ -478,17 +484,17 @@ bool TouchesMemory(const InstructionFormat& asm_syntax) {
 absl::StatusOr<PortMaskCount>
 ComputeItinerariesHelper::ComputeUpdateCodeMicroOps() const {
   PerfResult result;
-  CHECK_OK(EvaluateAssemblyString(
+  RETURN_IF_ERROR(EvaluateAssemblyString(
       llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.inner_iterations,
       init_code_, prefix_code_,
       /*measured_code=*/"", update_code_,
       /*suffix_code=*/"", cleanup_code_, constraints_, &result));
-  const ObservationVector observation = CreateObservationVector(result);
+  const absl::StatusOr<ObservationVector> observation =
+      CreateObservationVector(result);
+  RETURN_IF_ERROR(observation.status());
   DecompositionSolver solver(microarchitecture_);
-  const absl::Status status = solver.Run(observation);
-  if (!status.ok()) {
-    return status;
-  }
+  RETURN_IF_ERROR(solver.Run(*observation));
+
   const auto micro_ops = solver.GetMicroOps();
   PortMaskCount port_masks;
   for (const MicroOperationProto& op : micro_ops) {
@@ -580,15 +586,17 @@ absl::Status ComputeItinerariesHelper::ComputeOneItinerary(
   }
 
   PerfResult result;
-  CHECK_OK(EvaluateAssemblyString(
+  RETURN_IF_ERROR(EvaluateAssemblyString(
       llvm::InlineAsm::AD_Intel, host_mcpu_, parameters_.inner_iterations,
       init_code_, prefix_code_, measured_code,
       touches_memory ? update_code_ : "", /*suffix_code=*/"", cleanup_code_,
       constraints_, &result));
 
   LOG(INFO) << result.ToString();
-  *itinerary->mutable_throughput_observation() =
+  absl::StatusOr<ObservationVector> observation_vector =
       CreateObservationVector(result);
+  RETURN_IF_ERROR(observation_vector.status());
+  *itinerary->mutable_throughput_observation() = *std::move(observation_vector);
 
   // Some instructions stall the decode pipeline, resulting in invalid port
   // distribution (see b/34701967 and go/cpu-mysteries/alu_16bits).

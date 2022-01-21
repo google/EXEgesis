@@ -43,7 +43,7 @@ void AddInstructionGroup(absl::string_view instruction_group_proto,
 absl::Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
   constexpr char kFfreepMnemonic[] = "FFREEP";
-  constexpr char kFfreepInstructionProto[] = R"proto(
+  constexpr char kFfreepInstructionProto[] = R"pb(
     description: "Free Floating-Point Register and Pop."
     vendor_syntax {
       mnemonic: "FFREEP"
@@ -56,12 +56,12 @@ absl::Status AddMissingFfreepInstruction(InstructionSetProto* instruction_set) {
     available_in_64_bit: true
     legacy_instruction: true
     encoding_scheme: "M"
-    raw_encoding_specification: "DF /0")proto";
-  constexpr char kFfreepInstructionGroupProto[] = R"proto(
+    raw_encoding_specification: "DF /0")pb";
+  constexpr char kFfreepInstructionGroupProto[] = R"pb(
     name: "FFREEP"
     description: "Free Floating-Point Register and Pop."
     flags_affected { content: "" }
-    short_description: "Free Floating-Point Register and Pop.")proto";
+    short_description: "Free Floating-Point Register and Pop.")pb";
   for (const InstructionProto& instruction : instruction_set->instructions()) {
     if (HasMnemonicInVendorSyntax(instruction, kFfreepMnemonic)) {
       return absl::OkStatus();

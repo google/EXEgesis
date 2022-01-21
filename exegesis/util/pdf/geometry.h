@@ -179,6 +179,9 @@ bool Intersects(const Span& a, const Span& b);
 // Here OverlapRatio = 1
 float OverlapRatio(const Span& a, const Span& b);
 
+// Returns the space between two spans. Returns 0.0 if they touch or overlap.
+float SpaceBetween(const Span& a, const Span& b);
+
 // Returns the Span of a BoundingBox along a specific orientation.
 // +  +-----+  +
 // |  |     |  |

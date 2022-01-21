@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/status/status.h"
@@ -59,7 +60,7 @@ absl::Status FixOperandsOfCmpsAndMovs(InstructionSetProto* instruction_set) {
       std::begin(kRSIIndexes), std::begin(kRSIIndexes));
   const absl::flat_hash_set<std::string> kDestinationOperands(
       std::begin(kRDIIndexes), std::begin(kRDIIndexes));
-  const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
+  const absl::flat_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
@@ -112,7 +113,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixOperandsOfCmpsAndMovs, 2000);
 absl::Status FixOperandsOfInsAndOuts(InstructionSetProto* instruction_set) {
   constexpr char kIns[] = "INS";
   constexpr char kOuts[] = "OUTS";
-  const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
+  const absl::flat_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
   absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
@@ -194,9 +195,9 @@ absl::Status FixOperandsOfLodsScasAndStos(
   constexpr char kLods[] = "LODS";
   constexpr char kScas[] = "SCAS";
   constexpr char kStos[] = "STOS";
-  const absl::node_hash_map<std::string, std::string> operand_to_pointer_size(
+  const absl::flat_hash_map<std::string, std::string> operand_to_pointer_size(
       std::begin(kOperandToPointerSize), std::end(kOperandToPointerSize));
-  const absl::node_hash_map<std::string, std::string> kOperandToRegister = {
+  const absl::flat_hash_map<std::string, std::string> kOperandToRegister = {
       {"m8", "AL"}, {"m16", "AX"}, {"m32", "EAX"}, {"m64", "RAX"}};
   absl::Status status = absl::OkStatus();
   for (InstructionProto& instruction :
@@ -364,7 +365,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(FixRegOperands, 2000);
 
 absl::Status RenameOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  const absl::node_hash_map<std::string, std::string> kOperandRenaming = {
+  const absl::flat_hash_map<std::string, std::string> kOperandRenaming = {
       // Synonyms (different names used for the same type in different parts of
       // the manual).
       {"m80dec", "m80bcd"},
@@ -420,23 +421,26 @@ absl::Status RemoveImplicitST0Operand(InstructionSetProto* instruction_set) {
 }
 REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitST0Operand, 2000);
 
-absl::Status RemoveImplicitXmm0Operand(InstructionSetProto* instruction_set) {
+absl::Status RemoveImplicitOperands(InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  static constexpr char kImplicitXmm0Operand[] = "<XMM0>";
+  const absl::flat_hash_set<absl::string_view> kImplicitXmmOperands = {
+      "<EAX>", "<XMM0>", "<XMM0-2>", "<XMM0-6>", "<XMM0-7>", "<XMM4-6>"};
+
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     RepeatedPtrField<InstructionOperand>* const operands =
         GetOrAddUniqueVendorSyntaxOrDie(&instruction)->mutable_operands();
-    operands->erase(std::remove_if(operands->begin(), operands->end(),
-                                   [](const InstructionOperand& operand) {
-                                     return operand.name() ==
-                                            kImplicitXmm0Operand;
-                                   }),
-                    operands->end());
+    operands->erase(
+        std::remove_if(
+            operands->begin(), operands->end(),
+            [&kImplicitXmmOperands](const InstructionOperand& operand) {
+              return kImplicitXmmOperands.contains(operand.name());
+            }),
+        operands->end());
   }
   return absl::OkStatus();
 }
-REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitXmm0Operand, 2000);
+REGISTER_INSTRUCTION_SET_TRANSFORM(RemoveImplicitOperands, 2000);
 
 }  // namespace x86
 }  // namespace exegesis

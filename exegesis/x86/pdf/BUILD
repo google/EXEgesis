@@ -90,6 +90,7 @@ cc_test(
         "//exegesis/testing:test_util",
         "//exegesis/util:proto_util",
         "//exegesis/util/pdf:pdf_document_parser",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

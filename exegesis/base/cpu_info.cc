@@ -19,12 +19,11 @@
 
 #include "absl/strings/str_cat.h"
 #include "glog/logging.h"
-#include "util/gtl/map_util.h"
 
 namespace exegesis {
 
 bool CpuInfo::HasExactFeature(const std::string& name) const {
-  return gtl::ContainsKey(indexed_features_, name);
+  return indexed_features_.contains(name);
 }
 
 // TODO(courbet): Right now absl::StrSplit() does not support a string literal

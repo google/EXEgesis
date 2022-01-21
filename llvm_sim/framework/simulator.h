@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "llvm/MC/MCInst.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm_sim/framework/component.h"
 #include "llvm_sim/framework/context.h"
 #include "llvm_sim/framework/log.h"

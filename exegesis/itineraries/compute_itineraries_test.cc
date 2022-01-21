@@ -31,7 +31,7 @@ namespace {
 TEST(ComputeItinerariesTest, ADC) {
   // Restrict instructions to the given range.
   const auto instruction_set =
-      ParseProtoFromStringOrDie<InstructionSetProto>(R"proto(
+      ParseProtoFromStringOrDie<InstructionSetProto>(R"pb(
         instructions {
           llvm_mnemonic: "ADC8i8"
           vendor_syntax {
@@ -60,15 +60,21 @@ TEST(ComputeItinerariesTest, ADC) {
             legacy_prefixes {}
             immediate_value_bytes: 1
           }
-        })proto");
+        })pb");
   // Always compute itineraries for the host CPU.
+
   const std::string& host_cpu_model_id = HostCpuInfoOrDie().cpu_model_id();
-  const std::string& host_cpu_microarchitecture =
-      GetMicroArchitectureIdForCpuModelOrDie(host_cpu_model_id);
+  const absl::StatusOr<std::string> host_cpu_microarchitecture =
+      GetMicroArchitectureForCpuModelId(host_cpu_model_id);
+  ASSERT_OK(host_cpu_microarchitecture.status())
+      << "Unknown host CPU model ID \'" << host_cpu_model_id << "\'";
   InstructionSetItinerariesProto itineraries;
-  const auto& microarchitecture =
-      MicroArchitecture::FromIdOrDie(host_cpu_microarchitecture);
-  itineraries.set_microarchitecture_id(microarchitecture.proto().id());
+  const MicroArchitecture* const microarchitecture =
+      MicroArchitecture::FromId(*host_cpu_microarchitecture);
+  ASSERT_NE(microarchitecture, nullptr)
+      << "Microarchitecture definition is missing for host CPU model ID \'"
+      << host_cpu_model_id << " (" << *host_cpu_microarchitecture << ")";
+  itineraries.set_microarchitecture_id(microarchitecture->proto().id());
   itineraries.add_itineraries();
 
   const absl::Status status = ComputeItineraries(instruction_set, &itineraries);

@@ -217,9 +217,11 @@ std::string DumpMCOperandToString(const llvm::MCOperand& operand,
   if (operand.isValid()) {
     if (operand.isImm()) {
       debug_string = absl::StrCat("Imm(", operand.getImm(), ")");
-    } else if (operand.isFPImm()) {
+    } else if (operand.isDFPImm()) {
       debug_string = absl::StrCat(
-          "FPImm(", absl::StrFormat("%.17g", operand.getFPImm()), ")");
+          "FPImm(",
+          absl::StrFormat("%.17g", absl::bit_cast<double>(operand.getDFPImm())),
+          ")");
     } else if (operand.isReg()) {
       debug_string = absl::StrCat(
           "R:", DumpRegisterToString(operand.getReg(), register_info));
@@ -319,7 +321,7 @@ absl::StatusOr<llvm::InlineAsm::AsmDialect> ParseAsmDialectName(
 }
 
 llvm::TargetOptions LLVMInitTargetOptionsFromCodeGenFlags() {
-  return llvm::codegen::InitTargetOptionsFromCodeGenFlags();
+  return llvm::codegen::InitTargetOptionsFromCodeGenFlags(llvm::Triple());
 }
 
 llvm::MCTargetOptions LLVMInitMCTargetOptionsFromFlags() {

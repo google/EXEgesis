@@ -30,7 +30,7 @@ using ::exegesis::testing::EqualsProto;
 using ::google::protobuf::TextFormat;
 
 TEST(ConverterTest, ConvertToArchitectureProto) {
-  static constexpr char kXmlDatabase[] = R"proto(
+  static constexpr char kXmlDatabase[] = R"pb(
     base_index {
       files {
         filename: "instruction_1.xml"
@@ -198,11 +198,11 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
           docvars { mnemonic: "I3" cond_setting: S isa: A32 }
         }
       }
-    })proto";
+    })pb";
   XmlDatabase xml_database;
   ASSERT_TRUE(TextFormat::ParseFromString(kXmlDatabase, &xml_database));
 
-  static constexpr char kExpectedArchitecture[] = R"proto(
+  static constexpr char kExpectedArchitecture[] = R"pb(
     name: 'ARMv8'
     instruction_set {
       source_infos { source_name: "ARM XML Database" }
@@ -301,7 +301,7 @@ TEST(ConverterTest, ConvertToArchitectureProto) {
         flags_affected { content: "S" }
         short_description: "Third instruction group."
       }
-    })proto";
+    })pb";
   EXPECT_THAT(ConvertToArchitectureProto(xml_database),
               EqualsProto(kExpectedArchitecture));
 }

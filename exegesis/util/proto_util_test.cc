@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <string>
 
+#include "absl/flags/flag.h"
 #include "absl/status/status.h"
 #include "exegesis/proto/instructions.pb.h"
 #include "exegesis/testing/test_util.h"

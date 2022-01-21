@@ -88,6 +88,7 @@ message RegisterProto {
       MMX_STACK_REGISTER = 0x15;
 
       MASK_REGISTER = 0x16;
+        MASK_REGISTER_BLOCK = 0x161;
 
       REGISTER_BLOCK = 0x17;
         REGISTER_BLOCK_128_BIT = 0x171;

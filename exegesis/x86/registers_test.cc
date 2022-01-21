@@ -123,7 +123,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
     const char* register_name;
     const char* expected_proto;
   } kTestCases[] =  //
-      {{"RAX", R"proto(
+      {{"RAX", R"pb(
           name: 'RAX group'
           description: 'The group of registers aliased with RAX'
           registers {
@@ -155,9 +155,9 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             binary_encoding: 4
             register_class: GENERAL_PURPOSE_REGISTER_8_BIT
             position_in_group { lsb: 8 msb: 15 }
-          })proto"},
+          })pb"},
        {"R16", ""},
-       {"ST7", R"proto(
+       {"ST7", R"pb(
           name: 'ST7 group'
           description: 'The group of registers aliased with ST7'
           registers {
@@ -173,8 +173,8 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             register_class: MMX_STACK_REGISTER
             position_in_group { msb: 63 }
             feature_name: 'MMX'
-          })proto"},
-       {"DS", R"proto(
+          })pb"},
+       {"DS", R"pb(
           name: 'DS group'
           description: 'The group of registers aliased with DS'
           registers {
@@ -182,8 +182,8 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             binary_encoding: 3
             register_class: SPECIAL_REGISTER_SEGMENT
             position_in_group { lsb: 0 msb: 15 }
-          })proto"},
-       {"XMM15", R"proto(
+          })pb"},
+       {"XMM15", R"pb(
           name: 'XMM15 group'
           description: 'The group of registers aliased with XMM15'
           registers {
@@ -206,8 +206,8 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             register_class: VECTOR_REGISTER_512_BIT
             position_in_group { msb: 511 }
             feature_name: 'AVX512'
-          })proto"},
-       {"XMM17", R"proto(
+          })pb"},
+       {"XMM17", R"pb(
           name: 'XMM17 group'
           description: 'The group of registers aliased with XMM17'
           registers {
@@ -230,8 +230,8 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             register_class: VECTOR_REGISTER_512_BIT
             position_in_group { msb: 511 }
             feature_name: 'AVX512'
-          })proto"},
-       {"CR3", R"proto(
+          })pb"},
+       {"CR3", R"pb(
           name: 'CR3 group'
           description: 'The group of registers aliased with CR3'
           registers {
@@ -239,8 +239,8 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             binary_encoding: 3
             register_class: SPECIAL_REGISTER_CONTROL
             position_in_group { msb: 63 }
-          })proto"},
-       {"DR3", R"proto(
+          })pb"},
+       {"DR3", R"pb(
           name: 'DR3 group'
           description: 'The group of registers aliased with DR3'
           registers {
@@ -248,8 +248,8 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             binary_encoding: 3
             register_class: SPECIAL_REGISTER_DEBUG
             position_in_group { msb: 63 }
-          })proto"},
-       {"BND1", R"proto(
+          })pb"},
+       {"BND1", R"pb(
           name: "BND1 group"
           description: "The group of registers aliased with BND1"
           registers {
@@ -258,7 +258,7 @@ TEST(GetRegisterSetTest, CheckSomeRegisters) {
             position_in_group { msb: 127 }
             feature_name: "MPX"
             register_class: SPECIAL_REGISTER_MPX_BOUNDS
-          })proto"}};
+          })pb"}};
   for (const auto& test_case : kTestCases) {
     const std::string register_name = test_case.register_name;
     SCOPED_TRACE(absl::StrCat("register_name = ", register_name));

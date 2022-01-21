@@ -26,7 +26,7 @@ namespace {
 // instructions, but it does not merge them with STOSW which is a different
 // instruction.
 TEST(MergeVendorSyntaxTest, MergeStosAndStosb) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "STOS"
@@ -117,8 +117,8 @@ TEST(MergeVendorSyntaxTest, MergeStosAndStosb) {
           operand_size_override_prefix: PREFIX_IS_REQUIRED
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "STOS"
@@ -193,7 +193,7 @@ TEST(MergeVendorSyntaxTest, MergeStosAndStosb) {
           operand_size_override_prefix: PREFIX_IS_IGNORED
         }
       }
-    })proto";
+    })pb";
   TestTransform(MergeVendorSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -202,7 +202,7 @@ TEST(MergeVendorSyntaxTest, MergeStosAndStosb) {
 // different addressing modes. From performance point of view, these are two
 // different instructions.
 TEST(MergeVendorSyntaxTest, DoesNotMergeAcrossAddressingModes) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADD"
@@ -269,8 +269,8 @@ TEST(MergeVendorSyntaxTest, DoesNotMergeAcrossAddressingModes) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADD"
@@ -337,7 +337,7 @@ TEST(MergeVendorSyntaxTest, DoesNotMergeAcrossAddressingModes) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
+    })pb";
   TestTransform(MergeVendorSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -346,7 +346,7 @@ TEST(MergeVendorSyntaxTest, DoesNotMergeAcrossAddressingModes) {
 // operands are explicit operands, and only their order in the vendor syntax is
 // updated.
 TEST(MergeVendorSyntaxTest, MergesReorderedOperands) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       description: "Exchange r32 with doubleword from r/m32."
       llvm_mnemonic: "XCHG32rr"
@@ -418,8 +418,8 @@ TEST(MergeVendorSyntaxTest, MergesReorderedOperands) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       description: "Exchange r32 with doubleword from r/m32."
       llvm_mnemonic: "XCHG32rr"
@@ -474,13 +474,13 @@ TEST(MergeVendorSyntaxTest, MergesReorderedOperands) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
+    })pb";
   TestTransform(MergeVendorSyntax, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveUselessOperandPermutationsTest, RemoveUselessPermutations) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "XCHG"
@@ -533,8 +533,8 @@ TEST(RemoveUselessOperandPermutationsTest, RemoveUselessPermutations) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "XCHG"
@@ -568,13 +568,13 @@ TEST(RemoveUselessOperandPermutationsTest, RemoveUselessPermutations) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
+    })pb";
   TestTransform(RemoveUselessOperandPermutations, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(RemoveUselessOperandPermutationsTest, KeepUsefulPermutations) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "XCHG"
@@ -625,7 +625,7 @@ TEST(RemoveUselessOperandPermutationsTest, KeepUsefulPermutations) {
           operand_size_override_prefix: PREFIX_IS_NOT_PERMITTED
         }
       }
-    })proto";
+    })pb";
   TestTransform(RemoveUselessOperandPermutations, kInstructionSetProto,
                 kInstructionSetProto);
 }

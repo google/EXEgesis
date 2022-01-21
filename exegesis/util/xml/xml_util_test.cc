@@ -31,6 +31,7 @@ using ::exegesis::testing::StatusIs;
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
+using ::testing::MatchesRegex;
 using ::testing::Ne;
 using ::testing::NotNull;
 using ::tinyxml2::XMLDocument;
@@ -60,8 +61,9 @@ TEST(XmlUtilTest, DebugString) {
   EXPECT_EQ(DebugString(&doc), "<doc>simple</doc>\n");
 
   ParseXML("<doc>text<tag attr=\"2\">inside</tag></doc>", &doc);
-  EXPECT_EQ(DebugString(&doc),
-            "<doc>text    <tag attr=\"2\">inside</tag>\n</doc>\n");
+  constexpr char kExpectedRegex[] =
+      R"re(<doc>\s*text\s*<tag attr="2">\s*inside\s*</tag>\s*</doc>\s*)re";
+  EXPECT_THAT(DebugString(&doc), MatchesRegex(kExpectedRegex));
 }
 
 TEST(XmlUtilTest, FindChild) {

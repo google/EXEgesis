@@ -29,7 +29,6 @@
 #include "src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "src/google/protobuf/repeated_field.h"
 #include "src/google/protobuf/util/message_differencer.h"
-#include "util/gtl/map_util.h"
 
 ABSL_FLAG(bool, exegesis_print_transform_names_to_log, true,
           "Print the names of the transforms executed by the transform "
@@ -103,7 +102,7 @@ RegisterInstructionSetTransform::RegisterInstructionSetTransform(
     InstructionSetTransformRawFunction transform) {
   InstructionSetTransformsByName& transforms_by_name =
       *GetMutableTransformsByName();
-  CHECK(!gtl::ContainsKey(transforms_by_name, transform_name))
+  CHECK(!transforms_by_name.contains(transform_name))
       << "Transform name '" << transform_name << "' is already used!";
   InstructionSetTransform transform_wrapper =
       [transform_name, transform](InstructionSetProto* instruction_set) {

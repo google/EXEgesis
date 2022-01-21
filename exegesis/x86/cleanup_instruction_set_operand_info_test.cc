@@ -27,7 +27,7 @@ namespace {
 using ::exegesis::testing::StatusIs;
 
 TEST(AddOperandInfoTest, AddInfo) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STOS'
@@ -64,8 +64,8 @@ TEST(AddOperandInfoTest, AddInfo) {
         }
         modrm_usage: FULL_MODRM
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STOS'
@@ -132,7 +132,7 @@ TEST(AddOperandInfoTest, AddInfo) {
         }
         modrm_usage: FULL_MODRM
       }
-    })proto";
+    })pb";
   TestTransform(AddOperandInfo, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
@@ -141,7 +141,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
   constexpr const char* const kInstructionSetProtos[] = {
       // The instruction encoding does not use the ModR/M byte, so the operands
       // can't use MODRM_RM_ENCODING.
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: 'STOS'
@@ -149,9 +149,9 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
             operands { name: 'AL' }
           }
           x86_encoding_specification { legacy_prefixes {} }
-        })proto",
+        })pb",
       // Only one operand can be encoded in the opcode.
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: 'FMUL'
@@ -162,7 +162,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
             legacy_prefixes {}
             operand_in_opcode: FP_STACK_REGISTER_IN_OPCODE
           }
-        })proto"};
+        })pb"};
   for (const char* const instruction_set_proto : kInstructionSetProtos) {
     InstructionSetProto instruction_set;
     ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
@@ -174,7 +174,7 @@ TEST(AddOperandInfoTest, DetectsInconsistentEncodings) {
 
 TEST(AddVmxOperandInfoTest, NoArgs) {
   constexpr const char* const kInstructionSetProtos[] = {
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax { mnemonic: "VMCALL" }
           syntax { mnemonic: "vmcall" }
@@ -192,8 +192,8 @@ TEST(AddVmxOperandInfoTest, NoArgs) {
           }
           instruction_group_index: 3
         }
-      )proto",
-      R"proto(
+      )pb",
+      R"pb(
         instructions {
           vendor_syntax { mnemonic: "VMXOFF" }
           syntax { mnemonic: "vmxoff" }
@@ -210,7 +210,7 @@ TEST(AddVmxOperandInfoTest, NoArgs) {
             }
           }
           instruction_group_index: 10
-        })proto"};
+        })pb"};
 
   for (const char* const instruction_set_proto : kInstructionSetProtos) {
     // The transform should not modify these because they are no-arg.
@@ -221,7 +221,7 @@ TEST(AddVmxOperandInfoTest, NoArgs) {
 
 TEST(AddVmxOperandInfoTest, ArgsWithSuffix) {
   constexpr const char* const kInstructionSetProtos[] = {
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "VMCLEAR"
@@ -256,8 +256,8 @@ TEST(AddVmxOperandInfoTest, ArgsWithSuffix) {
           }
           instruction_group_index: 4
         }
-      )proto",
-      R"proto(
+      )pb",
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "VMPTRLD"
@@ -291,7 +291,7 @@ TEST(AddVmxOperandInfoTest, ArgsWithSuffix) {
             }
           }
           instruction_group_index: 6
-        })proto"};
+        })pb"};
 
   for (const char* const instruction_set_proto : kInstructionSetProtos) {
     // The transform should not modify these because they have /6 suffix.
@@ -303,7 +303,7 @@ TEST(AddVmxOperandInfoTest, ArgsWithSuffix) {
 TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
   constexpr int kLength = 2;
   constexpr const char* const kInstructionSetProtos[kLength] = {
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "INVEPT"
@@ -346,8 +346,8 @@ TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
           }
           instruction_group_index: 1
         }
-      )proto",
-      R"proto(
+      )pb",
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "INVVPID"
@@ -390,10 +390,10 @@ TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
           }
           instruction_group_index: 2
         }
-      )proto"};
+      )pb"};
 
   constexpr const char* const kExpectedInstructionSetProtos[kLength] = {
-      R"proto(
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "INVEPT"
@@ -436,8 +436,8 @@ TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
           }
           instruction_group_index: 1
         }
-      )proto",
-      R"proto(
+      )pb",
+      R"pb(
         instructions {
           vendor_syntax {
             mnemonic: "INVVPID"
@@ -480,7 +480,7 @@ TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
           }
           instruction_group_index: 2
         }
-      )proto"};
+      )pb"};
 
   for (int i = 0; i < kLength; ++i) {
     const char* const instruction_set_proto = kInstructionSetProtos[i];
@@ -492,7 +492,7 @@ TEST(AddVmxOperandInfoTest, ArgsMissingSuffix) {
 }
 
 TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
-  constexpr const char kVmCallProto[] = R"proto(
+  constexpr const char kVmCallProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "VMCALL" }
       syntax { mnemonic: "vmcall" }
@@ -510,8 +510,8 @@ TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
       }
       instruction_group_index: 3
     }
-  )proto";
-  constexpr const char kVmFuncProto[] = R"proto(
+  )pb";
+  constexpr const char kVmFuncProto[] = R"pb(
     instructions {
       description: "Invoke VMfunction specified in EAX."
       vendor_syntax { mnemonic: "VMFUNC" }
@@ -521,8 +521,8 @@ TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
       raw_encoding_specification: "NP 0F 01 D4"
       instruction_group_index: 4
     }
-  )proto";
-  constexpr const char kExpectedTransformedVmFuncProto[] = R"proto(
+  )pb";
+  constexpr const char kExpectedTransformedVmFuncProto[] = R"pb(
     instructions {
       description: "Invoke VMfunction specified in EAX."
       vendor_syntax {
@@ -541,7 +541,7 @@ TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
       raw_encoding_specification: "NP 0F 01 D4"
       instruction_group_index: 4
     }
-  )proto";
+  )pb";
 
   // Functions other than VMFUNC should not be changed.
   TestTransform(FixVmFuncOperandInfo, kVmCallProto, kVmCallProto);
@@ -552,7 +552,7 @@ TEST(FixVmFuncOperandInfoTest, AddMissingInfo) {
 }
 
 TEST(AddMovdir64BOperandInfoTest, AddInfo) {
-  constexpr const char kInstructionSetProto[] = R"proto(
+  constexpr const char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "MOVDIR64B"
@@ -573,8 +573,8 @@ TEST(AddMovdir64BOperandInfoTest, AddInfo) {
       legacy_instruction: true
       raw_encoding_specification: "NP 0F 01 D4"
       instruction_group_index: 4
-    })proto";
-  constexpr const char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr const char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "MOVDIR64B"
@@ -597,14 +597,14 @@ TEST(AddMovdir64BOperandInfoTest, AddInfo) {
       legacy_instruction: true
       raw_encoding_specification: "NP 0F 01 D4"
       instruction_group_index: 4
-    })proto";
+    })pb";
 
   TestTransform(AddMovdir64BOperandInfo, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddUmonitorOperandInfoTest, AddInfo) {
-  constexpr const char kInstructionSetProto[] = R"proto(
+  constexpr const char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "UMONITOR"
@@ -615,8 +615,8 @@ TEST(AddUmonitorOperandInfoTest, AddInfo) {
         }
       }
       raw_encoding_specification: "F3 0F AE /6"
-    })proto";
-  constexpr const char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr const char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "UMONITOR"
@@ -629,13 +629,13 @@ TEST(AddUmonitorOperandInfoTest, AddInfo) {
         }
       }
       raw_encoding_specification: "F3 0F AE /6"
-    })proto";
+    })pb";
   TestTransform(AddUmonitorOperandInfo, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STUFF'
@@ -667,8 +667,8 @@ TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
           name: "1"
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STUFF'
@@ -708,13 +708,13 @@ TEST(AddMissingOperandUsageTest, AddMissingOperandUsage) {
           usage: USAGE_READ
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddMissingOperandUsage, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingOperandUsageToVblendInstructionsTest, AddMissingOperandUsage) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STUFF'
@@ -801,8 +801,8 @@ TEST(AddMissingOperandUsageToVblendInstructionsTest, AddMissingOperandUsage) {
           usage: USAGE_READ_WRITE
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STUFF'
@@ -890,13 +890,13 @@ TEST(AddMissingOperandUsageToVblendInstructionsTest, AddMissingOperandUsage) {
           usage: USAGE_READ_WRITE
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddMissingOperandUsageToVblendInstructions,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(AddRegisterClassToOperandsTest, AddRegisterClassToOperands) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STUFF'
@@ -906,8 +906,8 @@ TEST(AddRegisterClassToOperandsTest, AddRegisterClassToOperands) {
         operands { name: 'k' }
         operands { name: 'xmm1' }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'STUFF'
@@ -917,13 +917,13 @@ TEST(AddRegisterClassToOperandsTest, AddRegisterClassToOperands) {
         operands { name: 'k' register_class: MASK_REGISTER }
         operands { name: 'xmm1' register_class: VECTOR_REGISTER_128_BIT }
       }
-    })proto";
+    })pb";
   TestTransform(AddRegisterClassToOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingVexVOperandUsageTest, AddMissingVexOperandUsage) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "VMULPS"
@@ -1045,8 +1045,8 @@ TEST(AddMissingVexVOperandUsageTest, AddMissingVexOperandUsage) {
         }
       }
     }
-  )proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+  )pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "VMULPS"
@@ -1171,7 +1171,7 @@ TEST(AddMissingVexVOperandUsageTest, AddMissingVexOperandUsage) {
         }
       }
     }
-  )proto";
+  )pb";
 
   TestTransform(AddMissingVexVOperandUsage, kInstructionSetProto,
                 kExpectedInstructionSetProto);

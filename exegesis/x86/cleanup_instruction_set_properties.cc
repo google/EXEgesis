@@ -45,10 +45,13 @@ absl::Status AddMissingCpuFlags(InstructionSetProto* instruction_set) {
     const std::string* const feature_name =
         FindByVendorSyntaxMnemonicOrNull(GetMissingCpuFlags(), instruction);
     if (feature_name) {
-      // Be warned if they fix it someday. If this triggers, just remove the
-      // rule.
-      CHECK_NE(*feature_name, instruction.feature_name())
-          << instruction.DebugString();
+      // Be warned if they fix it someday. We can't remove the rewriting rules
+      // if we want to keep support for older versions of the SDM.
+      if (*feature_name == instruction.feature_name()) {
+        LOG(INFO) << "Feature " << *feature_name
+                  << " is now specified correctly for instruction:\n"
+                  << instruction.DebugString();
+      }
       instruction.set_feature_name(*feature_name);
     }
   }

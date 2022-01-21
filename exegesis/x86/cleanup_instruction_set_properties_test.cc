@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddMissingCpuFlagsTest, AddsMissing) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions { vendor_syntax { mnemonic: 'CLFLUSH' } }
     instructions {
       vendor_syntax {
@@ -30,8 +30,8 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
         operands { name: 'm8' }
       }
       raw_encoding_specification: '6C'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'CLFLUSH' }
       feature_name: 'CLFSH'
@@ -42,13 +42,13 @@ TEST(AddMissingCpuFlagsTest, AddsMissing) {
         operands { name: 'm8' }
       }
       raw_encoding_specification: '6C'
-    })proto";
+    })pb";
   TestTransform(AddMissingCpuFlags, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddRestrictedModesTest, AddsProtectionModes) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'HLT' }
       protection_mode: -1
@@ -80,8 +80,8 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
         operands { name: 'r64' }
         operands { name: 'imm64' }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: 'HLT' }
       protection_mode: 0
@@ -115,13 +115,13 @@ TEST(AddRestrictedModesTest, AddsProtectionModes) {
         operands { name: 'r64' }
         operands { name: 'imm64' }
       }
-    })proto";
+    })pb";
   TestTransform(AddProtectionModes, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixAvailableIn64BitsTest, FixAvailability) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "AAD"
@@ -136,8 +136,8 @@ TEST(FixAvailableIn64BitsTest, FixAvailability) {
       legacy_instruction: true
       encoding_scheme: "ZO"
       raw_encoding_specification: "9F"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "AAD"
@@ -153,7 +153,7 @@ TEST(FixAvailableIn64BitsTest, FixAvailability) {
       encoding_scheme: "ZO"
       raw_encoding_specification: "9F"
       available_in_64_bit: true
-    })proto";
+    })pb";
   TestTransform(FixAvailableIn64Bits, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

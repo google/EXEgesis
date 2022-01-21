@@ -28,7 +28,7 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 
 TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
-  constexpr char kInstructionProto[] = R"proto(
+  constexpr char kInstructionProto[] = R"pb(
     vendor_syntax {
       mnemonic: 'ADC'
       operands {
@@ -51,8 +51,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
       modrm_usage: OPCODE_EXTENSION_IN_MODRM
       modrm_opcode_extension: 2
       immediate_value_bytes: 2
-    })proto";
-  constexpr char kExpectedInstructionProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionProto[] = R"pb(
     vendor_syntax {
       mnemonic: 'ADC'
       operands {
@@ -75,7 +75,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
       modrm_usage: OPCODE_EXTENSION_IN_MODRM
       modrm_opcode_extension: 2
       immediate_value_bytes: 2
-    })proto";
+    })pb";
   InstructionProto instruction;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
                                                               &instruction));
@@ -84,7 +84,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, AddsPrefix) {
 }
 
 TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
-  constexpr char kInstructionProto[] = R"proto(
+  constexpr char kInstructionProto[] = R"pb(
     vendor_syntax {
       mnemonic: 'ADC'
       operands {
@@ -107,7 +107,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
       modrm_usage: OPCODE_EXTENSION_IN_MODRM
       modrm_opcode_extension: 2
       immediate_value_bytes: 2
-    })proto";
+    })pb";
   InstructionProto instruction;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
                                                               &instruction));
@@ -117,7 +117,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest, DoesNotDuplicatePrefix) {
 
 TEST(AddOperandSizeOverrideToInstructionProtoTest,
      DoesNotUpdateSpecificationIfNotParsed) {
-  constexpr char kInstructionProto[] = R"proto(
+  constexpr char kInstructionProto[] = R"pb(
     vendor_syntax {
       mnemonic: 'ADC'
       operands {
@@ -133,8 +133,8 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest,
         value_size_bits: 16
       }
     }
-    raw_encoding_specification: '81 /2 iw')proto";
-  constexpr char kExpectedInstructionProto[] = R"proto(
+    raw_encoding_specification: '81 /2 iw')pb";
+  constexpr char kExpectedInstructionProto[] = R"pb(
     vendor_syntax {
       mnemonic: 'ADC'
       operands {
@@ -151,7 +151,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest,
       }
     }
     raw_encoding_specification: '66 81 /2 iw'
-  )proto";
+  )pb";
   InstructionProto instruction;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(kInstructionProto,
                                                               &instruction));
@@ -160,7 +160,7 @@ TEST(AddOperandSizeOverrideToInstructionProtoTest,
 }
 
 TEST(AddPrefixUsageToLegacyInstructions, Test) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "CPUID" }
       available_in_64_bit: true
@@ -292,8 +292,8 @@ TEST(AddPrefixUsageToLegacyInstructions, Test) {
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         legacy_prefixes { rex_w_prefix: PREFIX_IS_REQUIRED }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "CPUID" }
       available_in_64_bit: true
@@ -432,7 +432,7 @@ TEST(AddPrefixUsageToLegacyInstructions, Test) {
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         legacy_prefixes { rex_w_prefix: PREFIX_IS_REQUIRED }
       }
-    })proto";
+    })pb";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(::google::protobuf::TextFormat::ParseFromString(
       kInstructionSetProto, &instruction_set));

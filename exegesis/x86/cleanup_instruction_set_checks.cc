@@ -109,8 +109,7 @@ bool HasMandatoryPrefix(const LegacyPrefixEncodingSpecification& prefixes) {
 bool AllowsNoLegacyPrefixes(const InstructionProto& instruction) {
   return !instruction.has_x86_encoding_specification() ||
          !instruction.x86_encoding_specification().has_legacy_prefixes() ||
-         instruction.raw_encoding_specification().find("NP") !=
-             absl::string_view::npos;
+         absl::StrContains(instruction.raw_encoding_specification(), "NP");
 }
 
 bool IsSpecialCaseOfInstruction(const InstructionProto& general,
@@ -119,6 +118,12 @@ bool IsSpecialCaseOfInstruction(const InstructionProto& general,
       general.x86_encoding_specification();
   const EncodingSpecification& special_encoding =
       special.x86_encoding_specification();
+
+  // If one instruction uses an (E)VEX encoding and the other one uses legacy,
+  // we do not consider them as a special case.
+  if (general_encoding.prefix_case() != special_encoding.prefix_case()) {
+    return false;
+  }
 
   // If general's opcode is not a prefix of the special case's opcode, it cannot
   // be a special case.
@@ -378,7 +383,7 @@ REGISTER_INSTRUCTION_SET_TRANSFORM(CheckOperandInfo, 10000);
 absl::Status CheckSpecialCaseInstructions(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  absl::node_hash_map<uint32_t, std::vector<const InstructionProto*>>
+  absl::flat_hash_map<uint32_t, std::vector<const InstructionProto*>>
       instructions_by_opcode;
   absl::Status status = absl::OkStatus();
 

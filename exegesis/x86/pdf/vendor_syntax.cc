@@ -77,6 +77,8 @@ const char* const kValidOperandTypes[] = {
     "DX",
     "EAX",
     "RAX",
+    // Implicit EAX.
+    "<EAX>",
     // Control registers.
     "CR0-CR7",
     "CR8",
@@ -118,6 +120,8 @@ const char* const kValidOperandTypes[] = {
     "m128",
     // Addresses pointing to 256-bit YMM values.
     "m256",
+    // Addresses pointing to 384-bit values, mainly in the AES instructions.
+    "m384",
     // Addresses pointing to 512-bit ZMM values.
     "m512",
     // Addresses pointing to state storage.
@@ -162,8 +166,12 @@ const char* const kValidOperandTypes[] = {
     "mm/m32",
     "mm/m64",
     "mm2/m64",
-    // XMM registers, <XMM0> is implicit.
+    // XMM registers, <XMM0> and <XMM0-7> are implicit.
     "<XMM0>",
+    "<XMM0-2>",
+    "<XMM0-6>",
+    "<XMM0-7>",
+    "<XMM4-6>",
     "xmm",
     "xmm0",
     "xmm1",
@@ -260,6 +268,8 @@ const char* const kValidOperandTypes[] = {
     "k5",
     "k6",
     "k7",
+    // Opmask register blocks.
+    "k1+1",
     // Opmask registers/memory.
     "k2/m8",
     "k2/m16",

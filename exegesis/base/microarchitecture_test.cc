@@ -28,7 +28,7 @@ using testing::SizeIs;
 
 TEST(MicroArchitectureDataTest, Works) {
   auto architecture_proto = std::make_shared<const ArchitectureProto>(
-      ParseProtoFromStringOrDie<ArchitectureProto>(R"proto(
+      ParseProtoFromStringOrDie<ArchitectureProto>(R"pb(
         instruction_set { instructions { llvm_mnemonic: "F4KE" } }
         per_microarchitecture_itineraries {
           microarchitecture_id: 'blah'
@@ -38,7 +38,7 @@ TEST(MicroArchitectureDataTest, Works) {
           microarchitecture_id: 'hsw'
           itineraries { llvm_mnemonic: "F4KE" }
         }
-      )proto"));
+      )pb"));
 
   const auto statusor_microarchitecture =
       MicroArchitectureData::ForMicroArchitectureId(architecture_proto, "hsw");

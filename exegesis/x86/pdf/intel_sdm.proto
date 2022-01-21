@@ -71,6 +71,9 @@ message SubSection {
 
   // The rows for this subsection.
   repeated exegesis.pdf.PdfTextTableRow rows = 2;
+
+  // The number of the page where the subsection starts.
+  int32 page = 3;
 }
 
 // The type of the operand encoding table.

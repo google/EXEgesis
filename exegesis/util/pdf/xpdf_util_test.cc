@@ -14,6 +14,7 @@
 
 #include "exegesis/util/pdf/xpdf_util.h"
 
+#include "absl/flags/flag.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
@@ -46,7 +47,7 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
     }
   }
 
-  constexpr char kExpected[] = R"proto(
+  constexpr char kExpected[] = R"pb(
     document_id {}
     pages {
       number: 1
@@ -317,20 +318,20 @@ TEST(ProtobufOutputDeviceTest, TestSimplePdfOutput) {
         bounding_box { left: 72 top: 151 right: 75.05615 bottom: 162 }
       }
     }
-  )proto";
+  )pb";
   EXPECT_THAT(pdf_document, EqualsProto(kExpected));
 }
 
 TEST(ProtobufOutputDeviceTest, TestParseRequestOrDie) {
   constexpr const char kExpected1[] =
-      R"proto(
+      R"pb(
     filename: "/path/to/file.pdf" first_page: 0 last_page: 0
-      )proto";
+      )pb";
   EXPECT_THAT(ParseRequestOrDie("/path/to/file.pdf"), EqualsProto(kExpected1));
   constexpr const char kExpected2[] =
-      R"proto(
+      R"pb(
     filename: "/path/to/file.pdf" first_page: 12 last_page: 25
-      )proto";
+      )pb";
   EXPECT_THAT(ParseRequestOrDie("/path/to/file.pdf:12-25"),
               EqualsProto(kExpected2));
 }

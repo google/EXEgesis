@@ -23,7 +23,7 @@ namespace x86 {
 namespace {
 
 TEST(AddMissingFfreepInstructionTest, AddFfreep) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADC"
@@ -40,8 +40,8 @@ TEST(AddMissingFfreepInstructionTest, AddFfreep) {
       name: "ADC"
       description: "Add with Carry."
       short_description: "Add with Carry."
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "ADC"
@@ -80,7 +80,7 @@ TEST(AddMissingFfreepInstructionTest, AddFfreep) {
       description: "Free Floating-Point Register and Pop."
       flags_affected {}
       short_description: "Free Floating-Point Register and Pop."
-    })proto";
+    })pb";
   TestTransform(AddMissingFfreepInstruction, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

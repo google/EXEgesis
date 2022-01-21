@@ -110,13 +110,12 @@ std::unique_ptr<GlobalContext> GlobalContext::CreateMutable(
   Context->RegisterInfo.reset(Target->createMCRegInfo(TripleName));
   Context->AsmInfo.reset(Target->createMCAsmInfo(
       *Context->RegisterInfo, Context->Triple.str(), llvm::MCTargetOptions()));
-  auto ObjectFileInfo = absl::make_unique<llvm::MCObjectFileInfo>();
   Context->LLVMContext = absl::make_unique<llvm::MCContext>(
-      Context->AsmInfo.get(), Context->RegisterInfo.get(),
-      ObjectFileInfo.get());
-  ObjectFileInfo->InitMCObjectFileInfo(Context->Triple, /*PIC*/ false,
-                                       *Context->LLVMContext);
-  Context->ObjectFileInfo = std::move(ObjectFileInfo);
+      Context->Triple, Context->AsmInfo.get(), Context->RegisterInfo.get(),
+      Context->SubtargetInfo.get());
+  Context->ObjectFileInfo.reset(
+      Target->createMCObjectFileInfo(*Context->LLVMContext, /*PIC=*/false));
+  Context->LLVMContext->setObjectFileInfo(Context->ObjectFileInfo.get());
   Context->CodeEmitter.reset(Target->createMCCodeEmitter(
       *Context->InstrInfo, *Context->RegisterInfo, *Context->LLVMContext));
   Context->SchedModel = &Context->SubtargetInfo->getSchedModel();
@@ -140,7 +139,7 @@ const llvm::MCSchedClassDesc* GlobalContext::GetSchedClassForInstruction(
   assert(SCDesc && "missing sched class");
   while (SCDesc->isVariant()) {
     SchedClassId = SubtargetInfo->resolveVariantSchedClass(
-        SchedClassId, &Inst, SchedModel->getProcessorID());
+        SchedClassId, &Inst, InstrInfo.get(), SchedModel->getProcessorID());
     SCDesc = SchedModel->getSchedClassDesc(SchedClassId);
     assert(SCDesc && "missing sched class");
   }
@@ -346,8 +345,8 @@ bool GlobalContext::MCInstEq::operator()(const llvm::MCInst& A,
     if (OpA.isImm()) {
       return OpB.isImm() && OpA.getImm() == OpB.getImm();
     }
-    if (OpA.isFPImm()) {
-      return OpB.isFPImm() && OpA.getFPImm() == OpB.getFPImm();
+    if (OpA.isDFPImm()) {
+      return OpB.isDFPImm() && OpA.getDFPImm() == OpB.getDFPImm();
     }
     return true;
   };

@@ -28,13 +28,13 @@ namespace {
 using ::testing::StartsWith;
 using ::testing::StringMatchResultListener;
 
-constexpr char kEncodingSpecificationProto[] = R"proto(
+constexpr char kEncodingSpecificationProto[] = R"pb(
   legacy_prefixes {
     rex_w_prefix: PREFIX_IS_IGNORED
     operand_size_override_prefix: PREFIX_IS_IGNORED
   }
   opcode: 0x04
-  immediate_value_bytes: 1)proto";
+  immediate_value_bytes: 1)pb";
 
 TEST(DisassemblesToTest, ExampleFromHeaderFile) {
   DecodedInstruction decoded_instruction;
@@ -50,12 +50,12 @@ TEST(DisassemblesToMatcherTest, AcceptsEncodingSpecificationProto) {
   decoded_instruction.add_immediate_value("\x0a");
   const EncodingSpecification encoding_specification =
       ParseProtoFromStringOrDie<EncodingSpecification>(
-          R"proto(legacy_prefixes {
-                    rex_w_prefix: PREFIX_IS_IGNORED
-                    operand_size_override_prefix: PREFIX_IS_IGNORED
-                  }
-                  opcode: 0x04
-                  immediate_value_bytes: 1)proto");
+          R"pb(legacy_prefixes {
+                 rex_w_prefix: PREFIX_IS_IGNORED
+                 operand_size_override_prefix: PREFIX_IS_IGNORED
+               }
+               opcode: 0x04
+               immediate_value_bytes: 1)pb");
   EXPECT_THAT(decoded_instruction,
               DisassemblesTo(encoding_specification, "ADD AL, 0xa"));
 }

@@ -28,7 +28,7 @@
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCInst.h"
 #include "llvm/MC/MCInstrInfo.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/MC/TargetRegistry.h"
 
 namespace llvm {
 
@@ -44,8 +44,8 @@ H AbslHashValue(H State, const MCInst& A) {
     if (Op.isImm()) {
       State = H::combine(std::move(State), 'I', Op.getImm());
     }
-    if (Op.isFPImm()) {
-      State = H::combine(std::move(State), 'F', Op.getFPImm());
+    if (Op.isDFPImm()) {
+      State = H::combine(std::move(State), 'F', Op.getDFPImm());
     }
   }
   return State;

@@ -43,7 +43,12 @@ std::string TranslateOperand(const std::string& operand) {
       kOperandTranslation = new absl::flat_hash_map<std::string, std::string>({
           {"CR0-CR7", "CR0"},
           {"DR0-DR7", "DR0"},
+          {"<EAX>", ""},
           {"<XMM0>", ""},
+          {"<XMM0-2>", ""},
+          {"<XMM0-6>", ""},
+          {"<XMM0-7>", ""},
+          {"<XMM4-6>", ""},
           {"ST(i)", "ST(2)"},
           {"bnd", "bnd2"},
           // All rel*, m, and mem are fishy.
@@ -86,6 +91,7 @@ std::string TranslateOperand(const std::string& operand) {
           {"m80fp", "xword" ADDRESS},
           {"m128", "xmmword" ADDRESS},
           {"m256", "ymmword" ADDRESS},
+          {"m384", "dword" ADDRESS},
           {"m512", "zmmword" ADDRESS},
           {"m94byte", "dword" ADDRESS},   // LLVM differs from the Intel spec.
           {"m108byte", "dword" ADDRESS},  // LLVM differs from the Intel spec.

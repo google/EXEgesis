@@ -1,4 +1,4 @@
 build --copt=-Wno-parentheses --copt=-Wno-sign-compare  --copt=-D_XOPEN_SOURCE \
   --copt=-Wno-misleading-indentation --copt=-Wno-narrowing --define USE_GLPK= \
-  --strict_proto_deps=off --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+  --strict_proto_deps=off --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
 

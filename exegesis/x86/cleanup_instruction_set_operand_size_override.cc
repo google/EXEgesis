@@ -169,7 +169,7 @@ std::string FormatAllInstructions(
 absl::Status AddOperandSizeOverridePrefix(
     InstructionSetProto* instruction_set) {
   CHECK(instruction_set != nullptr);
-  absl::node_hash_map<std::string, std::vector<InstructionProto*>>
+  absl::flat_hash_map<std::string, std::vector<InstructionProto*>>
       instructions_by_raw_encoding_specification;
 
   // First we cluster instructions by their binary encoding. We ignore the

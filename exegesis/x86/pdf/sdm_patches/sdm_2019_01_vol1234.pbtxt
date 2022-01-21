@@ -80,51 +80,6 @@ pages {
   }
 }
 pages {
-  page_number: 967
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTCW*"
-    replacement: "FNSTCW m2byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 969
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTENV*"
-    replacement: "FNSTENV m14/28byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m14/28byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 971
-  patches {
-    row: 5
-    col: 1
-    expected: "FNSTSW*"
-    replacement: "FNSTSW m2byte"
-  }
-  patches {
-    row: 5
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
   page_number: 1003
   patches {
     row: 1
@@ -401,20 +356,6 @@ pages {
     col: 1
     expected: "RM0"
     replacement: "RMI"
-  }
-}
-pages {
-  page_number: 1811
-  patches {
-    row: 3
-    expected: "A8"
-    replacement: "A8 ib"
-  }
-  patches {
-    row: 3
-    col: 1
-    expected: "ib"
-    remove_cell: true
   }
 }
 pages {

@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 #include "lib/Target/X86/X86InstrInfo.h"
 #include "llvm/MC/MCInstBuilder.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm_sim/components/common.h"
 #include "llvm_sim/components/testing.h"

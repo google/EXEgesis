@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
@@ -260,17 +261,18 @@ const absl::flat_hash_set<std::string> GetUnmodifiedOperandNames() {
            // Memory references.
            "m", "mem", "mib", "m8", "m16", "m16:16", "m16:32", "m16:64",
            "m16&64", "m16int", "m32", "m32fp", "m32int", "m64", "m64fp",
-           "m64int", "m80bcd", "m80fp", "m128", "m256", "m512", "m2byte",
-           "m28byte", "m108byte", "m512byte", "vm32x", "vm32y", "vm32z",
-           "vm64x", "vm64y", "vm64z", "BYTE PTR [RDI]", "BYTE PTR [RSI]",
-           "DWORD PTR [RDI]", "DWORD PTR [RSI]", "QWORD PTR [RSI]",
-           "QWORD PTR [RDI]", "WORD PTR [RSI]", "WORD PTR [RDI]",
+           "m64int", "m80bcd", "m80fp", "m128", "m256", "m384", "m512",
+           "m2byte", "m28byte", "m108byte", "m512byte", "vm32x", "vm32y",
+           "vm32z", "vm64x", "vm64y", "vm64z", "BYTE PTR [RDI]",
+           "BYTE PTR [RSI]", "DWORD PTR [RDI]", "DWORD PTR [RSI]",
+           "QWORD PTR [RSI]", "QWORD PTR [RDI]", "WORD PTR [RSI]",
+           "WORD PTR [RDI]",
 
            // Registers.
-           "bnd", "bnd1", "bnd2", "bnd3", "k1", "k2", "k3", "mm", "mm1", "mm2",
-           "r8", "r16", "r32", "r32a", "r32b", "r64", "r64a", "r64b", "ST(i)",
-           "Sreg", "xmm", "xmm0", "xmm1", "xmm2", "xmm2+3", "xmm3", "xmm4",
-           "ymm1", "ymm2", "ymm2+3", "ymm4", "zmm1", "zmm2", "zmm2+3",
+           "bnd", "bnd1", "bnd2", "bnd3", "k1", "k1+1", "k2", "k3", "mm", "mm1",
+           "mm2", "r8", "r16", "r32", "r32a", "r32b", "r64", "r64a", "r64b",
+           "ST(i)", "Sreg", "xmm", "xmm0", "xmm1", "xmm2", "xmm2+3", "xmm3",
+           "xmm4", "ymm1", "ymm2", "ymm2+3", "ymm4", "zmm1", "zmm2", "zmm2+3",
 
            // Pseudo-operands: they have an empty operand name, but a non-empty
            // list of tags.
@@ -288,7 +290,7 @@ absl::Status AddAlternatives(InstructionSetProto* instruction_set) {
   const absl::flat_hash_set<std::string>& unmodified_operand_names =
       GetUnmodifiedOperandNames();
   std::vector<InstructionProto> new_instructions;
-  std::set<std::string> unknown_operand_names;
+  absl::btree_set<std::string> unknown_operand_names;
   for (InstructionProto& instruction :
        *instruction_set->mutable_instructions()) {
     InstructionFormat* const vendor_syntax =

@@ -2,6 +2,7 @@ instruction_sections: {
   id: "BT-Bit Test"
   sub_sections: {
     type: INSTRUCTION_TABLE
+    page: 170
     rows: {
       blocks: {
         text: "Opcode"
@@ -228,6 +229,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 170
     type: INSTRUCTION_OPERAND_ENCODING
     rows: {
       blocks: {
@@ -312,10 +314,11 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 170
     type: DESCRIPTION
     rows: {
       blocks: {
-        text: "Selects the bit in a bit string (specified with the first operand, called the bit base) at the bit-position designated by \nthe bit offset (specified by the second operand) and stores the value of the bit in the CF flag. The bit base operand \ncan be a register or a memory location; the bit offset operand can be a register or an im\nmediate value:"
+        text: "Selects the bit in a bit string (specified with the first operand, called the bit base) at the bit-position designated by \nthe bit offset (specified by the second operand) and stores the value of the bit in the CF flag. The bit base operand \ncan be a register or a memory location; the bit offset operand can be a register or an immediate value:"
         row: 14
         col: 0
       }
@@ -353,7 +356,7 @@ instruction_sections: {
     }
     rows: {
       blocks: {
-        text: "Some assemblers support im\nmediate bit offsets larger than 31 by using the im\nmediate bit offset field in combina-\ntion with the displacement field of the memory operand. In this case, the low-order 3 or 5 bits (3 for 16-bit oper-\nands, 5 for 32-bit operands) of the im\nmediate bit offset are stored in the im\nmediate bit offset field, and the high-\norder bits are shifted and combined with the byte displacement in the addressing mode by the assembler. The \nprocessor will ignore the high order bits if they are not zero."
+        text: "Some assemblers support immediate bit offsets larger than 31 by using the immediate bit offset field in combina-\ntion with the displacement field of the memory operand. In this case, the low-order 3 or 5 bits (3 for 16-bit oper-\nands, 5 for 32-bit operands) of the immediate bit offset are stored in the immediate bit offset field, and the high-\norder bits are shifted and combined with the byte displacement in the addressing mode by the assembler. The \nprocessor will ignore the high order bits if they are not zero."
         row: 18
         col: 0
       }
@@ -395,13 +398,14 @@ instruction_sections: {
     }
     rows: {
       blocks: {
-        text: "In 64-bit mode, the instruction\342\200\231s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits \naccess to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bit oper-\nands. See the sum\nmary chart at the beginning of this section for encoding data and limits."
+        text: "In 64-bit mode, the instruction\342\200\231s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits \naccess to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bit oper-\nands. See the summary chart at the beginning of this section for encoding data and limits."
         row: 24
         col: 0
       }
     }
   }
   sub_sections: {
+    page: 171
     type: OPERATION
     rows: {
       blocks: {
@@ -412,6 +416,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 171
     type: FLAGS_AFFECTED
     rows: {
       blocks: {
@@ -422,6 +427,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 171
     type: EXCEPTIONS_PROTECTED_MODE
     rows: {
       blocks: {
@@ -485,6 +491,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 171
     type: EXCEPTIONS_REAL_ADDRESS_MODE
     rows: {
       blocks: {
@@ -524,6 +531,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 171
     type: EXCEPTIONS_VIRTUAL_8086_MODE
     rows: {
       blocks: {
@@ -587,6 +595,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 171
     type: EXCEPTIONS_COMPATIBILITY_MODE
     rows: {
       blocks: {
@@ -597,6 +606,7 @@ instruction_sections: {
     }
   }
   sub_sections: {
+    page: 171
     type: EXCEPTIONS_64BITS_MODE
     rows: {
       blocks: {

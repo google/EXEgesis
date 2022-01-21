@@ -35,9 +35,9 @@
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/MC/MCSubtargetInfo.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/Host.h"
 #include "llvm/Support/SourceMgr.h"
-#include "llvm/Support/TargetRegistry.h"
 
 namespace exegesis {
 
@@ -71,24 +71,21 @@ void Disassembler::Init() {
                                            llvm::MCTargetOptions()));
   CHECK(nullptr != asm_info_) << "Unable to create target asm info.";
 
-  // FIXME: This is not pretty. MCContext has a ptr to MCObjectFileInfo and
-  // MCObjectFileInfo needs a MCContext reference in order to initialize itself.
-  object_file_info_ = absl::make_unique<llvm::MCObjectFileInfo>();
-  bool is_pic = false;
-
   // Create an empty SourceMgr.
   source_manager_ = absl::make_unique<llvm::SourceMgr>();
 
+  sub_target_info_.reset(target_->createMCSubtargetInfo(triple_name_, "", ""));
+
   mc_context_ = absl::make_unique<llvm::MCContext>(
-      asm_info_.get(), register_info_.get(), object_file_info_.get(),
+      triple_, asm_info_.get(), register_info_.get(), sub_target_info_.get(),
       source_manager_.get());
-  object_file_info_->InitMCObjectFileInfo(llvm::Triple(triple_name_), is_pic,
-                                          *mc_context_);
+  object_file_info_.reset(
+      target_->createMCObjectFileInfo(*mc_context_, /*PIC=*/false));
+  mc_context_->setObjectFileInfo(object_file_info_.get());
 
   CHECK(error_string.empty()) << error_string;
 
   instruction_info_.reset(target_->createMCInstrInfo());
-  sub_target_info_.reset(target_->createMCSubtargetInfo(triple_name_, "", ""));
 
   code_emitter_ = hide_encoding_
                       ? nullptr

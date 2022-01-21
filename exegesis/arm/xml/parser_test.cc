@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "absl/flags/flag.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "exegesis/testing/test_util.h"
@@ -39,7 +40,7 @@ std::string GetFilePath(const std::string& filename) {
 }
 
 TEST(ParserTest, ParseXmlIndex) {
-  static constexpr char kExpectedIndex[] = R"proto(
+  static constexpr char kExpectedIndex[] = R"pb(
     isa: A64
     files {
       filename: "instruction_1.xml"
@@ -52,7 +53,7 @@ TEST(ParserTest, ParseXmlIndex) {
       heading: "I2"
       xml_id: "id_i_2"
       description: "Second instruction."
-    })proto";
+    })pb";
   EXPECT_THAT(ParseXmlIndex(GetFilePath("index.xml")),
               IsOkAndHolds(EqualsProto(kExpectedIndex)));
 
@@ -68,7 +69,7 @@ TEST(ParserTest, ParseXmlIndex_Missing) {
 }
 
 TEST(ParserTest, ParseXmlInstruction) {
-  static constexpr char kExpectedInstruction[] = R"proto(
+  static constexpr char kExpectedInstruction[] = R"pb(
     xml_id: "id_i_1"
     heading: "I1 Title"
     brief_description: "First instruction"
@@ -192,13 +193,13 @@ TEST(ParserTest, ParseXmlInstruction) {
           pieces { text: ", 1" }
         }
       }
-    })proto";
+    })pb";
   EXPECT_THAT(ParseXmlInstruction(GetFilePath("instruction_1.xml")),
               IsOkAndHolds(EqualsProto(kExpectedInstruction)));
 }
 
 TEST(ParserTest, ParseXmlInstructionWithConstraints) {
-  static constexpr char kExpectedInstruction[] = R"proto(
+  static constexpr char kExpectedInstruction[] = R"pb(
     xml_id: "id_i_2"
     heading: "I2 Title"
     brief_description: "Second instruction"
@@ -234,7 +235,7 @@ TEST(ParserTest, ParseXmlInstructionWithConstraints) {
         }
         asm_template { pieces { text: "I2 " } }
       }
-    })proto";
+    })pb";
   EXPECT_THAT(ParseXmlInstruction(GetFilePath("instruction_2.xml")),
               IsOkAndHolds(EqualsProto(kExpectedInstruction)));
 }
@@ -246,7 +247,7 @@ TEST(ParserTest, ParseXmlInstruction_Missing) {
 }
 
 TEST(ParserTest, ParseXmlDatabase) {
-  static constexpr char kExpectedXmlDatabase[] = R"proto(
+  static constexpr char kExpectedXmlDatabase[] = R"pb(
     base_index {
       isa: A64
       files {
@@ -431,7 +432,7 @@ TEST(ParserTest, ParseXmlDatabase) {
           asm_template { pieces { text: "I2 " } }
         }
       }
-    })proto";
+    })pb";
   EXPECT_THAT(ParseXmlDatabase(GetFilePath("")),
               IsOkAndHolds(EqualsProto(kExpectedXmlDatabase)));
 }

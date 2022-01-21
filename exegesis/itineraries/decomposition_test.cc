@@ -32,71 +32,79 @@ using ::exegesis::testing::EqualsProto;
 using ::exegesis::x86::HaswellMicroArchitecture;
 using ::testing::AnyOf;
 using ::testing::Eq;
+using ::testing::MatchesRegex;
 
 // Synthetic benchmark based in the x86 instruction NEG m8, ADD RSI,16.
 TEST(DecompositionTest, Negate) {
   DecompositionSolver solver(HaswellMicroArchitecture());
   // TODO(bdb): Only consider user-time measurements with the :u modifier.
-  const std::string kObservationProto =
-      R"proto(observations { event_name: 'cycles' measurement: 2.3336 }
-              observations { event_name: 'num_times' measurement: 1 }
-              observations {
-                event_name: 'uops_executed_port:port_0'
-                measurement: 0.4328
-              }
-              observations {
-                event_name: 'uops_executed_port:port_1'
-                measurement: 0.4720
-              }
-              observations {
-                event_name: 'uops_executed_port:port_2'
-                measurement: 0.8410
-              }
-              observations {
-                event_name: 'uops_executed_port:port_3'
-                measurement: 0.9518
-              }
-              observations {
-                event_name: 'uops_executed_port:port_4'
-                measurement: 1.0042
-              }
-              observations {
-                event_name: 'uops_executed_port:port_5'
-                measurement: 0.6130
-              }
-              observations {
-                event_name: 'uops_executed_port:port_6'
-                measurement: 0.6512
-              }
-              observations {
-                event_name: 'uops_executed_port:port_7'
-                measurement: 0.2257
-              }
-              observations { event_name: 'uops_issued:any' measurement: 5.1906 }
-              observations {
-                event_name: 'uops_retired:all'
-                measurement: 5.1162
-              })proto";
+  const std::string
+      kObservationProto =
+          R"pb(observations { event_name: 'cycles' measurement: 2.3336 }
+               observations { event_name: 'num_times' measurement: 1 }
+               observations {
+                 event_name: 'uops_executed_port:port_0'
+                 measurement: 0.4328
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_1'
+                 measurement: 0.4720
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_2'
+                 measurement: 0.8410
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_3'
+                 measurement: 0.9518
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_4'
+                 measurement: 1.0042
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_5'
+                 measurement: 0.6130
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_6'
+                 measurement: 0.6512
+               }
+               observations {
+                 event_name: 'uops_executed_port:port_7'
+                 measurement: 0.2257
+               }
+               observations {
+                 event_name: 'uops_issued:any'
+                 measurement: 5.1906
+               }
+               observations {
+                 event_name: 'uops_retired:all'
+                 measurement: 5.1162
+               })pb";
   ObservationVector observation;
   google::protobuf::TextFormat::ParseFromString(kObservationProto,
                                                 &observation);
   ASSERT_OK(solver.Run(observation));
-  const std::string kExpectedResult =
+  // There are multiple optimal solutions that ultimately lead to the same
+  // decomposition. In this test, we just check that the debug string has the
+  // right format.
+  const std::string kExpectedRegex =
       "P23 P0156 P0156 P237 P4 "
-      "\nP0156: {0: 0.22060, 1: 0.25980, 5: 0.25980, 6: 0.25980, }"
-      "\nP0156: {0: 0.21220, 1: 0.21220, 5: 0.28780, 6: 0.28780, }"
-      "\nP23: {2: 0.50000, 3: 0.50000, }"
-      "\nP237: {2: 0.34100, 3: 0.43330, 7: 0.22570, }"
-      "\nP4: {4: 1.00000, }\nmax_error = 0.10360"
-      "\nerror {0: 0.00000, 1: 0.00000, 2: 0.00000, 3: 0.01850, "
-      "4: 0.00420, 5: 0.06540, 6: 0.10360, 7: 0.00000, }"
+      "\nP0156: \\{0: 0.[0-9]*, 1: 0.[0-9]*, 5: 0.[0-9]*, 6: 0.[0-9]*, \\}"
+      "\nP0156: \\{0: 0.[0-9]*, 1: 0.[0-9]*, 5: 0.[0-9]*, 6: 0.[0-9]*, \\}"
+      "\nP23: \\{2: 0.50000, 3: 0.50000, \\}"
+      "\nP237: \\{2: 0.34100, 3: 0.43330, 7: 0.22570, \\}"
+      "\nP4: \\{4: 1.00000, \\}\nmax_error = 0.10360"
+      "\nerror \\{0: 0.[0-9]*, 1: 0.[0-9]*, 2: 0.[0-9]*, 3: 0.[0-9]*, "
+      "4: 0.[0-9]*, 5: 0.[0-9]*, 6: 0.[0-9]*, 7: 0.[0-9]*, \\}"
       "\nis_order_unique = 1\n";
   EXPECT_LE(fabs(solver.objective_value() - 3588.3), 1e-6);
-  EXPECT_EQ(kExpectedResult, solver.DebugString());
+  EXPECT_THAT(solver.DebugString(), MatchesRegex(kExpectedRegex));
 
   ItineraryProto proto;
   *proto.mutable_micro_ops() = solver.GetMicroOps();
-  constexpr char kExpected[] = R"proto(
+  constexpr char kExpected[] = R"pb(
     micro_ops {
       port_mask { port_numbers: [ 2, 3 ] }
       latency: 1
@@ -117,7 +125,7 @@ TEST(DecompositionTest, Negate) {
       port_mask { port_numbers: 4 }
       latency: 1
     }
-  )proto";
+  )pb";
   EXPECT_THAT(proto, EqualsProto(kExpected));
 }
 

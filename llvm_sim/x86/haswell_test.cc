@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "absl/flags/flag.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "lib/Target/X86/X86InstrInfo.h"
@@ -32,7 +33,7 @@
 #include "llvm/MC/MCInstrDesc.h"
 #include "llvm/MC/MCInstrInfo.h"
 #include "llvm/MC/MCSchedule.h"
-#include "llvm/Support/TargetRegistry.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm_sim/analysis/port_pressure.h"
 #include "llvm_sim/framework/log_levels.h"

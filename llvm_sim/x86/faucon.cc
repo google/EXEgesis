@@ -22,9 +22,9 @@
 
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCInstPrinter.h"
+#include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/FileSystem.h"
-#include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm_sim/analysis/inverse_throughput.h"
 #include "llvm_sim/analysis/port_pressure.h"

@@ -28,7 +28,7 @@ using ::exegesis::testing::StatusIs;
 using ::google::protobuf::TextFormat;
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VMOVD'
@@ -36,8 +36,8 @@ TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
         operands { name: 'r32' }
       }
       raw_encoding_specification: 'VEX.128.66.0F.W0 6E'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VMOVD'
@@ -45,13 +45,13 @@ TEST(AddMissingModRmAndImmediateSpecificationTest, Vmovd) {
         operands { name: 'r32' }
       }
       raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
-    })proto";
+    })pb";
   TestTransform(AddMissingModRmAndImmediateSpecification, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, Kshiftlb) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'KSHIFTLB'
@@ -60,8 +60,8 @@ TEST(AddMissingModRmAndImmediateSpecificationTest, Kshiftlb) {
         operands { name: 'imm8' }
       }
       raw_encoding_specification: 'VEX.L0.66.0F3A.W0 32 /r'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'KSHIFTLB'
@@ -70,13 +70,13 @@ TEST(AddMissingModRmAndImmediateSpecificationTest, Kshiftlb) {
         operands { name: 'imm8' }
       }
       raw_encoding_specification: 'VEX.L0.66.0F3A.W0 32 /r ib'
-    })proto";
+    })pb";
   TestTransform(AddMissingModRmAndImmediateSpecification, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingMemoryOffsetEncodingTest, AddOffset) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'AAD'
@@ -100,8 +100,8 @@ TEST(AddMissingMemoryOffsetEncodingTest, AddOffset) {
       }
       legacy_instruction: false
       raw_encoding_specification: 'REX.W + A1'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'AAD'
@@ -142,13 +142,13 @@ TEST(AddMissingMemoryOffsetEncodingTest, AddOffset) {
       }
       legacy_instruction: false
       raw_encoding_specification: '67 REX.W + A1 id'
-    })proto";
+    })pb";
   TestTransform(AddMissingMemoryOffsetEncoding, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddMissingModRmAndImmediateSpecificationTest, NoChange) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'AAD'
@@ -163,14 +163,14 @@ TEST(AddMissingModRmAndImmediateSpecificationTest, NoChange) {
         operands { name: 'r32' }
       }
       raw_encoding_specification: 'VEX.128.66.0F.W0 6E /r'
-    })proto";
+    })pb";
   TestTransform(AddMissingModRmAndImmediateSpecification, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 TEST(FixAndCleanUpEncodingSpecificationsOfSetInstructionsTest,
      SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SETA'
@@ -192,8 +192,8 @@ TEST(FixAndCleanUpEncodingSpecificationsOfSetInstructionsTest,
         operands { name: 'AL' }
       }
       raw_encoding_specification: 'AA'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'SETA'
@@ -208,13 +208,13 @@ TEST(FixAndCleanUpEncodingSpecificationsOfSetInstructionsTest,
         operands { name: 'AL' }
       }
       raw_encoding_specification: 'AA'
-    })proto";
+    })pb";
   TestTransform(FixAndCleanUpEncodingSpecificationsOfSetInstructions,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationOfPopFsAndGsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
       vendor_syntax {
@@ -255,8 +255,8 @@ TEST(FixEncodingSpecificationOfPopFsAndGsTest, SomeInstructions) {
       }
       legacy_instruction: false
       raw_encoding_specification: '0F A9'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       description: 'Pop top of stack into FS. Increment stack pointer by 64 bits.'
       vendor_syntax {
@@ -325,13 +325,13 @@ TEST(FixEncodingSpecificationOfPopFsAndGsTest, SomeInstructions) {
       }
       legacy_instruction: false
       raw_encoding_specification: 'REX.W 0F A9'
-    })proto";
+    })pb";
   TestTransform(FixEncodingSpecificationOfPopFsAndGs, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationOfPushFsAndGsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'PUSH'
@@ -355,8 +355,8 @@ TEST(FixEncodingSpecificationOfPushFsAndGsTest, SomeInstructions) {
         }
       }
       raw_encoding_specification: '0F A8'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'PUSH'
@@ -428,13 +428,13 @@ TEST(FixEncodingSpecificationOfPushFsAndGsTest, SomeInstructions) {
         }
       }
       raw_encoding_specification: 'REX.W 0F A8'
-    })proto";
+    })pb";
   TestTransform(FixEncodingSpecificationOfPushFsAndGs, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationOfXBeginTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -457,8 +457,8 @@ TEST(FixEncodingSpecificationOfXBeginTest, SomeInstructions) {
         operands { name: 'rel32' }
       }
       raw_encoding_specification: 'C7 F8'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -481,13 +481,13 @@ TEST(FixEncodingSpecificationOfXBeginTest, SomeInstructions) {
         operands { name: 'rel32' }
       }
       raw_encoding_specification: 'C7 F8 cd'
-    })proto";
+    })pb";
   TestTransform(FixEncodingSpecificationOfXBegin, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(FixEncodingSpecificationsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -522,8 +522,8 @@ TEST(FixEncodingSpecificationsTest, SomeInstructions) {
         operands { name: "imm8" }
       }
       raw_encoding_specification: "66 0F3A CE /r /ib"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -558,13 +558,13 @@ TEST(FixEncodingSpecificationsTest, SomeInstructions) {
         operands { name: "imm8" }
       }
       raw_encoding_specification: "66 0F3A CE /r ib"
-    })proto";
+    })pb";
   TestTransform(FixEncodingSpecifications, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(DropModRmModDetailsFromEncodingSpecifications, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "GF2P8AFFINEQB"
@@ -581,8 +581,8 @@ TEST(DropModRmModDetailsFromEncodingSpecifications, SomeInstructions) {
       }
       feature_name: "CET_SS"
       raw_encoding_specification: "F3 0F 1E /1 (mod=11)"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "GF2P8AFFINEQB"
@@ -599,13 +599,13 @@ TEST(DropModRmModDetailsFromEncodingSpecifications, SomeInstructions) {
       }
       feature_name: "CET_SS"
       raw_encoding_specification: "F3 0F 1E /1"
-    })proto";
+    })pb";
   TestTransform(DropModRmModDetailsFromEncodingSpecifications,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
 TEST(FixRexPrefixSpecificationTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "MOVSX"
@@ -621,8 +621,8 @@ TEST(FixRexPrefixSpecificationTest, SomeInstructions) {
         operands { name: "r8" }
       }
       raw_encoding_specification: "REX + 10 /r"
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "MOVSX"
@@ -638,13 +638,13 @@ TEST(FixRexPrefixSpecificationTest, SomeInstructions) {
         operands { name: "r8" }
       }
       raw_encoding_specification: "REX + 10 /r"
-    })proto";
+    })pb";
   TestTransform(FixRexPrefixSpecification, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -661,8 +661,8 @@ TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: '66 0F 38 20 /r'
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -696,13 +696,13 @@ TEST(ParseEncodingSpecificationsTest, SomeInstructions) {
         modrm_usage: FULL_MODRM
         legacy_prefixes { operand_size_override_prefix: PREFIX_IS_REQUIRED }
       }
-    })proto";
+    })pb";
   TestTransform(ParseEncodingSpecifications, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(ParseEncodingSpecificationsTest, ParseErrors) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VFMSUB231PS'
@@ -719,7 +719,7 @@ TEST(ParseEncodingSpecificationsTest, ParseErrors) {
         operands { name: 'xmm2' }
       }
       raw_encoding_specification: '66 0F 38 20 /r'
-    })proto";
+    })pb";
   InstructionSetProto instruction_set;
   ASSERT_TRUE(
       TextFormat::ParseFromString(kInstructionSetProto, &instruction_set));
@@ -727,31 +727,46 @@ TEST(ParseEncodingSpecificationsTest, ParseErrors) {
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
-TEST(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,
+TEST(ConvertEncodingSpecificationOfX87FpuWithDirectAddressingTest,
      SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions { raw_encoding_specification: "D8 F0+i" }
     instructions { raw_encoding_specification: "DC C0+i" }
-    instructions { raw_encoding_specification: "D8 /6" })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "D8 /6" })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions { raw_encoding_specification: "D8 /6" }
     instructions { raw_encoding_specification: "DC /0" }
-    instructions { raw_encoding_specification: "D8 /6" })proto";
+    instructions { raw_encoding_specification: "D8 /6" })pb";
   TestTransform(ConvertEncodingSpecificationOfX87FpuWithDirectAddressing,
                 kInstructionSetProto, kExpectedInstructionSetProto);
 }
 
-TEST(AddRexWPrefixedVersionOfStr, SomeInstructions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+TEST(AddRexWPrefixedVersionOfStrTest, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions { raw_encoding_specification: "0F 00 /1" }
     instructions { raw_encoding_specification: "66 0F 38 20 /r" }
-    instructions { raw_encoding_specification: "D8 /6" })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    instructions { raw_encoding_specification: "D8 /6" })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions { raw_encoding_specification: "0F 00 /1" }
     instructions { raw_encoding_specification: "66 0F 38 20 /r" }
     instructions { raw_encoding_specification: "D8 /6" }
-    instructions { raw_encoding_specification: "REX.W 0F 00 /1" })proto";
+    instructions { raw_encoding_specification: "REX.W 0F 00 /1" })pb";
   TestTransform(AddRexWPrefixedVersionOfStr, kInstructionSetProto,
+                kExpectedInstructionSetProto);
+}
+
+TEST(NormalizeEncodingSpecificationLigFlagTest, SomeInstructions) {
+  constexpr char kInstructionSetProto[] = R"pb(
+    instructions { raw_encoding_specification: "VEX.LIG.F2.0F.WIG 58 /r" }
+    instructions { raw_encoding_specification: "EVEX.LLIG.F2.0F38.W0 9B /r" }
+    instructions { raw_encoding_specification: "0F 00 /1" }
+  )pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
+    instructions { raw_encoding_specification: "VEX.LIG.F2.0F.WIG 58 /r" }
+    instructions { raw_encoding_specification: "EVEX.LIG.F2.0F38.W0 9B /r" }
+    instructions { raw_encoding_specification: "0F 00 /1" }
+  )pb";
+  TestTransform(NormalizeEncodingSpecificationLigFlag, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 

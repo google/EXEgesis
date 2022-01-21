@@ -300,8 +300,8 @@ void ParseContext::RelocateSgxLeafInstructions(SdmDocument* sdm_document) {
       instructions->erase(
           std::remove_if(instructions->begin(), instructions->end(),
                          [&sgx_instructions](const InstructionProto& t) {
-                           return gtl::ContainsKey(
-                               sgx_instructions.leaf_instructions, &t);
+                           return sgx_instructions.leaf_instructions.contains(
+                               &t);
                          }),
           instructions->end());
     }
@@ -499,6 +499,7 @@ const std::set<absl::string_view>& GetValidFeatureSet() {
       new std::set<absl::string_view>{"3DNOW",
                                       "ADX",
                                       "AES",
+                                      "AESKLE",
                                       "AVX",
                                       "AVX2",
                                       "AVX512BW",
@@ -511,11 +512,13 @@ const std::set<absl::string_view>& GetValidFeatureSet() {
                                       "AVX512VL",
                                       "AVX512_4FMAPS",
                                       "AVX512_4VNNIW",
+                                      "AVX512_BF16",
                                       "AVX512_BITALG",
                                       "AVX512_IFMA",
                                       "AVX512_VBMI",
                                       "AVX512_VBMI2",
                                       "AVX512_VNNI",
+                                      "AVX512_VP2INTERSECT",
                                       "AVX512_VPOPCNTDQ",
                                       "BMI1",
                                       "BMI2",
@@ -531,13 +534,16 @@ const std::set<absl::string_view>& GetValidFeatureSet() {
                                       "GFNI",
                                       "HLE",
                                       "INVPCID",
+                                      "KL",
                                       "LZCNT",
                                       "MMX",
+                                      "MOVBE",
                                       "MOVDIR64B",
                                       "MOVDIRI",
                                       "MPX",
                                       "OSPKE",
                                       "PCLMULQDQ",
+                                      "PCONFIG",
                                       "PREFETCHW",
                                       "RDPID",
                                       "RDRAND",
@@ -559,7 +565,9 @@ const std::set<absl::string_view>& GetValidFeatureSet() {
                                       "XSAVE",
                                       "XSAVEC",
                                       "XSAVEOPT",
-                                      "XSS"};
+                                      "XSS",
+                                      "WBNOINVD",
+                                      "WIDE_KL"};
   return *kValidFeatures;
 }
 
@@ -587,7 +595,7 @@ const OperandEncodingMatchers& GetOperandEncodingSpecMatchers() {
       {OperandEncoding::OE_OPCODE,
        new RE2(R"(opcode\s*\+\s*rd\s+\(([rR, wW]+)\))")},
       {OperandEncoding::OE_IMPLICIT,
-       new RE2(R"([Ii]mplicit XMM0(?:\s+\(([rR, wW]+)\))?)")},
+       new RE2(R"([Ii]mplicit XMM[-0-9]+(?:\s+\(([rR, wW]+)\))?)")},
       {OperandEncoding::OE_REGISTERS,
        new RE2(
            R"(<?[A-Z][A-Z0-9]+>?(?:/<?[A-Z][A-Z0-9]+>?)*(?:\s+\(([rR, wW]+)\))?)")},
@@ -620,10 +628,10 @@ bool IsValidMode(const std::string& text) {
 // We use a macro to avoid repeating the regex definition in FixFeature. We use
 // the string constant to initialize LazyRE2 (which expects a const char*), so
 // sadly we can't use a regular constexpr const char* constant.
-#define EXEGESIS_AVX_REGEX_SOURCE                                      \
-  "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_BITALG|AVX512_" \
-  "IFMA|AVX512_VNNI|AVX512PF|AVX512_VBMI|AVX512F|AVX512VL|GFNI|VAES|"  \
-  "VPCLMULQDQ)"
+#define EXEGESIS_AVX_REGEX_SOURCE                                             \
+  "(AVX512BW|AVX512CD|AVX512DQ|AVX512ER|AVX512F|AVX512_BF16|AVX512_BITALG|"   \
+  "AVX512_IFMA|AVX512_VNNI|AVX512_VP2INTERSECT|AVX512PF|AVX512_VBMI|AVX512F|" \
+  "AVX512VL|GFNI|VAES|VPCLMULQDQ|WBNOINVD)"
 
 // We want to normalize features to the set defined by GetValidFeatureSet or
 // logical composition of them (several features separated by '&&' or '||')
@@ -633,12 +641,20 @@ std::string FixFeature(std::string feature) {
       new absl::flat_hash_map<absl::string_view, absl::string_view>(
           {{"AESAVX", "AES && AVX"},
            {"AES AVX", "AES && AVX"},
+           {"AESKLEWIDE_KL", "AESKLE && WIDE_KL"},
            {"AVX512_VPOPCNTDQAVX512VL", "AVX512_VPOPCNTDQ && AVX512VL"},
            {"AVX512_VBMI2AVX512VL", "AVX512_VBMI2 && AVX512VL"},
+           {"AVX512FAVX512_VP2INTERSECT", "AVX512F && AVX512_VP2INTERSECT"},
+           {"AVX512FAVX512_BF16", "AVX512F && AVX512_BF16"},
+           {"AVX512VLAVX512_VP2INTERSECT", "AVX512VL && AVX512_VP2INTERSECT"},
+           {"AVX512VLAVX512_BF16", "AVX512VL && AVX512_BF16"},
            {"AVXGFNI", "AVX && GFNI"},
            {"Both AES andAVX flags", "AES && AVX"},
            {"Both PCLMULQDQ and AVX flags", "CLMUL && AVX"},
            {"HLE or RTM", "HLE || RTM"},
+           // In some cases, when no special feature flag is needed, the table
+           // contains the string 'NA'. We convert it to an empty feature name.
+           {"NA", ""},
            {"PCLMULQDQ AVX", "CLMUL && AVX"},
            {"PCLMULQDQ", "CLMUL"},
            {"PREFETCHWT1", "3DNOW"},
@@ -800,6 +816,7 @@ void ParseCell(const InstructionTable::Column column, std::string text,
       // Feature flags are not always consistent. FixFeature makes sure cleaned
       // is one of the valid feature values.
       const std::string cleaned = FixFeature(text);
+      if (cleaned.empty()) break;
       std::string* feature_name = instruction->mutable_feature_name();
       for (const absl::string_view piece : absl::StrSplit(cleaned, ' ')) {
         if (!feature_name->empty()) feature_name->append(" ");
@@ -810,9 +827,8 @@ void ParseCell(const InstructionTable::Column column, std::string text,
         } else {
           DLOG(ERROR) << "Raw feature text: [" << text << "]";
           feature_name->append(kUnknown);
-          LOG(ERROR) << "Invalid Feature : " << piece
-                     << " when parsing : " << cleaned
-                     << ", this will be replaced by " << kUnknown;
+          LOG(ERROR) << "Invalid Feature : '" << piece << "' when parsing : '"
+                     << cleaned << "', this will be replaced by " << kUnknown;
         }
       }
       break;
@@ -943,7 +959,8 @@ std::string GetRowText(const PdfTextTableRow& row) {
 OperandEncodingTableType GetOperandEncodingTableHeaderType(
     const PdfTextTableRow& row, ParseContext* parse_context) {
   static const LazyRE2 kHeaderRegex = {
-      R"(Op/En|Operand[1234]|Tuple(Type)?|ImplicitRegisterOperands)"};
+      R"(Op/En|Operand[1234]|Operands[1-9]-[1-9]|Tuple(Type)?|)"
+      R"(ImplicitRegisterOperands)"};
   static const LazyRE2 kLeafSgxHeaderRegex = {
       R"((Op/En|EAX|EBX|RAX|RBX|RCX|RDX))"};
 
@@ -1065,8 +1082,8 @@ void ParseOperandEncodingTable(const SubSection& sub_section,
       table_type = GetOperandEncodingTableHeaderType(row, parse_context);
       CHECK_NE(table_type, OET_INVALID)
           << "Invalid operand header for instruction type "
-          << parse_context->GetInstructionTypeAsString() << ": "
-          << row.DebugString();
+          << parse_context->GetInstructionTypeAsString() << ", page "
+          << sub_section.page() << ": " << row.DebugString();
     } else {
       // Skipping redundant header.
       if (GetOperandEncodingTableHeaderType(row, parse_context) == table_type) {
@@ -1111,6 +1128,7 @@ std::vector<SubSection> ExtractSubSectionRows(const Pages& pages) {
         output.push_back(current);
         current.Clear();
         current.set_type(section_type);
+        current.set_page(page->number());
       } else {
         PdfTextTableRow row = *pdf_row;
         for (auto& block : *row.mutable_blocks()) {
@@ -1495,17 +1513,17 @@ bool MatchesFirstPagePattern(const PdfPage& page, const bool is_sgx,
   return false;
 }
 
-// Returns true if we the given page matches the pattern of the first page in
+// Returns true if the given page matches the pattern of the first page in
 // a section.
 bool SeesNewSection(const PdfPage& page,
-                    absl::string_view section_number_prefix,
                     absl::string_view section_name_prefix) {
+  static const LazyRE2 kSectionNumberMatcher = {R"re(\d+\.\d+)re"};
   const PdfTextBlock* const section_number = GetCellOrNull(page, 1, 0);
 
   if (section_number == nullptr) {
     return false;
   }
-  if (absl::StartsWith(section_number->text(), section_number_prefix)) {
+  if (RE2::FullMatch(section_number->text(), *kSectionNumberMatcher)) {
     const PdfTextBlock* const section_name = GetCellOrNull(page, 1, 1);
     if (section_name == nullptr) {
       return false;
@@ -1563,7 +1581,7 @@ int CollectVmxOrSgxInstructions(
       bool next_leaf = false;
       if (MatchesFirstPagePattern(cur_page, is_sgx, &next_leaf, &new_name)) {
         break;
-      } else if (SeesNewSection(cur_page, is_sgx ? "40." : "30.",
+      } else if (SeesNewSection(cur_page,
                                 is_sgx ? "INTEL® SGX" : "VM INSTRUCTION")) {
         break;
       }
@@ -1715,10 +1733,10 @@ CollectInstructionPages(const exegesis::pdf::PdfDocument& pdf) {
     if (absl::StartsWith(first_line, kVmxInstructionRef)) {
       i = CollectVmxOrSgxInstructions(pdf, i, /*is_sgx=*/false,
                                       &instruction_group_id_to_pages);
-    } else if (absl::StartsWith(first_line, kSgxInstructionRef)) {
+    } else if (absl::StrContains(first_line, kSgxInstructionRef)) {
       i = CollectVmxOrSgxInstructions(pdf, i, /*is_sgx=*/true,
                                       &instruction_group_id_to_pages);
-    } else if (absl::StartsWith(first_line, kInstructionSetRef)) {
+    } else if (absl::StrContains(first_line, kInstructionSetRef)) {
       // Volume 2
       i = CollectFromTheRest(pdf, i, &instruction_group_id_to_pages);
     } else {

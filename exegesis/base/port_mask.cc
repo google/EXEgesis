@@ -22,7 +22,7 @@ PortMask::PortMask(const PortMaskProto& proto) {
   uint64_t result = 0;
   for (auto port_number : proto.port_numbers()) {
     CHECK_GE(port_number, 0);
-    CHECK_LT(port_number, 8);
+    CHECK_LT(port_number, 64);
     result |= (1ULL << port_number);
   }
   mask_ = result;

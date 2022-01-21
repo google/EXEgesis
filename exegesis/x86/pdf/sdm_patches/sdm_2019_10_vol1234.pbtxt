@@ -65,51 +65,6 @@ pages {
   }
 }
 pages {
-  page_number: 995
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTCW*"
-    replacement: "FNSTCW m2byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 997
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTENV*"
-    replacement: "FNSTENV m14/28byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m14/28byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 999
-  patches {
-    row: 5
-    col: 1
-    expected: "FNSTSW*"
-    replacement: "FNSTSW m2byte"
-  }
-  patches {
-    row: 5
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
   page_number: 1031
   patches {
     row: 1
@@ -369,14 +324,6 @@ pages {
     row: 3
     expected: "F3 0F 01 EA (mod!=11, /5, \nRM=010)\nSAVEPREVSSP"
     replacement: "F3 0F 01 EA\nSAVEPREVSSP"
-  }
-}
-pages {
-  page_number: 1862
-  patches {
-    row: 3
-    expected: "A8ib"
-    replacement: "A8 ib"
   }
 }
 pages {

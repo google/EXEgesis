@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddAlternativesTest, InstructionWithRM8) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -39,8 +39,8 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
           name: 'r/m8'
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -74,13 +74,13 @@ TEST(AddAlternativesTest, InstructionWithRM8) {
           name: 'm8'
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddAlternativesTest, DifferentSizes) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'PINSRB'
@@ -103,8 +103,8 @@ TEST(AddAlternativesTest, DifferentSizes) {
           name: 'imm8'
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'PINSRB'
@@ -150,26 +150,26 @@ TEST(AddAlternativesTest, DifferentSizes) {
           name: 'imm8'
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddAlternativesTest, NoRenaming) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FBLD'
         operands { name: 'm80bcd' }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'FBLD'
         operands { name: 'm80bcd' }
       }
-    })proto";
+    })pb";
   TestTransform(AddAlternatives, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

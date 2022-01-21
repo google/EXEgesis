@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/status/status.h"
@@ -135,16 +136,16 @@ absl::Status RemoveLegacyVersionsOfInstructions(
                                                                     "E3 cb"};
   absl::flat_hash_set<std::string> found_legacy_version;
   absl::flat_hash_set<std::string> found_64bit_version;
-  RepeatedPtrField<InstructionProto> instructions =
-      std::move(*instruction_set->mutable_instructions());
-  for (InstructionProto& instruction : instructions) {
+  google::protobuf::RepeatedPtrField<InstructionProto> instructions;
+  instructions.Swap(instruction_set->mutable_instructions());
+  for (auto& instruction : instructions) {
     if (!kEncodingSpecifications.contains(
             instruction.raw_encoding_specification())) {
-      *instruction_set->add_instructions() = std::move(instruction);
+      instruction_set->mutable_instructions()->Add(std::move(instruction));
     } else if (!instruction.legacy_instruction()) {
       // The 64-bit version has 'legacy_version' set to false.
       found_64bit_version.insert(instruction.raw_encoding_specification());
-      *instruction_set->add_instructions() = std::move(instruction);
+      instruction_set->mutable_instructions()->Add(std::move(instruction));
     } else {
       // Legacy (16- or 32-bit) version of the instruction.
       found_legacy_version.insert(instruction.raw_encoding_specification());
@@ -281,7 +282,7 @@ absl::Status RemoveDuplicateInstructionsWithRexPrefix(
   // NOTE(ondrasej): We need to store a copy of the instruction protos, not
   // pointers those in instruction_set, because the contents of instruction_set
   // is modified by std::remove_if().
-  absl::node_hash_map<std::string, std::vector<InstructionProto>>
+  absl::flat_hash_map<std::string, std::vector<InstructionProto>>
       instructions_by_encoding;
   RepeatedPtrField<InstructionProto>* const instructions =
       instruction_set->mutable_instructions();

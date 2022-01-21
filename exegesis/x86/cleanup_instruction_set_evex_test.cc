@@ -23,7 +23,7 @@ namespace x86 {
 namespace {
 
 TEST(AddEvexBInterpretationTest, LegacyAndVexEncoding) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'ADC'
@@ -59,13 +59,13 @@ TEST(AddEvexBInterpretationTest, LegacyAndVexEncoding) {
           vex_w_usage: VEX_W_IS_ZERO
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddEvexBInterpretation, kInstructionSetProto,
                 kInstructionSetProto);
 }
 
 TEST(AddEvexBInterpretationTest, Broadcast) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VADDPD'
@@ -92,8 +92,8 @@ TEST(AddEvexBInterpretationTest, Broadcast) {
           vex_w_usage: VEX_W_IS_ONE
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VADDPD'
@@ -121,13 +121,13 @@ TEST(AddEvexBInterpretationTest, Broadcast) {
           evex_b_interpretations: EVEX_B_ENABLES_64_BIT_BROADCAST
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddEvexBInterpretation, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddEvexBInterpretationTest, RoundingControl) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VADDSS'
@@ -155,8 +155,8 @@ TEST(AddEvexBInterpretationTest, RoundingControl) {
           vex_w_usage: VEX_W_IS_ZERO
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VADDSS'
@@ -185,13 +185,13 @@ TEST(AddEvexBInterpretationTest, RoundingControl) {
           evex_b_interpretations: EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddEvexBInterpretation, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddEvexBInterpretationTest, SuppressAllExceptions) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VCMPSD'
@@ -224,8 +224,8 @@ TEST(AddEvexBInterpretationTest, SuppressAllExceptions) {
         }
         immediate_value_bytes: 1
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VCMPSD'
@@ -259,13 +259,13 @@ TEST(AddEvexBInterpretationTest, SuppressAllExceptions) {
         }
         immediate_value_bytes: 1
       }
-    })proto";
+    })pb";
   TestTransform(AddEvexBInterpretation, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddEvexBInterpretationTest, Combined) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VADDPD'
@@ -293,8 +293,8 @@ TEST(AddEvexBInterpretationTest, Combined) {
           vex_w_usage: VEX_W_IS_ONE
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: 'VADDPD'
@@ -324,13 +324,13 @@ TEST(AddEvexBInterpretationTest, Combined) {
           evex_b_interpretations: EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddEvexBInterpretation, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddEvexOpmaskUsageTest, Combined) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       llvm_mnemonic: 'VCVTSD2SIrr'
       vendor_syntax {
@@ -456,8 +456,8 @@ TEST(AddEvexOpmaskUsageTest, Combined) {
           evex_b_interpretations: EVEX_B_ENABLES_STATIC_ROUNDING_CONTROL
         }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       llvm_mnemonic: 'VCVTSD2SIrr'
       vendor_syntax {
@@ -587,13 +587,13 @@ TEST(AddEvexOpmaskUsageTest, Combined) {
           masking_operation: EVEX_MASKING_MERGING_AND_ZEROING
         }
       }
-    })proto";
+    })pb";
   TestTransform(AddEvexOpmaskUsage, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }
 
 TEST(AddEvexPseudoOperandsTest, AddPseudoOperands) {
-  static constexpr char kInstructionSetProto[] = R"proto(
+  static constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "VADDPD"
@@ -657,8 +657,8 @@ TEST(AddEvexPseudoOperandsTest, AddPseudoOperands) {
         }
       }
     }
-  )proto";
-  static constexpr char kExpectedInstructionSetProto[] = R"proto(
+  )pb";
+  static constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax {
         mnemonic: "VADDPD"
@@ -732,7 +732,7 @@ TEST(AddEvexPseudoOperandsTest, AddPseudoOperands) {
         }
       }
     }
-  )proto";
+  )pb";
   TestTransform(AddEvexPseudoOperands, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

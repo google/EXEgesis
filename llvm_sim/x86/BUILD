@@ -56,6 +56,7 @@ cc_test(
         "//llvm_sim/framework:log",
         "//llvm_sim/framework:log_levels",
         "//llvm_sim/framework:simulator",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_googletest//:gtest_main",
         "@llvm_git//:CodeGen",
         "@llvm_git//:Core",
@@ -94,6 +95,7 @@ cc_test(
     deps = [
         ":constants",
         ":faucon_lib",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_googletest//:gtest_main",
         "@llvm_git//:Support",
         "@llvm_git//:X86AsmParser",  # buildcleaner: keep

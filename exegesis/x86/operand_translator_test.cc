@@ -26,7 +26,7 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 
 TEST(OperandTranslatorTest, Works) {
-  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"pb(
     legacy_instruction: true
     vendor_syntax {
       mnemonic: 'ADD'
@@ -42,17 +42,17 @@ TEST(OperandTranslatorTest, Works) {
         value_size_bits: 8
         name: 'imm8'
       }
-    })proto");
+    })pb");
   constexpr const char kExpected[] =
-      R"proto(
+      R"pb(
     mnemonic: 'ADD'
     operands { name: 'ecx' }
-    operands { name: '0x11' })proto";
+    operands { name: '0x11' })pb";
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpected));
 }
 
 TEST(OperandTranslatorTest, Avx512) {
-  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"pb(
     vendor_syntax {
       mnemonic: "VPADDB"
       operands {
@@ -81,8 +81,8 @@ TEST(OperandTranslatorTest, Avx512) {
     }
     available_in_64_bit: true
     legacy_instruction: true
-    raw_encoding_specification: "EVEX.NDS.128.66.0F.WIG FC /r")proto");
-  constexpr char kExpectedFormat[] = R"proto(
+    raw_encoding_specification: "EVEX.NDS.128.66.0F.WIG FC /r")pb");
+  constexpr char kExpectedFormat[] = R"pb(
     mnemonic: "VPADDB"
     operands {
       name: "xmm1"
@@ -91,12 +91,12 @@ TEST(OperandTranslatorTest, Avx512) {
     }
     operands { name: "xmm2" }
     operands { name: "xmmword ptr[RSI]" }
-  )proto";
+  )pb";
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpectedFormat));
 }
 
 TEST(OperandTranslatorTest, Avx512StaticRounding) {
-  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"proto(
+  const auto instruction = ParseProtoFromStringOrDie<InstructionProto>(R"pb(
     vendor_syntax {
       mnemonic: "VADDPD"
       operands {
@@ -130,8 +130,8 @@ TEST(OperandTranslatorTest, Avx512StaticRounding) {
       }
     }
     available_in_64_bit: true
-    raw_encoding_specification: "EVEX.NDS.512.66.0F.W1 58 /r")proto");
-  constexpr char kExpectedFormat[] = R"proto(
+    raw_encoding_specification: "EVEX.NDS.512.66.0F.W1 58 /r")pb");
+  constexpr char kExpectedFormat[] = R"pb(
     mnemonic: "VADDPD"
     operands {
       name: "zmm1"
@@ -140,7 +140,7 @@ TEST(OperandTranslatorTest, Avx512StaticRounding) {
     }
     operands { name: "zmm2" }
     operands { name: "zmm3" }
-    operands { tags { name: "rn-sae" } })proto";
+    operands { tags { name: "rn-sae" } })pb";
   EXPECT_THAT(InstantiateOperands(instruction), EqualsProto(kExpectedFormat));
 }
 

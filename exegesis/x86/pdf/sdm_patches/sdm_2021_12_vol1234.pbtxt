@@ -1,25 +1,74 @@
 document_id {
-  title: "Intel\302\256 64 and IA-32 Architectures Software Developers Manual, Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D and 4"
-  creation_date: "D:20171011205412Z"
-  modification_date: "D:20171011213716-07\'00\'"
+  title: "Intel\302\256 64 and IA-32 Architectures Software Developer\'s Manual, Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D, and 4"
+  creation_date: "D:20211231200148Z"
+  modification_date: "D:20211231203723-08\'00\'"
 }
 pages {
-  page_number: 694
+  page_number: 626
   patches {
     row: 3
-    col: 2
-    expected: "M"
-    replacement: "D"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: "M"
-    replacement: "D"
+    expected: "F3 0F 38 DD !(11):rrr:bbb \nAESDEC128KL xmm, m384"
+    replacement: "F3 0F 38 DD /r\nAESDEC128KL xmm, m384"
   }
 }
 pages {
-  page_number: 827
+  page_number: 628
+  patches {
+    row: 3
+    expected: "F3 0F 38 DF !(11):rrr:bbb \nAESDEC256KL xmm, m512"
+    replacement: "F3 0F 38 DF /r \nAESDEC256KL xmm, m512"
+  }
+}
+pages {
+  page_number: 632
+  patches {
+    row: 3
+    expected: "F3 0F 38 D8 !(11):001:bbb \nAESDECWIDE128KL m384, <XMM0-7>"
+    replacement: "F3 0F 38 D8 /1\nAESDECWIDE128KL m384, <XMM0-7>"
+  }
+}
+pages {
+  page_number: 634
+  patches {
+    row: 3
+    expected: "F3 0F 38 D8 !(11):011:bbb \nAESDECWIDE256KL m512, <XMM0-7>"
+    replacement: "F3 0F 38 D8 /3\nAESDECWIDE256KL m512, <XMM0-7>"
+  }
+}
+pages {
+  page_number: 638
+  patches {
+    row: 3
+    expected: "F3 0F 38 DC !(11):rrr:bbb \nAESENC128KL xmm, m384"
+    replacement: "F3 0F 38 DC /r\nAESENC128KL xmm, m384"
+  }
+}
+pages {
+  page_number: 640
+  patches {
+    row: 3
+    expected: "F3 0F 38 DE !(11):rrr:bbb \nAESENC256KL xmm, m512"
+    replacement: "F3 0F 38 DE /r\nAESENC256KL xmm, m512"
+  }
+}
+pages {
+  page_number: 644
+  patches {
+    row: 3
+    expected: "F3 0F 38 D8 !(11):000:bbb \nAESENCWIDE128KL m384, <XMM0-7>"
+    replacement: "F3 0F 38 D8 /0\nAESENCWIDE128KL m384, <XMM0-7>"
+  }
+}
+pages {
+  page_number: 646
+  patches {
+    row: 3
+    expected: "F3 0F 38 D8 !(11):010:bbb \nAESENCWIDE256KL m512, <XMM0-7>"
+    replacement: "F3 0F 38 D8 /2\nAESENCWIDE256KL m512, <XMM0-7>"
+  }
+}
+pages {
+  page_number: 859
   patches {
     row: 5
     expected: "VEX.LIG.F2.0F.W0 2D /r 1\nVCVTSD2SI r32, xmm1/m64"
@@ -32,7 +81,7 @@ pages {
   }
 }
 pages {
-  page_number: 837
+  page_number: 869
   patches {
     row: 5
     expected: "VEX.LIG.F3.0F.W0 2D /r 1\nVCVTSS2SI r32, xmm1/m32"
@@ -45,7 +94,7 @@ pages {
   }
 }
 pages {
-  page_number: 848
+  page_number: 880
   patches {
     row: 5
     expected: "VEX.LIG.F2.0F.W0 2C /r 1\nVCVTTSD2SI r32, xmm1/m64"
@@ -58,7 +107,7 @@ pages {
   }
 }
 pages {
-  page_number: 850
+  page_number: 882
   patches {
     row: 5
     expected: "VEX.LIG.F3.0F.W0 2C /r 1\nVCVTTSS2SI r32, xmm1/m32"
@@ -71,7 +120,23 @@ pages {
   }
 }
 pages {
-  page_number: 881
+  page_number: 910
+  patches {
+    row: 3
+    expected: "F3 0F 38 FA 11:rrr:bbb \nENCODEKEY128 r32, r32, <XMM0-2>, \n<XMM4-6>"
+    replacement: "F3 0F 38 FA /r\nENCODEKEY128 r32, r32, <XMM0-2>, \n<XMM4-6>"
+  }
+}
+pages {
+  page_number: 912
+  patches {
+    row: 3
+    expected: "F3 0F 38 FB 11:rrr:bbb \nENCODEKEY256 r32, r32 <XMM0-6>"
+    replacement: "F3 0F 38 FB /r\nENCODEKEY256 r32, r32, <XMM0-6>"
+  }
+}
+pages {
+  page_number: 919
   patches {
     row: 3
     col: 2
@@ -80,57 +145,11 @@ pages {
   }
 }
 pages {
-  page_number: 963
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTCW*"
-    replacement: "FNSTCW m2byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 965
-  patches {
-    row: 4
-    col: 1
-    expected: "FNSTENV*"
-    replacement: "FNSTENV m14/28byte"
-  }
-  patches {
-    row: 4
-    col: 2
-    expected: " m14/28byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 967
-  patches {
-    row: 5
-    col: 1
-    expected: "FNSTSW*"
-    replacement: "FNSTSW m2byte"
-  }
-  patches {
-    row: 5
-    col: 2
-    expected: " m2byte"
-    remove_cell: true
-  }
-}
-pages {
-  page_number: 999
+  page_number: 1037
   patches {
     row: 1
-    col: 0
-    expected: "FYL2XP1-Compute y ∗ log2"
-    replacement: "FYL2XP1-Compute y ∗ log2(x+1)"
+    expected: "FYL2XP1-Compute y \342\210\227 log2"
+    replacement: "FYL2XP1-Compute y \342\210\227 log2(x+1)"
   }
   patches {
     row: 1
@@ -140,7 +159,22 @@ pages {
   }
 }
 pages {
-  page_number: 1021
+  page_number: 1053
+  patches {
+    row: 6
+    col: 2
+    expected: "ModRM:r/m (r)"
+    replacement: "imm8"
+  }
+  patches {
+    row: 6
+    col: 3
+    expected: "NA"
+    replacement: "ModRM:r/m (r)"
+  }
+}
+pages {
+  page_number: 1068
   patches {
     row: 11
     col: 1
@@ -155,28 +189,7 @@ pages {
   }
 }
 pages {
-  page_number: 1063
-  patches {
-    row: 11
-    col: 2
-    expected: "D"
-    replacement: "M"
-  }
-  patches {
-    row: 12
-    col: 2
-    expected: "D"
-    replacement: "M"
-  }
-  patches {
-    row: 13
-    col: 2
-    expected: "D"
-    replacement: "M"
-  }
-}
-pages {
-  page_number: 1071
+  page_number: 1125
   patches {
     row: 3
     expected: "VEX.L1.0F.W0 4A /r \nKADDW k1, k2, k3"
@@ -199,7 +212,7 @@ pages {
   }
 }
 pages {
-  page_number: 1072
+  page_number: 1126
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 41 /r \nKANDB k1, k2, k3"
@@ -217,7 +230,7 @@ pages {
   }
 }
 pages {
-  page_number: 1073
+  page_number: 1127
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 42 /r \nKANDNB k1, k2, k3"
@@ -235,7 +248,7 @@ pages {
   }
 }
 pages {
-  page_number: 1077
+  page_number: 1131
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 45 /r \nKORB k1, k2, k3"
@@ -253,7 +266,7 @@ pages {
   }
 }
 pages {
-  page_number: 1087
+  page_number: 1141
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 46 /r \nKXNORB k1, k2, k3"
@@ -271,7 +284,7 @@ pages {
   }
 }
 pages {
-  page_number: 1088
+  page_number: 1142
   patches {
     row: 4
     expected: "VEX.L1.66.0F.W0 47 /r\nKXORB k1, k2, k3"
@@ -289,7 +302,30 @@ pages {
   }
 }
 pages {
-  page_number: 1181
+  page_number: 1166
+  patches {
+    row: 3
+    expected: "F3 0F 38 DC 11:rrr:bbb \nLOADIWKEY xmm1, xmm2, <EAX>, <XMM0>"
+    replacement: "F3 0F 38 DC /r\nLOADIWKEY xmm1, xmm2, <EAX>, <XMM0>"
+  }
+}
+pages {
+  page_number: 1222
+  patches {
+    row: 5
+    col: 5
+    expected: "1"
+    remove_cell: true
+  }
+  patches {
+    row: 8
+    col: 5
+    expected: "1"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 1238
   patches {
     row: 11
     expected: "VEX.128.66.0F.W0 6E /\nVMOVD xmm1, r32/m32"
@@ -297,7 +333,7 @@ pages {
   }
 }
 pages {
-  page_number: 1193
+  page_number: 1254
   patches {
     row: 21
     expected: "EVEX.128.F3.0F.W0 6F /r\nVMOVDQU32 xmm1 {k1}{z}, \nxmm2/mm128"
@@ -305,7 +341,7 @@ pages {
   }
 }
 pages {
-  page_number: 1210
+  page_number: 1271
   patches {
     row: 12
     col: 2
@@ -314,25 +350,7 @@ pages {
   }
 }
 pages {
-  page_number: 1256
-  patches {
-    row: 6
-    expected: "VEX.128.0F 11.WIG /r\nVMOVUPS xmm2/m128, xmm1"
-    replacement: "VEX.128.0F.WIG 11 /r\nVMOVUPS xmm2/m128, xmm1"
-  }
-  patches {
-    row: 7
-    expected: "VEX.256.0F 10.WIG /r\nVMOVUPS ymm1, ymm2/m256"
-    replacement: "VEX.256.0F.WIG 10 /r\nVMOVUPS ymm1, ymm2/m256"
-  }
-  patches {
-    row: 8
-    expected: "VEX.256.0F 11.WIG /r\nVMOVUPS ymm2/m256, ymm1"
-    replacement: "VEX.256.0F.WIG 11 /r\nVMOVUPS ymm2/m256, ymm1"
-  }
-}
-pages {
-  page_number: 1282
+  page_number: 1344
   patches {
     row: 7
     col: 4
@@ -341,31 +359,15 @@ pages {
   }
 }
 pages {
-  page_number: 1307
-  patches {
-    row: 5
-    expected: "VPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
-    replacement: "EVEX.512.66.0F38.W0 1E /r\nVPABSD zmm1 {k1}{z}, zmm2/m512/m32bcst"
-  }
-}
-pages {
-  page_number: 1320
+  page_number: 1403
   patches {
     row: 7
-    expected: "EVEX.NDS.256.66.0F38.W0 2B /r"
-    replacement: "EVEX.NDS.256.66.0F38.W0 2B /r\nVPACKUSDW ymm1{k1}{z}, ymm2, ymm3/m256/m32bcst"
-  }
-}
-pages {
-  page_number: 1341
-  patches {
-    row: 7
-    expected: "VEX.NDS.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
+    expected: "VEX.128.660F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
     replacement: "VEX.NDS.128.66.0F.WIG DC /r\nVPADDUSB xmm1, xmm2, xmm3/m128"
   }
 }
 pages {
-  page_number: 1475
+  page_number: 1545
   patches {
     row: 14
     expected: "VEX.128.66.0F 38.WIG 35 /r\nVPMOVZXDQ xmm1, xmm2/m64"
@@ -373,7 +375,7 @@ pages {
   }
 }
 pages {
-  page_number: 1476
+  page_number: 1546
   patches {
     row: 2
     expected: "EVEX.128.66.0F38 30.WIG /r\nVPMOVZXBW xmm1 {k1}{z}, xmm2/m64"
@@ -381,7 +383,7 @@ pages {
   }
 }
 pages {
-  page_number: 1528
+  page_number: 1598
   patches {
     row: 3
     col: 1
@@ -390,7 +392,7 @@ pages {
   }
 }
 pages {
-  page_number: 1611
+  page_number: 1681
   patches {
     row: 2
     col: 3
@@ -399,30 +401,31 @@ pages {
   }
 }
 pages {
-  page_number: 1729
+  page_number: 1787
   patches {
     row: 3
-    col: 1
-    expected: "RM0"
-    replacement: "RMI"
+    expected: "F3 0F 01 EA (mod!=11, /5, \nRM=010)\nSAVEPREVSSP"
+    replacement: "F3 0F 01 EA\nSAVEPREVSSP"
   }
 }
 pages {
-  page_number: 1801
+  page_number: 1885
   patches {
     row: 3
-    expected: "A8"
-    replacement: "A8 ib"
-  }
-  patches {
-    row: 3
-    col: 1
-    expected: "ib"
-    remove_cell: true
+    expected: "66 0F AE /6\nTPAUSE r32, <edx>, <eax>"
+    replacement: "66 0F AE /6\nTPAUSE r32"
   }
 }
 pages {
-  page_number: 1884
+  page_number: 1896
+  patches {
+    row: 3
+    expected: "F2 0F AE /6\nUMWAIT r32, <edx>, <eax>"
+    replacement: "F2 0F AE /6\nUMWAIT r32"
+  }
+}
+pages {
+  page_number: 1976
   patches {
     row: 4
     expected: "EVEX.256.0F.W1 78 02 /r\nVCVTTPD2UDQ xmm1 {k1}{z}, \nymm2/m256/m64bcst"
@@ -430,7 +433,7 @@ pages {
   }
 }
 pages {
-  page_number: 2150
+  page_number: 2245
   patches {
     row: 8
     expected: "VPCMPUW k1 {k2}, zmm2, \nzmm3/m512, imm8"
@@ -438,7 +441,7 @@ pages {
   }
 }
 pages {
-  page_number: 2182
+  page_number: 2290
   patches {
     row: 12
     expected: "EVEX.512.66.0F3A.W0 04 /r \nibVPERMILPS zmm1 {k1}{z}, \nzmm2/m512/m32bcst, imm8"
@@ -446,7 +449,7 @@ pages {
   }
 }
 pages {
-  page_number: 2190
+  page_number: 2298
   patches {
     row: 3
     expected: "VEX.256.66.0F38.W0 16 /r\nVPERMPS ymm1, ymm2, \nymm3/m256"
@@ -454,23 +457,49 @@ pages {
   }
 }
 pages {
-  page_number: 2328
+  page_number: 2455
   patches {
     row: 3
-    expected: "EVEX.NDS.LIG.66.0F3A.W1 57\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
-    replacement: "EVEX.NDS.LIG.66.0F3A.W1 57 /r\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8"
+    expected: "EVEX.LLIG.66.0F3A.W1 57\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8/r"
+    replacement: "EVEX.NDS.LLIG.66.0F3A.W1 57 /r\nVREDUCESD xmm1 {k1}{z}, \nxmm2, xmm3/m64{sae}, \nimm8"
   }
 }
 pages {
-  page_number: 2332
+  page_number: 2459
   patches {
     row: 3
-    expected: "EVEX.NDS.LIG.66.0F3A.W0 57 \n/r /ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
-    replacement: "EVEX.NDS.LIG.66.0F3A.W0 57 /r ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
+    expected: "EVEX.LLIG.66.0F3A.W0 57 /r \n/ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
+    replacement: "EVEX.NDS.LLIG.66.0F3A.W0 57 /r ib\nVREDUCESS xmm1 {k1}{z}, \nxmm2, xmm3/m32{sae}, \nimm8"
   }
 }
 pages {
-  page_number: 2395
+  page_number: 2515
+  patches {
+    row: 3
+    expected: "0F 38 F6 !(11):rrr:bbb\nWRSSD m32, r32"
+    replacement: "0F 38 F6 \nWRSSD m32, r32"
+  }
+  patches {
+    row: 4
+    expected: "REX.W 0F 38 F6 !(11):rrr:bbb\nWRSSQ m64, r64"
+    replacement: "REX.W 0F 38 F6 \nWRSSQ m64, r64"
+  }
+}
+pages {
+  page_number: 2517
+  patches {
+    row: 3
+    expected: "66 0F 38 F5 !(11):rrr:bbb\nWRUSSD m32, r32"
+    replacement: "66 0F 38 F5 /r\nWRUSSD m32, r32"
+  }
+  patches {
+    row: 4
+    expected: "66 REX.W 0F 38 F5 !(11):rrr:bbb\nWRUSSQ m64, r64"
+    replacement: "66 REX.W 0F 38 F5 \nWRUSSQ m64, r64"
+  }
+}
+pages {
+  page_number: 2530
   patches {
     row: 3
     col: 2
@@ -534,5 +563,56 @@ pages {
     col: 2
     expected: "ModRM:r/m (r)"
     replacement: "ModRM:r/m (r, w)"
+  }
+}
+pages {
+  page_number: 2618
+  patches {
+    row: 3
+    expected: "EVEX.LLIG.F2.0F38.W0 9B /r\nV4FMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
+    replacement: "EVEX.DDS.LIG.F2.0F38.W0 9B /r\nV4FMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
+  }
+  patches {
+    row: 4
+    expected: "EVEX.LLIG.F2.0F38.W0 AB /r\nV4FNMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
+    replacement: "EVEX.DDS.LIG.F2.0F38.W0 AB /r\nV4FNMADDSS xmm1{k1}{z}, \nxmm2+3, m128"
+  }
+}
+pages {
+  page_number: 2659
+  patches {
+    row: 26
+    expected: "D"
+    replacement: "M"
+  }
+}
+pages {
+  page_number: 4162
+  patches {
+    row: 6
+    col: 3
+    expected: "Address of the destination EPC page \n(In, EA)"
+    replacement: "Address of the destination EPC page (In, EA); Address of the SECS page (In, EA)"
+  }
+  patches {
+    row: 6
+    col: 4
+    expected: "Address of the SECS page (In, EA)"
+    remove_cell: true
+  }
+}
+pages {
+  page_number: 4181
+  patches {
+    row: 6
+    col: 4
+    expected: "Address of AEP (In)"
+    replacement: "Address of AEP (In); Address of IP following EENTER (Out)"
+  }
+  patches {
+    row: 6
+    col: 5
+    expected: "Address of IP following \nEENTER (Out)"
+    remove_cell: true
   }
 }

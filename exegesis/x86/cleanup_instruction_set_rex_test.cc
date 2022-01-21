@@ -22,7 +22,7 @@ namespace x86 {
 namespace {
 
 TEST(AddRexWPrefixUsageTest, AddUsage) {
-  constexpr char kInstructionSetProto[] = R"proto(
+  constexpr char kInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "CPUID" }
       available_in_64_bit: true
@@ -154,8 +154,8 @@ TEST(AddRexWPrefixUsageTest, AddUsage) {
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         legacy_prefixes { rex_w_prefix: PREFIX_IS_REQUIRED }
       }
-    })proto";
-  constexpr char kExpectedInstructionSetProto[] = R"proto(
+    })pb";
+  constexpr char kExpectedInstructionSetProto[] = R"pb(
     instructions {
       vendor_syntax { mnemonic: "CPUID" }
       available_in_64_bit: true
@@ -293,7 +293,7 @@ TEST(AddRexWPrefixUsageTest, AddUsage) {
         modrm_usage: OPCODE_EXTENSION_IN_MODRM
         legacy_prefixes { rex_w_prefix: PREFIX_IS_REQUIRED }
       }
-    })proto";
+    })pb";
   TestTransform(AddRexWPrefixUsage, kInstructionSetProto,
                 kExpectedInstructionSetProto);
 }

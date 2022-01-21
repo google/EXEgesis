@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
@@ -86,7 +87,7 @@ void Main() {
 
   // Prepare patches.
   const auto pages = ParsePageNumbers();
-  std::map<size_t, std::vector<PdfPagePatch>> page_patches;
+  absl::btree_map<size_t, std::vector<PdfPagePatch>> page_patches;
   for (const auto& page : pdf_document.pages()) {
     if (!ShouldProcessPage(pages, page)) continue;
 

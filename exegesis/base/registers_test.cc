@@ -27,7 +27,7 @@ namespace {
 using ::exegesis::testing::EqualsProto;
 
 TEST(RegistersTest, MakeRegistersFromBaseNames) {
-  constexpr char kExpectedRegisters[] = R"proto(
+  constexpr char kExpectedRegisters[] = R"pb(
     register_groups {
       name: "RAX group"
       description: "The group of registers aliased with RAX"
@@ -71,7 +71,7 @@ TEST(RegistersTest, MakeRegistersFromBaseNames) {
         position_in_group { lsb: 8 msb: 15 }
         register_class: GENERAL_PURPOSE_REGISTER_8_BIT
       }
-    })proto";
+    })pb";
   const std::vector<RegisterTemplate> kTemplates = {
       {"R", "X", 0, 63, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_64_BIT},
       {"", "L", 0, 7, 0, "", RegisterProto::GENERAL_PURPOSE_REGISTER_8_BIT},
@@ -82,7 +82,7 @@ TEST(RegistersTest, MakeRegistersFromBaseNames) {
 }
 
 TEST(RegistersTest, MakeRegistersFromBaseNameAndIndices) {
-  constexpr const char kExpectedRegisters[] = R"proto(
+  constexpr const char kExpectedRegisters[] = R"pb(
     register_groups {
       name: "XMM4 group"
       description: "The group of registers aliased with XMM4"
@@ -132,7 +132,7 @@ TEST(RegistersTest, MakeRegistersFromBaseNameAndIndices) {
         feature_name: "AVX512"
         register_class: VECTOR_REGISTER_512_BIT
       }
-    })proto";
+    })pb";
   const std::vector<RegisterTemplate> kTemplates = {
       {"X", "", 0, 127, 0, "SSE", RegisterProto::VECTOR_REGISTER_128_BIT},
       {"Y", "", 0, 255, 0, "AVX", RegisterProto::VECTOR_REGISTER_256_BIT},

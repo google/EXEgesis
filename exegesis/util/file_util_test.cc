@@ -16,6 +16,7 @@
 
 #include <string>
 
+#include "absl/flags/flag.h"
 #include "absl/strings/str_cat.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

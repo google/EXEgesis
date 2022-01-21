@@ -18,6 +18,7 @@
 #include <string>
 #include <unordered_set>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/strings/match.h"
@@ -89,7 +90,7 @@ absl::Status AddEvexOpmaskUsage(InstructionSetProto* instruction_set) {
   // The list of instructions that do not allow using k0 as opmask. This
   // behavior is specified only in the free-text description of the instruction,
   // so we had to list them explicitly by their mnemonic.
-  const absl::node_hash_set<std::string> kOpmaskRequiredMnemonics = {
+  const absl::flat_hash_set<std::string> kOpmaskRequiredMnemonics = {
       "VGATHERDPS",  "VGATHERDPD",  "VGATHERQPS",  "VGATHERQPD",
       "VPGATHERDD",  "VPGATHERDQ",  "VPGATHERQD",  "VPGATHERQQ",
       "VPSCATTERDD", "VPSCATTERDQ", "VPSCATTERQD", "VPSCATTERQQ",

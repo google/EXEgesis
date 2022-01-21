@@ -5,14 +5,14 @@ llvm_host_triple = "x86_64"
 
 llvm_native_arch = "X86"
 
-# These three are the space-separated list of targets we support. When adding a
+# These three are lists of targets we support. When adding a
 # target here, you also need to add the list of generated files to
 # llvm_target_list below.
-llvm_targets = "X86"
-
-llvm_target_asm_parsers = "X86"
-
-llvm_target_disassemblers = "X86"
+llvm_targets = ["X86"]
+llvm_target_asm_parsers = ["X86"]
+llvm_target_asm_printers = ["X86"]
+llvm_target_disassemblers = ["X86"]
+llvm_target_mcas = ["X86"]
 
 # Genrules.
 
@@ -108,6 +108,11 @@ genrule(
 #define BUG_REPORT_URL "http://llvm.org/bugs/"
 #define RETSIGTYPE void
 #endif
+#if defined(OS_WINDOWS)
+#define LLVM_WINDOWS_PREFER_FORWARD_SLASH 1
+#else
+#define LLVM_WINDOWS_PREFER_FORWARD_SLASH 0
+#endif
 EOF"""),
 )
 
@@ -122,63 +127,58 @@ genrule(
 
 genrule(
     name = "generate_vcsrevision_h",
-    srcs = [],
+    srcs = ["@//:llvm_git_revision"],
     outs = ["include/llvm/Support/VCSRevision.h"],
-    cmd = "echo '' > \"$@\"",
+    cmd = "echo \"#define LLVM_REVISION \\\"$$(cat $<)\\\"\" > $@",
+)
+
+load("@llvm_git_bazel_overlay//:enum_targets_gen.bzl", "enum_targets_gen")
+
+enum_targets_gen(
+    name = "targets_def_gen",
+    src = "include/llvm/Config/Targets.def.in",
+    out = "include/llvm/Config/Targets.def",
+    macro_name = "TARGET",
+    targets = llvm_targets,
+)
+
+enum_targets_gen(
+    name = "asm_printers_def_gen",
+    src = "include/llvm/Config/AsmPrinters.def.in",
+    out = "include/llvm/Config/AsmPrinters.def",
+    macro_name = "ASM_PRINTER",
+    targets = llvm_target_asm_printers,
+)
+
+enum_targets_gen(
+    name = "asm_parsers_def_gen",
+    src = "include/llvm/Config/AsmParsers.def.in",
+    out = "include/llvm/Config/AsmParsers.def",
+    macro_name = "ASM_PARSER",
+    targets = llvm_target_asm_parsers,
+)
+
+enum_targets_gen(
+    name = "disassemblers_def_gen",
+    src = "include/llvm/Config/Disassemblers.def.in",
+    out = "include/llvm/Config/Disassemblers.def",
+    macro_name = "DISASSEMBLER",
+    targets = llvm_target_disassemblers,
+)
+
+enum_targets_gen(
+    name = "target_mca_def_gen",
+    src = "include/llvm/Config/TargetMCAs.def.in",
+    out = "include/llvm/Config/TargetMCAs.def",
+    macro_name = "TARGETMCA",
+    targets = llvm_target_mcas,
 )
 
 genrule(
-    name = "generate_targets_defs",
-    srcs = [
-        "include/llvm/Config/Targets.def.in",
-        "include/llvm/Config/AsmParsers.def.in",
-        "include/llvm/Config/AsmPrinters.def.in",
-        "include/llvm/Config/Disassemblers.def.in",
-    ],
-    outs = [
-        "include/llvm/Config/Targets.def",
-        "include/llvm/Config/AsmParsers.def",
-        "include/llvm/Config/AsmPrinters.def",
-        "include/llvm/Config/Disassemblers.def",
-    ],
-    # The following script expands a set of macros in the input files from
-    # the Autoconf-style token '@LLVM_ENUM_<macro>S@'. Each token becomes:
-    #   LLVM_<macro>(X86)
-    #   LLVM_<macro>(OtherTarget)
-    #   ...
-    cmd = ("out_dir=\"$(@D)/include/llvm/Config\"\n" +
-           "for input in $(SRCS); do\n" +
-           "  cp $$input $$out_dir/$$(basename $$input .in)\n" +
-           "done\n" +
-           "\n" +
-           "subst_str=\"\"\n" +
-           "for target in " + llvm_targets + "; do\n" +
-           "  subst_str=\"$$subst_str\\\\\nLLVM_TARGET($$target)\"\n" +
-           "done\n" +
-           "sed -i -e \"/@LLVM_ENUM_TARGETS@/c $$subst_str\" " +
-           "    $$out_dir/*.def\n" +
-           "\n" +
-           "subst_str=\"\"\n" +
-           "for target in " + llvm_targets + "; do\n" +
-           "  subst_str=\"$$subst_str\\\\\nLLVM_ASM_PRINTER($$target)\"\n" +
-           "done\n" +
-           "sed -i -e \"/@LLVM_ENUM_ASM_PRINTERS@/c $$subst_str\" " +
-           "    $$out_dir/*.def\n" +
-           "\n" +
-           "subst_str=\"\"\n" +
-           "for target in " + llvm_target_asm_parsers + "; do\n" +
-           "  subst_str=\"$$subst_str\\\\\nLLVM_ASM_PARSER($$target)\"\n" +
-           "done\n" +
-           "sed -i -e \"/@LLVM_ENUM_ASM_PARSERS@/c $$subst_str\" " +
-           "    $$out_dir/*.def\n" +
-           "\n" +
-           "subst_str=\"\"\n" +
-           "for target in " + llvm_target_disassemblers + "; do\n" +
-           "  subst_str=\"$$subst_str\\\\\nLLVM_DISASSEMBLER($$target)\"\n" +
-           "done\n" +
-           "sed -i -e \"/@LLVM_ENUM_DISASSEMBLERS@/c $$subst_str\" " +
-           "    $$out_dir/*.def\n"),
-    message = "Generating target definitions",
+    name = "version_info_gen",
+    srcs = ["@//:llvm_git_revision"],
+    outs = ["include/llvm/Config/VersionInfo.h"],
+    cmd = "echo \"#define LLVM_VERSION_INFO \\\"$$(cat $<)\\\"\" > $@",
 )
 
 # Libraries.
@@ -189,10 +189,7 @@ cc_library(
         "lib/AsmParser/*.cpp",
         "lib/AsmParser/*.h",
     ]),
-    hdrs = [
-        "include/llvm/AsmParser/Parser.h",
-        "include/llvm/AsmParser/SlotMapping.h",
-    ],
+    hdrs = glob(["include/llvm/AsmParser/*.h"]),
     deps = [
         ":BinaryFormat",
         ":Core",
@@ -200,30 +197,21 @@ cc_library(
     ],
 )
 
-# cc_library(
-#     name = "asm_printer",
-#     srcs = glob([
-#         "lib/CodeGen/AsmPrinter/*.cpp",
-#         "lib/CodeGen/AsmPrinter/*.h",
-#     ]),
-#     hdrs = [
-#         "include/llvm/CodeGen/AsmPrinter.h",
-#     ] + glob([
-#         "lib/CodeGen/AsmPrinter/*.def",
-#     ]),
-#     deps = [
-#         ":analysis",
-#         ":codegen",
-#         ":config",
-#         ":debug_info_codeview",
-#         ":debug_info_dwarf",
-#         ":ir",
-#         ":machine_code",
-#         ":machine_code_parser",
-#         ":support",
-#         ":target_base",
-#     ],
-# )
+cc_library(
+    name = "common_transforms",
+    deps = [
+        ":AggressiveInstCombine",
+        ":CFGuard",
+        ":Coroutines",
+        ":IPO",
+        ":InstCombine",
+        ":Instrumentation",
+        ":ObjCARC",
+        ":Scalar",
+        ":Vectorize",
+    ],
+)
+
 cc_library(
     name = "asm_printer_defs",
     textual_hdrs = glob(["lib/CodeGen/AsmPrinter/*.def"]),
@@ -299,6 +287,7 @@ cc_library(
         "include/llvm/Bitstream/BitstreamWriter.h",
     ],
     deps = [
+        ":config",
         ":Support",
     ],
 )
@@ -306,39 +295,40 @@ cc_library(
 cc_library(
     name = "config",
     hdrs = [
+        "include/llvm/Config/VersionInfo.h",
+        "include/llvm/Config/abi-breaking.h",
+        "include/llvm/Config/llvm-config.h",
+    ],
+    includes = ["include"],
+    textual_hdrs = [
         "include/llvm/Config/AsmParsers.def",
         "include/llvm/Config/AsmPrinters.def",
         "include/llvm/Config/Disassemblers.def",
         "include/llvm/Config/Targets.def",
-        "include/llvm/Config/abi-breaking.h",
+        "include/llvm/Config/TargetMCAs.def",
         "include/llvm/Config/config.h",
-        "include/llvm/Config/llvm-config.h",
     ],
-    defines = [
-        "LLVM_ENABLE_STATS",
-        "__STDC_LIMIT_MACROS",
-        "__STDC_CONSTANT_MACROS",
-        "_DEBUG",
-        "LLVM_BUILD_GLOBAL_ISEL",
-    ],
-    includes = ["include"],
 )
 
 cc_library(
     name = "Analysis",
-    srcs = glob([
-        "lib/Analysis/*.cpp",
-        "lib/Analysis/*.h",
-    ]) + [
-        "include/llvm-c/Analysis.h",
-        "include/llvm/Analysis/Utils/Local.h",
-    ],
+    srcs = glob(
+        [
+            "lib/Analysis/*.cpp",
+            "lib/Analysis/*.h",
+            "lib/Analysis/*.def",
+        ],
+    ),
     hdrs = glob([
         "include/llvm/Analysis/*.h",
-        "include/llvm/Analysis/*.def",
+        "include/llvm/Analysis/Utils/*.h",
     ]) + [
-        "include/llvm/Transforms/Utils/LoopUtils.h",
+        "include/llvm-c/Analysis.h",
+        "include/llvm-c/Initialization.h",
     ],
+    textual_hdrs = glob([
+        "include/llvm/Analysis/*.def",
+    ]),
     visibility = ["//visibility:public"],
     deps = [
         ":BinaryFormat",
@@ -474,10 +464,7 @@ cc_library(
         "lib/ExecutionEngine/RuntimeDyld/*.h",
         "lib/ExecutionEngine/RuntimeDyld/Targets/*.cpp",
         "lib/ExecutionEngine/RuntimeDyld/Targets/*.h",
-    ]) + [
-        "include/llvm-c/ExecutionEngine.h",
-        "include/llvm/DebugInfo/DIContext.h",
-    ],
+    ]),
     hdrs = glob(
         [
             "include/llvm/ExecutionEngine/*.h",
@@ -498,6 +485,7 @@ cc_library(
         ":MC",
         ":MCDisassembler",
         ":Object",
+        ":OrcTargetProcess",
         ":Passes",
         ":Support",
         ":Target",
@@ -519,6 +507,54 @@ cc_library(
         ":ExecutionEngine",
         ":MC",
         ":Object",
+        ":Support",
+        ":Target",
+        ":config",
+    ],
+)
+
+cc_library(
+    name = "OrcShared",
+    srcs = glob([
+        "lib/ExecutionEngine/Orc/Shared/*.cpp",
+    ]),
+    hdrs = glob([
+        "include/llvm/ExecutionEngine/Orc/Shared/*.h",
+    ]),
+    deps = [
+        ":BinaryFormat",
+        ":CodeGen",
+        ":Core",
+        ":DebugInfo",
+        ":MC",
+        ":MCDisassembler",
+        ":Object",
+        ":Passes",
+        ":Support",
+        ":Target",
+        ":config",
+    ],
+)
+
+cc_library(
+    name = "OrcTargetProcess",
+    srcs = glob([
+        "lib/ExecutionEngine/Orc/TargetProcess/*.cpp",
+        "lib/ExecutionEngine/Orc/TargetProcess/*.h",
+    ]),
+    hdrs = glob([
+        "include/llvm/ExecutionEngine/Orc/TargetProcess/*.h",
+    ]),
+    deps = [
+        ":BinaryFormat",
+        ":CodeGen",
+        ":Core",
+        ":DebugInfo",
+        ":MC",
+        ":MCDisassembler",
+        ":Object",
+        ":OrcShared",
+        ":Passes",
         ":Support",
         ":Target",
         ":config",
@@ -627,6 +663,10 @@ llvm_target_intrinsics_list = [
         "intrinsic_prefix": "s390",
     },
     {
+        "name": "VE",
+        "intrinsic_prefix": "ve",
+    },
+    {
         "name": "WebAssembly",
         "intrinsic_prefix": "wasm",
     },
@@ -669,7 +709,10 @@ gentbl(
     tbl_outs = [("-gen-attrs", "include/llvm/IR/Attributes.inc")],
     tblgen = ":llvm-tblgen",
     td_file = "include/llvm/IR/Attributes.td",
-    td_srcs = ["include/llvm/IR/Attributes.td"],
+    td_srcs = [
+        "include/llvm/IR/Attributes.td",
+        "include/llvm/IR/AttributesAMDGPU.td",
+    ],
 )
 
 cc_library(
@@ -747,7 +790,11 @@ cc_library(
         "lib/IRReader/*.cpp",
         "lib/IRReader/*.h",
     ]),
-    hdrs = glob(["include/llvm/IRReader/*.h"]),
+    hdrs = glob([
+        "include/llvm/IRReader/*.h",
+    ]) + [
+        "include/llvm-c/IRReader.h",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":AsmParser",
@@ -764,7 +811,11 @@ cc_library(
         "lib/Linker/*.cpp",
         "lib/Linker/*.h",
     ]),
-    hdrs = glob(["include/llvm/Linker/*.h"]),
+    hdrs = glob([
+        "include/llvm/Linker/*.h",
+    ]) + [
+        "include/llvm-c/Linker.h",
+    ],
     deps = [
         ":Core",
         ":Support",
@@ -860,30 +911,40 @@ cc_library(
     textual_hdrs = ["lib/Passes/PassRegistry.def"],
 )
 
+
+cc_library(
+    name = "MLPolicies",
+    srcs = glob([
+        "lib/Analysis/ML/*.cpp",
+        "lib/Analysis/ML/*.h",
+    ]),
+    hdrs = glob([
+        "include/llvm/Analysis/ML/*.h",
+    ]),
+    deps = [
+        ":Analysis",
+        ":Core",
+        ":Support",
+    ],
+)
+
 cc_library(
     name = "Passes",
     srcs = glob([
         "lib/Passes/*.cpp",
         "lib/Passes/*.h",
     ]),
-    hdrs = glob(["include/llvm/Passes/*.h"]),
+    hdrs = glob(["include/llvm/Passes/*.h"]) + ["include/llvm-c/Transforms/PassBuilder.h"],
     deps = [
-        ":AggressiveInstCombine",
         ":Analysis",
-        ":CFGuard",
         ":CodeGen",
         ":Core",
         ":Coroutines",
-        ":HelloNew",
-        ":IPO",
-        ":InstCombine",
-        ":Instrumentation",
-        ":ObjCARC",
-        ":Scalar",
+        ":MLPolicies",
         ":Support",
         ":Target",
         ":TransformUtils",
-        ":Vectorize",
+        ":common_transforms",
         ":config",
         ":pass_registry_def",
     ],
@@ -902,6 +963,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":Core",
+        ":DebugInfoDWARF",
         ":Support",
         ":config",
     ],
@@ -914,24 +976,41 @@ cc_library(
         "lib/Support/*.cpp",
         "lib/Support/*.h",
         "lib/Support/*.inc",
+        # To avoid a dependency cycle.
+        "include/llvm/Option/*.h",
         "lib/Support/Unix/*.h",
         "lib/Support/Unix/*.inc",
-        "include/llvm-c/*.h",
     ]),
     hdrs = glob([
-        "include/llvm/Support/*.h",
+        "include/llvm/Support/**/*.h",
         "include/llvm/ADT/*.h",
-    ]) + ["include/llvm/Support/VCSRevision.h"],
+    ]) + [
+        "include/llvm-c/Core.h",
+        "include/llvm-c/DataTypes.h",
+        "include/llvm-c/Deprecated.h",
+        "include/llvm-c/DisassemblerTypes.h",
+        "include/llvm-c/Error.h",
+        "include/llvm-c/ErrorHandling.h",
+        "include/llvm-c/ExternC.h",
+        "include/llvm-c/Support.h",
+        "include/llvm-c/Types.h",
+        "include/llvm/ExecutionEngine/JITSymbol.h",
+        # VCSRevision.h is generated. We need to list it explicitly to add it as a dependency.
+        "include/llvm/Support/VCSRevision.h",
+    ],
     includes = ["include"],
-    linkopts = ["-ldl"],
+    linkopts = [
+        "-pthread",
+        "-ldl",
+        "-lm",
+    ],
     textual_hdrs = glob([
         "include/llvm/Support/*.def",
-        "include/llvm/Support/**/*.def",
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        ":Demangle",
         ":config",
+        ":Demangle",
     ],
 )
 
@@ -940,14 +1019,13 @@ cc_library(
     srcs = glob([
         "lib/Target/*.cpp",
         "lib/Target/*.h",
-    ]) + [
-        "include/llvm-c/Initialization.h",
-        "include/llvm-c/Target.h",
-    ],
+    ]),
     hdrs = glob([
         "include/llvm/Target/*.h",
-        "include/llvm/Target/*.def",
-    ]),
+    ]) + [
+        "include/llvm-c/Target.h",
+        "include/llvm-c/TargetMachine.h",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":Analysis",
@@ -1062,6 +1140,7 @@ cc_library(
 
 gentbl(
     name = "InstCombineTableGen",
+    strip_include_prefix = "lib/Target/AMDGPU",
     tbl_outs = [(
         "-gen-searchable-tables",
         "lib/Target/AMDGPU/InstCombineTables.inc",
@@ -1074,7 +1153,7 @@ gentbl(
     ]) + [
         "lib/Target/AMDGPU/InstCombineTables.td",
         "include/llvm/TableGen/SearchableTable.td",
-    ],
+    ]
 )
 
 cc_library(
@@ -1123,8 +1202,7 @@ gentbl(
     name = "omp_gen_impl",
     library = False,
     tbl_outs = [
-        ("--gen-directive-gen", "include/llvm/Frontend/OpenMP/OMP.cpp.inc"),
-        ("--gen-directive-impl", "lib/Frontend/OpenMP/OMP.cpp"),
+        ("--gen-directive-impl", "include/llvm/Frontend/OpenMP/OMP.inc"),
     ],
     tblgen = ":llvm-tblgen",
     td_file = "include/llvm/Frontend/OpenMP/OMP.td",
@@ -1135,21 +1213,22 @@ cc_library(
     name = "FrontendOpenMP",
     srcs = glob([
         "lib/Frontend/OpenMP/*.cpp",
-    ]) + [
-        "include/llvm/Frontend/OpenMP/OMP.cpp.inc",
-        "lib/Frontend/OpenMP/OMP.cpp",
-    ],
+    ]),
     hdrs = glob([
         "include/llvm/Frontend/OpenMP/*.h",
         "include/llvm/Frontend/OpenMP/OMP/*.h",
         "include/llvm/Frontend/*.h",
-    ]) + ["include/llvm/Frontend/OpenMP/OMP.h.inc"],
+    ]) + [
+        "include/llvm/Frontend/OpenMP/OMP.h.inc",
+        "include/llvm/Frontend/OpenMP/OMP.inc",
+    ],
     textual_hdrs = glob([
         "include/llvm/Frontend/OpenMP/*.def",
     ]),
     deps = [
         ":Analysis",
         ":Core",
+        ":Scalar",
         ":Support",
         ":TransformUtils",
     ],
@@ -1190,19 +1269,6 @@ cc_library(
         ":TransformUtils",
         ":Vectorize",
         ":config",
-    ],
-)
-
-cc_library(
-    name = "HelloNew",
-    srcs = glob([
-        "lib/Transforms/HelloNew/*.cpp",
-        "lib/Transforms/HelloNew/*.h",
-    ]),
-    hdrs = ["include/llvm/Transforms/HelloNew/HelloWorld.h"],
-    deps = [
-        ":Core",
-        ":Support",
     ],
 )
 
@@ -1309,7 +1375,7 @@ cc_library(
     hdrs = glob([
         "include/llvm/TextAPI/**/*.h",
         "include/llvm/TextAPI/**/*.def",
-        "lib/TextAPI/MachO/*.h",
+        "lib/TextAPI/**/*.h",
     ]),
     includes = ["include"],
     deps = [
@@ -1321,6 +1387,28 @@ cc_library(
 # Targets.
 
 llvm_target_list = [
+    {
+        "name": "AMDGPU",
+        "short_name": "AMDGPU",
+        "tbl_outs": [
+            ("-gen-register-bank", "lib/Target/AMDGPU/AMDGPUGenRegisterBank.inc"),
+            ("-gen-register-info", "lib/Target/AMDGPU/AMDGPUGenRegisterInfo.inc"),
+            ("-gen-instr-info", "lib/Target/AMDGPU/AMDGPUGenInstrInfo.inc"),
+            ("-gen-emitter", "lib/Target/AMDGPU/AMDGPUGenMCCodeEmitter.inc"),
+            ("-gen-pseudo-lowering", "lib/Target/AMDGPU/AMDGPUGenMCPseudoLowering.inc"),
+            ("-gen-asm-writer", "lib/Target/AMDGPU/AMDGPUGenAsmWriter.inc"),
+            ("-gen-asm-matcher", "lib/Target/AMDGPU/AMDGPUGenAsmMatcher.inc"),
+            ("-gen-dag-isel", "lib/Target/AMDGPU/AMDGPUGenDAGISel.inc"),
+            ("-gen-callingconv", "lib/Target/AMDGPU/AMDGPUGenCallingConv.inc"),
+            ("-gen-subtarget", "lib/Target/AMDGPU/AMDGPUGenSubtargetInfo.inc"),
+            ("-gen-disassembler", "lib/Target/AMDGPU/AMDGPUGenDisassemblerTables.inc"),
+            ("-gen-searchable-tables", "lib/Target/AMDGPU/AMDGPUGenSearchableTables.inc"),
+        ],
+        "tbl_deps": [
+            ":amdgpu_isel_target_gen",
+            ":r600_target_gen",
+        ],
+    },
     {
         "name": "X86",
         "lower_name": "x86",

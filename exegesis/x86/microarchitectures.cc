@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "exegesis/base/microarchitecture.h"
 #include "exegesis/proto/microarchitecture.pb.h"
 #include "glog/logging.h"
@@ -27,12 +28,150 @@ namespace exegesis {
 namespace x86 {
 namespace {
 
+// Port definitions and port masks are based on the description of the Ice Lake
+// microarchitecture in the Intel(r) 64 and IA-32 Architectures Optimization
+// Reference Manual, May 2020 version, Table 2-1 and Table 2-2.
+constexpr absl::string_view kIceLakeMicroArchitecture = R"pb(
+  # Port 0
+  ports {
+    comments: "Integer ALU"
+    comments: "Fast LEA"
+    comments: "Integer Shift"
+    comments: "Branch"
+    comments: "FMA"
+    comments: "Vector ALU"
+    comments: "Vector Shifts"
+    comments: "FP Divide"
+  }
+  # Port 1
+  ports {
+    comments: "Integer ALU"
+    comments: "Fast LEA"
+    comments: "Integer Multiply"
+    comments: "Integer Divison"
+    comments: "FMA (no AVX-512)"
+    comments: "Vector ALU (no AVX-512)"
+    comments: "Vector Shifts (no AVX-512)"
+    comments: "Vector Shuffle (no AVX-512)"
+  }
+  # Port 2
+  ports { comments: "Load" }
+  # Port 3
+  ports { comments: "Load" }
+  # Port 4
+  ports { comments: "Store Data" }
+  # Port 5
+  ports {
+    comments: "Fast LEA"
+    comments: "Integer ALU"
+    comments: "Integer Multiply Hi"
+    comments: "Vector ALU"
+    comments: "Vector Shuffle"
+  }
+  # Port 6
+  ports {
+    comments: "Integer ALU"
+    comments: "Fast LEA"
+    comments: "Integer Shift"
+    comments: "Branch"
+  }
+  # Port 7
+  ports { comments: "Store Address" }
+  # Port 8
+  ports { comments: "Store Address" }
+  # Port 9
+  ports { comments: "Store Data" }
+
+  # TODO(ondrasej): Verify the port masks using llvm-exegesis.
+  port_masks {
+    # Integer ALU: add, and, cmp, or, test, xor, movzx, movsx, mov, (v)movdqu,
+    # (v)movdqa, (v)movap*, (v)movup*
+    comment: "ALU"
+    port_numbers: [ 0, 1, 5, 6 ]
+  }
+  port_masks {
+    # Integer Shift: sal, shl, rol, adc, sarx, adcx, adox, etc.
+    comment: "Integer Shift"
+    port_numbers: [ 0, 6 ]
+  }
+  port_masks {
+    # Integer Multiply and other slow instructions: mul, imul, bsr, rcl, shld,
+    # mulx, pdep, etc.
+    port_numbers: 1
+  }
+  port_masks {
+    # Vector ALU:  (v)pand, (v)por, (v)pxor, (v)movq, (v)movq, (v)movap*,
+    # (v)movup*, (v)andp*, (v)orp*, (v)paddb/w/d/q, (v)blendv*, (v)blendp*,
+    # (v)pblendd
+    port_numbers: [ 0, 1, 5 ]
+  }
+  port_masks {
+    # Vector Shift: (v)psllv*, (v)psrlv*
+    port_numbers: [ 0, 1 ]
+  }
+  port_masks {
+    # Vector Shuffle: (v)shufp*, vperm*, (v)pack*, (v)unpck*, (v)punpck*,
+    # (v)pshuf*, (v)pslldq, (v)alignr, (v)pmovzx*, vbroadcast*, (v)pslldq,
+    # (v)psrldq, (v)pblendw
+    port_numbers: [ 1, 5 ]
+  }
+  port_masks {
+    # AVX-512 instructions, division.
+    port_numbers: 0
+  }
+  port_masks {
+    # Load + load address generation.
+    port_numbers: [ 2, 3 ]
+  }
+  port_masks {
+    # Store data.
+    port_numbers: [ 4, 9 ]
+  }
+  port_masks {
+    # Store address generation.
+    port_numbers: [ 7, 8 ]
+  }
+  protected_mode { protected_modes: [ 0, 1, 2 ] }
+  load_store_address_generation_port_mask_index: 7
+  store_address_generation_port_mask_index: 9
+  store_data_port_mask_index: 8
+  perf_events {
+    # TODO(bdb): Only consider user-time measurements with the :u modifier.
+    computation_events: "uops_dispatched_port:port_0"
+    computation_events: "uops_dispatched_port:port_1"
+    computation_events: "uops_dispatched_port:port_5"
+    computation_events: "uops_dispatched_port:port_6"
+    memory_events: "uops_dispatched_port:port_2_3"
+    memory_events: "uops_dispatched_port:port_4_9"
+    memory_events: "uops_dispatched_port:port_7_8"
+    cycle_events: "cycles"
+    cycle_events: "instructions"
+    cycle_events: "ild_stall.lcp"
+    uops_events: "uops_issued:slots"
+    uops_events: "uops_retired:all"
+  })pb";
+
+constexpr absl::string_view kIceLakeConsumerModels = R"pb(
+  id: "clk"
+  llvm_arch: "x86_64"
+  llvm_cpu: "icelake-client"
+  model_ids: "intel:06_7D"
+  model_ids: "intel:06_7E")pb";
+
+constexpr absl::string_view kIceLakeXeonModels = R"pb(
+  id: "clx"
+  llvm_arch: "x86_64"
+  llvm_cpu: "icelake-server"
+  model_ids: "intel:06_6A"
+  model_ids: "intel:06_6C"
+)pb";
+
 // This is derived from Figure 2-1 "CPU Core Pipeline Functionality of the
 // Skylake Microarchitecture" and Table 2-1. "Dispatch Port and Execution Stacks
 // of the Skylake Microarchitecture" of the June 2016 edition of the Intel
 // Optimization Reference Manual, Order Number 248966-033.
 // http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-optimization-manual.pdf
-constexpr const char kSkylakeMicroArchitecture[] = R"proto(
+constexpr absl::string_view kSkylakeMicroArchitecture = R"pb(
   ports {
     comments: "Integer ALU"
     comments: "Integer Shift"
@@ -148,27 +287,27 @@ constexpr const char kSkylakeMicroArchitecture[] = R"proto(
     uops_events: "uops_issued:any"
     uops_events: "uops_retired:all"
   }
-)proto";
+)pb";
 
-constexpr const char kSkylakeConsumerModels[] =
-    R"proto(
+constexpr absl::string_view kSkylakeConsumerModels =
+    R"pb(
   id: "skl"
   llvm_arch: "x86_64"
   llvm_cpu: "skylake"
   model_ids: 'intel:06_4E'
   model_ids: 'intel:06_5E'
-    )proto";
+    )pb";
 
-constexpr const char kSkylakeXeonModels[] =
-    R"proto(
+constexpr absl::string_view kSkylakeXeonModels =
+    R"pb(
   id: "skx"
   llvm_arch: "x86_64"
   llvm_cpu: "skylake-avx512"
   model_ids: 'intel:06_55'
-    )proto";
+    )pb";
 
 // The Haswell CPU microarchitecture.
-constexpr const char kHaswellMicroArchitecture[] = R"proto(
+constexpr absl::string_view kHaswellMicroArchitecture = R"pb(
   ports {
     comments: "Integer ALU & Shift"
     comments: "FMA, 256-bit FP Multiply"
@@ -266,9 +405,9 @@ constexpr const char kHaswellMicroArchitecture[] = R"proto(
   reorder_buffer_size_in_uops: 192
   reservation_station_size_in_uops: 60
   num_execution_ports: 8
-)proto";
+)pb";
 
-constexpr const char kHaswellModels[] = R"proto(
+constexpr absl::string_view kHaswellModels = R"pb(
   id: "hsw"
   llvm_arch: "x86_64"
   llvm_cpu: "haswell"
@@ -276,18 +415,18 @@ constexpr const char kHaswellModels[] = R"proto(
   model_ids: 'intel:06_3F'
   model_ids: 'intel:06_45'
   model_ids: 'intel:06_46'
-)proto";
+)pb";
 
-constexpr const char kBroadwellModels[] = R"proto(
+constexpr absl::string_view kBroadwellModels = R"pb(
   id: "bdw"
   llvm_arch: "x86_64"
   llvm_cpu: "broadwell"
   model_ids: 'intel:06_3D'
   model_ids: 'intel:06_47'
   model_ids: 'intel:06_56'
-)proto";
+)pb";
 
-constexpr const char kSandyBridgeMicroArchitecture[] = R"proto(
+constexpr absl::string_view kSandyBridgeMicroArchitecture = R"pb(
   ports {
     comments: "Integer ALU"
     comments: "Shift"
@@ -353,27 +492,27 @@ constexpr const char kSandyBridgeMicroArchitecture[] = R"proto(
     uops_events: "uops_issued:any"
     uops_events: "uops_retired:all"
   }
-)proto";
+)pb";
 
-constexpr const char kIvyBridgeModels[] =
-    R"proto(
+constexpr absl::string_view kIvyBridgeModels =
+    R"pb(
   id: "ivb"
   llvm_arch: "x86_64"
   llvm_cpu: "ivybridge"
   model_ids: 'intel:06_3A'
   model_ids: 'intel:06_3E'
-    )proto";
+    )pb";
 
-constexpr const char kSandyBridgeModels[] =
-    R"proto(
+constexpr absl::string_view kSandyBridgeModels =
+    R"pb(
   llvm_arch: "x86_64"
   llvm_cpu: "sandybridge"
   id: "snb"
   model_ids: 'intel:06_2A'
   model_ids: 'intel:06_2D'
-    )proto";
+    )pb";
 
-constexpr const char kNehalemMicroArchitecture[] = R"proto(
+constexpr absl::string_view kNehalemMicroArchitecture = R"pb(
   ports {
     comments: "Integer ALU"
     comments: "Shift"
@@ -438,18 +577,18 @@ constexpr const char kNehalemMicroArchitecture[] = R"proto(
     uops_events: "uops_issued"
     uops_events: "uops_retired"
   }
-)proto";
+)pb";
 
-constexpr const char kWestmereModels[] = R"proto(
+constexpr absl::string_view kWestmereModels = R"pb(
   id: "wsm"
   llvm_arch: "x86_64"
   llvm_cpu: "westmere"
   model_ids: 'intel:06_25'
   model_ids: 'intel:06_2C'
   model_ids: 'intel:06_2F'
-)proto";
+)pb";
 
-constexpr const char kNehalemModels[] = R"proto(
+constexpr absl::string_view kNehalemModels = R"pb(
   id: "nhm"
   llvm_arch: "x86_64"
   llvm_cpu: "nehalem"
@@ -457,21 +596,50 @@ constexpr const char kNehalemModels[] = R"proto(
   model_ids: 'intel:06_1E'
   model_ids: 'intel:06_1F'
   model_ids: 'intel:06_2E'
-)proto";
+)pb";
 
-constexpr const char kEnhancedCoreModels[] = R"proto(
-  id: "enhanced_core"
-  model_ids: 'intel:06_17'
-  model_ids: 'intel:06_1D'
-)proto";
+constexpr absl::string_view kEnhancedCoreModels =
+    R"pb(
+  id: "enhanced_core" model_ids: 'intel:06_17' model_ids: 'intel:06_1D'
+)pb";
 
-constexpr const char kCoreModels[] = R"proto(
-  id: "core" model_ids: 'intel:06_0F'
-)proto";
+constexpr absl::string_view kCoreModels = R"pb(
+  id: "core"
+  model_ids: 'intel:06_0F'
+)pb";
+
+// Perf counter definitions for AMD Zen CPUs. These are based on the definitions
+// in llvm-exegesis.
+constexpr absl::string_view kAmdZenMicroArchitectureAndModels = R"pb(
+  id: "zen"
+  llvm_arch: "x86_64"
+  llvm_cpu: "znver1"
+  model_ids: 'intel:8f_01'
+  model_ids: 'intel:8f_11'
+  model_ids: 'intel:8f_18'
+  model_ids: 'intel:8f_20'
+  protected_mode { protected_modes: [ 0, 1, 2 ] }
+  # AMD Zen CPUs do not provide detailed execution unit perf counters. We thus
+  # skip port definitions and port masks.
+)pb";
+
+constexpr absl::string_view kAmdZen2MicroArchitectureAndModels = R"pb(
+  id: "zen2"
+  llvm_arch: "x86_64"
+  llvm_cpu: "znver2"
+  model_ids: 'intel:8F_31'
+  model_ids: 'intel:8F_60'
+  model_ids: 'intel:8F_71'
+  protected_mode { protected_modes: [ 0, 1, 2 ] }
+  # AMD Zen 2 CPUs do not provide detailed execution unit perf counters. We thus
+  # skip port definitions and port masks.
+)pb";
 
 const MicroArchitecturesProto& GetMicroArchitecturesProto() {
   static const MicroArchitecturesProto* const microarchitectures = []() {
     const std::vector<std::string> sources = {
+        absl::StrCat(kIceLakeConsumerModels, kIceLakeMicroArchitecture),
+        absl::StrCat(kIceLakeXeonModels, kIceLakeMicroArchitecture),
         absl::StrCat(kSkylakeConsumerModels, kSkylakeMicroArchitecture),
         absl::StrCat(kSkylakeXeonModels, kSkylakeMicroArchitecture),
         absl::StrCat(kHaswellModels, kHaswellMicroArchitecture),
@@ -482,7 +650,9 @@ const MicroArchitecturesProto& GetMicroArchitecturesProto() {
         absl::StrCat(kNehalemModels, kNehalemMicroArchitecture),
         // NOTE(bdb): As of 2017-03-01 we do not need the itineraries of the
         // Core and Enhanced Core architectures.
-        kEnhancedCoreModels, kCoreModels};
+        std::string(kEnhancedCoreModels), std::string(kCoreModels),
+        std::string(kAmdZenMicroArchitectureAndModels),
+        std::string(kAmdZen2MicroArchitectureAndModels)};
     auto* const result = new MicroArchitecturesProto();
     for (const std::string& source : sources) {
       CHECK(::google::protobuf::TextFormat::ParseFromString(

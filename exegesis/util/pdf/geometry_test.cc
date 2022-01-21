@@ -287,6 +287,15 @@ TEST(GeometryTest, SpanOverlapRatio) {
   EXPECT_THAT(OverlapRatio(Span(1.0f, 5.0f), Span(6.0f, 7.0f)), FloatEq(0.0f));
 }
 
+TEST(GeometryTest, SpaceBetween) {
+  EXPECT_EQ(SpaceBetween(Span(1.0f, 5.0f), Span(1.0f, 2.0f)), 0.0f);
+  EXPECT_EQ(SpaceBetween(Span(1.0f, 5.0f), Span(5.0f, 6.0f)), 0.0f);
+  EXPECT_EQ(SpaceBetween(Span(5.0f, 6.0f), Span(1.0f, 5.0f)), 0.0f);
+
+  EXPECT_EQ(SpaceBetween(Span(-1.0f, 1.0f), Span(2.0f, 3.0f)), 1.0f);
+  EXPECT_EQ(SpaceBetween(Span(10.0f, 11.0f), Span(0.0f, 1.0f)), 9.0f);
+}
+
 TEST(GeometryTest, SpanContains) {
   EXPECT_TRUE(Span(1.0f, 5.0f).Contains(Span(1.0f, 2.0f)));
   EXPECT_TRUE(Span(1.0f, 5.0f).Contains(Span(2.0f, 2.0f)));
