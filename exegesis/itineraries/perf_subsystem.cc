@@ -205,7 +205,7 @@ PerfResult PerfSubsystem::ReadCounters() {
 
 ABSL_CONST_INIT absl::Mutex
     PerfSubsystem::ScopedLibPfmInitialization::  // NOLINT
-    refcount_mutex_;
+    refcount_mutex_(absl::kConstInit);
 int PerfSubsystem::ScopedLibPfmInitialization::refcount_ = 0;
 
 PerfSubsystem::ScopedLibPfmInitialization::ScopedLibPfmInitialization() {

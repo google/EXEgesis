@@ -46,17 +46,6 @@ version you downloaded is unsupported.
 
 ### Usage
 
-To download and parse the most recent version of the SDM, run
-
-```shell
-bazel build -c opt //exegesis/data/x86:intel_instruction_sets.pbtxt
-```
-
-The parsed data will then be located in
-`bazel-genfiles/exegesis/data/x86/intel_instruction_sets.pbtxt`.
-
-#### Manual parsing
-
 The following command parses `/path/to/intel-sdm.pdf`, patches it to fix typos,
 extracts the instructions and removes mistakes and inconsistencies from the
 resulting database:
