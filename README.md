@@ -47,8 +47,6 @@ It includes:
 ## What's Next
 
 -   Intel x86-64 - [done](exegesis/x86/pdf/README.md)
--   IBM POWER - underway
--   ARM Cortex - underway
 
 ## Get Involved
 
